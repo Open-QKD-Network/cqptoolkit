@@ -131,6 +131,7 @@ deploy:toolkit-run-image:
     - package:deb
   cache:
     policy: pull
+  when: manual
 
 deploy:idqwrapper-docker-image:
   stage: deploy
@@ -146,3 +147,4 @@ deploy:idqwrapper-docker-image:
     - build:linux
   cache:
     policy: pull
+  when: manual
