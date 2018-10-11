@@ -1,0 +1,37 @@
+/*!
+* @file
+* @brief IErrorCorrect
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+
+package cqp.remote;
+
+/**
+ * @brief The IErrorCorrect class
+ * Perform error correction on data and pass to the next stage
+ */
+service IErrorCorrect {
+
+    /**
+     * @brief AlignmentData
+     * called by alignment classes to share data
+     * @param request
+     * @return status
+     */
+    rpc NotifyDataParity(ErrorCorrectParities) returns (google.protobuf.Empty);
+}
+
+/**
+* Example data for errorcorrection
+*/
+message ErrorCorrectParities {
+    // TBD
+}

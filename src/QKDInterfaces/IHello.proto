@@ -1,0 +1,72 @@
+/*!
+* @file
+* @brief IHello
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+
+package cqp.remote;
+
+/**
+ * @brief The IHello
+ * Interface which allows two way connection to be established
+ */
+service IHello {
+    /**
+     * @brief ConnectToMe
+     * Instructs the server that the client has a server it wants it to connect to
+     * @param request Details for the reverse connection
+     * @return the status of the reverse connection
+     * @details
+     @startuml IHelloInterface
+         title IHello Interface
+         hide footbox
+
+         participant "TwoWayServerConnector : A" as sa
+         participant "TwoWayServerConnector : B" as sb
+
+         [-> sa : Connect(AddressOfB)
+         par
+             activate sa
+                 sa -\ sb : Connect()
+                 note over sb
+                     client A to server B connection is established
+                 end note
+                 sa -> sb : ConnectToMe(AddressOfA)
+                 note over sb
+                     A passes it's connection address to B
+                 end note
+                 activate sb
+                     sb -\ sa : Connect()
+                     note over sa
+                         client B to server A connection is established
+                     end note
+                 sa <-- sb : Success
+                 deactivate sb
+             deactivate sa
+         also while A is connecting
+             [-> sb : WaitForClient()
+             activate sb
+             ...
+             [<-- sb : Connection
+             deactivate sb
+         end par
+     @enduml
+     */
+    rpc ConnectToMe(Connection) returns (google.protobuf.Empty);
+}
+
+/**
+* Details for reverse connection
+*/
+message Connection {
+    /// value
+    string address = 1;
+}

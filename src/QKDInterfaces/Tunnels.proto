@@ -1,0 +1,146 @@
+/*!
+* @file
+* @brief Tunnels
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 01/02/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "Site.proto";
+
+package cqp.remote.tunnels;
+
+/// Defines possible encryption schemes
+message EncryptionSchemes{
+    /// mode
+    repeated string modes = 2;
+    /// type of mode
+    repeated string submodes = 3;
+    /// encryption cipher
+    repeated string blockCyphers = 4;
+    /// type of random number generators
+    repeated string numberGenerators = 5;
+    /// Size of key produced
+    repeated uint32 keySizes = 6;
+};
+
+/// Defines the defintion of a cryptography scheme
+message CryptoScheme
+{
+    /// The mode, eg GCM
+    string mode = 1;
+    /// Parameter for the mode
+    /// eg, for GCM: 2k tables
+    string subMode = 2;
+    /// The block cypher
+    /// eg AES
+    string blockCypher = 3;
+    /// number of bytes for the key
+    /// eg, for AES: 16
+    uint32 keySizeBytes = 4;
+}
+
+/// Defines the properties of one end of a tunnel
+message TunnelEndDetails
+{
+    /// The source of unencrypted data
+    string clientDataPortUri = 1;
+    /// The port number for listening for incomming encrypted data
+    uint32 localChannelPort = 3;
+    /// The address to use for sending encrypted data.
+    string channelUri = 4;
+}
+
+/**
+ * @brief The KeyLifespan struct
+ * Defines for how long a key should be used before being changed
+ */
+message KeyLifespan
+{
+    /// limit the number of bytes a key will use
+    uint64 maxBytes = 1;
+    /// Limit the amount of time before the key is changed
+    Duration maxAge = 2;
+}
+
+/// A list of tunnel end details indexed by node id
+message Tunnel {
+    /// user readable name
+    string name = 1;
+    /// how often to change keys
+    KeyLifespan keyLifespan = 2;
+
+    /// The address on which the controller can be reached
+    oneof remoteController {
+        /// controller uri
+        string remoteControllerUri = 3;
+        /// controller uuid
+        string remoteControllerUuid = 4;
+    };
+
+    /// Defines how the data will be encrypted
+    CryptoScheme encryptionMethod = 5;
+    /// Start node
+    TunnelEndDetails startNode = 6;
+    /// End node
+    TunnelEndDetails endNode = 7;
+}
+
+/// A list of tunnels indexed by id
+message TunnelList
+{
+    /// A list of tunnel end details indexed by id
+    map<string, Tunnel> nodes = 1;
+}
+
+/// Parameters for the CompleteTunnel call
+message CompleteTunnelRequest
+{
+    /// The tunnel to create
+    Tunnel tunnel = 1;
+    /// The keystore to use
+    string startKeyStore = 2;
+}
+
+/// response for the CompleteTunnel call
+message CompleteTunnelResponse
+{
+    /// uri to connect to pass data
+    string encryptedConnectionUri = 1;
+    /// The keystore to use
+    string keyStoreAddress = 2;
+}
+
+/// Holds the details of one side of a tunnel.
+message ControllerDetails
+{
+    /// human readable name for the controller
+    string name = 1;
+    /// controller unique id
+    string id = 2;
+    /// The address on which the controller can be reached
+    /// used for others to connect to this controller
+    string connectionUri = 3;
+    /// Address of the listen/connection
+    string listenAddress = 4;
+    /// The port number to listen/connect to, use 0 for automatic selection
+    uint32 listenPort = 5;
+    /// address of IKeyFactory interface to get keys from
+    oneof localKeyFactory {
+        /// URI
+        string localKeyFactoryUri = 7;
+        /// UUID
+        string localKeyFactoryUuid = 8;
+    }
+    /// tunnels configured for this tunnel, indexed by name
+    map<string, Tunnel> tunnels = 10;
+    /// Authentication credentials to use when connecting
+    Credentials credentials = 11;
+    /// whether to use autodiscovery
+    bool useAutoDiscover = 12;
+}

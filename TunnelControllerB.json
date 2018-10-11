@@ -1,0 +1,7 @@
+{
+ "name": "SiteBController",
+ "id": "bd8c1c68-c17d-4d49-a2ec-34969ef3f34b",
+ "localKeyFactoryUri": "oscar:7001",
+ "listenPort": 7011,
+ "credentials": {}
+}

@@ -1,0 +1,78 @@
+/*!
+* @file
+* @brief ISift
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+
+package cqp.remote;
+
+/// Value of a qubit
+message BB84 {
+    /// this is done to scope the enum so names donot clash
+    enum Type {
+        Zero    = 0x00;
+        One     = 0x01;
+        Pos     = 0x02;
+        Neg     = 0x03;
+        Right   = 0x04;
+        Left    = 0x05;
+        Invalid = 0x06;
+    }
+    /// qubit value
+    Type value = 1;
+}
+
+/// A list of Qubits
+message QubitList {
+    /// values
+    repeated BB84.Type qubits = 1;
+}
+/// Qubits indexed by frameid
+message QubitByIndex {
+    /// value
+    map<uint64 /* SequenceNumber */, BB84.Type> qubits = 1;
+}
+
+/// basis of the qubit
+message Basis {
+    /// type
+    enum Type {
+        Retiliniear = 0x00;
+        Diagonal    = 0x02;
+        Circular    = 0x04;    // For compatibility with furture systems
+        Basis_Invalid     = 0x06;
+    }
+}
+
+/// a list of basis
+message BasisList {
+    /// value
+    repeated Basis.Type basis = 1;
+}
+
+/// a list of basis indexed by frame id
+message BasisBySiftFrame {
+    /// values
+    map<uint64 /* SequenceNumber */, BasisList> Basis = 1;
+}
+
+/// a list of booleans indicating whether the basis match
+message BasisAnswers {
+    /// values
+    repeated bool answers = 1;
+}
+
+/// a list of answers indexed by frame id
+message AnswersByFrame 
+{
+    /// values
+    map<uint64 /* SequenceNumber */, BasisAnswers> answers = 1;
+}

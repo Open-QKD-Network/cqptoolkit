@@ -1,0 +1,413 @@
+diff -N -p -r -u nginx-1.14.0-orig/auto/lib/conf nginx-1.14.0/auto/lib/conf
+--- nginx-1.14.0-orig/auto/lib/conf	2018-08-28 14:28:10.841092585 +0100
++++ nginx-1.14.0/auto/lib/conf	2018-08-28 14:29:50.991941312 +0100
+@@ -33,6 +33,11 @@ if [ $USE_LIBXSLT != NO ]; then
+     . auto/lib/libxslt/conf
+ fi
+ 
++if [ $HTTP_SSL_PSK != NO ]; then
++    have=HTTP_SSL_PSK . auto/have
++    . auto/lib/cqptoolkit/conf
++fi
++
+ if [ $USE_LIBGD != NO ]; then
+     . auto/lib/libgd/conf
+ fi
+diff -N -p -r -u nginx-1.14.0-orig/auto/lib/cqptoolkit/conf nginx-1.14.0/auto/lib/cqptoolkit/conf
+--- nginx-1.14.0-orig/auto/lib/cqptoolkit/conf	1970-01-01 01:00:00.000000000 +0100
++++ nginx-1.14.0/auto/lib/cqptoolkit/conf	2018-08-28 14:29:50.991941312 +0100
+@@ -0,0 +1,117 @@
++
++# Copyright (C) Igor Sysoev
++# Copyright (C) Nginx, Inc.
++
++
++    ngx_feature="cqptoolkit"
++    ngx_feature_name=
++    ngx_feature_run=no
++    ngx_feature_incs="#include <OpenSSLHandler.h>"
++    ngx_feature_path="/usr/include/CQPToolkit"
++    ngx_feature_libs="-l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    ngx_feature_test="unsigned char test[33];
++                      OpenSSLHandler_ServerCallback(0, \"\", test, 32);"
++    . auto/feature
++
++
++if [ $ngx_found = no ]; then
++
++    # FreeBSD port
++
++    ngx_feature="cqptoolkit in /usr/local/"
++    ngx_feature_path="/usr/local/include/CQPToolkit /usr/local/include"
++
++    if [ $NGX_RPATH = YES ]; then
++        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    else
++        ngx_feature_libs="-L/usr/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    fi
++
++    . auto/feature
++fi
++
++
++if [ $ngx_found = no ]; then
++
++    # NetBSD port
++
++    ngx_feature="cqptoolkit in /usr/pkg/"
++    ngx_feature_path="/usr/pkg/include/CQPToolkit /usr/pkg/include"
++
++    if [ $NGX_RPATH = YES ]; then
++        ngx_feature_libs="-R/usr/pkg/lib -L/usr/pkg/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    else
++        ngx_feature_libs="-L/usr/pkg/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    fi
++
++    . auto/feature
++fi
++
++
++if [ $ngx_found = no ]; then
++
++    # MacPorts
++
++    ngx_feature="cqptoolkit in /opt/local/"
++    ngx_feature_path="/opt/local/include/CQPToolkit /opt/local/include"
++
++    if [ $NGX_RPATH = YES ]; then
++        ngx_feature_libs="-R/opt/local/lib -L/opt/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    else
++        ngx_feature_libs="-L/opt/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    fi
++
++    . auto/feature
++fi
++
++if [ $ngx_found = no ]; then
++
++    ngx_feature="cqptoolkit in release"
++    ngx_feature_path="/home/rc15345/code/trunk/src/CQPToolkit /home/rc15345/code/build-trunk-Desktop-Release/src"
++
++    if [ $NGX_RPATH = YES ]; then
++        ngx_feature_libs="-R/home/rc15345/code/build-trunk-Desktop-Release/src/CQPToolkit -L/home/rc15345/code/build-trunk-Desktop-Release/src/CQPToolkit -l:libCQPToolkit-x86_64.a -lcurl  -lstdc++ -ldl"
++    else
++        ngx_feature_libs="-L/home/rc15345/code/build-trunk-Desktop-Release/src/CQPToolkit -l:libCQPToolkit-x86_64.a -lcurl  -lstdc++ -ldl"
++    fi
++
++    . auto/feature
++fi
++
++if [ $ngx_found = no ]; then
++
++    ngx_feature="cqptoolkit in dev"
++    ngx_feature_path="/home/rc15345/code/CQPToolkit/src/CQPToolkit /home/rc15345/code/CQPToolkit/build/gcc/src"
++
++    if [ $NGX_RPATH = YES ]; then
++        ngx_feature_libs="-R/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit -L/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    else
++        ngx_feature_libs="-L/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    fi
++
++    . auto/feature
++fi
++
++
++if [ $ngx_found = yes ]; then
++
++    CORE_INCS="$CORE_INCS $ngx_feature_path"
++
++    if [ $HTTP_SSL_PSK = YES ]; then
++        CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
++    fi
++
++    NGX_LIB_CQPTOOLKIT=$ngx_feature_libs
++
++else
++
++cat << END
++
++$0: error: The PSK module requires the cqptoolkit. 
++You can either not enable the module or install the libraries.
++
++END
++
++    exit 1
++fi
++
+diff -N -p -r -u nginx-1.14.0-orig/auto/options nginx-1.14.0/auto/options
+--- nginx-1.14.0-orig/auto/options	2018-08-28 14:28:10.841092585 +0100
++++ nginx-1.14.0/auto/options	2018-08-28 14:29:50.991941312 +0100
+@@ -157,6 +157,7 @@ NGX_PERL=perl
+ USE_LIBXSLT=NO
+ USE_LIBGD=NO
+ USE_GEOIP=NO
++HTTP_SSL_PSK=NO
+ 
+ NGX_GOOGLE_PERFTOOLS=NO
+ NGX_CPP_TEST=NO
+@@ -245,6 +246,8 @@ $0: warning: the \"--with-ipv6\" option
+         --with-http_degradation_module)  HTTP_DEGRADATION=YES       ;;
+         --with-http_slice_module)        HTTP_SLICE=YES             ;;
+ 
++        --with-http_ssl_psk)             HTTP_SSL_PSK=YES           ;;
++
+         --without-http_charset_module)   HTTP_CHARSET=NO            ;;
+         --without-http_gzip_module)      HTTP_GZIP=NO               ;;
+         --without-http_ssi_module)       HTTP_SSI=NO                ;;
+@@ -456,6 +459,8 @@ cat << END
+   --with-http_slice_module           enable ngx_http_slice_module
+   --with-http_stub_status_module     enable ngx_http_stub_status_module
+ 
++  --with-http_ssl_psk                enable pre-shared key in SSL
++
+   --without-http_charset_module      disable ngx_http_charset_module
+   --without-http_gzip_module         disable ngx_http_gzip_module
+   --without-http_ssi_module          disable ngx_http_ssi_module
+diff -N -p -r -u nginx-1.14.0-orig/conf/nginx.conf nginx-1.14.0/conf/nginx.conf
+--- nginx-1.14.0-orig/conf/nginx.conf	2018-08-28 14:28:10.841092585 +0100
++++ nginx-1.14.0/conf/nginx.conf	2018-08-28 14:29:50.991941312 +0100
+@@ -1,117 +1,57 @@
+ 
+-#user  nobody;
+ worker_processes  1;
+-
+-#error_log  logs/error.log;
+-#error_log  logs/error.log  notice;
+-#error_log  logs/error.log  info;
+-
+-#pid        logs/nginx.pid;
+-
++daemon off;
++error_log  logs/error.log  debug;
+ 
+ events {
+     worker_connections  1024;
+ }
+ 
+-
+ http {
+     include       mime.types;
+     default_type  application/octet-stream;
+-
+-    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+-    #                  '$status $body_bytes_sent "$http_referer" '
+-    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+-
+-    #access_log  logs/access.log  main;
+-
+     sendfile        on;
+-    #tcp_nopush     on;
+-
+-    #keepalive_timeout  0;
+     keepalive_timeout  65;
+ 
+-    #gzip  on;
++    # I tried leaving both, removing both and one of each. The error persists.
++    types_hash_max_size                4096;
++    server_names_hash_bucket_size      128;
+ 
+     server {
+-        listen       80;
++        listen       8080;
+         server_name  localhost;
+ 
+-        #charset koi8-r;
+-
+-        #access_log  logs/host.access.log  main;
+-
+         location / {
+             root   html;
+             index  index.html index.htm;
+         }
+ 
+-        #error_page  404              /404.html;
+-
+         # redirect server error pages to the static page /50x.html
+         #
+         error_page   500 502 503 504  /50x.html;
+         location = /50x.html {
+             root   html;
+         }
+-
+-        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+-        #
+-        #location ~ \.php$ {
+-        #    proxy_pass   http://127.0.0.1;
+-        #}
+-
+-        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+-        #
+-        #location ~ \.php$ {
+-        #    root           html;
+-        #    fastcgi_pass   127.0.0.1:9000;
+-        #    fastcgi_index  index.php;
+-        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+-        #    include        fastcgi_params;
+-        #}
+-
+-        # deny access to .htaccess files, if Apache's document root
+-        # concurs with nginx's one
+-        #
+-        #location ~ /\.ht {
+-        #    deny  all;
+-        #}
+     }
+ 
+ 
+-    # another virtual host using mix of IP-, name-, and port-based configuration
++    # HTTPS server
+     #
+-    #server {
+-    #    listen       8000;
+-    #    listen       somename:8080;
+-    #    server_name  somename  alias  another.alias;
+-
+-    #    location / {
+-    #        root   html;
+-    #        index  index.html index.htm;
+-    #    }
+-    #}
++    server {
++        listen       4433 ssl http2;
++        server_name  localhost;
+ 
++        ssl_protocols TLSv1.2;
++        ssl_ciphers kPSK:kDHEPSK:kECDHEPSK:!SSLv3;
++        ssl_certificate "ssl/nginx.crt";
++        ssl_certificate_key "ssl/nginx.key";
++        hsm "pkcs:module-name=libsofthsm2.so;pin-value=1234;token=My%20token%201";
++        psk_identity_hint "something";
+ 
+-    # HTTPS server
+-    #
+-    #server {
+-    #    listen       443 ssl;
+-    #    server_name  localhost;
+-
+-    #    ssl_certificate      cert.pem;
+-    #    ssl_certificate_key  cert.key;
+-
+-    #    ssl_session_cache    shared:SSL:1m;
+-    #    ssl_session_timeout  5m;
+-
+-    #    ssl_ciphers  HIGH:!aNULL:!MD5;
+-    #    ssl_prefer_server_ciphers  on;
+-
+-    #    location / {
+-    #        root   html;
+-    #        index  index.html index.htm;
+-    #    }
+-    #}
++        location / {
++            root   html;
++            index  index.html index.htm;
++        }
++    }
+ 
+ }
+diff -N -p -r -u nginx-1.14.0-orig/src/event/ngx_event_openssl.c nginx-1.14.0/src/event/ngx_event_openssl.c
+--- nginx-1.14.0-orig/src/event/ngx_event_openssl.c	2018-08-28 14:28:10.845092539 +0100
++++ nginx-1.14.0/src/event/ngx_event_openssl.c	2018-08-28 14:29:50.991941312 +0100
+@@ -8,7 +8,9 @@
+ #include <ngx_config.h>
+ #include <ngx_core.h>
+ #include <ngx_event.h>
+-
++#if defined(HTTP_SSL_PSK)
++#include "OpenSSLHandler.h"
++#endif
+ 
+ #define NGX_SSL_PASSWORD_BUFFER_SIZE  4096
+ 
+@@ -345,6 +347,15 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_
+     SSL_CTX_set_read_ahead(ssl->ctx, 1);
+ 
+     SSL_CTX_set_info_callback(ssl->ctx, ngx_ssl_info_callback);
++#if defined(HTTP_SSL_PSK)
++    ngx_ssl_error(NGX_LOG_ALERT, ssl->log, 0, "Registering PSK callback");
++    SSL_CTX_set_psk_server_callback(ssl->ctx, &OpenSSLHandler_ServerCallback);
++
++#if (OPENSSL_VERSION_NUMBER >= 0x010101000L)
++    // for TLS >= 1.3
++    //SSL_CTX_set_psk_client_callback(ssl->ctx, &OpenSSLHandler_SessionCallback);
++#endif // (OPENSSL_VERSION_NUMBER >= 0x010101000L)
++#endif // defined(HTTP_SSL_PSK)
+ 
+     return NGX_OK;
+ }
+diff -N -p -r -u nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.c nginx-1.14.0/src/http/modules/ngx_http_ssl_module.c
+--- nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.c	2018-08-28 14:28:10.845092539 +0100
++++ nginx-1.14.0/src/http/modules/ngx_http_ssl_module.c	2018-08-28 14:29:50.991941312 +0100
+@@ -8,7 +8,9 @@
+ #include <ngx_config.h>
+ #include <ngx_core.h>
+ #include <ngx_http.h>
+-
++#if defined(HTTP_SSL_PSK)
++#include "OpenSSLHandler.h"
++#endif
+ 
+ typedef ngx_int_t (*ngx_ssl_variable_handler_pt)(ngx_connection_t *c,
+     ngx_pool_t *pool, ngx_str_t *s);
+@@ -234,6 +236,22 @@ static ngx_command_t  ngx_http_ssl_comma
+       offsetof(ngx_http_ssl_srv_conf_t, stapling_verify),
+       NULL },
+ 
++#if defined(HTTP_SSL_PSK)
++    { ngx_string("hsm"),
++      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_CONF_TAKE1,
++      ngx_conf_set_str_slot,
++      NGX_HTTP_SRV_CONF_OFFSET,
++      offsetof(ngx_http_ssl_srv_conf_t, hsm),
++      NULL },
++
++    { ngx_string("psk_identity_hint"),
++      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_CONF_TAKE1,
++      ngx_conf_set_str_slot,
++      NGX_HTTP_SRV_CONF_OFFSET,
++      offsetof(ngx_http_ssl_srv_conf_t, psk_identity_hint),
++      NULL },
++#endif
++
+       ngx_null_command
+ };
+ 
+@@ -804,6 +822,23 @@ ngx_http_ssl_merge_srv_conf(ngx_conf_t *
+ 
+     }
+ 
++#if defined(HTTP_SSL_PSK)
++    if(conf->psk_identity_hint.data)
++    {
++        SSL_CTX_use_psk_identity_hint(conf->ssl.ctx, (const char*)(conf->psk_identity_hint.data));
++    }
++
++    if(conf->hsm.data)
++    {
++        if(OpenSSLHandler_SetHSM((const char*)(conf->hsm.data)) == 0)
++        {
++            ngx_log_error(NGX_LOG_EMERG, cf->log, 0,
++                          "Failed to load HSM");
++            return NGX_CONF_ERROR;
++        }
++    }
++#endif
++
+     return NGX_CONF_OK;
+ }
+ 
+diff -N -p -r -u nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.h nginx-1.14.0/src/http/modules/ngx_http_ssl_module.h
+--- nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.h	2018-08-28 14:28:10.845092539 +0100
++++ nginx-1.14.0/src/http/modules/ngx_http_ssl_module.h	2018-08-28 14:29:50.991941312 +0100
+@@ -55,6 +55,11 @@ typedef struct {
+     ngx_str_t                       stapling_file;
+     ngx_str_t                       stapling_responder;
+ 
++#if defined(HTTP_SSL_PSK)
++    ngx_str_t                       hsm;
++    ngx_str_t                       psk_identity_hint;
++#endif
++
+     u_char                         *file;
+     ngx_uint_t                      line;
+ } ngx_http_ssl_srv_conf_t;

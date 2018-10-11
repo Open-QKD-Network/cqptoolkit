@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+  <Bundle Name="CQP Toolkit External Dependencies" Version="0.0.2" UpgradeCode="6c52ae1e-f32f-4c8c-a75d-99b9cdb01602" Manufacturer="University Of Bristol" Compressed="no">
+    <!-- Go looking for the program and set a variable if its found-->
+    <!-- variables for storing whether or not the program has been detected and is installed -->
+    <Variable Name="CodeBlocksExists" Type="numeric" Value="0"/>
+    <Variable Name="DoxygenExists" Type="numeric" Value="0"/>
+    <Variable Name="MSYS2Exists" Type="numeric" Value="0"/>
+    <!-- variables for whether the product should be installed -->
+    <Variable Name="CQPToolkit" Value="0" Persisted="yes"/>
+
+    <Variable Name="CMakeCond" Value="1" Persisted="yes"/>
+    <Variable Name="TortoiseSVNCond" Value="1" Persisted="yes"/>
+    <Variable Name="CppCheckCond" Value="1" Persisted="yes"/>
+    <Variable Name="GraphvizCond" Value="1" Persisted="yes"/>
+    <Variable Name="CodeBlocksCond" Value="1" Persisted="yes"/>
+    <Variable Name="MSYS2Cond" Value="1" Persisted="yes"/>
+    <Variable Name="DoyxgenCond" Value="1" Persisted="yes"/>
+    <!-- Go looking for the program and set a variable if its found
+        Ether search through the registry SOFTWARE\Classes\Installer\Products for the name or use powershel
+        get-wmiobject -Class Win32_Product -filter "name LIKE '%prog%'" | Format-Table IdentifyingNumber, Name
+    -->
+    <util:RegistrySearch Id="CMakeReg"
+        Variable="CMakeExists"
+        Result="exists"
+        Root="HKLM"
+        Key="SOFTWARE\Classes\Installer\Products\5AFF77CE68FB1EF4CA8EEB233C681D40"
+        />
+    <util:RegistrySearch Id="CodeBlocksReg"
+        Variable="CodeBlocksExists"
+        Result="exists"
+        Root="HKCU"
+        Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\CodeBlocks"
+        />
+    <util:RegistrySearch Id="MSYS2Reg"
+        Variable="MSYS2Exists"
+        Result="exists"
+        Root="HKCU"
+        Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\{29c7e5e5-ec29-441f-a971-744039cc5ce7}"
+        />
+    <util:RegistrySearch Id="DoxygenReg"
+        Variable="CMakeExists"
+        Result="exists"
+        Root="HKCU"
+        Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\doxygen_is1"
+        />
+
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+        <bal:WixStandardBootstrapperApplication
+            LicenseFile="..\..\LICENSE.rtf"
+            LogoFile="..\..\images\QCH_icon.ico"
+            ThemeFile="..\..\installer\bundleTheme.xml"/>
+    </BootstrapperApplicationRef>
+    <Chain>
+        <!-- The packages to install -->
+        <PackageGroupRef Id="Essentials"/>
+        <PackageGroupRef Id="Optional"/>
+        <!--These are disabled as there doesn't seem to be a way of using the button pressed
+        <PackageGroupRef Id="Runtime"/>
+        -->
+    </Chain>
+  </Bundle>
+
+    <!-- see http://stackoverflow.com/questions/16465971/including-net-installer-in-wix-bundle-not-detecting-if-already-installed -->
+        
+    <Fragment>
+        <!-- These are disabled as there doesn't seem to be a way of using the button pressed
+        <PackageGroup Id="Runtime">
+            <MsiPackage Id="CqpToolkit" Name="CQP-0.0.2-win64.msi" 
+                Compressed="yes"  
+                Description="The CQP Toolkit installer."
+                Vital="no"
+                Visible="yes"
+                ForcePerMachine="yes"
+                InstallCondition="CQPToolkitCond"
+                DisplayInternalUI="yes"
+                EnableFeatureSelection="yes"/>
+        </PackageGroup>
+        -->
+
+        <PackageGroup Id="Essentials">
+
+            <!-- install CMake by downloading it at runtime, the needs to exist at build time under SourceDir to extract details from it
+            See the CMakeModules/Packaging.cmake for details -->
+            <MsiPackage Id="CMake" Name="cmake.msi" 
+                Compressed="no"  
+                Description="CMake is an open-source, cross-platform family of tools designed to build, test and package software."
+                DownloadUrl="https://cmake.org/files/v3.9/cmake-3.9.0-win64-x64.msi"
+                Vital="yes"
+                Visible="yes"
+                ForcePerMachine="yes"
+                InstallCondition="CMakeCond"/>
+
+            <MsiPackage Id="TortoiseSVN" Name="TortoiseSVN.msi" 
+                Compressed="no"  
+                Description="TortoiseSVN is an Apache™ Subversion (SVN)® client"
+                DownloadUrl="https://sourceforge.net/projects/tortoisesvn/files/1.9.6/Application/TortoiseSVN-1.9.6.27867-x64-svn-1.9.6.msi/download"
+                Vital="yes"
+                Visible="yes"
+                ForcePerMachine="yes"
+                InstallCondition="TortoiseSVNCond">
+                <MsiProperty Name="ADDLOCAL" Value="ALL"/>
+            </MsiPackage>
+
+        </PackageGroup>
+
+        <PackageGroup
+            Id="Optional">
+
+            <ExePackage Id="CodeBlocks"
+                Compressed="no" 
+                Vital="no" 
+                Description="The open source, cross platform, free C, C++ and Fortran IDE."
+                DownloadUrl="http://sourceforge.net/projects/codeblocks/files/Binaries/16.01/Windows/codeblocks-16.01-setup.exe"
+                DetectCondition="CodeBlocksExists"
+                InstallCommand="/S"
+                UninstallCommand="C:\\Program Files (x86)\\CodeBlocks\\uninstall.exe"
+                SourceFile="SourceDir/codeblocks.exe"
+                InstallCondition="CodeBlocksCond"
+            />
+
+
+            <ExePackage Id="MSYS2"
+                Compressed="no" 
+                Vital="no" 
+                Description="A Cygwin-derived software distro for Windows using Arch Linux's Pacman"
+                DownloadUrl="http://repo.msys2.org/distrib/x86_64/msys2-x86_64-20161025.exe"
+                DetectCondition="MSYS2Exists"
+                InstallCommand="/S"
+                SourceFile="SourceDir/msys2.exe"
+                InstallCondition="MSYS2Cond"
+            />
+
+            <MsiPackage Id="CppCheck" Name="cppcheck.msi" 
+                Compressed="no"  
+                Description="Cppcheck is a static analysis tool for C/C++ code."
+                DownloadUrl="http://github.com/danmar/cppcheck/releases/download/1.80/cppcheck-1.80-x64-Setup.msi"
+                Vital="no"
+                Visible="yes"
+                ForcePerMachine="yes"
+                InstallCondition="CppCheckCond"/>
+
+            <ExePackage Id="Doyxgen"
+                Compressed="no" 
+                Vital="no" 
+                Description="Generate documentation from source code."
+                DownloadUrl="http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.13-setup.exe"
+                DetectCondition="DoyxgenExists"
+                InstallCommand="/S"
+                UninstallCommand="C:\\Program Files\\doxygen\\system\\uninstall000.exe"
+                SourceFile="SourceDir/doxygen.exe"
+                InstallCondition="DoyxgenCond"
+            />
+
+            <MsiPackage Id="Graphviz" Name="graphviz.msi" 
+                Compressed="no"  
+                Description="Graphviz is open source graph visualization software."
+                DownloadUrl="http://www.graphviz.org/pub/graphviz/stable/windows/graphviz-2.38.msi"
+                Vital="no"
+                Visible="yes"
+                ForcePerMachine="yes"
+                InstallCondition="GraphvizCond">
+            </MsiPackage>
+
+        </PackageGroup>
+    </Fragment>
+</Wix>

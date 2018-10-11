@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+    
+    The use and distribution terms for this software are covered by the
+    Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+    which can be found in the file CPL.TXT at the root of this distribution.
+    By using this software in any fashion, you are agreeing to be bound by
+    the terms of this license.
+    
+    You must not remove this notice, or any other, from this software.
+-->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <UI>
+            <Dialog Id="CQPSetupTypeDlg" Width="370" Height="323" Title="!(loc.SetupTypeDlg_Title)">
+                <Control Id="RunTimeButton" Type="PushButton" X="40" Y="65" Width="80" Height="17" ToolTip="Runtime Installation for use with prebuilt programs." Default="yes" Text="&amp;Runtime">
+                    <Publish Property="WixUI_InstallMode" Value="InstallRunTime">1</Publish>
+                </Control>
+                <Control Id="DevelopmentButton" Type="PushButton" X="40" Y="118" Width="80" Height="17" ToolTip="Development libraries and headers" Default="yes" Text="&amp;Development">
+                    <Publish Property="WixUI_InstallMode" Value="InstallDevelopment">1</Publish>
+                </Control>
+                <Control Id="CustomButton" Type="PushButton" X="40" Y="171" Width="80" Height="17" ToolTip="!(loc.SetupTypeDlgCustomButtonTooltip)" Text="!(loc.SetupTypeDlgCustomButton)">
+                    <Publish Property="WixUI_InstallMode" Value="InstallCustom">1</Publish>
+                </Control>
+                <Control Id="Back" Type="PushButton" X="180" Y="296" Width="56" Height="17" Text="!(loc.WixUIBack)" />
+                <Control Id="Next" Type="PushButton" X="236" Y="296" Width="56" Height="17" Disabled="yes" Text="!(loc.WixUINext)" />
+                <Control Id="Cancel" Type="PushButton" X="304" Y="296" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+                    <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+                </Control>
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.SetupTypeDlgBannerBitmap)" />
+                <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+                <Control Id="BottomLine" Type="Line" X="0" Y="287" Width="370" Height="0" />
+                <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.SetupTypeDlgTitle)" />
+                <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.SetupTypeDlgDescription)" />
+                <Control Id="RunTimeText" Type="Text" X="60" Y="85" Width="280" Height="20" Text="Installs dynamic link libraries for use with other programs. Does not provide the ability to build new programs which use the library." />
+                <Control Id="DevelopmentText" Type="Text" X="60" Y="138" Width="280" Height="20" Text="Installs the static and shared libraries and headers which allow new programs to use the toolkit.  Recommended for most users." />
+                <Control Id="CustomText" Type="Text" X="60" Y="191" Width="280" Height="30" Text="!(loc.SetupTypeDlgCustomText)" />
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

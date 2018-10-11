@@ -1,0 +1,31 @@
+{
+ "name": "SiteAController",
+ "id": "79948c3b-b1c1-4945-9f5c-b91bbe4f5d2f",
+ "localKeyFactoryUri": "oscar:7000",
+ "listenPort": 7010,
+ "tunnels": {
+  "Tun1": {
+   "name": "Tun1",
+   "keyLifespan": {
+    "maxBytes": "10485760",
+    "maxAge": {
+      "seconds": 30
+    }
+   },
+   "remoteControllerUri": "IT062356.home:7011",
+   "encryptionMethod": {
+    "mode": "GCM",
+    "subMode": "Tables2K",
+    "blockCypher": "AES",
+    "keySizeBytes": 32
+   },
+   "startNode": {
+    "clientDataPortUri": "tun://192.168.101.1/?netmask=255.255.255.0"
+   },
+   "endNode": {
+    "clientDataPortUri": "tun://192.168.101.2/?netmask=255.255.255.0"
+   }
+  }
+ },
+ "credentials": {}
+}

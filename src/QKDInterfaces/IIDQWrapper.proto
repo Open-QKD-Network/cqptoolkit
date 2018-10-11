@@ -1,0 +1,116 @@
+/*!
+* @file
+* @brief IIDQWrapper
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 13/04/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+
+import public "Keys.proto";
+import public "Site.proto";
+import public "Messages.proto";
+import public "google/protobuf/empty.proto";
+
+package cqp.remote;
+
+/// Initialisation data for the wrapper
+message IDQStartOptions
+{
+    /// The address for the other side of the connection
+    /// This is the internal wrapper to wrapper address
+    string peerHostname = 1;
+    /// port number for the peer
+    uint32 peerWrapperPort = 2;
+    /// The measured line attenuation of the quantum optical path
+    double lineAttenuation = 3;
+    /// The secret value used to authenticate the other side
+    bytes initialSecret = 4;
+}
+
+/// State data from the wrapper
+message WrapperDetails
+{
+    /// The internal host name for use between wrappers
+    string hostname = 1;
+    /// Internal port number for use between wrappers
+    int32 portNumber = 2;
+    /// The kind of device the wrapper is connected to
+    Side.Type side = 3;
+}
+
+/**
+ * @brief The ITunnelServer
+ * Interface for construction and control of tunnel endpoints
+ */
+service IIDQWrapper
+{
+    /**
+    * Get the settings for a running wrapper
+    * @param response The settings for this wrapper
+    * @return status
+    */
+    rpc GetDetails(google.protobuf.Empty) returns (WrapperDetails);
+
+    /**
+    * Launch the QKDSequence program to initialise the Clavis device
+    * When key is available it will be written to the stream
+    * One side will request new keys, the other will wait for UseKeyID
+    * to be called, at which point the key will be sent over the stream.
+    * Canceling the call will terminate the program.
+    * @param request Launch options
+    * @param writer A stream for the caller to read key from
+    * @return status
+    @startuml IDQKeyExtraction
+
+    title IDQ key extraction
+
+    participant "ClavisController:A" as sa
+    participant "IDQWrapper:Alice" as alice
+    participant "ClavisController:B" as sb
+    participant "IDQWrapper:Bob" as bob
+
+    [-> sa
+    activate sa
+       sa -\ alice : StartQKDSequence
+
+    [-> sb
+    activate sb
+       sb -\ bob : StartQKDSequence
+
+       loop
+           sa -> alice : ReadKey
+           activate alice
+
+           sb -> bob : ReadKey
+           activate bob
+           ...
+
+           alice -\ bob : UseKeyID(id)
+           sa <<- alice : key, id
+           deactivate alice
+
+           sb <<- bob : key, id
+           deactivate bob
+       end loop
+
+    deactivate sa
+    deactivate sb
+
+    @enduml
+    */
+    rpc StartQKDSequence(IDQStartOptions) returns (stream SharedKey);
+
+    /**
+    * Tells the wrapper to request a specific key from the device.
+    * The actual key is returned by the StartQKDSequence stream.
+    * @param reader KeyID to request
+    * @return Status
+    */
+    rpc UseKeyID(stream KeyIdValue) returns (google.protobuf.Empty);
+}

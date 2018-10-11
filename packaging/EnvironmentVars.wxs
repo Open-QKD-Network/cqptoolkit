@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    RequiredVersion="3.6.3303.0">
+    <!-- Currently doesn't work-->
+  <Fragment>
+    <DirectoryRef Id="CM_DP_CQPToolkit_Shared.CQPToolkit_Shared">
+       <Component Id ="setEnviroment" 
+                               Guid="3f2152d9-22a9-4ad5-96d8-8757083258f1">
+                <CreateFolder />
+                 <Environment Id="SET_ENV"
+                                           Action="set"                                                                                          
+                                             Name="PATH"
+                                            Part="last"       
+                                           Permanent="no" 
+                                            System="yes" 
+                             Value="[INSTALLDIR]" />
+           </Component>
+    </DirectoryRef>
+    <FeatureRef Id="CM_C_CQPToolkit_Shared">
+      <Feature Id="EnvironmentVars" Title="Include in PATH"   
+                   Level="1" AllowAdvertise="no">
+                 <ComponentRef Id="setEnviroment"/>
+      </Feature>
+    </FeatureRef>
+    <InstallExecuteSequence>
+        <WriteEnvironmentStrings/>
+    </InstallExecuteSequence>
+  </Fragment>
+</Wix>

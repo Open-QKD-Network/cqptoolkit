@@ -1,0 +1,150 @@
+/*!
+* @file
+* @brief IKeyFactory
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 02/02/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+import public "Site.proto";
+import public "Keys.proto";
+import public "Messages.proto";
+
+package cqp.remote;
+
+/**
+ * @brief IKeyFactory Interface
+ * Interface for Key facotries to build keys
+ */
+service IKeyFactory
+{
+
+    /**
+    * Called by the initiating site agent (left most) to create a key from other keys
+    * @param request The key id and path to use to create the complete key
+    * @return Success if a key was reserved
+    * @details
+    * @startuml BuildXorKeyBehaviour
+    *     title Multi-hop key distrobution - Pull model
+    *     hide footbox
+    *
+    *     box "Site A"
+    *     database "Key Store [A,D]" as ksad_a
+    *     end box
+    *
+    *     box "Site B"
+    *     boundary "Site Agent B" as sab
+    *     end box
+    *
+    *     box "Site C"
+    *     boundary "Site Agent C" as sac
+    *     end box
+    *
+    *     box "Site D"
+    *     database "Key Store [C,D]" as kscd_d
+    *     boundary "Site Agent D" as sad
+    *     database "Key Store [A,D]" as ksad_d
+    *     end box
+    *
+    *
+    *     ksad_a -\ sad : BuildXorKey(α, path)
+    *     activate sad
+    *
+    *         sad -> kscd_d : GetNewKey()
+    *         activate kscd_d
+    *         sad <-- kscd_d : key(β)
+    *         deactivate kscd_d
+    *
+    *         sad -> sac : GetCombinedKey([B,C], [C,D]=β)
+    *         activate sac
+    *         deactivate sac
+    *
+    *         sad -> sab : GetCombinedKey([A,B]=α, [B,C]=γ)
+    *
+    *         activate sab
+    *         deactivate sab
+    *
+    *         hnote over sad
+    *             key(α) ≔ key(ϵ)⊕key(δ)⊕key(β)
+    *         end note
+    *         sad -> ksad_d : StoreReservedKey(key(α))
+    *
+    *     deactivate sad
+    *
+    * @enduml
+    */
+    rpc BuildXorKey(KeyPathRequest) returns (google.protobuf.Empty);
+
+    /**
+    * @brief MarkKeyInUse
+    * Notifies the key store that it's peer has taken a key out for use
+    * this key should not be released when a new key is requested but
+    * held until it is explicitly requested
+    * @param request The key to mark as in use
+    * @param response The the request succeeds, this id will match the requested it.
+    *   If the request fails but an alternative was found, this will contain
+    *   the id of a new key to use instead.
+    * @return Success if a key was reserved (check response for the id which was reserved)
+    * @details
+    *
+    * @startuml MarkKeyInUseBehaviour
+    *     title Key Store handshake
+    *
+    *     boundary "Site Agent A" as kfa
+    *     database "Key Store [A, B]" as ksa
+    *
+    *     boundary "Site Agent B" as kfb
+    *     database "Key Store [A, B]" as ksb
+    *
+    *     [-> kfa : GetSharedKey([A, B])
+    *     activate kfa
+    *         kfa -> ksa : GetSharedKey()
+    *         activate ksa
+    *             ksa -> ksa : ReserveKey
+    *             ksa -> kfb : MarkKeyInUse([A, B])
+    *             activate kfb
+    *                 kfb -> ksb : MarkKeyInUse()
+    *                 activate ksb
+    *                     alt if the key is not in use
+    *                         note over ksb
+    *                             Mark the key as in use
+    *                         end note
+    *                     else if the key is in use
+    *                         note over ksb
+    *                             Reserve a new key, return this id
+    *                         end note
+    *                         ksb -> ksb : ReserveKey
+    *                         kfb <-- ksb : newId
+    *                     end alt
+    *                     ksa <-- kfb : newId
+    *                 deactivate ksb
+    *             deactivate ksb
+    *
+    *             alt If an alternative key id was supplied
+    *                 ksa -> ksa : ReserveKey(newId)
+    *                 note over ksa
+    *                     The old key should remain reserved
+    *                 end note
+    *             end alt
+    *         deactivate ksa
+    *     deactivate kfa
+    *
+    * @enduml
+    */
+    rpc MarkKeyInUse(KeyRequest) returns (KeyIdValue);
+
+    /**
+    * Called by the right most site agent when generating a multihop key
+    * This will generate a new key by Xoring two other keys
+    * @param request The key id and other two sites to use to create the complete key
+    * @param response The combined key and and the key id used to create it.
+    * @return Success if a key was generated
+    */
+    rpc GetCombinedKey(CombinedKeyRequest) returns (CombinedKeyResponse);
+}

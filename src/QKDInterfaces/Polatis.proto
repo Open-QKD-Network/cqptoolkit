@@ -1,0 +1,45 @@
+/*!
+* @file
+* @brief Polatis
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+
+package polatis;
+
+/// How many fibres are required in the connection
+enum Direction {
+    direction = 0;
+    nodirection = 1;
+}
+
+/// A connection between ports
+message Link {
+    uint32 id = 1;
+    string origin = 2;
+    string destination = 3;
+    Direction type = 4;
+    bool active = 5;
+}
+
+/// a list of links
+message Links {
+    repeated Link active = 1;
+}
+
+/// link to be deleted
+message DeleteRequest {
+    uint32 id  = 1;
+}
+/// reply from a request
+message Response {
+    uint32 code = 1;
+}

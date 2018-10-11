@@ -1,0 +1,47 @@
+/*!
+* @file
+* @brief ISiteAgent
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 02/02/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+import public "Site.proto";
+import public "Keys.proto";
+
+package cqp.remote;
+
+/**
+ * @brief ISiteAgent Interface
+ * Interface for controlling key generation along paths
+ */
+service ISiteAgent
+{
+    /**
+    * Continues on from BeginKeyExchange, called by other side agents
+    * @param request The full path of the exchange to start
+    * @return status
+    */
+    rpc StartNode(PhysicalPath) returns (google.protobuf.Empty);
+
+    /**
+    * @brief EndKeyExchange
+    * @param request The path to end
+    * @return status
+    */
+    rpc EndKeyExchange(PhysicalPath) returns (google.protobuf.Empty);
+
+    /**
+    * Get the settings of the site agent.
+    * This is the same as is registered with the network manager and includes the connected devices
+    * @param response The site details
+    * @return status
+    */
+    rpc GetSiteDetails(google.protobuf.Empty) returns (Site);
+}

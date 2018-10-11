@@ -1,0 +1,32 @@
+/*!
+* @file
+* @brief IKeyFactory
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 02/02/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+import public "Messages.proto";
+
+package cqp.remote;
+
+/**
+ * @brief ISiteDetails Interface
+ * Interface for requesting details about the local site
+ */
+service ISiteDetails
+{
+    /**
+    * Recieve updates on the state of key generation between this site and site
+    * specified in SiteList
+    * @param response Each state change on a link between sites will generate a message detailing the change.
+    * @return status
+    */
+    rpc GetLinkStatus(google.protobuf.Empty) returns (stream LinkStatus);
+}

@@ -1,0 +1,67 @@
+/*!
+* @file
+* @brief IKeyFactory
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 10/08/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+
+package cqp.remote;
+
+/// A list of contact details
+message SiteList {
+    /// url
+    repeated string urls = 1;
+}
+
+/// Information required for obtaining a key from a keystore
+message KeyRequest {
+    /// Endpoint for the key
+    /// This could be a pkcs#11 URL containing all details needed to extract a key.
+    string siteTo = 1;
+    /// The key id is unique for a site pair
+    /// leave this unassigned to get a new keyid
+    /// @note proto3 syntax doesn't really have optional, oneof is a workaround
+    /// @see https://github.com/google/protobuf/issues/1606
+    oneof opt {
+        /// optional Id for the key
+        uint64 keyId = 2;
+    }
+}
+
+/// A key and it's unique id
+message SharedKey {
+    /// The key id is unique for a site pair
+    uint64 keyId = 1;
+    /// The bytes for the actual key
+    bytes keyValue = 2;
+    /// may contain the pkcs#11 url which defines how the key can be retrieved
+    string url = 3;
+}
+
+/// The condition of a link
+message LinkStatus {
+    /// Endpoint for the status update
+    string siteTo = 1;
+    /// The condition of the link
+    enum State {
+        /// There is no connection to the site specified
+        Inactive = 0;
+        /// Attempting to connect to the remote system
+        Connecting = 1;
+        /// The two nodes are exchanging raw key
+        ConnectionEstablished = 2;
+    };
+    /// The current state of the link
+    State state = 2;
+
+    /// An error code associated with the change in state
+    /// this is mapped from grpc::StatusCode
+    uint64 errorCode = 3;
+}

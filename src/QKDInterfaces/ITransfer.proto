@@ -1,0 +1,39 @@
+/*!
+* @file
+* @brief IErrorCorrect
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+syntax = "proto3";
+import public "Keys.proto";
+import public "google/protobuf/empty.proto";
+package cqp.remote;
+
+/**
+ * @brief The ITransfer class
+ * Send encrypted data
+ */
+service ITransfer {
+
+    /**
+     * @brief Transfer
+     * Send encrypted data to/from a server
+     * @param reader
+     * @param writer
+     * @return status
+     */
+    rpc TransferBi(stream EncryptedDataValues) returns (stream EncryptedDataValues);
+
+    /**
+     * @brief Transfer
+     * Send encrypted data to/from a server
+     * @param reader
+     * @return status
+     */
+    rpc Transfer(stream EncryptedDataValues) returns (google.protobuf.Empty);
+}

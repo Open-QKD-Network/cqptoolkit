@@ -1,0 +1,12 @@
+# These are the rules which dictate how the code will look once the astyle program has been run on it using the "make style" command
+formatted
+
+style=bsd
+# Changes from the default google style
+indent-namespaces		# Indent the contents of namespace blocks.
+indent-preproc-define 	# Indent multi-line preprocessor #define statements.
+indent-preproc-block    # Indent preprocessor conditional statements #if/#else/#endif
+
+convert-tabs
+#recursive
+suffix=none		# Dont create .orig backup files

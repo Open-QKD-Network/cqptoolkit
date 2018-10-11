@@ -1,0 +1,27 @@
+#!/bin/sh
+#!/bin/bash
+# Copyright (C) University of Bristol 2016
+#    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+#    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#    See LICENSE file for details.
+# Date 04 April 2016
+# Author Richard Collins <richard.collins@bristol.ac.uk>
+# 
+case "$1" in
+    configure)
+
+        for FILE in QTunnelServer RawSocketExample ; do
+            setcap cap_net_raw,cap_net_admin=eip ${FILE}
+        done
+    ;;
+
+      abort-upgrade|abort-remove|abort-deconfigure)
+        exit 0
+      ;;
+
+      *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+      ;;
+
+esac

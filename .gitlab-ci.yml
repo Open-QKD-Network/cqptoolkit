@@ -1,0 +1,148 @@
+image: cqp-dev.phy.bris.ac.uk:5000/cqp/cqpbuildenv:latest
+
+#DANGER: caches are to share data between runs of a job - not between jobs in a build
+# Make one cache per branch per job
+#cache:
+#  key: "PIPE-$CI_PIPELINE_ID"
+#  paths:
+#    - build/gcc
+#  untracked: true
+
+# group jobs into stages
+stages:
+  - build
+  - package
+  - deploy
+
+# The acutal build step
+build:linux:
+  stage: build
+  script:
+    - mkdir -p build/gcc
+    - cd build/gcc
+    - cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
+    - make clean
+    - ionice nice make -j 8 all
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    expire_in: 1 week
+    paths:
+      - build/gcc
+
+test:
+  stage: package
+  script:
+    - cd build/gcc
+    - make test
+  dependencies:
+    - build:linux
+  when: manual
+
+package:doc:
+  stage: package
+  script:
+    - cd build/gcc
+    - make doc
+  artifacts:
+    paths:
+      - build/gcc/doc/html
+  dependencies:
+    - build:linux
+  # Only run this stage on the master branch
+  #only:
+  #  - master
+
+pages:
+  stage: deploy
+  script:
+    - cd build/gcc
+    - mv doc/html ../../public/
+    - mkdir -p ../../public/ubuntu/dists/release/bionic/main/binary-amd64/
+    - mv *.deb ../../public/ubuntu/dists/release/bionic/main/binary-amd64/
+# broken
+#    - make -C doc/latex -j
+#    - mv doc/latex/refman.pdf ../../public/index.pdf
+  dependencies:
+    - package:doc
+    - package:deb
+    - package:tar
+  # The outputs we want to keep/download
+  artifacts:
+    paths:
+    - public
+  # Only run this stage on the master branch
+  only:
+    - master
+
+package:deb:
+  stage: package
+  script:
+    - cd build/gcc
+    - cmake -D CPACK_GENERATOR=DEB -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
+    - ionice nice make package
+  dependencies:
+    - build:linux
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    expire_in: 1 month
+    paths:
+      - build/gcc/*.deb
+      - setup/*.deb
+
+package:tar:
+  stage: package
+  script:
+    - cd build/gcc
+    - cmake -D CPACK_GENERATOR=TGZ -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
+    - ionice nice make package
+  dependencies:
+    - build:linux
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    expire_in: 1 month
+    paths:
+      - build/gcc/*.tar.gz
+  when: manual
+
+deploy:toolkit-build-image:
+  stage: deploy
+  image: "docker:stable"
+  services:
+    - docker:dind
+  script:
+    - apk add --no-cache bash
+    - docker login https://cqp-dev.phy.bris.ac.uk:5000 -u gitlab -p gitlab
+    - cd setup && bash makeDocker.sh -p
+  cache:
+    policy: pull
+  when: manual
+
+deploy:toolkit-run-image:
+  stage: deploy
+  image: "docker:stable"
+  services:
+    - docker:dind
+  script:
+    - apk add --no-cache bash
+    - cp build/gcc/*.deb setup/
+    - docker login https://cqp-dev.phy.bris.ac.uk:5000 -u gitlab -p gitlab
+    - cd setup && bash makeDocker.sh -p -u
+  dependencies:
+    - package:deb
+  cache:
+    policy: pull
+
+deploy:idqwrapper-docker-image:
+  stage: deploy
+  image: "docker:stable"
+  services:
+    - docker:dind
+  script:
+    - apk add --no-cache bash
+    - docker login https://cqp-dev.phy.bris.ac.uk:5000 -u gitlab -p gitlab
+    - cd external/id3100 && bash builddocker.sh
+    - docker push cqp-dev.phy.bris.ac.uk:5000/cqp/idqcontainer
+  dependencies:
+    - build:linux
+  cache:
+    policy: pull

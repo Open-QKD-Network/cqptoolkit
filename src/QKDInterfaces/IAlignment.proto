@@ -1,0 +1,42 @@
+/*!
+* @file
+* @brief IAlignment
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+import public "Qubits.proto";
+
+package cqp.remote;
+
+message FrameId {
+    uint64 Id = 1;
+};
+
+message ValidDetections{
+    uint64 frameId = 1;
+    repeated uint64 slotIds = 2;
+};
+
+/**
+ * @brief The IAlignement class
+ * Interface for communication between Alignment classes
+ */
+service IAlignment {
+
+    rpc GetAlignmentMarks(FrameId) returns (QubitByIndex);
+
+    /**
+     * @brief DiscardTransmissions
+     * Insrtucts the transmitter to discard all but the supplied indexes
+     * @param request
+     * @return status
+     */
+    rpc DiscardTransmissions(ValidDetections) returns (google.protobuf.Empty);
+}

@@ -1,0 +1,119 @@
+/*!
+* @file
+* @brief Site
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package cqp.remote;
+
+/// A list of statistic names which will be reported
+message ReportingFilter {
+    /// limits the rate of messages by specifying the delay between them.
+    uint32 maxRate_ms = 1;
+    /// if true, the filters define stats to exclude
+    /// if false, the list defines states to include, others are excluded
+    bool listIsExclude = 2;
+    /// stats to send
+    message StatFilter {
+        /// list of names including parents
+        /// leaf name is first, followed by parents
+        repeated string fullname = 1;
+    };
+    /// stat to exclude/include
+    repeated StatFilter filters = 3;
+}
+
+/// Stores values as a double
+message ReportValueDouble
+{
+    /// The most recient value
+    double latest = 1;
+    /// mean value
+    double average = 2;
+    /// sum of all recorded values so far
+    double total = 3;
+    /// lowest value ever recorded
+    double min = 4;
+    /// highest value ever recorded
+    double max = 5;
+}
+
+/// Stores values as a long
+message ReportValueLong
+{
+    /// The most recient value
+    int64 latest = 1;
+    /// mean value
+    int64 average = 2;
+    /// sum of all recorded values so far
+    int64 total = 3;
+    /// lowest value ever recorded
+    int64 min = 4;
+    /// highest value ever recorded
+    int64 max = 5;
+}
+/// Stores values as a unsigned int
+message ReportValueUnsigned
+{
+    /// The last value to be set
+    uint64 latest = 1;
+    /// the average value
+    uint64 average = 2;
+    /// sum of all recorded values so far
+    uint64 total = 3;
+    /// lowest value ever recorded
+    uint64 min = 4;
+    /// highest value ever recorded
+    uint64 max = 5;
+}
+
+/// Data produced by the SiteAgent
+message SiteAgentReport {
+    /// The kind of data
+    enum Units
+    {
+        /// doesn't hold any value but groups other statistics
+        Complex = 0;
+        /// A number of occourences
+        Count = 1;
+        /// Duration
+        Milliseconds = 2;
+        /// Relative value
+        Percentage = 3;
+        /// logarithmic ratio
+        Decibels = 4;
+        /// Frequency
+        Hz = 5;
+    };
+
+    /// The tree of scope
+    repeated string path = 1;
+    /// ID of stat unique to the reporting server
+    uint64 id = 2;
+    /// key,value pairs of abritrary data for the stat
+    map<string, string> parameters = 3;
+    /// What the values mean
+    Units unit = 4;
+    /// the point in time the value was updated
+    google.protobuf.Timestamp updated = 5;
+    /// how many times a second the value was updated
+    double rate = 6;
+    /// The latest data
+    oneof value {
+        /// storage for values
+        ReportValueDouble asDouble = 7;
+        /// storage for values
+        ReportValueLong asLong = 8;
+        /// storage for values
+        ReportValueUnsigned asUnsigned = 9;
+    };
+}

@@ -1,0 +1,32 @@
+/*!
+* @file
+* @brief ISift
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "Qubits.proto";
+
+package cqp.remote;
+
+/**
+ * @brief The ISift class
+ * Interface for the communication between Sifting classes
+ */
+service ISift {
+    /**
+    * @brief VerifyBases
+    * Compare the local basis with the measured basis provided to see if they match
+    * @note Reciept of an empty list means that nothing was detected and that frame can be discarded
+    * @param request The bases to sift
+    * @param response Whether the bases match
+    * @return Success if a key was reserved (check response for the id which was reserved)
+    */
+    rpc VerifyBases(BasisBySiftFrame) returns (AnswersByFrame);
+}

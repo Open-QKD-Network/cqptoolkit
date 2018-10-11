@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="icons/Client">icons/computer.svg</file>
+        <file alias="icons/Crypto">icons/network-vpn.svg</file>
+        <file alias="icons/tcp">icons/gtk-connect.svg</file>
+        <file alias="icons/Unavailable">icons/action-unavailable.svg</file>
+        <file alias="icons/dynamic">icons/distribute-graph.svg</file>
+        <file alias="icons/tun">icons/Pictograms-nps-misc-tunnel.svg</file>
+        <file alias="icons/tap">icons/Crystal_Clear_filesystem_pipe-2.svg</file>
+        <file alias="icons/eth">icons/nm-device-wired.svg</file>
+        <file alias="icons/KeyExchange">icons/keys.png</file>
+        <file alias="icons/Unused">icons/dialog-question.svg</file>
+        <file alias="icons/tcpsrv">icons/network-server.svg</file>
+        <file alias="icons/udp">icons/url.png</file>
+        <file alias="icons/DataPort">icons/gnome-dev-ethernet.svg</file>
+        <file alias="icons/Controller">icons/server.svg</file>
+    </qresource>
+</RCC>

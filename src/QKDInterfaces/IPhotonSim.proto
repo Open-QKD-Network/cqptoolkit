@@ -1,0 +1,36 @@
+/*!
+* @file
+* @brief IPhoton
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 23/01/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+import public "Qubits.proto";
+
+package cqp.remote;
+
+message FakeDetection
+{
+    uint64 periodPicoseconds = 1;
+    QubitList values = 2;
+};
+
+/**
+ * @brief The IEncryptedData class
+ * Interface which encapsulates the data required when sending/recieving encrypted data
+ */
+service IPhotonSim {
+    /**
+     * @brief OnPhoton
+     * Process encrypted data
+     * @param reader A stream of qubits
+     * @return status
+     */
+    rpc OnPhoton(FakeDetection) returns (google.protobuf.Empty);
+}

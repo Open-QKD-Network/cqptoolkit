@@ -1,0 +1,33 @@
+/*!
+* @file
+* @brief IReporting
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 02/02/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+import public "Reporting.proto";
+
+package cqp.remote;
+
+/**
+ * @brief IReporting Interface
+ * Provides access to statistics for a site
+ */
+service IReporting
+{
+    /**
+    * Requests statistics from the server
+    * @param request The filter for message which are returned
+    * @param writer Repeated messages containing the data requested.
+    * @return status
+    */
+    rpc GetStatistics(ReportingFilter) returns (stream SiteAgentReport);
+
+}

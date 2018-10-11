@@ -1,0 +1,16 @@
+# Copyright (C) University of Bristol 2018
+#    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+#    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#    See LICENSE file for details.
+# Author Richard Collins <richard.collins@bristol.ac.uk>
+# 
+[Unit]
+Description=CQP SiteAgent service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=SiteAgentRunner -c /etc/cqp/siteagent.json
+
+[Install]
+WantedBy=multi-user.target

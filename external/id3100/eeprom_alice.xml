@@ -1,0 +1,477 @@
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <LastAuthor>Matthieu</LastAuthor>
+  <Created>2015-09-18T14:12:56Z</Created>
+  <Version>12.00</Version>
+ </DocumentProperties>
+ <ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
+  <WindowHeight>11820</WindowHeight>
+  <WindowWidth>19155</WindowWidth>
+  <WindowTopX>0</WindowTopX>
+  <WindowTopY>45</WindowTopY>
+  <ProtectStructure>False</ProtectStructure>
+  <ProtectWindows>False</ProtectWindows>
+ </ExcelWorkbook>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Bottom"/>
+   <Borders/>
+   <Font ss:FontName="Calibri" x:Family="Swiss" ss:Size="11" ss:Color="#000000"/>
+   <Interior/>
+   <NumberFormat/>
+   <Protection/>
+  </Style>
+  <Style ss:ID="s63">
+   <NumberFormat ss:Format="Short Date"/>
+  </Style>
+  <Style ss:ID="s64">
+   <NumberFormat ss:Format="Scientific"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="eeprom_fill">
+  <Table ss:ExpandedColumnCount="3" ss:ExpandedRowCount="94" x:FullColumns="1"
+   x:FullRows="1" ss:DefaultRowHeight="15">
+   <Row>
+    <Cell><Data ss:Type="String">idQuantique: Vectis</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Alice</Data></Cell>
+    <Cell><Data ss:Type="String">EEPROM Report</Data></Cell>
+   </Row>
+   <Row ss:Index="6">
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SProductName</Data></Cell>
+    <Cell><Data ss:Type="String">id3100</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SManufacturerName</Data></Cell>
+    <Cell><Data ss:Type="String">idQuantique</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SSerialNumber</Data></Cell>
+    <Cell><Data ss:Type="String">1044003F030</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SManufacturingDate</Data></Cell>
+    <Cell ss:StyleID="s63"><Data ss:Type="DateTime">2011-11-11T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SInstallationDate</Data></Cell>
+    <Cell ss:StyleID="s63"><Data ss:Type="DateTime">2011-11-11T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SRevisionDate</Data></Cell>
+    <Cell ss:StyleID="s63"><Data ss:Type="DateTime">2011-11-11T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SMaxPulseFrequency</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">5000000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SOpticalPrinciple</Data></Cell>
+    <Cell><Data ss:Type="String">PlugAndPlay</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SVOAModel</Data></Cell>
+    <Cell><Data ss:Type="String">OzOptics_DD-600-11-1300/1550-9/125-S-40-3S3S-1-1-485:1-5-MC/IIC</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SVOASerialNumber</Data></Cell>
+    <Cell><Data ss:Type="String">125104-09R</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SVOAModel2</Data></Cell>
+    <Cell><Data ss:Type="String">OzOptics_DD-600-11-1300/1550-9/125-S-40-3S3S-1-1-485:1-5-MC/IIC</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SVOASerialNumber2</Data></Cell>
+    <Cell><Data ss:Type="String">145384-01</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SBeamSplitterModel</Data></Cell>
+    <Cell><Data ss:Type="String">AFW_FOSC-2-15-10-L-1-S-2</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SBeamSplitterSerialNumber</Data></Cell>
+    <Cell><Data ss:Type="Number">1101709</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SFaradayMirrorModel</Data></Cell>
+    <Cell><Data ss:Type="String">AFW_FOFM-15-L-S-2</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SFaradayMirrorSerialNumber</Data></Cell>
+    <Cell><Data ss:Type="Number">1101676</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SFilterModel</Data></Cell>
+    <Cell><Data ss:Type="String">BPF-1551.72-2-B-1-2</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SFilterSerialNumber</Data></Cell>
+    <Cell><Data ss:Type="Number">1101906</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SDelayModel</Data></Cell>
+    <Cell><Data ss:Type="String">SEDI</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SDelaySerialNumber</Data></Cell>
+    <Cell><Data ss:Type="String">2/17/10-4/17/10</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SDelayLength</Data></Cell>
+    <Cell><Data ss:Type="Number">23700</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SOutputLoss</Data></Cell>
+    <Cell><Data ss:Type="Number">32.380000000000003</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">System</Data></Cell>
+    <Cell><Data ss:Type="String">SOpticalMeasurementDate</Data></Cell>
+    <Cell ss:StyleID="s63"><Data ss:Type="DateTime">2015-08-27T00:00:00.000</Data></Cell>
+   </Row>
+   <Row ss:Index="31">
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MBoardRevision</Data></Cell>
+    <Cell><Data ss:Type="String">B1</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MInfoRevision</Data></Cell>
+    <Cell><Data ss:Type="Number">1.2</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MCalibrationDate</Data></Cell>
+    <Cell ss:StyleID="s63"><Data ss:Type="DateTime">2011-11-10T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MQRNG1Model</Data></Cell>
+    <Cell><Data ss:Type="String">Quantis</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MQRNG2Model</Data></Cell>
+    <Cell><Data ss:Type="String">Quantis</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MQRNG1SerialNumber</Data></Cell>
+    <Cell><Data ss:Type="String">1002556A210</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MQRNG2SerialNumber</Data></Cell>
+    <Cell><Data ss:Type="String">1002336A210</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvV12</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">6.0899999999999995E-4</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvV25</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">7.6199999999999998E-4</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvV33</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">9.8799999999999995E-4</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvV50</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">1.5200000000000001E-3</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvV120</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">3.5300000000000002E-3</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvVPECL</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">6.0899999999999995E-4</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvI33</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">1.2199999999999999E-3</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyConvI120</Data></Cell>
+    <Cell ss:StyleID="s64"><Data ss:Type="Number">1.2199999999999999E-3</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV1.2TolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">1.32</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV1.2TolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">1.08</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV2.5TolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">2.75</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV2.5TolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">2.25</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV3.3TolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">3.63</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV3.3TolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">2.97</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV5.0TolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">5.5</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV5.0TolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">4.5</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV12.0TolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">13.2</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyV12.0TolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">10.8</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyVPECLTolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">1.43</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyVPECLTolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">1.17</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyI3.3TolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">3.5</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyI3.3TolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">0</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyI12.0TolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MPwrSupplyI12.0TolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">0</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MTempTolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">0</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MTempTolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">40</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MFanSpeedTolMin</Data></Cell>
+    <Cell><Data ss:Type="Number">4000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">MainBoard</Data></Cell>
+    <Cell><Data ss:Type="String">MFanSpeedTolMax</Data></Cell>
+    <Cell><Data ss:Type="Number">3200</Data></Cell>
+   </Row>
+   <Row ss:Index="68">
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">BoardRevision</Data></Cell>
+    <Cell><Data ss:Type="String">C1</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">InfoRevision</Data></Cell>
+    <Cell><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">APDModel</Data></Cell>
+    <Cell><Data ss:Type="String">FRM5W232BS</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">APDSerialNumber</Data></Cell>
+    <Cell><Data ss:Type="String">SZ00780</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SyncSetupMaxPowerThreshold</Data></Cell>
+    <Cell><Data ss:Type="Number">-370</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SyncSetupThreshold</Data></Cell>
+    <Cell><Data ss:Type="Number">-24</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SyncSetupDetectorBias</Data></Cell>
+    <Cell><Data ss:Type="Number">0.5</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SyncMode</Data></Cell>
+    <Cell><Data ss:Type="Number">0</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SynchroDetMaxPulseInterval</Data></Cell>
+    <Cell><Data ss:Type="Number">30</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SynchroSilenceInterval</Data></Cell>
+    <Cell><Data ss:Type="Number">200</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SynchroDetectionInterval</Data></Cell>
+    <Cell><Data ss:Type="Number">2</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SynchroPatternPulsePeriod</Data></Cell>
+    <Cell><Data ss:Type="Number">24</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">AliceDetectorBoard</Data></Cell>
+    <Cell><Data ss:Type="String">SyncSetupValidationGateFrameStart</Data></Cell>
+    <Cell><Data ss:Type="Number">700</Data></Cell>
+   </Row>
+   <Row ss:Index="83">
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">BoardRevision</Data></Cell>
+    <Cell><Data ss:Type="String">B1</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">InfoRevision</Data></Cell>
+    <Cell><Data ss:Type="Number">1.2</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulatorCalibrationDate</Data></Cell>
+    <Cell ss:StyleID="s63"><Data ss:Type="DateTime">2015-09-10T00:00:00.000</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulatorModel</Data></Cell>
+    <Cell><Data ss:Type="String">Covega_Mach-10-068-10-S-F-F-BNL</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulatorSerialNumber</Data></Cell>
+    <Cell><Data ss:Type="Number">8469016</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulationOffset</Data></Cell>
+    <Cell><Data ss:Type="Number">14250</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulationWidth</Data></Cell>
+    <Cell><Data ss:Type="Number">3</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulationStatesLevels0</Data></Cell>
+    <Cell><Data ss:Type="Number">0</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulationStatesLevels1</Data></Cell>
+    <Cell><Data ss:Type="Number">0.18</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulationStatesLevels2</Data></Cell>
+    <Cell><Data ss:Type="Number">0.36</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">ModulationStatesLevels3</Data></Cell>
+    <Cell><Data ss:Type="Number">0.54</Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">PhaseModBoard</Data></Cell>
+    <Cell><Data ss:Type="String">OpticsTemperatureToleranceMin</Data></Cell>
+    <Cell><Data ss:Type="Number">0</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <Selected/>
+   <TopRowVisible>76</TopRowVisible>
+   <Panes>
+    <Pane>
+     <Number>3</Number>
+     <ActiveRow>94</ActiveRow>
+     <RangeSelection>R95C1:R250C52</RangeSelection>
+    </Pane>
+   </Panes>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>
