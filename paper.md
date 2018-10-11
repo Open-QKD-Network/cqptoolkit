@@ -29,7 +29,7 @@ There are many utilities in place to simplify the use of the toolkit such as sta
 
 As well as optical device research, the system can be used to develop key management for networks.
 
-![Toolkit Stack](ToolkitStack.png)
+![Toolkit Stack](ToolkitStack.svg)
 
 # Access to the code
 The code can be found [on GitLab](https://gitlab.com/QComms/cqptoolkit.git)
