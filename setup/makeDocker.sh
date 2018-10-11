@@ -9,8 +9,8 @@
 VERSION=3.7.2
 PUSH=false
 RUNTIME=false
-REPO=cqp-dev.phy.bris.ac.uk:5000
-NAME=cqp/cqpbuildenv
+REPO=richardcollinsbris
+NAME=cqptoolkitbuild
 NAME_CUST=false
 OPTS=
 SUDO=sudo

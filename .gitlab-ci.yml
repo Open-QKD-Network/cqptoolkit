@@ -1,4 +1,4 @@
-image: cqp-dev.phy.bris.ac.uk:5000/cqp/cqpbuildenv:latest
+image: richardcollinsbris/cqpbuildenv:latest
 
 #DANGER: caches are to share data between runs of a job - not between jobs in a build
 # Make one cache per branch per job
