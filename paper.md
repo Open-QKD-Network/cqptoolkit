@@ -26,7 +26,7 @@ nocite: |
 
 The purpose of this software is to provide a set of interfaces, algorithms and tools to produce a full QKD system. The aim is to reduce the barrier to entry into QKD systems by developing a strong architecture with well defined interfaces. The separation of responsibility into components will allow researchers to concentrate on a specific component, the rest of the system being provided by existing algorithms or simulators.
 
-The system demonstrates that the symmetric keys can be used in a disposable manor rather than the current model where precious keys are derived to extend their use.
+The system demonstrates that the symmetric keys can be used in a disposable manner rather than the current model where valuable keys are derived to extend their use.
 There are many utilities in place to simplify the use of the toolkit such as statistics collection for gathering data.
 
 As well as optical device research, the system can be used to develop key management for networks.
@@ -49,7 +49,7 @@ To use a device with the system, a driver needs to be written to provide data to
 ## Post Processing
 Processing of Qubits is split into 4 sections:
 
-- Alignment of receiver with transceiver, which involve a hardware check-up loop (laser power, noise measurement...) and a line length measurement loop.
+- Alignment of receiver with transmitter, which involve a hardware check-up loop (laser power, noise measurement...) and a line length measurement loop.
 - Sifting procedure (plug & play BB84 [@QKDprotocol]) that chose the proper states after an optical setting loop of phase adjustments and visibility measurements.
 - Error correction of detected bits.
 - Privacy amplification to obtain the final distilled key.
