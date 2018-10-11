@@ -7,7 +7,7 @@ tags:
   - security
   - quantum
 authors:
-  - name: Richard Collins
+  - name: Mr Richard Collins
     orcid: 0000-0002-6238-990X
     affiliation: 1
   - name: Djeylan Aktas
@@ -18,6 +18,8 @@ affiliations:
    index: 1
 date: 11 October 2018
 bibliography: paper.bib
+nocite: |
+  @
 ---
 
 # Introduction
@@ -58,7 +60,11 @@ Once the key is produced by the post processing it is passed to the key store.
 There are some issues unique to shared secrets which the current public key systems do not provide for, the system tackles some of these issues by providing a standardised interface to the keys. The key store classes hold keys for specific links between two sites, while session management starts and stops the key generation.
 
 ## Site Management
-Each collection of key stores constitute trusted nodes of the network, Site agents manage the connections with other sites and feature several functions [@SDNpaper2] that can be integrated with software defined networks for dynamic key generation [@SDNpaper2].
+Each collection of key stores constitute trusted nodes of the network, Site agents manage the connections with other sites and feature several functions [@SDNpaper] that can be integrated with software defined networks for dynamic key generation [@SDNpaper2].
+
+# Acknowledgements
+This project has been funded by [EPSRC](https://epsrc.ukri.org/) under the [Quantum communications hub](https://www.quantumcommshub.net/).
+We acknowlege contributions from Dr Djeylan Aktas, Dr David Lowndes, Prof. John Rarity, Dr Chris Erven at the University of Bristol.
 
 # References
 
