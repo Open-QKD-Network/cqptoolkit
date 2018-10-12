@@ -1,4 +1,4 @@
-image: richardcollinsbris/cqpbuildenv:latest
+image: registry.gitlab.com/qcomms/cqptoolkit/buildenv:latest
 
 #DANGER: caches are to share data between runs of a job - not between jobs in a build
 # Make one cache per branch per job
