@@ -109,10 +109,13 @@ deploy:toolkit-build-image:
   image: "docker:stable"
   services:
     - docker:dind
+  variables:
+     DOCKER_HOST: tcp://docker:2375
+     DOCKER_DRIVER: overlay2
   script:
     - apk add --no-cache bash
-    - docker login https://cqp-dev.phy.bris.ac.uk:5000 -u gitlab -p gitlab
-    - cd setup && bash makeDocker.sh -p
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - cd setup && bash makeDocker.sh -p -r registry.gitlab.com -n qcomms/cqptoolkit/buildenv
   cache:
     policy: pull
   when: manual
@@ -122,11 +125,14 @@ deploy:toolkit-run-image:
   image: "docker:stable"
   services:
     - docker:dind
+  variables:
+     DOCKER_HOST: tcp://docker:2375
+     DOCKER_DRIVER: overlay2
   script:
     - apk add --no-cache bash
     - cp build/gcc/*.deb setup/
-    - docker login https://cqp-dev.phy.bris.ac.uk:5000 -u gitlab -p gitlab
-    - cd setup && bash makeDocker.sh -p -u
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - cd setup && bash makeDocker.sh -p -u -r registry.gitlab.com -n qcomms/cqptoolkit/runtime
   dependencies:
     - package:deb
   cache:
@@ -138,11 +144,13 @@ deploy:idqwrapper-docker-image:
   image: "docker:stable"
   services:
     - docker:dind
+  variables:
+     DOCKER_HOST: tcp://docker:2375
+     DOCKER_DRIVER: overlay2
   script:
     - apk add --no-cache bash
-    - docker login https://cqp-dev.phy.bris.ac.uk:5000 -u gitlab -p gitlab
-    - cd external/id3100 && bash builddocker.sh
-    - docker push cqp-dev.phy.bris.ac.uk:5000/cqp/idqcontainer
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - cd external/id3100 && bash builddocker.sh -r registry.gitlab.com -n qcomms/cqptoolkit/idqcontainer -p
   dependencies:
     - build:linux
   cache:
