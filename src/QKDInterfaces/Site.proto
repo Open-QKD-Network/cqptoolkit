@@ -156,8 +156,8 @@ message SiteAgentConfig
     Credentials credentials = 9;
     /// whether to use autodiscovery
     bool useAutoDiscover = 10;
-    /// How to persist collected key
-    BackingStoreKind backingStore = 11;
     /// connection path for the backing store
-    string backingStoreUrl = 12;
+    string backingStoreUrl = 11;
+    /// Static links to create on startup
+    repeated PhysicalPath staticHops = 12;
 }

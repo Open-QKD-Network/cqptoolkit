@@ -28,6 +28,10 @@ namespace cqp
         /// @return a character which can be used to seperate folder names
         CQPTOOLKIT_EXPORT std::string GetPathSep();
 
+        /// Gets the correct seperator for paths defiend in the PATH environment variable for the current OS
+        /// @return a character which is used to seperate paths in the PATH variable
+        CQPTOOLKIT_EXPORT std::string GetPathEnvSep();
+
         /// open a borwser window at the URL specified using the users default browser
         /// @param[in] url The URL to display
         /// @return true on success

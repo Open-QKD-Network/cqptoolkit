@@ -79,13 +79,6 @@ namespace cqp
                 allDevices[identifier] = result;
                 unusedDevices[identifier] = result;
 
-                string peerName;
-                if(addrUri.GetFirstParameter("peer", peerName))
-                {
-                    LOGTRACE("Device has static peer: " + peerName);
-                    peerToDeviceMap[ToLower(peerName)] = identifier;
-                }
-
                 // link the reporting callbacks
                 auto controller = result->GetSessionController();
                 if(controller)
@@ -178,29 +171,6 @@ namespace cqp
             {
                 result = remote::Side::Any;
             }
-        }
-        return result;
-    }
-
-    bool DeviceFactory::GetDeviceForPeer(const std::string& peerName, std::string& deviceIdentifier)
-    {
-        bool result = false;
-        auto devIt = peerToDeviceMap.find(ToLower(peerName));
-        if(devIt != peerToDeviceMap.end())
-        {
-            deviceIdentifier = devIt->second;
-            result = true;
-        }
-        return result;
-    }
-
-    std::vector<std::string> DeviceFactory::GetStaticPeers() const
-    {
-        std::vector<std::string> result;
-        result.reserve(peerToDeviceMap.size());
-        for(auto peer : peerToDeviceMap)
-        {
-            result.push_back(peer.first);
         }
         return result;
     }

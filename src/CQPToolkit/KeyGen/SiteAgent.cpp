@@ -31,6 +31,7 @@
 #include <grpc++/security/credentials.h>
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include <thread>
+#include "CQPToolkit/KeyGen/BackingStoreFactory.h"
 
 #if defined(SQLITE3_FOUND)
     #include "CQPToolkit/KeyGen/FileStore.h"
@@ -73,29 +74,9 @@ namespace cqp
             netMan = remote::INetworkManager::NewStub(netmanChannel);
         }
         deviceFactory.reset(new DeviceFactory(LoadChannelCredentials(config.credentials())));
-        switch (config.backingstore())
-        {
-        case remote::BackingStoreKind::None:
-            break;
-        case remote::BackingStoreKind::BackingStoreKind_INT_MAX_SENTINEL_DO_NOT_USE_:
-        case remote::BackingStoreKind::BackingStoreKind_INT_MIN_SENTINEL_DO_NOT_USE_:
-            break;
-        case remote::BackingStoreKind::File:
-#if defined(SQLITE3_FOUND)
-            if(myConfig.backingstoreurl().empty())
-            {
-                myConfig.set_backingstoreurl(config.id() + "-keys.db");
-            }
-            backingStore.reset(new keygen::FileStore(myConfig.backingstoreurl()));
-#else
-            LOGERROR("Unsupported backingstore: File")
-#endif
-            break;
-        case remote::BackingStoreKind::PKCS11:
-            backingStore.reset(new keygen::HSMStore(myConfig.backingstoreurl()));
-            break;
-        }
-        keystoreFactory.reset(new keygen::KeyStoreFactory(LoadChannelCredentials(config.credentials()), backingStore));
+
+        keystoreFactory.reset(new keygen::KeyStoreFactory(LoadChannelCredentials(config.credentials()),
+                                                          keygen::BackingStoreFactory::CreateBackingStore(myConfig.backingstoreurl())));
         reportServer.reset(new stats::ReportServer());
 
         // attach the reporting to the device factory so it link them when creating devices
@@ -329,14 +310,6 @@ namespace cqp
         ISessionController* controller = nullptr;
 
         string localDeviceId = hopPair.first().deviceid();
-        if(localDeviceId.empty())
-        {
-            // try and find a usable device
-            if(deviceFactory->GetDeviceForPeer(hopPair.second().site(), localDeviceId))
-            {
-                LOGTRACE("Found a static peer device " + localDeviceId + " for hop to " + hopPair.second().site());
-            }
-        }
 
         // configure the device and set up the controller
         Status result = PrepHop(localDeviceId, hopPair.second().site(), controller);
@@ -770,16 +743,13 @@ namespace cqp
     {
         using namespace std;
 
-        for(auto peerName : deviceFactory->GetStaticPeers())
+        for(const auto& staticHop : myConfig.statichops())
         {
+            LOGINFO("Connecting to static peer " + staticHop.hops().rbegin()->second().site());
             grpc::ServerContext ctx;
-            remote::PhysicalPath path;
             google::protobuf::Empty response;
 
-            auto hop = path.mutable_hops()->Add();
-            hop->mutable_first()->set_site(myConfig.connectionaddress());
-            hop->mutable_second()->set_site(peerName);
-            LogStatus(StartNode(&ctx, &path, &response));
+            LogStatus(StartNode(&ctx, &staticHop, &response));
         }
     } // ConnectStaticLinks
 } // namespace cqp

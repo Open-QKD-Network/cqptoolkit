@@ -342,7 +342,17 @@ namespace cqp
 #elif defined(WIN32)
             PathRemoveFileSpec
 #endif
-            return result;
+                    return result;
+        }
+
+        std::string GetPathEnvSep()
+        {
+
+#if defined (WIN32)
+            return ";";
+#else
+            return ":";
+#endif
         }
 
     } // namespace fs

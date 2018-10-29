@@ -30,7 +30,8 @@ namespace cqp
 
     // compile the regular expression once
     // doing this at object creation is expensive
-    const std::regex urlRegExTemplate(R"(^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)",
+    // see https://stackoverflow.com/questions/5620235/cpp-regular-expression-to-validate-url
+    const std::regex urlRegExTemplate(R"foo(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)foo",
                                       std::regex::extended
                                      );
 
@@ -63,21 +64,22 @@ namespace cqp
         std::string result;
         if(!scheme.empty())
         {
-            result += scheme + "://";
+            result += scheme + ":";
+            if(!host.empty())
+            {
+                result += "//";
+            }
         }
+
         result += host;
+
         if(port != 0)
         {
             result += ":" + std::to_string(port);
         }
-        if(!path.empty())
-        {
-            if(path[0] != '/')
-            {
-                result += "/";
-            }
-            result += path;
-        }
+
+        result += path;
+
         if(parameters.size() > 0)
         {
             bool addPrefix = false;
@@ -401,7 +403,7 @@ namespace cqp
         path = Encode(newValue);
     }
 
-    void URI::SetPath(const std::vector<std::string>& newPath, const std::string& sep)
+    void URI::SetPath(const std::vector<std::string>& newPath, const std::string& sep, bool encode)
     {
         bool addSep = false;
         path.clear();
@@ -415,7 +417,12 @@ namespace cqp
             {
                 addSep = true;
             }
-            path += element;
+            if(encode)
+            {
+                path += Encode(element);
+            } else {
+                path += element;
+            }
         }
     }
 
@@ -488,10 +495,10 @@ namespace cqp
 
     void URI::ToDictionary(std::map<std::string, std::string>& destination, char pathSeperator, char keyValueSeperator) const
     {
-        cqp::ToDictionary(path, destination, pathSeperator, keyValueSeperator);
+        cqp::ToDictionary(Decode(path), destination, pathSeperator, keyValueSeperator);
         for(auto element : parameters)
         {
-            destination[element.first] = element.second;
+            destination[element.first] = Decode(element.second);
         }
     }
 

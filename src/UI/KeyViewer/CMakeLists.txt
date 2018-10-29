@@ -19,6 +19,6 @@ CQP_QT_PROJECT()
 
 if(TARGET KeyViewer)
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        CQPToolkit_Shared
+        CQPUI_Shared
         )
 endif()

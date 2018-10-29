@@ -1,0 +1,97 @@
+Index: chromium-browser-69.0.3497.81/net/BUILD.gn
+===================================================================
+--- chromium-browser-69.0.3497.81.orig/net/BUILD.gn
++++ chromium-browser-69.0.3497.81/net/BUILD.gn
+@@ -83,6 +83,10 @@ config("net_internal_config") {
+     include_dirs = [ "/usr/include/kerberosV" ]
+   }
+ 
++  if (use_psk) {
++    defines += [ "USE_PSK" ]
++  }
++
+   if (enable_built_in_dns) {
+     defines += [ "ENABLE_BUILT_IN_DNS" ]
+   }
+@@ -380,6 +384,10 @@ component("net") {
+     ":net_deps",
+   ]
+ 
++  if (use_psk) {
++    deps += [ "//third_party/cqp:cqptoolkit" ]
++  }
++
+   public_deps = [
+     ":net_public_deps",
+     "//net/dns",
+Index: chromium-browser-69.0.3497.81/net/features.gni
+===================================================================
+--- chromium-browser-69.0.3497.81.orig/net/features.gni
++++ chromium-browser-69.0.3497.81/net/features.gni
+@@ -39,6 +39,9 @@ declare_args() {
+   # willing to take the responsibility to make sure that all important
+   # connections use HTTPS.
+   include_transport_security_state_preload_list = true
++
++  # allow pre-shared keys
++  use_psk = false
+ }
+ 
+ declare_args() {
+Index: chromium-browser-69.0.3497.81/net/socket/ssl_client_socket_impl.cc
+===================================================================
+--- chromium-browser-69.0.3497.81.orig/net/socket/ssl_client_socket_impl.cc
++++ chromium-browser-69.0.3497.81/net/socket/ssl_client_socket_impl.cc
+@@ -66,6 +66,12 @@
+ #include "third_party/brotli/include/brotli/decode.h"
+ #endif
+ 
++#if defined(USE_PSK)
++#include "CQPUI/OpenSSLKeyUI.h"
++#else
++#error "PSK not enabled"
++#endif
++
+ namespace net {
+ 
+ namespace {
+@@ -349,6 +355,10 @@ class SSLClientSocketImpl::SSLContext {
+     SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
+     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
+ 
++#if defined(USE_PSK)
++    cqp::ui::OpenSSLKeyUI::Register(ssl_ctx_.get());
++#endif
++
+ #if !defined(NET_DISABLE_BROTLI)
+     SSL_CTX_add_cert_compression_alg(
+         ssl_ctx_.get(), TLSEXT_cert_compression_brotli,
+@@ -944,7 +954,11 @@ int SSLClientSocketImpl::Init() {
+ 
+   // Use BoringSSL defaults, but disable HMAC-SHA1 ciphers in ECDSA. These are
+   // the remaining CBC-mode ECDSA ciphers.
++#if defined(USE_PSK)
++  std::string command("ALL::!ECDSA+SHA1:!kRSA+AESGCM");
++#else
+   std::string command("ALL::!aPSK:!ECDSA+SHA1");
++#endif
+ 
+   if (ssl_config_.require_ecdhe)
+     command.append(":!kRSA");
+Index: chromium-browser-69.0.3497.81/third_party/cqp/BUILD.gn
+===================================================================
+--- /dev/null
++++ chromium-browser-69.0.3497.81/third_party/cqp/BUILD.gn
+@@ -0,0 +1,12 @@
++config("cqptoolkit_config")
++{
++    #include_dirs = [ "/home/rc15345/code/CQPToolkit/src/", "/home/rc15345/code/CQPToolkit/build/gcc/src/" ]
++    include_dirs = [ "/usr/include/x86_64-linux-gnu/qt5/QtWidgets/", "/usr/include/x86_64-linux-gnu/qt5/" ]
++    #lib_dirs = [ "/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit" ]
++    libs = [ "CQPUI-x86_64", "curl", "Qt5Widgets", "Qt5Core" ]
++}
++
++static_library("cqptoolkit") {
++    public_configs = [ ":cqptoolkit_config" ]
++}
++

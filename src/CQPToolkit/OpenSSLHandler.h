@@ -11,6 +11,7 @@
 */
 #pragma once
 #ifdef __cplusplus
+#include "CQPToolkit/KeyGen/HSMStore.h"
 extern "C" {
 #endif
 
@@ -101,4 +102,13 @@ CQPTOOLKIT_EXPORT unsigned OpenSSLHandler_SetHSM(const char* url);
 
 #ifdef __cplusplus
 }
+
+/**
+ * @brief SetPin
+ * Specify a callback to provide password/pin for a token when needed. The callback can then lookup/request the pin from the user.
+ * @param cb The callback to call
+ * @param userData This will be passed to the callback
+ */
+CQPTOOLKIT_EXPORT void OpenSSLHandler_SetPinCallback(cqp::keygen::IPinCallback* cb);
+
 #endif

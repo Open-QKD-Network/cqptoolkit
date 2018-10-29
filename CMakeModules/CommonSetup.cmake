@@ -250,10 +250,6 @@ macro(CQP_LIBRARY_PROJECT)
     # This removes the need to compile the code twice to produce both libraries
     add_library (${PROJECT_NAME} OBJECT ${${PROJECT_NAME}_SOURCES})
 
-    if(${CMAKE_VERSION} VERSION_GREATER "3.8")
-        target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
-    endif()
-
     # specify the include folders - this will help with dependecies later on.
     target_include_directories(${PROJECT_NAME}
         #PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
@@ -483,6 +479,42 @@ macro(CQP_QT_PROJECT)
         message(WARNING "${PROJECT_NAME} skipped.")
     endif(${Qt5Widgets_FOUND})
 endmacro(CQP_QT_PROJECT)
+
+### @def CQP_QT_LIB_PROJECT special kind of CQP_EXE_PROJECT for QT libraries
+### ui and qrc files are handled automatically
+macro(CQP_QT_LIB_PROJECT)
+    # Find the QtWidgets library
+    find_package(Qt5 COMPONENTS Core Widgets QUIET)
+    if(${Qt5Widgets_FOUND})
+        # Instruct CMake to run moc automatically when needed.
+        set(CMAKE_AUTOMOC ON)
+        set(CMAKE_AUTOUIC ON)
+        set(CMAKE_AUTOURCC ON)
+
+        file(GLOB_RECURSE tempSources LIST_DIRECTORIES false RELATIVE "${PROJECT_SOURCE_DIR}" "*.ui")
+        file(GLOB_RECURSE tempResources LIST_DIRECTORIES false RELATIVE "${PROJECT_SOURCE_DIR}" "*.qrc")
+        list(APPEND ${PROJECT_NAME}_SOURCES ${tempSources} ${tempResources})
+
+        QT5_ADD_RESOURCES(RESOURCES ${tempResources})
+        #list(APPEND ${PROJECT_NAME}_SOURCES ${RESOURCES})
+
+        add_definitions(-DQT_DEPRECATED_WARNINGS)
+
+        CQP_LIBRARY_PROJECT()
+
+        # Use the Widgets module from Qt 5.
+        if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
+            # workaround for older cmake
+            target_include_directories(${PROJECT_NAME} PUBLIC "/usr/include/x86_64-linux-gnu/qt5/")
+            target_include_directories(${PROJECT_NAME} PUBLIC "/usr/include/x86_64-linux-gnu/qt5/QtWidgets")
+        else()
+            target_link_libraries(${PROJECT_NAME} PUBLIC Qt5::Widgets)
+        endif()
+        target_link_libraries(${PROJECT_NAME}_Shared PUBLIC Qt5::Widgets)
+    else(${Qt5Widgets_FOUND})
+        message(WARNING "${PROJECT_NAME} skipped.")
+    endif(${Qt5Widgets_FOUND})
+endmacro(CQP_QT_LIB_PROJECT)
 
 ### @def GRPC_PROJECT special kind of CQP_LIBRARY_PROJECT for generating gRPC interfaces
 ### proto files are handled automatically

@@ -1,11 +1,26 @@
 {
  "name": "SiteA",
  "id": "9893e345-d3b0-4a98-a6d2-4663190e3db9",
- "qpaUri": "",
+ "listenPort": 8001,
  "deviceUrls": [
   "dummyqkd:///?side=bob&port=dummy1a",
   "dummyqkd:///?side=alice&port=dummy1b"
  ],
- "credentials": {}
+ "credentials": {},
+ "staticHops": {
+ "hops": [
+  {
+   "first": {
+    "site": "mightydwt:8001",
+    "deviceId": "dummyqkd__0__16_bob"
+   },
+   "second": {
+    "site": "mightydwt:8002",
+    "deviceId": "dummyqkd__0__16_alice"
+   }
+  }
+ ]
+}
+
 }
 

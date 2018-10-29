@@ -16,6 +16,7 @@
 #include <sys/wait.h>
 #include "CQPToolkit/Util/Logger.h"
 #include "CQPToolkit/Util/FileIO.h"
+#include "CQPToolkit/Util/Util.h"
 
 namespace cqp
 {
@@ -154,10 +155,30 @@ namespace cqp
     {
         bool result = false;
         RequestTermination(true);
+        std::string cmdToRun;
 
         if(fs::Exists(command))
         {
-            result = Fork(command, args, stdIn, stdOut, stdErr);
+            cmdToRun = command;
+        } else
+        {
+            // try and find it in the path
+            std::vector<std::string> paths;
+            SplitString(getenv("PATH"), paths, fs::GetPathEnvSep());
+            for(auto prefix : paths)
+            {
+                cmdToRun = prefix + fs::GetPathSep() + command;
+                if(fs::Exists(cmdToRun))
+                {
+                    break;
+                }
+
+            }
+        }
+
+        if(fs::Exists(cmdToRun))
+        {
+            result = Fork(cmdToRun, args, stdIn, stdOut, stdErr);
         }
         else
         {

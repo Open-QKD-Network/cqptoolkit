@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include <bits/exception.h>                                // for exception
 #include <chrono>                                          // for seconds
 #include <condition_variable>                              // for condition_...
 #include <mutex>                                           // for mutex

@@ -44,7 +44,7 @@ struct Names
     static CONSTSTRING netman = "netman";
     static CONSTSTRING test = "test";
     static CONSTSTRING id = "id";
-    static CONSTSTRING discovery = "nodiscovery";
+    static CONSTSTRING discovery = "discovery";
     static CONSTSTRING port = "port";
     static CONSTSTRING certFile = "cert";
     static CONSTSTRING keyFile = "key";
@@ -138,8 +138,18 @@ void SiteAgentRunner::DisplayHelp(const CommandArgs::Option&)
         driverNames += driver;
     }
 
-    definedArguments.PrintHelp(std::cout, "Creates CQP Site Agents for managing QKD systems.\nCopyright Bristol University. All rights reserved.",
-                               "Drivers: " + driverNames);
+    const std::string header = "Creates CQP Site Agents for managing QKD systems.\nCopyright Bristol University. All rights reserved.";
+    const std::string footer = "Drivers: " + driverNames + "\n" +
+            "Device urls: [driver]://[location[:port]]/[?parameters]]\n" +
+            "   The type of location and parameters are driver dependant.\n" +
+            "Common parameters:\n" +
+            "   Parameter           Values              Description\n" +
+            "   side                alice|bob|any       Which kind of device\n" +
+            "   switchName          <openflow string>   Connected optical switch\n" +
+            "   switchPort          <port id>           Switch connector id\n" +
+            "   keybytes            16|32               Bytes per key generated\n";
+
+    definedArguments.PrintHelp(std::cout, header, footer);
     definedArguments.StopOptionsProcessing();
     stopExecution = true;
 }
@@ -423,23 +433,6 @@ int SiteAgentRunner::Main(const std::vector<std::string>& args)
         definedArguments.GetProp(Names::rootCaFile, *siteSettings.mutable_credentials()->mutable_rootcertsfile());
 
         definedArguments.GetProp(Names::netman, *siteSettings.mutable_netmanuri());
-
-        std::string backingStoreName;
-        if(definedArguments.GetProp(Names::bs, backingStoreName))
-        {
-            if(StrEqualI(backingStoreName, Names::BackingStores::none))
-            {
-                siteSettings.set_backingstore(remote::BackingStoreKind::None);
-            }
-            else if(StrEqualI(backingStoreName, Names::BackingStores::file))
-            {
-                siteSettings.set_backingstore(remote::BackingStoreKind::File);
-            }
-            else if(StrEqualI(backingStoreName, Names::BackingStores::pkcs11))
-            {
-                siteSettings.set_backingstore(remote::BackingStoreKind::PKCS11);
-            }
-        }
         definedArguments.GetProp(Names::bsurl, *siteSettings.mutable_backingstoreurl());
 
         if(definedArguments.IsSet(Names::test))

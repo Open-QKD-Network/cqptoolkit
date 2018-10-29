@@ -138,8 +138,6 @@ namespace cqp
         std::unique_ptr<remote::INetworkManager::Stub> netMan = nullptr;
         /// Holds all keystores created at this site
         std::shared_ptr<keygen::KeyStoreFactory> keystoreFactory;
-        /// persistent storage for keys
-        std::shared_ptr<keygen::IBackingStore> backingStore;
         /// Holds all the devices which this site controls
         std::unique_ptr<DeviceFactory> deviceFactory;
         /// metadata tag name for pass a session controller address

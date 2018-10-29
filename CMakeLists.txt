@@ -39,6 +39,19 @@ set(DEB_ENABLED ON CACHE BOOL "Build debian/ubuntu package")
 # Make extra CMake modules available for use, such as funcitons and find_package(x)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 
+SET(USE_CLANG OFF CACHE BOOL "Use the CLang compiler")
+SET(USE_LLVM_LIBCXX OFF CACHE BOOL "Use the LLVMs libc++ library (requires USE_CLANG)")
+
+if(USE_CLANG)
+    set(CMAKE_C_COMPILER "/usr/bin/clang")
+    set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+    SET(CMAKE_AR      "/usr/bin/llvm-ar")
+    SET(CMAKE_LINKER  "/usr/bin/llvm-ld")
+    SET(CMAKE_NM      "/usr/bin/llvm-nm")
+    SET(CMAKE_OBJDUMP "/usr/bin/llvm-objdump")
+    SET(CMAKE_RANLIB  "/usr/bin/llvm-ranlib")
+endif()
+
 # This is a super build which pulls together the dependencies for the main project and ensures that they
 # are built in the correct order.
 # The main project is added at the bottom of this file.
@@ -46,7 +59,7 @@ project(CQP NONE)
 
 #HACK:
 # I can't get this to work at the package level so it goes here.
-SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/src/CQPToolkit;${CMAKE_BINARY_DIR}/src/QKDInterfaces")
+SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/src/CQPToolkit;${CMAKE_BINARY_DIR}/src/QKDInterfaces;${CMAKE_BINARY_DIR}/src/CQPUI")
 
 # Perform some standard setup steps like detecting the platform.
 include(CommonSetup)
@@ -124,7 +137,7 @@ endif()
 
 find_package(OpenCL QUIET)
 if(OpenCL_FOUND)
-        message(STATUS "OpenCL : ${OpenCL_VERSION}")
+        message(STATUS "OpenCL : ${OpenCL_VERSION}${OpenCL_VERSION_STRING}")
         # Tell our code we have OpenCL
         add_definitions(-DOPENCL_FOUND=1)
 else()
@@ -188,7 +201,7 @@ if(BUILD_TESTING)
             ExternalProject_add(GTest_External
                 # SVN used so that git does not need to be installed
                 # TODO: switch to release tag when its updated.
-                SVN_REPOSITORY "https://github.com/google/googletest.git/trunk"
+                SVN_REPOSITORY "https://github.com/google/googletest.git/tags/release-1.8.1"
                     UPDATE_COMMAND ""
                 DOWNLOAD_NO_PROGRESS 1
                 # Pass arguments to the build process to disable/enable modules

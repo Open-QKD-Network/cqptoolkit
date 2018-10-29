@@ -16,7 +16,7 @@
 #include "CQPToolkit/Util/Util.h"
 
 static std::vector<std::string> searchModules = { "libsofthsm2.so" };
-static OpenSSLHandler_PinCallback pinCallback = nullptr;
+static OpenSSLHandler_PinCallback pinCallbackFunc = nullptr;
 static void* callbackUserData = nullptr;
 static size_t pinLengthLimit = 0;
 static cqp::keygen::HSMStore* activeHsm;
@@ -30,11 +30,11 @@ namespace cqp
         {
             bool result = false;
 
-            if(pinCallback)
+            if(pinCallbackFunc)
             {
                 std::vector<char> tempPin(pinLengthLimit+1, 0);
                 ulong loginInt = 0;
-                size_t pinUsed = pinCallback(callbackUserData, tokenSerial.c_str(), tokenLabel.c_str(),
+                size_t pinUsed = pinCallbackFunc(callbackUserData, tokenSerial.c_str(), tokenLabel.c_str(),
                                              &loginInt, tempPin.data(), pinLengthLimit);
                 switch(loginInt)
                 {
@@ -61,6 +61,7 @@ namespace cqp
 }
 
 static cqp::DummyCallback callbackHelper;
+static cqp::keygen::IPinCallback* pinCallback = nullptr;
 
 unsigned int OpenSSLHandler_ServerCallback(SSL*, const char* identity, unsigned char* psk, unsigned int max_psk_len)
 {
@@ -110,7 +111,7 @@ unsigned int OpenSSLHandler_ServerCallback(SSL*, const char* identity, unsigned 
 
     LOGTRACE("Leaving");
     return result;
-} // OpenSSLHandler_ClientCallback
+} // OpenSSLHandler_ServerCallback
 
 #if (OPENSSL_VERSION_NUMBER >= 0x010101000L)
 int OpenSSLHandler_SessionCallback(SSL*, const EVP_MD* md, const unsigned char** id, size_t* idlen, SSL_SESSION** sess)
@@ -163,7 +164,7 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
         {
             LOGTRACE("Found Token");
 
-            HSMStore store(token, &callbackHelper);
+            HSMStore store(token, pinCallback);
 
             uint64_t keyId = 0;
             std::string destination;
@@ -186,7 +187,9 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
 
 void OpenSSLHandler_SetPinCallback(OpenSSLHandler_PinCallback cb, void* userData)
 {
-    pinCallback = cb;
+    // we're passing through to a C function so use the dummy callback handler
+    pinCallback = &callbackHelper;
+    pinCallbackFunc = cb;
     callbackUserData = userData;
 }
 
@@ -202,7 +205,7 @@ unsigned OpenSSLHandler_SetHSM(const char* url)
         activeHsm = nullptr;
     }
 
-    activeHsm = new cqp::keygen::HSMStore(url, &callbackHelper);
+    activeHsm = new cqp::keygen::HSMStore(url, pinCallback);
     bool result = activeHsm->InitSession();
     if(result)
     {
@@ -214,4 +217,12 @@ unsigned OpenSSLHandler_SetHSM(const char* url)
         return 0;
     }
     LOGTRACE("");
+}
+
+void OpenSSLHandler_SetPinCallback(cqp::keygen::IPinCallback* cb)
+{
+    pinCallback = cb;
+    // clear any C callbacks
+    pinCallbackFunc = nullptr;
+    callbackUserData = nullptr;
 }

@@ -106,17 +106,6 @@ namespace cqp
         static remote::Side::Type GetSide(const URI& uri);
 
         /**
-         * @brief GetDeviceForPeer
-         * Get the device identifier which has a static peer of peerName
-         * @param peerName The peer needing a local device
-         * @param[out] deviceIdentifier The device identifier for the peer, if found
-         * @return True if a device is found
-         */
-        bool GetDeviceForPeer(const std::string& peerName, std::string& deviceIdentifier);
-
-        std::vector<std::string> GetStaticPeers() const;
-
-        /**
          * @brief AddReportingCallback
          * @param callback
          */
@@ -139,8 +128,6 @@ namespace cqp
         std::unordered_map<std::string /*driver+address*/, std::shared_ptr<IQKDDevice>> allDevices;
         /// devices which havn't been checked out with CreateDevice
         std::unordered_map<std::string /*driver+address*/, std::shared_ptr<IQKDDevice>> unusedDevices;
-        /// devices with static peers are stored here
-        std::unordered_map<std::string /*peer*/, std::string/*devId*/> peerToDeviceMap;
         /// control access to the lists
         std::mutex changeMutex;
         /// credentials passed to drivers when they are created

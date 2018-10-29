@@ -165,7 +165,7 @@ namespace cqp
      */
     inline std::string ToLower(const std::string& mixed)
     {
-        std::string result;
+        std::string result(mixed);
         std::transform(mixed.begin(), mixed.end(), result.begin(), ::tolower);
         return result;
     }

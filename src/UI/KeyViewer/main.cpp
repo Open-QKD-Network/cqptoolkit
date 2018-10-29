@@ -9,7 +9,7 @@
 * @date 13/02/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "MainWindow.h"
+#include "KeyViewer.h"
 #include <QApplication>
 
 /**
@@ -22,7 +22,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    keyviewer::MainWindow w;
+    KeyViewer w;
     w.show();
 
     return a.exec();

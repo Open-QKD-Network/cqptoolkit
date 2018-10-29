@@ -378,10 +378,10 @@ namespace cqp
                             URI foundModule;
                             vector<string> pathElements;
                             LOGTRACE("Token " + FromPKCSString(tokenInfo.label) + " usable");
-                            pathElements.push_back("module=" + mod);
+                            pathElements.push_back("module-name=" + mod);
                             pathElements.push_back("token=" + p11::FromPKCSString(tokenInfo.label));
                             pathElements.push_back("serial=" + p11::FromPKCSString(tokenInfo.serialNumber));
-                            foundModule.SetPath(Join(pathElements, ";"));
+                            foundModule.SetPath(pathElements, ";", false);
                             foundModule.SetScheme("pkcs");
 
                             result.push_back(foundModule);

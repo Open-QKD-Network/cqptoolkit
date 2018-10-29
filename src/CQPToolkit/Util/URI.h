@@ -186,8 +186,9 @@ namespace cqp
          * Set the path using key value pairs, seperated by sep
          * @param newPath elements of the path
          * @param sep seperator
+         * @param encode Encode the path elements
          */
-        void SetPath(const std::vector<std::string>& newPath, const std::string& sep);
+        void SetPath(const std::vector<std::string>& newPath, const std::string& sep, bool encode = true);
 
         /**
          * @brief SetParameter

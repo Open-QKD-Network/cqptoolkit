@@ -10,17 +10,23 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "ui_HSMPinDialog.h"
 #include <QDialog>
 #include "CQPToolkit/KeyGen/HSMStore.h"
+#include "CQPUI/cqpui_export.h"
 
-namespace keyviewer
+namespace Ui
 {
+    class HSMPinDialog;
+}
 
+namespace cqp
+{
+namespace ui
+{
     /**
      * @brief The DeviceDialog class
      */
-    class HSMPinDialog : public QDialog, protected Ui::HSMPinDialog
+    class CQPUI_EXPORT HSMPinDialog : public QDialog, public virtual cqp::keygen::IPinCallback
     {
     public:
 
@@ -31,7 +37,7 @@ namespace keyviewer
          * @brief DeviceDialog
          * @param parent
          */
-        HSMPinDialog(QWidget * parent, QString tokenName);
+        HSMPinDialog(QWidget * parent);
 
         /**
          * @brief GetPassword
@@ -45,8 +51,15 @@ namespace keyviewer
          */
         cqp::keygen::UserType GetUserType() const;
 
+        /// @copydoc cqp::keygen::IPinCallback::GetHSMPin
+        bool GetHSMPin(const std::string& tokenSerial,
+                       const std::string& tokenName,
+                       cqp::keygen::UserType& login,
+                       std::string& pin);
+    protected:
+        ::Ui::HSMPinDialog* ui;
     }; // class DeviceDialog
-
-} // namespace keyviewer
+} // namespace ui
+} // namespace cqp
 
 

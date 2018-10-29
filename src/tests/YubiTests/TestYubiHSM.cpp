@@ -13,6 +13,9 @@
 #include "CQPToolkit/KeyGen/YubiHSM.h"
 #include "CQPToolkit/Util/Process.h"
 #include "CQPToolkit/Util/ConsoleLogger.h"
+#include "CQPUI/OpenSSLKeyUI.h"
+#include <QApplication>
+#include "CQPToolkit/Util/Util.h"
 #define YH_ALGO_OPAQUE_DATA 30
 
 namespace cqp
@@ -39,7 +42,7 @@ namespace cqp
             ASSERT_EQ(key.second.size(), 32);
 
             keygen::IBackingStore::Keys keys {key};
-            keygen::YubiHSM hsm("pkcs11:module-name=/usr/lib/x86_64-linux-gnu/pkcs11/yubihsm_pkcs11.so?pin-value=0001password");
+            keygen::YubiHSM hsm("pkcs11:module-name=yubihsm_pkcs11.so?pin-value=0001password");
 
             const std::string destination = "YubiHSM-Test";
 
@@ -58,5 +61,55 @@ namespace cqp
             //connectorProc.RequestTermination(true);
         }
 
+        TEST(YubiHSM, Gui)
+        {
+            int argc = 0;
+            QApplication app(argc, nullptr);
+
+            cqp::ui::OpenSSLKeyUI keyUi;
+            keyUi.exec();
+
+        }
+
+        TEST(YubiHSM, Gui2)
+        {
+            using namespace std;
+            LOGTRACE("Running Chooser program");
+            int stdOut = 0;
+            std::vector<std::string> args;
+            Process chooser;
+            std::string line;
+            std::vector<std::string> lines;
+
+
+            chooser.Start("ChooseHSM", args, nullptr, &stdOut);
+            while(chooser.Running())
+            {
+                string line;
+                char lastChar = {};
+
+                do
+                {
+                    if(::read(stdOut, &lastChar, 1) > 0 && lastChar != '\n')
+                    {
+                        line.append(1, lastChar);
+                    }
+                }
+                while (lastChar != 0 && lastChar != '\n');
+                lines.push_back(line);
+            }
+
+            if(chooser.WaitForExit() == 0)
+            {
+                if(lines.size() >= 1)
+                {
+                    LOGDEBUG(lines[0]);
+                }
+                if(lines.size() >= 2 && lines[1] == "1")
+                {
+                    LOGDEBUG(lines[1]);
+                }
+            }
+        }
     }
 }

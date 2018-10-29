@@ -1,7 +1,7 @@
 {
  "name": "SiteB",
  "id": "dff538fc-1c01-4653-b5fd-eb3e868379e7",
- "qpaUri": "",
+ "listenPort": 8002,
  "deviceUrls": [
   "dummyqkd:///?side=bob&port=dummy2a",
   "dummyqkd:///?side=alice&port=dummy2b"

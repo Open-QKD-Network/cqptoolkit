@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include <bits/exception.h>                               // for exception
 #include <memory>                              // for shared_ptr
 #include <grpcpp/impl/codegen/status.h>                   // for Status
 #include <chrono>                                         // for seconds

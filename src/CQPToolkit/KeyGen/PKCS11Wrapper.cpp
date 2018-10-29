@@ -169,7 +169,7 @@ namespace cqp
             }
             else
             {
-                LOGERROR("Failed to load library " + libName);
+                LOGERROR("Failed to load library " + libName + ": " + dlerror());
                 result.reset();
             }
 
