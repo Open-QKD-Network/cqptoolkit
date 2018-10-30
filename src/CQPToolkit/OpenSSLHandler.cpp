@@ -12,6 +12,7 @@
 #include "OpenSSLHandler.h"
 #include "CQPToolkit/Util/URI.h"
 #include "CQPToolkit/KeyGen/HSMStore.h"
+#include "CQPToolkit/KeyGen/YubiHSM.h"
 #include "CQPToolkit/Util/ConsoleLogger.h"
 #include "CQPToolkit/Util/Util.h"
 
@@ -205,7 +206,12 @@ unsigned OpenSSLHandler_SetHSM(const char* url)
         activeHsm = nullptr;
     }
 
-    activeHsm = new cqp::keygen::HSMStore(url, pinCallback);
+    if(std::string(url).find("yubihsm") != std::string::npos)
+    {
+        activeHsm = new cqp::keygen::YubiHSM(url, pinCallback);
+    } else {
+        activeHsm = new cqp::keygen::HSMStore(url, pinCallback);
+    }
     bool result = activeHsm->InitSession();
     if(result)
     {
