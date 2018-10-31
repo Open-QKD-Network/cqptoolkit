@@ -18,7 +18,7 @@ a:focus {
 }
 
 p {
-    font-size: 16px;
+    font-size: 20px;
     line-height: 1.5;
 }
 
@@ -28,12 +28,19 @@ header {
     min-height: auto;
     text-align: center;
     color: #fff;
-    background-image: url('../images/Varsha_2.jpg'); // https://commons.wikimedia.org/wiki/File:Varsha_2.jpg
     background-position: center;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;
     -o-background-size: cover;
+}
+
+.secure {
+    background-image: url('../images/Varsha_2.jpg'); // https://commons.wikimedia.org/wiki/File:Varsha_2.jpg
+}
+
+.insecure {
+    background-image: url('../images/unlocked.jpg'); // https://c1.staticflickr.com/3/2499/3769904793_e08235af58_b.jpg
 }
 
 header .header-content {
@@ -52,14 +59,14 @@ header .header-content .header-content-inner h1 {
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 50px;
-    font-weight: 300;
+    font-weight: 600;
 }
 
 header .header-content .header-content-inner p {
     margin-bottom: 50px;
     font-size: 16px;
-    font-weight: 300;
-    color: rgba(255,255,255,.7);
+    font-weight: 600;
+    //color: rgba(255,255,255,.7);
 }
 
 @media(min-width:768px) {
