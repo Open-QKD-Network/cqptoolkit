@@ -37,7 +37,11 @@ namespace cqp {
             } else if(backingStoreType == "yubihsm2")
             {
                 result.reset(new keygen::YubiHSM(bsUrl));
-            } else {
+            } else if(backingStoreType.empty())
+            {
+                // leave as null
+            }
+            else {
                 LOGERROR("Unsupported backingstore: " + backingStoreType);
             }
             return result;

@@ -181,7 +181,8 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset theme="add"/>
+             <iconset theme="add">
+              <normaloff>.</normaloff>.</iconset>
             </property>
            </widget>
           </item>
@@ -217,6 +218,17 @@
         </item>
        </layout>
       </widget>
+     </widget>
+    </item>
+    <item row="12" column="0">
+     <widget class="QPushButton" name="clearHSM">
+      <property name="text">
+       <string>Clear HSM</string>
+      </property>
+      <property name="icon">
+       <iconset theme="edit-clear">
+        <normaloff>.</normaloff>.</iconset>
+      </property>
      </widget>
     </item>
    </layout>

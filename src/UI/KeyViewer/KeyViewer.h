@@ -80,4 +80,5 @@ private slots:
 
     void on_localAgentGo_clicked();
     void on_addModule_clicked();
+    void on_clearHSM_clicked();
 };

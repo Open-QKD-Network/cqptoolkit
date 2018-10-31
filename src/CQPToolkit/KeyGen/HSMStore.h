@@ -91,7 +91,7 @@ namespace cqp
              *
              * __SoftHSM2 with a token named "my token" with a pin "1234"__
              *
-             * ``pkcs11:module-name=libshm2.so;token=my%20token?pin-value=1234``
+             * ``pkcs11:module-name=libsofthsm2.so;token=my%20token?pin-value=1234``
              *
              * __AcmeCorp with token serial number "828882727" using a pin from file ``/etc/secret.pin``__
              *
@@ -169,6 +169,13 @@ namespace cqp
              * @return true on success
              */
             bool InitSession();
+
+            /**
+             * @brief DeleteAllKeys
+             * Delete all objects which match the type stored by this class
+             * @return true on success
+             */
+            unsigned int DeleteAllKeys();
 
             /// @{
             /// @name IBackingStore interface
