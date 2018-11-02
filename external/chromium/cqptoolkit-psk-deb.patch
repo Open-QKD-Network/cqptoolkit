@@ -1,7 +1,65 @@
-Index: chromium-browser-69.0.3497.81/net/BUILD.gn
-===================================================================
---- chromium-browser-69.0.3497.81.orig/net/BUILD.gn
-+++ chromium-browser-69.0.3497.81/net/BUILD.gn
+Description: <short summary of the patch>
+ TODO: Put a short summary on the line above and replace this paragraph
+ with a longer explanation of this change. Complete the meta-information
+ with other relevant fields (see below for details). To make it easier, the
+ information below has been extracted from the changelog. Adjust it or drop
+ it.
+ .
+ chromium-browser (70.0.3538.67-0ubuntu0.18.04.1) bionic; urgency=medium
+ .
+   * Upstream release: 70.0.3538.67
+     - CVE-2018-17462: Sandbox escape in AppCache.
+     - CVE-2018-17463: Remote code execution in V8.
+     - CVE to be assigned: Heap buffer overflow in Little CMS in PDFium.
+     - CVE-2018-17464: URL spoof in Omnibox.
+     - CVE-2018-17465: Use after free in V8.
+     - CVE-2018-17466: Memory corruption in Angle.
+     - CVE-2018-17467: URL spoof in Omnibox.
+     - CVE-2018-17468: Cross-origin URL disclosure in Blink.
+     - CVE-2018-17469: Heap buffer overflow in PDFium.
+     - CVE-2018-17470: Memory corruption in GPU Internals.
+     - CVE-2018-17471: Security UI occlusion in full screen mode.
+     - CVE-2018-17472: iframe sandbox escape on iOS.
+     - CVE-2018-17473: URL spoof in Omnibox.
+     - CVE-2018-17474: Use after free in Blink.
+     - CVE-2018-17475: URL spoof in Omnibox.
+     - CVE-2018-17476: Security UI occlusion in full screen mode.
+     - CVE-2018-5179: Lack of limits on update() in ServiceWorker.
+     - CVE-2018-17477: UI spoof in Extensions.
+   * debian/rules:
+     - remove enable_google_now build flag
+     - remove use_gtk3 build flag
+   * debian/patches/arm-neon.patch: refreshed
+   * debian/patches/chromium_useragent.patch: refreshed
+   * debian/patches/configuration-directory.patch: refreshed
+   * debian/patches/define__libc_malloc.patch: refreshed
+   * debian/patches/disable-sse2: refreshed
+   * debian/patches/fix-extra-arflags.patch: refreshed
+   * debian/patches/revert-Xclang-instcombine-lower-dbg-declare.patch: refreshed
+   * debian/patches/search-credit.patch: refreshed
+   * debian/patches/set-rpath-on-chromium-executables.patch: refreshed
+   * debian/patches/suppress-newer-clang-warning-flags.patch: refreshed
+   * debian/patches/widevine-other-locations: refreshed
+   * debian/known_gn_gen_args-*:
+     - remove enable_google_now build flag
+     - remove use_gtk3 build flag
+Author: Olivier Tilloy <olivier.tilloy@canonical.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: 2018-10-30
+
+--- chromium-browser-70.0.3538.67.orig/net/BUILD.gn
++++ chromium-browser-70.0.3538.67/net/BUILD.gn
 @@ -83,6 +83,10 @@ config("net_internal_config") {
      include_dirs = [ "/usr/include/kerberosV" ]
    }
@@ -13,7 +71,7 @@ Index: chromium-browser-69.0.3497.81/net/BUILD.gn
    if (enable_built_in_dns) {
      defines += [ "ENABLE_BUILT_IN_DNS" ]
    }
-@@ -380,6 +384,10 @@ component("net") {
+@@ -382,6 +386,10 @@ component("net") {
      ":net_deps",
    ]
  
@@ -24,10 +82,8 @@ Index: chromium-browser-69.0.3497.81/net/BUILD.gn
    public_deps = [
      ":net_public_deps",
      "//net/dns",
-Index: chromium-browser-69.0.3497.81/net/features.gni
-===================================================================
---- chromium-browser-69.0.3497.81.orig/net/features.gni
-+++ chromium-browser-69.0.3497.81/net/features.gni
+--- chromium-browser-70.0.3538.67.orig/net/features.gni
++++ chromium-browser-70.0.3538.67/net/features.gni
 @@ -39,6 +39,9 @@ declare_args() {
    # willing to take the responsibility to make sure that all important
    # connections use HTTPS.
@@ -38,16 +94,14 @@ Index: chromium-browser-69.0.3497.81/net/features.gni
  }
  
  declare_args() {
-Index: chromium-browser-69.0.3497.81/net/socket/ssl_client_socket_impl.cc
-===================================================================
---- chromium-browser-69.0.3497.81.orig/net/socket/ssl_client_socket_impl.cc
-+++ chromium-browser-69.0.3497.81/net/socket/ssl_client_socket_impl.cc
+--- chromium-browser-70.0.3538.67.orig/net/socket/ssl_client_socket_impl.cc
++++ chromium-browser-70.0.3538.67/net/socket/ssl_client_socket_impl.cc
 @@ -66,6 +66,12 @@
  #include "third_party/brotli/include/brotli/decode.h"
  #endif
  
 +#if defined(USE_PSK)
-+#include "CQPUI/OpenSSLKeyUI.h"
++#include "CQPToolkit/OpenSSLHandler.h"
 +#else
 +#error "PSK not enabled"
 +#endif
@@ -55,18 +109,19 @@ Index: chromium-browser-69.0.3497.81/net/socket/ssl_client_socket_impl.cc
  namespace net {
  
  namespace {
-@@ -349,6 +355,10 @@ class SSLClientSocketImpl::SSLContext {
+@@ -356,6 +362,11 @@ class SSLClientSocketImpl::SSLContext {
      SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
      SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
  
 +#if defined(USE_PSK)
-+    cqp::ui::OpenSSLKeyUI::Register(ssl_ctx_.get());
++    OpenSSLHandler_SetHSM("pkcs11:module-name=yubihsm_pkcs11.so?pin-value=0001password");
++    SSL_CTX_set_psk_client_callback(ssl_ctx_.get(), OpenSSLHandler_ClientCallback);
 +#endif
 +
  #if !defined(NET_DISABLE_BROTLI)
      SSL_CTX_add_cert_compression_alg(
          ssl_ctx_.get(), TLSEXT_cert_compression_brotli,
-@@ -944,7 +954,11 @@ int SSLClientSocketImpl::Init() {
+@@ -955,7 +966,11 @@ int SSLClientSocketImpl::Init() {
  
    // Use BoringSSL defaults, but disable HMAC-SHA1 ciphers in ECDSA. These are
    // the remaining CBC-mode ECDSA ciphers.
@@ -78,17 +133,15 @@ Index: chromium-browser-69.0.3497.81/net/socket/ssl_client_socket_impl.cc
  
    if (ssl_config_.require_ecdhe)
      command.append(":!kRSA");
-Index: chromium-browser-69.0.3497.81/third_party/cqp/BUILD.gn
-===================================================================
 --- /dev/null
-+++ chromium-browser-69.0.3497.81/third_party/cqp/BUILD.gn
++++ chromium-browser-70.0.3538.67/third_party/cqp/BUILD.gn
 @@ -0,0 +1,12 @@
 +config("cqptoolkit_config")
 +{
 +    #include_dirs = [ "/home/rc15345/code/CQPToolkit/src/", "/home/rc15345/code/CQPToolkit/build/gcc/src/" ]
-+    include_dirs = [ "/usr/include/x86_64-linux-gnu/qt5/QtWidgets/", "/usr/include/x86_64-linux-gnu/qt5/" ]
++    #include_dirs = [ "/usr/include/x86_64-linux-gnu/qt5/QtWidgets/", "/usr/include/x86_64-linux-gnu/qt5/" ]
 +    #lib_dirs = [ "/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit" ]
-+    libs = [ "CQPUI-x86_64", "curl", "Qt5Widgets", "Qt5Core" ]
++    libs = [ "CQPToolkit-x86_64", "curl" ]
 +}
 +
 +static_library("cqptoolkit") {

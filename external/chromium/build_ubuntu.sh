@@ -6,12 +6,12 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 #
 if [ -z "$CHROMIUM_VERSION" ]; then
-    CHROMIUM_VERSION=69.0.3497.81
+    CHROMIUM_VERSION=70.0.3538.77
 fi
 
 apt source chromium-browser && \
 cd chromium-browser-${CHROMIUM_VERSION} && \
 quilt import -P cqptoolkit-psk-deb.patch ../cqptoolkit-psk-deb.patch ; \
 sed -i -e 's/optimize_webui=false$/optimize_webui=false \\\n\tuse_psk=true/' debian/rules && \
-dpkg-buildpackage --no-sign -b
+dpkg-buildpackage --no-sign -nc
 
