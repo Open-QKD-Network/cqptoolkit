@@ -198,6 +198,43 @@ namespace cqp
             return result;
         }
 
+        unsigned int HSMStore::DeleteAllKeys()
+        {
+            using namespace p11;
+            using namespace std;
+            ObjectList found;
+            unsigned int numDeleted = 0;
+            bool result = true;
+
+            if(InitSession())
+            {
+                // setup the search parameters
+                AttributeList attrList{*findObjDefaults};
+                attrList.Set(CKA_DESTROYABLE, true);
+
+                // search for the object
+                while(result && session->FindObjects(attrList, 100, found) == CKR_OK && found.size() > 0)
+                {
+                    for(auto obj : found)
+                    {
+                        if(obj.DestroyObject() == CKR_OK)
+                        {
+                            numDeleted++;
+                        } else {
+                            result = false;
+                            break;
+                        }
+                    } // for found
+                    found.clear();
+                } // while found
+            }
+            else
+            {
+                LOGERROR("Not in a session");
+            }
+            return numDeleted;
+        }
+
         CK_RV HSMStore::SessionEventCallback(CK_SESSION_HANDLE, CK_NOTIFICATION, void* pApp)
         {
             try

@@ -299,8 +299,8 @@ diff --git a/conf/nginx.conf b/conf/nginx.conf
 -    #    }
 -    #}
 +        location / {
-+            root   html;
-+            index  index.html index.htm;
++            root   /html;
++            index  index-secure.html;
 +        }
 +    }
  

@@ -1,0 +1,3 @@
+build/gcc/*
+CMakeLists.txt.user
+external/nginx/nginx

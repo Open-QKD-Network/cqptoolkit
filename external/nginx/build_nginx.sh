@@ -18,5 +18,5 @@ hg import --no-commit ../cqptoolkit.patch && \
  --with-stream_geoip_module --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads \
  --prefix=. --with-http_ssl_psk && \
 make -s -j8 && \
-docker build -t qkdsecure .
+docker build -t registry.gitlab.com/qcomms/qkdsecure .
 popd

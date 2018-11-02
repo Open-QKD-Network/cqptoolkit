@@ -23,6 +23,7 @@
 #include <openssl/pkcs12.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/KeyGen/YubiHSM.h"
+#include "CQPUI/OpenSSLKeyUI.h"
 
 using grpc::Status;
 using grpc::StatusCode;
@@ -296,5 +297,35 @@ void KeyViewer::on_addModule_clicked()
     if(!newMod.empty())
     {
         knownModules.push_back(newMod);
+    }
+}
+
+void KeyViewer::on_clearHSM_clicked()
+{
+    cqp::ui::OpenSSLKeyUI ui;
+    if(ui.exec() == QDialog::DialogCode::Accepted)
+    {
+        if(QMessageBox::critical(this,
+               tr("Confirm delete"),
+               tr("This will erase all opaque objects!"),
+                                 QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+        {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+            unsigned int numDeleted = 0;
+            const auto url = ui.GetStoreUrl();
+            if(url.find("yubihsm") != std::string::npos)
+            {
+                cqp::keygen::YubiHSM store(url, &pinDialog);
+                numDeleted = store.DeleteAllKeys();
+            } else {
+                cqp::keygen::HSMStore store(url, &pinDialog);
+                numDeleted = store.DeleteAllKeys();
+            }
+            QApplication::restoreOverrideCursor();
+
+            QMessageBox::information(this,
+                                     tr("Items deleted"),
+                                     QString::fromStdString("Deleted " + std::to_string(numDeleted) + " objects"));
+        }
     }
 }
