@@ -143,11 +143,11 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
     ConsoleLogger::Enable();
     DefaultLogger().SetOutputLevel(LogLevel::Trace);
 
-    LOGTRACE("");
+    LOGTRACE("hint=" + hint + " identity=" + identity);
     if(activeHsm)
     {
+        LOGDEBUG("Using existing HSM");
         uint64_t keyId = 0;
-        std::string destination;
 
         PSK keyValue;
         if(activeHsm->FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
@@ -161,6 +161,7 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
     }
     else
     {
+        LOGDEBUG("Looking for a HSM");
         for(auto& token : HSMStore::FindTokens(searchModules))
         {
             LOGTRACE("Found Token");
@@ -168,8 +169,6 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
             HSMStore store(token, pinCallback);
 
             uint64_t keyId = 0;
-            std::string destination;
-
             PSK keyValue;
             if(store.FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
             {

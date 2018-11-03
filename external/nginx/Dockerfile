@@ -16,7 +16,7 @@ RUN git clone https://github.com/jpetazzo/pipework.git && \
 # The softhsm token folder is owned by the user so running as nginx user means it cant read the tokens
 #USER nginx
 
-ADD html /
+ADD html /html/
 
 ENTRYPOINT /bin/run_nginx.sh $IFACE
 LABEL description="docker run -it --rm -v /var/lib/softhsm:/var/lib/softhsm --env IFACE=p1p1 qkdsecure"

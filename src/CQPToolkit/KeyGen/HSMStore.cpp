@@ -536,6 +536,7 @@ namespace cqp
             {
                 for(auto key = keys.begin(); key != keys.end(); key++)
                 {
+                    LOGDEBUG("Storing key " + ToHexString(key->first) + " for " + destination);
                     using namespace p11;
                     using namespace std;
                     AttributeList keyProps{*newObjDefaults};
