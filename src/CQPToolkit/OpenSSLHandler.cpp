@@ -86,9 +86,10 @@ unsigned int OpenSSLHandler_ServerCallback(SSL*, const char* identity, unsigned 
 
             if(identityUri.GetFirstParameter("id", keyId))
             {
-                LOGTRACE("Have ID");
+                const std::string destination = pathElements["object"];
+                LOGTRACE("Have ID=" + std::to_string(keyId) + " Destination=" + destination);
                 PSK keyValue;
-                if(activeHsm->GetKey(pathElements["object"], keyId, keyValue) && keyValue.size() <= max_psk_len)
+                if(activeHsm->GetKey(destination, keyId, keyValue) && keyValue.size() <= max_psk_len)
                 {
                     std::copy(keyValue.begin(), keyValue.end(), psk);
                     result = keyValue.size();

@@ -93,6 +93,8 @@ namespace cqp
                                    103,  36, 132, 218, 119, 190,  28, 185,  89, 168,  29, 124,  29, 211, 132, 210
                                   }});
             ASSERT_TRUE(store.StoreKeys(dest, keys)) << "Key storage failed";
+            PSK foundKey;
+            ASSERT_TRUE(store.FindKey(dest, keys[0].first, foundKey)) << "Failed to find key";
             KeyID nextId = 0;
             ASSERT_TRUE(store.ReserveKey(dest, nextId)) << "Failed to reserve key";
             PSK retrievedKey;

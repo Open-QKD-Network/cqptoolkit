@@ -458,7 +458,7 @@ namespace cqp
                 attrList.Set(CKA_LABEL, destination);
                 SetID(attrList, keyId);
                 // search for the object
-                if(session->FindObjects(attrList, 1, found) == CKR_OK && found.size() > 0)
+                if(CheckP11(session->FindObjects(attrList, 1, found)) == CKR_OK && found.size() > 0)
                 {
                     result = found[0].GetAttributeValue(CKA_VALUE, output) == CKR_OK;
                 }
@@ -491,7 +491,7 @@ namespace cqp
                     SetID(attrList, keyId);
                 }
                 // search for the object
-                if(session->FindObjects(attrList, 1, found) == CKR_OK && found.size() > 0)
+                if(CheckP11(session->FindObjects(attrList, 1, found)) == CKR_OK && found.size() > 0)
                 {
                     result = found[0].GetAttributeValue(CKA_ID, keyId) == CKR_OK;
                     FixKeyID(keyId);
