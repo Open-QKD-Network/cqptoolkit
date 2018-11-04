@@ -22,7 +22,7 @@ Bug-Debian: https://bugs.debian.org/<bugnumber>
 Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
 Forwarded: <no|not-needed|url proving that it has been forwarded>
 Reviewed-By: <name and email of someone who approved the patch>
-Last-Update: 2018-11-02
+Last-Update: 2018-11-03
 
 --- stunnel4-5.44.orig/src/Makefile.am
 +++ stunnel4-5.44/src/Makefile.am
@@ -48,20 +48,73 @@ Last-Update: 2018-11-02
  SERVICE_OPTIONS *current_section=NULL;
  
  /* try an empty passphrase first */
-@@ -473,6 +477,16 @@ NOEXPORT int auth_init(SERVICE_OPTIONS *
-             SSL_CTX_set_psk_client_callback(section->ctx, psk_client_callback);
+@@ -474,6 +478,17 @@ NOEXPORT int auth_init(SERVICE_OPTIONS *
          else
              SSL_CTX_set_psk_server_callback(section->ctx, psk_server_callback);
-+    } else {
+     }
++    if(section->psk_keystore) {
++        OpenSSLHandler_SetHSM(section->psk_keystore);
 +        if(section->option.client)
 +        {
-+            OpenSSLHandler_SetHSM("pkcs11:module-name=yubihsm_pkcs11.so?pin-value=0001password");
 +            SSL_CTX_set_psk_client_callback(section->ctx, OpenSSLHandler_ClientCallback);
-+	    }
++	}
 +        else
 +        {
-+	        SSL_CTX_set_psk_server_callback(section->ctx, OpenSSLHandler_ServerCallback);
-+	    }
-     }
++	    SSL_CTX_set_psk_server_callback(section->ctx, OpenSSLHandler_ServerCallback);
++	}
++    }
  #endif /* !defined(OPENSSL_NO_PSK) */
+ 
+     /* initialize the client cert engine */
+--- stunnel4-5.44.orig/src/options.c
++++ stunnel4-5.44/src/options.c
+@@ -2257,6 +2257,29 @@ NOEXPORT char *parse_service_option(CMD
+         break;
+     }
+ 
++    /* PSKkeystore */
++    switch(cmd) {
++    case CMD_BEGIN:
++        section->psk_keystore=NULL;
++        break;
++    case CMD_EXEC:
++        if(strcasecmp(opt, "PSKkeystore"))
++            break;
++        section->psk_keystore=str_dup(arg);
++	return NULL;
++    case CMD_END:
++        break;
++    case CMD_FREE:
++        //psk_free(section->psk_keystore);
++        break;
++    case CMD_DEFAULT:
++        break;
++    case CMD_HELP:
++        s_log(LOG_NOTICE, "%-22s = pkcs11 string for psk keystore",
++            "PSKkeystore");
++        break;
++    }
++
+ #endif /* !defined(OPENSSL_NO_PSK) */
+ 
+     /* pty */
+--- stunnel4-5.44.orig/src/prototypes.h
++++ stunnel4-5.44/src/prototypes.h
+@@ -227,6 +227,7 @@ typedef struct service_options_struct {
+ #endif /* !defined(OPENSSL_NO_TLSEXT) */
+ #ifndef OPENSSL_NO_PSK
+     char *psk_identity;
++    char *psk_keystore;
+     PSK_KEYS *psk_keys, *psk_selected;
+     PSK_TABLE psk_sorted;
+ #endif /* !defined(OPENSSL_NO_PSK) */
+--- stunnel4-5.44.orig/src/ui_unix.c
++++ stunnel4-5.44/src/ui_unix.c
+@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) { /* ex
+ NOEXPORT int main_unix(int argc, char* argv[]) {
+     int configure_status;
+ 
++    s_log(LOG_DEBUG, "This stunnel has super cqp powers!");
+ #if !defined(__vms) && !defined(USE_OS2)
+     int fd;
  

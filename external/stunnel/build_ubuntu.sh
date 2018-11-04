@@ -8,6 +8,5 @@
 
 apt source stunnel4 && \
 cd `find -maxdepth 1 -type d -name 'stunnel4-*'` && \
-quilt import -P cqptoolkit-psk-deb.patch ../cqptoolkit-psk-deb.patch ; \
-dpkg-buildpackage --no-sign
-
+quilt import -P cqptoolkit-psk-deb.patch ../cqptoolkit-psk-deb.patch && \
+DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --no-sign -j4
