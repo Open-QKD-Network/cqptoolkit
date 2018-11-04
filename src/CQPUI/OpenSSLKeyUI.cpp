@@ -189,7 +189,7 @@ namespace cqp {
                 if(myStore->FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
                 {
                     std::copy(keyValue.begin(), keyValue.end(), psk);
-                    std::string keyIdString = ToHexString(keyId);
+                    std::string keyIdString = "pkcs:object=" + myStore->GetSource() + "?id=" + std::to_string(keyId);
                     strncpy(identity, keyIdString.c_str(), max_identity_len);
                     result = keyValue.size();
                 } // if key found

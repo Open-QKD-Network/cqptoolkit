@@ -280,7 +280,7 @@ void SiteAgentCtl::GetKey(remote::IKey::Stub* siteA, const std::string& destinat
     if(LogStatus(siteA->GetSharedKey(&ctx, request, &response)).ok())
     {
         const PSK keyValue(response.keyvalue().begin(), response.keyvalue().end());
-        cout << "PKCS=" + response.url() + " Id=" + ToHexString(response.keyid()) + " Value=" + keyValue.ToString() << endl;
+        cout << "PKCS=" + response.url() + " Id=0x" + ToHexString(response.keyid()) + " Value=" + keyValue.ToString() << endl;
     }
 }
 

@@ -22,7 +22,7 @@ build:linux:
     - cd build/gcc
     - cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
     - make clean
-    - ionice nice make -j 8 all
+    - make -j 8 all
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 week
@@ -79,7 +79,7 @@ package:deb:
   script:
     - cd build/gcc
     - cmake -D CPACK_GENERATOR=DEB -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
-    - ionice nice make package
+    - make package
   dependencies:
     - build:linux
   artifacts:
@@ -94,7 +94,7 @@ package:tar:
   script:
     - cd build/gcc
     - cmake -D CPACK_GENERATOR=TGZ -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
-    - ionice nice make package
+    - make package
   dependencies:
     - build:linux
   artifacts:
