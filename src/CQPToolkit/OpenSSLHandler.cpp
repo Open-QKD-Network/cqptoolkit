@@ -143,7 +143,7 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
     ConsoleLogger::Enable();
     DefaultLogger().SetOutputLevel(LogLevel::Trace);
 
-    LOGTRACE("hint=" + hint + " identity=" + identity);
+    LOGTRACE("hint=" + hint);
     if(activeHsm)
     {
         LOGDEBUG("Using existing HSM");
@@ -153,9 +153,10 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
         if(activeHsm->FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
         {
             std::copy(keyValue.begin(), keyValue.end(), psk);
-            std::string keyIdString = ToHexString(keyId);
+            std::string keyIdString = "pkcs:object=" + activeHsm->GetSource() + "?id=" + ToHexString(keyId);
             strncpy(identity, keyIdString.c_str(), max_identity_len);
             result = keyValue.size();
+            LOGTRACE("Key identity=" + identity);
         } // if key found
 
     }
@@ -173,9 +174,10 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
             if(store.FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
             {
                 std::copy(keyValue.begin(), keyValue.end(), psk);
-                std::string keyIdString = ToHexString(keyId);
+                std::string keyIdString = "pkcs:object=" + activeHsm->GetSource() + "?id=" + ToHexString(keyId);
                 strncpy(identity, keyIdString.c_str(), max_identity_len);
                 result = keyValue.size();
+                LOGTRACE("Key identity=" + identity);
                 break; // for
             } // if key found
 

@@ -86,6 +86,7 @@ namespace cqp
              *
              * Optionally these query values
              * - ``login`` - force the login type to Security officer, valid values are ``user``, ``so``, ``cs``
+             * - ``source`` - The source location for this HSM to define where keys have come from (not PKCS#11 standard)
              *
              * **Examples**
              *
@@ -177,6 +178,14 @@ namespace cqp
              */
             unsigned int DeleteAllKeys();
 
+            /**
+             * @brief GetSource
+             * @return The source identigier for all keys
+             */
+            std::string GetSource() const {
+                return source;
+            }
+
             /// @{
             /// @name IBackingStore interface
         public:
@@ -222,6 +231,8 @@ namespace cqp
             size_t pinLengthLimit = std::numeric_limits<size_t>::max();
             /// who to log in
             UserType login = UserType::User;
+            /// where do our keys come from
+            std::string source;
             /// if slot id has been set
             bool slotIdValid = false;
             /// source of pin

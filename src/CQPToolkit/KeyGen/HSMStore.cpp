@@ -309,6 +309,11 @@ namespace cqp
                 }
             }
 
+            if(!pkcsUrl.GetFirstParameter("source", source))
+            {
+                LOGWARN("Not key source defined in url.");
+            }
+
             if(!module)
             {
                 LOGERROR("Failed to load HSM module.");

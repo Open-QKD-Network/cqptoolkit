@@ -640,6 +640,24 @@ namespace cqp
                 currentStorage.attribute->ulValueLen = currentStorage.value.size();
             } // try
             CATCHLOGERROR
+        }
+
+        bool cqp::p11::AttributeList::Get(CK_ATTRIBUTE_TYPE type, std::string& output)
+        {
+            bool result = false;
+            __try
+            {
+                auto it = valueStorage.find(type);
+                if(it != valueStorage.end() && it->second.attribute)
+                {
+                    output.assign(static_cast<char*>(it->second.attribute->pValue), it->second.attribute->ulValueLen);
+                    result = true;
+                }
+                return result;
+            } // try
+            CATCHLOGERROR
+            return result;
+
         }  // AttributeList::Set
 
 

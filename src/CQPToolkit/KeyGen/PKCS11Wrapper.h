@@ -459,6 +459,9 @@ namespace cqp
             bool Get(::CK_ATTRIBUTE_TYPE type, PSK& output);
 
             /// @copydoc Get
+            bool Get(::CK_ATTRIBUTE_TYPE type, std::string& output);
+
+            /// @copydoc Get
             /// @tparam T Type of value to get
             template<typename T, typename std::enable_if<std::is_integral<T> {}, int>::type = 0>
                     bool Get(::CK_ATTRIBUTE_TYPE type, T& output);
