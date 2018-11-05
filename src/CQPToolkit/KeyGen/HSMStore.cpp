@@ -235,6 +235,40 @@ namespace cqp
             return numDeleted;
         }
 
+        bool HSMStore::RemoveKey(const std::string& destination, KeyID keyId)
+        {
+            using namespace p11;
+            using namespace std;
+            ObjectList found;
+            bool result = false;
+
+            if(InitSession())
+            {
+                // setup the search parameters
+                AttributeList attrList{*findObjDefaults};
+                attrList.Set(CKA_LABEL, destination);
+                SetID(attrList, keyId);
+                // search for the object
+                if(session->FindObjects(attrList, 1, found) == CKR_OK && found.size() > 0)
+                {
+                    if(found[0].DestroyObject() != CKR_OK)
+                    {
+                        LOGERROR("Failed to destroy removed key: 0x" + ToHexString(keyId));
+                        result = false;
+                    }
+                }
+                else
+                {
+                    LOGERROR("Key not found");
+                }
+            }
+            else
+            {
+                LOGERROR("Not in a session");
+            }
+            return result;
+        }
+
         CK_RV HSMStore::SessionEventCallback(CK_SESSION_HANDLE, CK_NOTIFICATION, void* pApp)
         {
             try

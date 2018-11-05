@@ -161,6 +161,9 @@ namespace cqp
             ::CK_FUNCTION_LIST_PTR functions = nullptr;
             /// Parameters to initialise the library with
             ::CK_C_INITIALIZE_ARGS initArgs {};
+
+            // modules can only loaded once
+            static std::map<std::string, std::weak_ptr<Module>> loadedModules;
         }; // class Module
 
         const CK_FUNCTION_LIST*Module::P11Lib() const

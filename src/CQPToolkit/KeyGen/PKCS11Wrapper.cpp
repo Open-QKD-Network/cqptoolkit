@@ -132,45 +132,57 @@ namespace cqp
             return retVal;
         }
 
+        std::map<std::string, std::weak_ptr<Module>> Module::loadedModules;
+
         std::shared_ptr<Module> Module::Create(const std::string& libName, const void* reserved)
         {
-            std::shared_ptr<Module> result(new Module());
-            result->initArgs.flags = CKF_OS_LOCKING_OK;
-            result->initArgs.pReserved = const_cast<void*>(reserved);
-
-            CK_C_GetFunctionList pC_GetFunctionList = nullptr;
-#if defined(__unix__)
-            result->libHandle = ::dlopen(libName.c_str(), RTLD_LAZY);
-#elif defined(WIN32)
-            TODO
-#endif
-
-            if(result->libHandle)
+            std::shared_ptr<Module> result;
+            if(!loadedModules[libName].expired())
             {
+                result = loadedModules[libName].lock();
+            } else {
+                result.reset(new Module());
 
-#if defined(__unix__)
-                pC_GetFunctionList = reinterpret_cast<CK_C_GetFunctionList>(::dlsym(result->libHandle, "C_GetFunctionList"));
-#elif defined(WIN32)
+                result->initArgs.flags = CKF_OS_LOCKING_OK;
+                result->initArgs.pReserved = const_cast<void*>(reserved);
+
+                CK_C_GetFunctionList pC_GetFunctionList = nullptr;
+    #if defined(__unix__)
+                result->libHandle = ::dlopen(libName.c_str(), RTLD_LAZY);
+    #elif defined(WIN32)
                 TODO
-#endif
-                if(pC_GetFunctionList && pC_GetFunctionList(&result->functions) == CKR_OK)
+    #endif
+
+                if(result->libHandle)
                 {
-                    if(CheckP11(result->functions->C_Initialize(&result->initArgs)) != CKR_OK)
+
+    #if defined(__unix__)
+                    pC_GetFunctionList = reinterpret_cast<CK_C_GetFunctionList>(::dlsym(result->libHandle, "C_GetFunctionList"));
+    #elif defined(WIN32)
+                    TODO
+    #endif
+                    if(pC_GetFunctionList && pC_GetFunctionList(&result->functions) == CKR_OK)
                     {
-                        LOGERROR("Failed to initialise module");
+                        if(CheckP11(result->functions->C_Initialize(&result->initArgs)) != CKR_OK)
+                        {
+                            LOGERROR("Failed to initialise module");
+                            result.reset();
+                        } else {
+                            loadedModules[libName] = std::weak_ptr<Module>(result);
+                        }
+                    }
+                    else
+                    {
+                        LOGERROR("Failed to get funtion list");
                         result.reset();
                     }
                 }
                 else
                 {
-                    LOGERROR("Failed to get funtion list");
+                    LOGERROR("Failed to load library " + libName + ": " + dlerror());
                     result.reset();
                 }
-            }
-            else
-            {
-                LOGERROR("Failed to load library " + libName + ": " + dlerror());
-                result.reset();
+
             }
 
             return result;

@@ -81,4 +81,7 @@ private slots:
     void on_localAgentGo_clicked();
     void on_addModule_clicked();
     void on_clearHSM_clicked();
+    void on_openHsm_clicked();
+    void on_sendToHsm_clicked();
+    void on_openDestHsm_clicked();
 };

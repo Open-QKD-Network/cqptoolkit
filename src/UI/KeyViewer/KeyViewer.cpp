@@ -329,3 +329,83 @@ void KeyViewer::on_clearHSM_clicked()
         }
     }
 }
+
+void KeyViewer::on_openHsm_clicked()
+{
+    cqp::ui::OpenSSLKeyUI chooser(this);
+    if(chooser.exec() == QDialog::DialogCode::Accepted)
+    {
+        ui->fromHSM->setText(QString::fromStdString(chooser.GetStoreUrl()));
+
+    }
+
+}
+
+
+void KeyViewer::on_sendToHsm_clicked()
+{
+    std::unique_ptr<cqp::keygen::HSMStore> fromStore;
+    std::unique_ptr<cqp::keygen::HSMStore> toStore;
+    auto fromUrl = ui->fromHSM->text();
+    auto toUrl = ui->toHSM->text();
+
+    if(fromUrl.contains("yubi"))
+    {
+        fromStore.reset(new cqp::keygen::YubiHSM(fromUrl.toStdString(), &pinDialog));
+    } else {
+        fromStore.reset(new cqp::keygen::HSMStore(fromUrl.toStdString(), &pinDialog));
+    }
+
+    if(toUrl.contains("yubi"))
+    {
+        toStore.reset(new cqp::keygen::YubiHSM(toUrl.toStdString(), &pinDialog));
+    } else {
+        toStore.reset(new cqp::keygen::HSMStore(toUrl.toStdString(), &pinDialog));
+    }
+
+    if(fromStore && toStore)
+    {
+        cqp::keygen::IBackingStore::Keys allKeys;
+        std::vector<cqp::KeyID> allKeyIds;
+
+        const std::string destination = ui->destination->text().toStdString();
+
+        for(int count = 0; count < ui->keysToSend->value(); count ++)
+        {
+            cqp::KeyID keyId = 0;
+            cqp::PSK key;
+
+            if(fromStore->FindKey(destination, keyId, key) && keyId != 0)
+            {
+                allKeys.push_back({keyId, key});
+                allKeyIds.push_back(keyId);
+            } else
+            {
+                break; // for
+            }
+        }
+        const auto numKeys = allKeys.size();
+        if(toStore->StoreKeys(destination, allKeys))
+        {
+            for(auto id : allKeyIds)
+            {
+                fromStore->RemoveKey(destination, id);
+            }
+            QMessageBox::information(this, tr("Keys moved"), QString::fromStdString("Moved " + std::to_string(numKeys) + " keys."));
+
+        } else {
+            QMessageBox::critical(this, "Move failed", "Failed to move keys");
+        }
+    }
+}
+
+void KeyViewer::on_openDestHsm_clicked()
+{
+    cqp::ui::OpenSSLKeyUI chooser(this);
+    if(chooser.exec() == QDialog::DialogCode::Accepted)
+    {
+        ui->toHSM->setText(QString::fromStdString(chooser.GetStoreUrl()));
+
+    }
+
+}

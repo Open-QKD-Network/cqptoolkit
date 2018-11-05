@@ -186,6 +186,9 @@ namespace cqp
                 return source;
             }
 
+            /// @copydoc IBackingStore::RemoveKey
+            bool RemoveKey(const std::string& destination, KeyID keyId);
+
             /// @{
             /// @name IBackingStore interface
         public:
