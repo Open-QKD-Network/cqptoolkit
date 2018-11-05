@@ -366,7 +366,6 @@ void KeyViewer::on_sendToHsm_clicked()
     if(fromStore && toStore)
     {
         cqp::keygen::IBackingStore::Keys allKeys;
-        std::vector<cqp::KeyID> allKeyIds;
 
         const std::string destination = ui->destination->text().toStdString();
 
@@ -375,10 +374,9 @@ void KeyViewer::on_sendToHsm_clicked()
             cqp::KeyID keyId = 0;
             cqp::PSK key;
 
-            if(fromStore->FindKey(destination, keyId, key) && keyId != 0)
+            if(fromStore->RemoveKey(destination, keyId, key) && keyId != 0)
             {
                 allKeys.push_back({keyId, key});
-                allKeyIds.push_back(keyId);
             } else
             {
                 break; // for
@@ -387,14 +385,11 @@ void KeyViewer::on_sendToHsm_clicked()
         const auto numKeys = allKeys.size();
         if(toStore->StoreKeys(destination, allKeys))
         {
-            for(auto id : allKeyIds)
-            {
-                fromStore->RemoveKey(destination, id);
-            }
             QMessageBox::information(this, tr("Keys moved"), QString::fromStdString("Moved " + std::to_string(numKeys) + " keys."));
 
         } else {
             QMessageBox::critical(this, "Move failed", "Failed to move keys");
+            fromStore->StoreKeys(destination, allKeys);
         }
     }
 }

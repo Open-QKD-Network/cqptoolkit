@@ -246,7 +246,8 @@
            <string>Send to HSM</string>
           </property>
           <property name="icon">
-           <iconset theme="forward"/>
+           <iconset theme="forward">
+            <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>
@@ -278,7 +279,7 @@
         <item row="2" column="0">
          <widget class="QSpinBox" name="keysToSend">
           <property name="value">
-           <number>10</number>
+           <number>1</number>
           </property>
          </widget>
         </item>

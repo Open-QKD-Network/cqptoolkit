@@ -82,7 +82,7 @@ namespace cqp
      * @param key Name of environment variable
      * @return The value of the environment variable
      */
-    std::string GetEnvironmentVar(const std::string& key);
+    CQPTOOLKIT_EXPORT std::string GetEnvironmentVar(const std::string& key);
 
     /**
      * @brief ltrim
