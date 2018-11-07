@@ -269,6 +269,39 @@ namespace cqp
             return result;
         }
 
+        std::set<std::string> HSMStore::GetDestinations(uint numToSearch)
+        {
+            using namespace p11;
+            using namespace std;
+            ObjectList found;
+            std::set<std::string> result;
+
+            if(InitSession())
+            {
+                // setup the search parameters
+                AttributeList attrList{*findObjDefaults};
+                // search for the object
+                if(session->FindObjects(attrList, numToSearch, found) == CKR_OK && found.size() > 0)
+                {
+                    for(auto item : found)
+                    {
+                        string destination;
+                        item.GetAttributeValue(CKA_LABEL, destination);
+                        result.insert(destination);
+                    }
+                }
+                else
+                {
+                    LOGERROR("No keys found");
+                }
+            }
+            else
+            {
+                LOGERROR("Not in a session");
+            }
+            return result;
+        }
+
         CK_RV HSMStore::SessionEventCallback(CK_SESSION_HANDLE, CK_NOTIFICATION, void* pApp)
         {
             try

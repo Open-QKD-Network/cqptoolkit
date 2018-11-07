@@ -336,6 +336,24 @@ void KeyViewer::on_openHsm_clicked()
     if(chooser.exec() == QDialog::DialogCode::Accepted)
     {
         ui->fromHSM->setText(QString::fromStdString(chooser.GetStoreUrl()));
+        auto fromUrl = ui->fromHSM->text();
+        std::unique_ptr<cqp::keygen::HSMStore> fromStore;
+
+        if(fromUrl.contains("yubi"))
+        {
+            fromStore.reset(new cqp::keygen::YubiHSM(fromUrl.toStdString(), &pinDialog));
+        } else {
+            fromStore.reset(new cqp::keygen::HSMStore(fromUrl.toStdString(), &pinDialog));
+        }
+
+        if(fromStore)
+        {
+            ui->destinationCbo->clear();
+            for(auto item : fromStore->GetDestinations())
+            {
+                ui->destinationCbo->addItem(QString::fromStdString(item));
+            }
+        }
 
     }
 
@@ -367,7 +385,7 @@ void KeyViewer::on_sendToHsm_clicked()
     {
         cqp::keygen::IBackingStore::Keys allKeys;
 
-        const std::string destination = ui->destination->text().toStdString();
+        const std::string destination = ui->destinationCbo->currentText().toStdString();
 
         for(int count = 0; count < ui->keysToSend->value(); count ++)
         {

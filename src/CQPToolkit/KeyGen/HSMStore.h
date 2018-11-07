@@ -20,6 +20,7 @@
 #include "CQPToolkit/Util/URI.h"                  // for URI
 #include "CQPToolkit/Datatypes/Keys.h"                       // for KeyID, PSK (ptr only)
 #include <chrono>
+#include <set>
 
 namespace cqp
 {
@@ -188,6 +189,14 @@ namespace cqp
 
             /// @copydoc IBackingStore::RemoveKey
             bool RemoveKey(const std::string& destination, KeyID keyId);
+
+            /**
+             * @brief GetDestinations
+             * Search the keys in the HSM for possible destinations
+             * @param numToSearch The number of keys to search for different destinations.
+             * @return a list of unique destinations
+             */
+            std::set<std::string> GetDestinations(uint numToSearch = 100);
 
             /// @{
             /// @name IBackingStore interface
