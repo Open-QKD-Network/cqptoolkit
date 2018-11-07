@@ -392,9 +392,10 @@ void KeyViewer::on_sendToHsm_clicked()
             cqp::KeyID keyId = 0;
             cqp::PSK key;
 
-            if(fromStore->RemoveKey(destination, keyId, key) && keyId != 0)
+            if(fromStore->FindKey(destination, keyId, key) && keyId != 0)
             {
                 allKeys.push_back({keyId, key});
+                fromStore->RemoveKey(destination, keyId);
             } else
             {
                 break; // for
