@@ -139,14 +139,14 @@ namespace cqp
                     std::unique_lock<std::mutex> lock(allKeys_lock);
 
                     // move the keys out to the backing store
-                    for(auto list :
+                    for(KeyMap* list :
                             {
-                                unusedKeys, reservedKeys
+                                &unusedKeys, &reservedKeys
                             })
                     {
-                        std::copy(list.begin(), list.end(), std::back_inserter(backingStoreKeys));
+                        std::copy(list->begin(), list->end(), std::back_inserter(backingStoreKeys));
 
-                        list.clear();
+                        list->clear();
                     } // for list
                 } /*lock scope*/
 
