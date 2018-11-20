@@ -11,6 +11,7 @@ image: registry.gitlab.com/qcomms/cqptoolkit/buildenv:latest
 # group jobs into stages
 stages:
   - build
+  - check
   - package
   - deploy
 
@@ -157,8 +158,11 @@ deploy:idqwrapper-docker-image:
     policy: pull
   when: manual
 
-sast:  
+check:sast:
+  stage: check
   image: docker:stable
+  dependencies:
+    - build:linux
   variables:
     DOCKER_DRIVER: overlay2
   allow_failure: true
