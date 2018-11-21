@@ -31,7 +31,7 @@ namespace cqp
              * Constructor
              * @param bytesPerKey
              */
-            KeyConverter(size_t bytesPerKey = 16);
+            explicit KeyConverter(size_t bytesPerKey = 16);
 
             ///@{
             ///  IKeyCallback interface

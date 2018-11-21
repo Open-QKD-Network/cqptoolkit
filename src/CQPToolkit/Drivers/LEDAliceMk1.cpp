@@ -38,12 +38,12 @@ namespace cqp
 
     }
 
-    LEDAliceMk1::LEDAliceMk1(const std::string& portName, const std::string& description)
+    LEDAliceMk1::LEDAliceMk1(const std::string& portName, const std::string&) :
+        myPortName{portName}
     {
-        myPortName = portName;
     }
 
-    bool LEDAliceMk1::Open(const std::string& portName, const std::string& description)
+    bool LEDAliceMk1::Open(const std::string& portName, const std::string&)
     {
 
         myPortName = portName;
@@ -59,8 +59,7 @@ namespace cqp
 
     bool LEDAliceMk1::Open()
     {
-        bool result = false;
-        result = configPort.Open(myPortName, myBaudRate);
+        bool result = configPort.Open(myPortName, myBaudRate);
         if(result)
         {
             result = Usb::Open(UsbVID, UsbPID, 1, 0);

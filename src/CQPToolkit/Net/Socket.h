@@ -55,7 +55,7 @@ namespace cqp
              * @brief IPAddress
              * @param input
              */
-            IPAddress(const std::string& input);
+            explicit IPAddress(const std::string& input);
 
             /**
              * @brief ToString

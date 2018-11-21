@@ -73,9 +73,9 @@ namespace cqp
             return result;
         } // Connect
 
-        TwoWayServerConnector::TwoWayServerConnector(std::shared_ptr<grpc::ChannelCredentials> creds)
+        TwoWayServerConnector::TwoWayServerConnector(std::shared_ptr<grpc::ChannelCredentials> creds) :
+            clientCreds{creds}
         {
-            clientCreds = creds;
         }
 
         void TwoWayServerConnector::Disconnect()

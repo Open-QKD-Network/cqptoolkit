@@ -37,7 +37,6 @@ namespace cqp
             {
                 LOGTRACE("Setting ip address of " + devName + " to " + address + "/" + netmask);
                 net::IPAddress ip(address);
-                unsigned int addrSize = 0;
                 struct ifreq ipStruct {};
 
                 int udpSock = 0;
@@ -52,6 +51,7 @@ namespace cqp
 
                 if(udpSock > 0)
                 {
+                    unsigned int addrSize = 0;
                     devName.copy(ipStruct.ifr_ifrn.ifrn_name, IFNAMSIZ);
                     ipStruct.ifr_ifru.ifru_addr = *ip.ToStruct(addrSize);
 

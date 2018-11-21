@@ -203,9 +203,8 @@ namespace cqp
 
     void Usb::StartReadingBulk(uint8_t request)
     {
-        struct libusb_transfer *transfer = nullptr;
+        struct libusb_transfer *transfer = libusb_alloc_transfer(0);
 
-        transfer = libusb_alloc_transfer(0);
         libusb_fill_bulk_transfer(
             transfer, myHandle, request, readBuffer, sizeof(readBuffer),
             Usb::StandardReadCallback, this, 0);
@@ -273,7 +272,7 @@ namespace cqp
         ssize_t numDevices = libusb_get_device_list(nullptr, &devs);
         LOGDEBUG("Found " + std::to_string(numDevices) + " usb devices.");
 
-        // Create an object which will hopfully connect
+        // Create an object which will hopefully connect
         Usb* newDevice = new Usb();
         for (int devIndex = 0; devIndex < numDevices; devIndex++)
         {
@@ -282,11 +281,8 @@ namespace cqp
                 LOGDEBUG("Found matching vid/pid...");
                 // Success, store the new device and create a blank one to work with
                 results.push_back(newDevice);
-                newDevice = nullptr;
-                if(devIndex < numDevices)
-                {
-                    newDevice = new Usb();
-                }
+                // TODO: use shared/unique pointers
+                newDevice = new Usb();
 
                 if (firstOnly)
                 {

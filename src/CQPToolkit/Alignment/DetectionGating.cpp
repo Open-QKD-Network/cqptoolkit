@@ -72,7 +72,7 @@ namespace cqp
             // for each detection
             //   calculate it's slot and bin ids and store a reference to the original data
             //   count the bin ids
-            for(DetectionReportList::const_iterator detection = dataBounds.first; detection != dataBounds.second; detection++)
+            for(DetectionReportList::const_iterator detection = dataBounds.first; detection != dataBounds.second; ++detection)
             {
                 using namespace std::chrono;
                 // calculate the offset in whole picoseconds (signed)
@@ -153,7 +153,7 @@ namespace cqp
             return offsetHighscore;
         }
 
-        void DetectionGating::HistogramWorker(DetectionGating::DetectionBounds dataBounds,
+        void DetectionGating::HistogramWorker(const DetectionGating::DetectionBounds& dataBounds,
             std::pair<uint64_t, uint64_t> myOffsetRange,
             const remote::QubitByIndex& markers,
             OffsetHighscore& offsetHighscore)
@@ -485,8 +485,11 @@ namespace cqp
 
                         uint64_t result = 0;
                         queue.enqueueReadBuffer(peakSlot, CL_TRUE, 0, sizeof (result), &result);
+
                     }
+                    delete myKernel;
                 }
+                delete clCtx;
             }
             else
             {

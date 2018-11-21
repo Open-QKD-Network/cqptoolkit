@@ -92,7 +92,7 @@ namespace cqp
          * Constructor
          * @param creds credentials to use when contacting the peer controller
          */
-        SessionController(std::shared_ptr<grpc::ChannelCredentials> creds);
+        explicit SessionController(std::shared_ptr<grpc::ChannelCredentials> creds);
 
         /// Distructor
         ~SessionController() override;

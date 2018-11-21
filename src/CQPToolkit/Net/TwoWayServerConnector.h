@@ -37,7 +37,7 @@ namespace cqp
              * Constructor
              * @param creds credentials to use when connecting to peer
              */
-            TwoWayServerConnector(std::shared_ptr<grpc::ChannelCredentials> creds);
+            explicit TwoWayServerConnector(std::shared_ptr<grpc::ChannelCredentials> creds);
             /**
              * @brief Connect
              * Connect as a client and wait for the server to connect to us.

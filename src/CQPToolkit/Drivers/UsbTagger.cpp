@@ -69,11 +69,7 @@ namespace cqp
                 LOGDEBUG("Found matching vid/pid...");
                 // Success, store the new device and create a blank one to work with
                 results.push_back(newDevice);
-                newDevice = nullptr;
-                if(devIndex < numDevices)
-                {
-                    newDevice = new UsbTagger();
-                }
+                newDevice = new UsbTagger();
 
                 if (firstOnly)
                 {

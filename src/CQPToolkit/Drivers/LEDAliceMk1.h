@@ -35,7 +35,7 @@ namespace cqp
          * Default constructor
          * @param randomSource
          */
-        LEDAliceMk1(IRandom* randomSource);
+        explicit LEDAliceMk1(IRandom* randomSource);
 
         /**
          * @brief LEDAliceMk1

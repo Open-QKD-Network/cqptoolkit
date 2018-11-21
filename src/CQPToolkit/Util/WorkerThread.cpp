@@ -56,7 +56,7 @@ namespace cqp
 
     WorkerThread::~WorkerThread()
     {
-        Stop(true);
+        WorkerThread::Stop(true);
     }
 
     void WorkerThread::Start(int nice, Scheduler policy, int realtimePriority)

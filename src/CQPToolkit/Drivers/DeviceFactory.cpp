@@ -148,7 +148,7 @@ namespace cqp
         }
     }
 
-    void DeviceFactory::RegisterDriver(const std::string& name, DeviceFactory::DeviceCreateFunc createFunc)
+    void DeviceFactory::RegisterDriver(const std::string& name, const DeviceFactory::DeviceCreateFunc& createFunc)
     {
         driverMapping[name] = createFunc;
     }
@@ -210,10 +210,7 @@ namespace cqp
     std::vector<std::string> DeviceFactory::GetKnownDrivers()
     {
         std::vector<std::string> result;
-        for(auto driver : driverMapping)
-        {
-            result.push_back(driver.first);
-        }
+        std::transform(driverMapping.begin(), driverMapping.end(), result.begin(), [](auto input){return input.first; });
         return result;
     }
 

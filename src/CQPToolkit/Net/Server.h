@@ -37,7 +37,7 @@ namespace cqp
              * Construct and listen on address
              * @param listenAddress
              */
-            Server(const SocketAddress& listenAddress);
+            explicit Server(const SocketAddress& listenAddress);
             /**
              * @brief Listen
              * Start listening on address

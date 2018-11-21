@@ -57,7 +57,7 @@ namespace qkdtunnel
     {
         using namespace std;
         using namespace cqp::remote::tunnels;
-        vector<cqp::UUID> detected;
+
         for(auto host : services)
         {
             SetRemote(host.second);

@@ -34,7 +34,7 @@ namespace cqp
             constexpr static const uint64_t DefaultoffsetTestRange = 100;
             constexpr static const double DefaultAcceptanceRatio = 0.1;
 
-            DetectionGating(IRandom& randGen);
+            explicit DetectionGating(IRandom& randGen);
 
             /**
              * @brief DetectionGating
@@ -149,7 +149,7 @@ namespace cqp
             std::vector<ThreadDetails> threadPool;
 
         protected: // methods
-            void HistogramWorker(DetectionBounds dataBounds, std::pair<uint64_t, uint64_t> myOffsetRange, const remote::QubitByIndex &markers, OffsetHighscore &offsetHighscore);
+            void HistogramWorker(const DetectionBounds& dataBounds, std::pair<uint64_t, uint64_t> myOffsetRange, const remote::QubitByIndex &markers, OffsetHighscore &offsetHighscore);
 
             grpc::Status GetMarkers(std::shared_ptr<grpc::Channel> channel, SequenceNumber frameId, remote::QubitByIndex& results);
             static grpc::Status SendValidDetections(std::shared_ptr<grpc::Channel> channel, SequenceNumber frame, const DetectedSlots& results, uint64_t offset);

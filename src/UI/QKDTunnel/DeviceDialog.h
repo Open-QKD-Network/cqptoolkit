@@ -31,7 +31,7 @@ namespace qkdtunnel
          * @brief DeviceDialog
          * @param parent
          */
-        DeviceDialog(QWidget * parent);
+        explicit DeviceDialog(QWidget * parent);
         /**
          * @brief SetData
          * @param uri

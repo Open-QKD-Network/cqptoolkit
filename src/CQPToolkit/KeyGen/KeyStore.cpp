@@ -13,6 +13,7 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/KeyGen/Stats.h"
 #include "CQPToolkit/KeyGen/KeyStoreFactory.h"
+#include <numeric>
 
 namespace cqp
 {
@@ -90,11 +91,9 @@ namespace cqp
 
         bool KeyStore::GetNewKey(KeyID& identity, PSK& output)
         {
-            bool result = false;
-
             // see if we've already got some key
-            // if theres no path, wait until key arrives
-            result = GetNewDirectKey(identity, output, myPath.empty());
+            // if there's no path, wait until key arrives
+            bool result = GetNewDirectKey(identity, output, myPath.empty());
 
             if(!result && !myPath.empty())
             {
@@ -321,8 +320,8 @@ namespace cqp
             {
                 // good to go, reserve the key
                 reservedKeys[unusedIt->first] = unusedIt->second;
-                unusedKeys.erase(unusedIt);
                 alternative = unusedIt->first;
+                unusedKeys.erase(unusedIt);
             }
             // try getting it from the backing store
             else if(backingStore && backingStore->RemoveKey(mySiteTo, identity, reservedKeys[identity]))
@@ -440,9 +439,9 @@ namespace cqp
             allKeys_cv.notify_all();
 
             uint64_t unusedAvailable = 0;
-            uint64_t remainingCapacity = 0;
             if(backingStore)
             {
+                uint64_t remainingCapacity = 0;
                 backingStore->GetCounts(mySiteTo, unusedAvailable, remainingCapacity);
             }
             unusedAvailable += unusedKeys.size();

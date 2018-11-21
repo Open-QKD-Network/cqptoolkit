@@ -27,14 +27,14 @@ namespace qkdtunnel
          * Construct from basic info
          * @param name
          */
-        TunnelItem(const QString& name = "TunnelEnd");
+        explicit TunnelItem(const QString& name = "TunnelEnd");
 
         /**
          * @brief TunnelItem
          * Constructor from a full set of details
          * @param details
          */
-        TunnelItem(const cqp::remote::tunnels::Tunnel& details);
+        explicit TunnelItem(const cqp::remote::tunnels::Tunnel& details);
 
         /**
          * @brief SetDetails

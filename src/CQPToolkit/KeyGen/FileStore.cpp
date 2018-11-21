@@ -143,7 +143,6 @@ namespace cqp
         bool FileStore::StoreKeys(const std::string& destination, Keys& keys)
         {
             // Note: binds are indexed from 1, columns are indexed from 0
-            bool result = false;
             // hash the destination to get the link id
             const uint64_t link = FNV1aHash(destination);
 
@@ -155,7 +154,7 @@ namespace cqp
             CheckSQLite(sqlite3_bind_text(insertLinkStmt, 2, destination.c_str(), destination.length(), SQLITE_TRANSIENT));
 
             // add the destination/link id if it doesn't already exist
-            result = SQLiteOk(sqlite3_step(insertLinkStmt));
+            bool result = SQLiteOk(sqlite3_step(insertLinkStmt));
             CheckSQLite(sqlite3_reset(insertLinkStmt));
 
             for(auto key : keys)

@@ -17,10 +17,10 @@ namespace cqp
         bool DataFile::ReadPackedQubits(const std::string& inFileName, QubitList& output)
         {
             bool result = true;
-            uint64_t index = 0;
             std::ifstream inFile(inFileName, std::ios::in | std::ios::binary);
             if (inFile)
             {
+                uint64_t index = 0;
                 // qubits packed 4/byte
                 inFile.seekg(0, std::ios::end);
                 output.resize(static_cast<size_t>(inFile.tellg() * 4));
@@ -99,10 +99,10 @@ namespace cqp
         {
 
             bool result = true;
-            uint64_t droppedDetections = 0;
             std::ifstream inFile(inFileName, std::ios::in | std::ios::binary);
             if (inFile)
             {
+                uint64_t droppedDetections = 0;
                 // qubits packed 4/byte
                 inFile.seekg(0, std::ios::end);
                 const auto fileSize = inFile.tellg() * 4;

@@ -38,7 +38,6 @@ namespace cqp
             using namespace std;
             ObjectList found;
             bool result = false;
-            auto& myReservedKeys = reservedKeys[destination];
 
             if(InitSession())
             {
@@ -48,8 +47,8 @@ namespace cqp
                 // ask for one more than the currently reserved list. the last one should be unreserved.
                 if(session->FindObjects(attrList, reservedKeys[destination].size() + 1, found) == CKR_OK && found.size() > 0)
                 {
-                    // theres nothing on the device we can change
-                    // look backwards through the list unil an unreserved one is found
+                    // there's nothing on the device we can change
+                    // look backwards through the list until an unreserved one is found
                     for(auto item :
                             {
                                 found.rbegin(), found.rend()
@@ -60,6 +59,7 @@ namespace cqp
 
                         if(result)
                         {
+                            auto& myReservedKeys = reservedKeys[destination];
                             // check if its already reserved
                             result = find(myReservedKeys.begin(), myReservedKeys.end(), tempKeyId) == myReservedKeys.end();
 

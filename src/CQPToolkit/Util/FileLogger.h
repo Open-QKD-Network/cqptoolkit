@@ -25,7 +25,7 @@ namespace cqp
     {
     public:
 
-        /// Standard distructor
+        /// Standard destructor
         virtual ~FileLogger();
 
         /// @brief Output a message at a given deverity level
@@ -37,7 +37,7 @@ namespace cqp
         /// Change the destination of the output.
         /// Only subsequent messages will be sent to the file.
         /// @param[in] filename The filename to log to
-        virtual void SetFilename(const std::string& filename);
+        void SetFilename(const std::string& filename);
         /// Start using the logger
         /// Calling this when already enabled will have no effect
         static void Enable();

@@ -17,7 +17,7 @@ namespace cqp
 {
     std::mutex KeyPrinter::outputGuard;
 
-    KeyPrinter::KeyPrinter(std::string prefix): outputPrefix(prefix)
+    KeyPrinter::KeyPrinter(const std::string& prefix): outputPrefix(prefix)
     {
 
     }
@@ -35,7 +35,7 @@ namespace cqp
         stringstream message;
         for(size_t index = 0; index < keyData->size(); index++)
         {
-            // bulid the message as hexidecimal uppercase numbers
+            // build the message as hexadecimal uppercase numbers
             message << outputPrefix << "Key: " << "0x";
             for(auto byte : (*keyData)[index])
             {

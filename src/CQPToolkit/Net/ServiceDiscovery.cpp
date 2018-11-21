@@ -40,7 +40,7 @@ namespace cqp
         class ServiceDiscoveryImpl : public WorkerThread
         {
         public:
-            ServiceDiscoveryImpl(ServiceDiscovery* p);
+            explicit ServiceDiscoveryImpl(ServiceDiscovery* p);
 
             ~ServiceDiscoveryImpl() override;
 
@@ -127,8 +127,6 @@ namespace cqp
 
         void ServiceDiscoveryImpl::CreateServices()
         {
-            int ret = 0;
-
             try
             {
 
@@ -145,6 +143,8 @@ namespace cqp
                  * because it was reset previously, add our entries.  */
                 if (group && avahi_entry_group_is_empty(group))
                 {
+                    int ret = 0;
+
                     /* We will now add two services and one subtype to the entry
                      * group. The two services have the same name, but differ in
                      * the service type (IPP vs. BSD LPR). Only services with the
@@ -496,7 +496,7 @@ namespace cqp
         class ServiceDiscoveryImpl : public WorkerThread
         {
         public:
-            ServiceDiscoveryImpl(ServiceDiscovery* p) {};
+            explicit ServiceDiscoveryImpl(ServiceDiscovery* p) {};
 
             ~ServiceDiscoveryImpl() override {};
 

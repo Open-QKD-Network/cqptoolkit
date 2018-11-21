@@ -50,7 +50,7 @@ namespace cqp
          * Constructor
          * @param creds Passed to the device when it is created
          */
-        DeviceFactory(std::shared_ptr<grpc::ChannelCredentials> creds);
+        explicit DeviceFactory(std::shared_ptr<grpc::ChannelCredentials> creds);
 
         /**
          * @brief GetDeviceIdentifier
@@ -96,7 +96,7 @@ namespace cqp
          * @param name The driver name
          * @param createFunc Function which will create the deivce
          */
-        static void RegisterDriver(const std::string& name, DeviceCreateFunc createFunc);
+        static void RegisterDriver(const std::string& name, const DeviceCreateFunc& createFunc);
 
         /**
          * @brief GetSide

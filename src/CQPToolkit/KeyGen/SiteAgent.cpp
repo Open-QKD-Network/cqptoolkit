@@ -615,14 +615,10 @@ namespace cqp
                     net::IPAddress addrIp;
                     if(net::ResolveAddress(addrUri.GetHost(), addrIp))
                     {
-                        for(auto myIp : net::GetHostIPs())
-                        {
-                            if(myIp == addrIp)
-                            {
-                                result = true;
-                                break; // for
-                            } // if ips match
-                        } // for
+                        const auto hostIps = net::GetHostIPs();
+                        result = std::any_of(hostIps.begin(), hostIps.end(), [&addrIp](auto myIp) {
+                            return myIp == addrIp;
+                        });
                     } // if resolve
                 } // if !result
             } // ports match

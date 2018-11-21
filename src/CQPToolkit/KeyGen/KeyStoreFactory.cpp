@@ -46,15 +46,12 @@ namespace cqp
             {
                 // this might be us with a different ip
                 std::vector<net::IPAddress> hostIPs = net::GetHostIPs();
-                for(auto myIp : hostIPs)
+                if(std::any_of(hostIPs.begin(), hostIPs.end(), [&destIp](auto myIp) { return myIp == destIp; }))
                 {
-                    if(myIp == destIp)
-                    {
-                        // override the ip to the one we recognise
-                        destIp = siteAddress.ip;
-                        break; // for
-                    } // ips match
-                } // for
+                    // override the IP to the one we recognise
+                    destIp = siteAddress.ip;
+                }
+
             } // if partial match
 
             const string keystoreName = destIp.ToString() + ":" + to_string(destUri.GetPort());

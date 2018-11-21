@@ -63,7 +63,7 @@ namespace qkdtunnel
          * Construct from settings
          * @param details values to initialise with
          */
-        ControllerItem(const cqp::remote::tunnels::ControllerDetails& details);
+        explicit ControllerItem(const cqp::remote::tunnels::ControllerDetails& details);
 
         /**
          * @brief GetId

@@ -15,6 +15,7 @@
 #include "CQPToolkit/Net/DNS.h"
 #include <memory>
 #include <iomanip>
+#include <algorithm>
 #if defined (__unix__)
     #include <unistd.h>
     #include <sys/types.h>
@@ -95,7 +96,7 @@ namespace cqp
 
         Socket::~Socket()
         {
-            Close();
+            Socket::Close();
         }
 
         SocketAddress Socket::GetAddress() const
@@ -260,25 +261,11 @@ namespace cqp
             bool result = true;
             if(isIPv4)
             {
-                for(auto octext : ip4)
-                {
-                    if(octext != 0)
-                    {
-                        result = false;
-                        break; // for
-                    }
-                }
+                result = std::all_of(ip4.begin(), ip4.end(), [](const auto& item) { return item == 0; });
             }
             else
             {
-                for(auto byte : ip6)
-                {
-                    if(byte != 0)
-                    {
-                        result = false;
-                        break; // for
-                    }
-                }
+                result = std::all_of(ip6.begin(), ip6.end(), [](const auto& item) { return item == 0; });
             }
             return result;
         }

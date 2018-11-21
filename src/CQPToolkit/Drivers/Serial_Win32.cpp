@@ -87,19 +87,16 @@ namespace cqp
         using namespace std;
         bool result = true;
 
-        if (result)
-        {
-            fileId = CreateFileA(
-                         port.c_str(),
-                         accessMode,
-                         sharedMode,
-                         nullptr,
-                         OPEN_EXISTING,
-                         openFlags,
-                         nullptr
-                     );
-            result &= IsOpen();
-        }
+        fileId = CreateFileA(
+                     port.c_str(),
+                     accessMode,
+                     sharedMode,
+                     nullptr,
+                     OPEN_EXISTING,
+                     openFlags,
+                     nullptr
+                 );
+        result &= IsOpen();
 
         if (result)
         {

@@ -52,7 +52,7 @@ namespace cqp
         /// @returns true if the command succeded
         bool DeleteLink();
 
-        /// Distructor
+        /// Destructor
         /// This will take down the link if it has been created
         virtual ~SDNLink();
     protected:
@@ -75,7 +75,7 @@ namespace cqp
         std::pair<std::string, std::string> names;
         /// The id returned by create link
         /// This is reset by DeleteLink()
-        long long id;
+        long long id {0};
     };
 
 }

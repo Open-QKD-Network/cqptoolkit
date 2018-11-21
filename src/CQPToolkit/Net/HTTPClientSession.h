@@ -115,11 +115,11 @@ namespace cqp
             HTTPClientSession();
             /**
              * @brief HTTPClientSession
-             * @param address conneciton address
+             * @param address connection address
              */
-            HTTPClientSession(const URI& address);
+            explicit HTTPClientSession(const URI& address);
 
-            /// Distructor
+            /// Destructor
             ~HTTPClientSession();
 
             /**

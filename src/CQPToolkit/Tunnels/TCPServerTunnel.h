@@ -30,11 +30,11 @@ namespace cqp
             /**
              * @brief TCPServerTunnel
              * Constructor
-             * @param listenAddress  The address of the server as a url
+             * @param listenAddress  The address of the server as a URL
              */
-            TCPServerTunnel(const URI& listenAddress);
+            explicit TCPServerTunnel(const URI& listenAddress);
 
-            /// Distructor
+            /// Destructor
             virtual ~TCPServerTunnel() override;
 
             ///@{

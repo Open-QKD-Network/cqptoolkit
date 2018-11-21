@@ -28,7 +28,7 @@ namespace cqp
          * Constructor
          * @param prefix Prepend this string to every output
          */
-        KeyPrinter(std::string prefix);
+        explicit KeyPrinter(const std::string& prefix);
 
         /**
          * @brief SetOutputPrefix
@@ -50,7 +50,7 @@ namespace cqp
 
         /// @}
     private:
-        /// prevents multiple threads from outputing to the logger at the same time.
+        /// prevents multiple threads from outputting to the logger at the same time.
         static std::mutex outputGuard;
         /// prepend this to each output
         std::string outputPrefix = "";

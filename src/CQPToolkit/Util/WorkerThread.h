@@ -36,11 +36,11 @@ namespace cqp
     public:
         /// Default constructor for a worker
         WorkerThread();
-        /// Default distructor
+        /// Default destructor
         /// @details This will wait for the thread to complete
         virtual ~WorkerThread();
 
-        /// platform independent defintions of schedualing methods
+        /// platform independent definitions of scheduling methods
         /// these do not directly translate on every platform
         enum class Scheduler { Idle, Batch, Normal, RoundRobin, FIFO, Deadline};
 
@@ -49,7 +49,7 @@ namespace cqp
         /// If the thread has been previously stopped, it will be restarted.
         /// @param nice Higher number == less chance it will run, more nice
         /// @param realtimePriority Higher number == more chance it will run
-        /// @param policy The kind of schedular to use
+        /// @param policy The kind of scheduler to use
         virtual void Start(int nice = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
         /// Signal the worker thread to stop what it's doing.
         /// @details The WorkerThread::DoWork() call must provide a means of being interrupted if this is not going to block.
@@ -69,7 +69,7 @@ namespace cqp
          * @param theThread
          * @param niceLevel Higher number == less chance it will run, more nice
          * @param realtimePriority Higher number == more chance it will run
-         * @param policy The kind of schedular to use
+         * @param policy The kind of scheduler to use
          * @return true on succes
          */
         static bool SetPriority(std::thread& theThread, int niceLevel, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
@@ -79,7 +79,7 @@ namespace cqp
          * Change a threads priority
          * @param niceLevel Higher number == less chance it will run, more nice
          * @param realtimePriority Higher number == more chance it will run
-         * @param policy The kind of schedular to use
+         * @param policy The kind of scheduler to use
          * @return true on succes
          */
         bool SetPriority(int niceLevel, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);

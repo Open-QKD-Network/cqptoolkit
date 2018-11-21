@@ -26,7 +26,7 @@
 namespace cqp
 {
 
-    /// Polynominal use for calulating the CRC with the CRCFddi funtion
+    /// Polynomial use for calculating the CRC with the CRCFddi function
     const uint32_t fddiPoly = 0x04c11db7;
 
     /// Calculate the CRC using the FDDI algorithm
@@ -36,10 +36,10 @@ namespace cqp
     /// @return crc of input
     CQPTOOLKIT_EXPORT uint32_t CRCFddi(const void *buf, uint32_t len);
 
-    /// Concatinate the strings optionally seperating them with a delimiter
-    /// @param strings The strings to concatinate
-    /// @param delimiter Seperator between each string
-    /// @return The concatinated string.
+    /// Concatenate the strings optionally separating them with a delimiter
+    /// @param strings The strings to concatenate
+    /// @param delimiter Separator between each string
+    /// @return The concatenated string.
     std::string Join(const std::vector<std::string>& strings, const std::string& delimiter = "");
 
     /// Clear a memory region such that it's contents cannot be recovered
@@ -86,7 +86,7 @@ namespace cqp
 
     /**
      * @brief ltrim
-     * Remove whitespace from the left of the string
+     * Remove white space from the left of the string
      * @note thanks to https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
      * trim from start (in place)
      * @param s string to trim
@@ -101,7 +101,7 @@ namespace cqp
 
     /**
      * @brief rtrim
-     * Remove whitespace from the end of the string
+     * Remove white space from the end of the string
      * @note thanks to https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
      * trim from start (in place)
      * @param s string to trim
@@ -130,7 +130,7 @@ namespace cqp
      * Tokenise the string
      * @param[in] value string to tokenise
      * @param[out] dest tokens
-     * @param[in] seperator How to seperate the string
+     * @param[in] separator How to separate the string
      * @param[in] startAt Start point of value
      */
     CQPTOOLKIT_EXPORT void SplitString(const std::string& value, std::vector<std::string>& dest, const std::string& seperator, size_t startAt = 0);
@@ -141,17 +141,17 @@ namespace cqp
      * Tokenise the string
      * @param[in] value string to tokenise
      * @param[out] dest tokens
-     * @param[in] seperator How to seperate the string
+     * @param[in] separator How to separate the string
      * @param[in] startAt Start point of value
      */
     CQPTOOLKIT_EXPORT void SplitString(const std::string& value, std::unordered_set<std::string>& dest, const std::string& seperator, size_t startAt = 0);
 
     /**
      * @brief ToDictionary
-     * Convert a deleimited string with key value pairs into a dictionary
-     * @param delimited string to seperate, eg ``key1=abc;key2=def``
-     * @param pairSeperator seperator between key value pairs
-     * @param keyValueSep seperator between key and value
+     * Convert a delimited string with key value pairs into a dictionary
+     * @param delimited string to separate, eg ``key1=abc;key2=def``
+     * @param pairSeparator separator between key value pairs
+     * @param keyValueSep separator between key and value
      * @param dictionary destination for results
      */
     CQPTOOLKIT_EXPORT void ToDictionary(const std::string& delimited, std::map<std::string, std::string>& dictionary,
@@ -186,7 +186,7 @@ namespace cqp
     /**
      * @brief FNV1aHash
      * Perform a fast hash on the value. This is not suitable for security,
-     * it is intended for fast string to collision resistent hashes for lookups.
+     * it is intended for fast string to collision resistant hashes for lookups.
      * @param value string to hash
      * @return hash value
      */

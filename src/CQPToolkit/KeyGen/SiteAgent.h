@@ -56,9 +56,9 @@ namespace cqp
          * @brief SiteAgent
          * @param config
          */
-        SiteAgent(const remote::SiteAgentConfig& config);
+        explicit SiteAgent(const remote::SiteAgentConfig& config);
 
-        /// Distructor
+        /// Destructor
         ~SiteAgent() override;
 
         /**

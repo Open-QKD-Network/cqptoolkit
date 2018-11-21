@@ -144,7 +144,6 @@ namespace cqp
 
         // This is hard coded into the program
 
-        const string configName = "";
         std::string configFile("/var/idq/vectis.conf");
         std::string pskFolder(fs::Parent(configFile));
 

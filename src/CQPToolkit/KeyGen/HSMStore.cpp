@@ -204,13 +204,13 @@ namespace cqp
             using namespace std;
             ObjectList found;
             unsigned int numDeleted = 0;
-            bool result = true;
 
             if(InitSession())
             {
                 // setup the search parameters
                 AttributeList attrList{*findObjDefaults};
                 attrList.Set(CKA_DESTROYABLE, true);
+                bool result = true;
 
                 // search for the object
                 while(result && session->FindObjects(attrList, 100, found) == CKR_OK && found.size() > 0)

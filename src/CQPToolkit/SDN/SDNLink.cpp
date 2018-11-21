@@ -77,7 +77,6 @@ namespace cqp
     bool SDNLink::BuildExistingLinks(const URI& sdnControllerAddress, List& linkList)
     {
         using namespace std;
-        bool result = false;
 
         using namespace google::protobuf::util;
         // Create an instance to perform the communications
@@ -85,7 +84,7 @@ namespace cqp
 
         // parse the response from the server
         polatis::Links links;
-        result = JsonStringToMessage(tempLink.GetLinks(), &links).ok();
+        bool result = JsonStringToMessage(tempLink.GetLinks(), &links).ok();
 
         if(result)
         {

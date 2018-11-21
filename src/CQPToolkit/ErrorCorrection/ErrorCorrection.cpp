@@ -51,15 +51,12 @@ namespace cqp
         void ErrorCorrection::OnSifted(const SequenceNumber id, std::unique_ptr<JaggedDataBlock> siftedData)
         {
             LOGTRACE("Sifted data recieved");
-            // collect incomming data, notify listeners of new data
+            // collect incoming data, notify listeners of new data
             // TODO
             //receivedDataCv.notify_one();
             // just pass it on
             std::unique_ptr<DataBlock> corrected(new DataBlock);
-            for(auto element : *siftedData)
-            {
-                corrected->push_back(element);
-            }
+            std::copy(siftedData->begin(), siftedData->end(), corrected->begin());
 
             if(listener)
             {

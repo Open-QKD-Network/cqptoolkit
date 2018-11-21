@@ -37,7 +37,7 @@ namespace cqp
              * Constructor
              * @param filename The file to load and store keys from
              */
-            FileStore(const std::string& filename = ":memory:");
+            explicit FileStore(const std::string& filename = ":memory:");
             /// Distructor
             ~FileStore() override;
 

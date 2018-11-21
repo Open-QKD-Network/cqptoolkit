@@ -38,12 +38,11 @@ namespace cqp
          */
         bool pop(const std::chrono::microseconds& timeout, T& out)
         {
-            bool waitResult = false;
             // get a lock on the mutex
             std::unique_lock<std::mutex> lock(changeMutex);
 
             // wait until the queue has something in it
-            waitResult = dataAvailable.wait_for(lock, timeout, [&]()
+            bool waitResult = dataAvailable.wait_for(lock, timeout, [&]()
             {
                 return !TheQueue::empty();
             });

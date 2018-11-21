@@ -17,7 +17,8 @@ namespace cqp
     namespace sift
     {
 
-        Transmitter::Transmitter()
+        Transmitter::Transmitter(unsigned int framesBeforeVerify) :
+            minFramesBeforeVerify(framesBeforeVerify)
         {
         }
 
@@ -171,7 +172,7 @@ namespace cqp
                     } // if
                     else
                     {
-                        // stop walking thorugh the data, theres a hole
+                        // stop walking through the data, there's a hole
                         break;
                     } // else
                 } // while(it != collectedStates.end())

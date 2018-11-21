@@ -117,7 +117,6 @@ namespace cqp {
                     int stdOut = 0;
                     std::vector<std::string> args;
                     Process chooser;
-                    std::string line;
                     std::vector<std::string> lines;
 
                     chooser.Start("ChooseHSM", args, nullptr, &stdOut);
@@ -183,7 +182,6 @@ namespace cqp {
             if(myStore)
             {
                 uint64_t keyId = 0;
-                std::string destination;
 
                 PSK keyValue;
                 if(myStore->FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)

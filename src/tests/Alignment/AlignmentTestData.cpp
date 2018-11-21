@@ -22,10 +22,10 @@ namespace cqp
 
         void AlignmentTestData::LoadGated(const std::string& txFile)
         {
-            uint64_t index = 0;
             std::ifstream inFile(txFile, std::ios::in | std::ios::binary);
             if (inFile)
             {
+                uint64_t index = 0;
                 // qubits packed 4/byte
                 inFile.seekg(0, std::ios::end);
                 emissions.resize(static_cast<size_t>(inFile.tellg() * 4));

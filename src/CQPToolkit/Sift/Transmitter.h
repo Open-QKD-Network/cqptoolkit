@@ -23,7 +23,7 @@ namespace cqp
 
         /**
          * @brief The BB84Sifter class
-         * Sends incomming qubits to the verifier
+         * Sends incoming qubits to the verifier
          * @details
          */
         class CQPTOOLKIT_EXPORT Transmitter : public SiftBase, protected WorkerThread
@@ -32,8 +32,9 @@ namespace cqp
             /**
              * @brief BB84Sifter
              * Constructor
+             * @param framesBeforeVerify How many frames to collect before verifying data.
              */
-            Transmitter();
+            explicit Transmitter(unsigned int framesBeforeVerify = 1);
 
             /**
              * @brief Connect
@@ -48,7 +49,7 @@ namespace cqp
 
             /**
              * @brief ~BB84Sifter
-             * Distructor
+             * Destructor
              */
             ~Transmitter() override;
 
@@ -87,7 +88,7 @@ namespace cqp
             std::unique_ptr<remote::ISift::Stub> verifier;
             /// How long to wait for new data before checking if the thread should be stopped
             const std::chrono::seconds threadTimeout {1};
-            /// How many aligned frames to recieve before trying to generate a sifted frame
+            /// How many aligned frames to receive before trying to generate a sifted frame
             const unsigned int minFramesBeforeVerify = 1;
 
         };

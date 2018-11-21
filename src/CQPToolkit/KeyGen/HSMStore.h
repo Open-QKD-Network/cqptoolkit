@@ -54,7 +54,7 @@ namespace cqp
             virtual bool GetHSMPin(const std::string& tokenSerial, const std::string& tokenLabel,
                                    UserType& login, std::string& pin) = 0;
 
-            /// distructor
+            /// destructor
             virtual ~IPinCallback() = default;
         };
 

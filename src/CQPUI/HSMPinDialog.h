@@ -37,7 +37,7 @@ namespace ui
          * @brief DeviceDialog
          * @param parent
          */
-        HSMPinDialog(QWidget * parent);
+        explicit HSMPinDialog(QWidget * parent);
 
         /**
          * @brief GetPassword

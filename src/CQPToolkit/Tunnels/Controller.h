@@ -44,7 +44,7 @@ namespace cqp
              * Constructor which does not detect devices, but uses the provided settings
              * @param initialSettings Configuration of the instance
              */
-            Controller(const remote::tunnels::ControllerDetails& initialSettings);
+            explicit Controller(const remote::tunnels::ControllerDetails& initialSettings);
 
             ///@{
             /// @name ITunnelServer Implementation

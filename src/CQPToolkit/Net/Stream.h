@@ -31,7 +31,7 @@ namespace cqp
              * Constructor
              */
             Stream();
-            /// Distructor
+            /// Destructor
             ~Stream();
             /**
              * @brief Connect
@@ -57,7 +57,7 @@ namespace cqp
              * @brief Stream
              * @param fd raw file handle to construct from
              */
-            Stream(int fd);
+            explicit Stream(int fd);
         };
 
     } // namespace net

@@ -30,9 +30,9 @@ namespace cqp
              * @brief UDPTunnel
              * @param address
              */
-            UDPTunnel(const URI& address);
+            explicit UDPTunnel(const URI& address);
 
-            /// Distructor
+            /// Destructor
             virtual ~UDPTunnel() override;
 
             ///@{
