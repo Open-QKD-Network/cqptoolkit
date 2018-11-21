@@ -24,7 +24,8 @@ namespace cqp
 #if defined(__unix__)
     std::string UUID::ToString() const
     {
-        char result[37];
+        char result[UUID_STR_LEN] {0}; /* FlawFinder: ignore */
+        // uuid null terminates the string
         uuid_unparse(value.data(), result);
         return result;
     }
@@ -82,7 +83,8 @@ namespace cqp
 #if defined(WIN32)
     std::string ToString(const cqp::UUID& input)
     {
-        char result[37];
+        char result[UUID_STR_LEN] {0}; /* FlawFinder: ignore */
+        // UuidToStringA null terminates the string
         UuidToStringA(input.data(), result);
         return result;
     }

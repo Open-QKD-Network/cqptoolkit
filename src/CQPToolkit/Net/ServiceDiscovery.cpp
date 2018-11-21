@@ -391,7 +391,7 @@ namespace cqp
                     break;
                 case AVAHI_RESOLVER_FOUND:
                 {
-                    char a[AVAHI_ADDRESS_STR_MAX] {};
+                    char a[AVAHI_ADDRESS_STR_MAX] {}; /* FlawFinder: ignore */
                     char* txtString {};
                     LOGTRACE("Service '" + name + "' of type '" + type + "' in domain '" + domain + "':\n");
                     avahi_address_snprint(a, sizeof(a), address);

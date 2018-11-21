@@ -173,9 +173,6 @@ namespace cqp
 
             ASSERT_TRUE(reg3) << "Registration 3 failed";
 
-            // allow key to build up
-            this_thread::sleep_for(chrono::seconds(1));
-
             for(std::string from :
                     {
                         site1.GetConnectionAddress(), site2.GetConnectionAddress(), site3.GetConnectionAddress()

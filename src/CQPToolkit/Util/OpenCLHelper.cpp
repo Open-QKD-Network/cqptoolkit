@@ -17,12 +17,6 @@
 #include <type_traits>
 #include <memory>
 
-#if defined(__APPLE__) || defined(__MACOSX)
-    #include <OpenCL/cl2.hpp>
-#else
-    #include <CL/cl2.hpp>
-#endif
-
 namespace cqp
 {
     using namespace std;

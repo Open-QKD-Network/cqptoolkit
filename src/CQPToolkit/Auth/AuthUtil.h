@@ -55,7 +55,7 @@ namespace cqp
      */
     inline void GrpcAllowMACOnlyCiphers()
     {
-        if(getenv(GRPC_SSL_CIPHER_SUITES) == nullptr)
+        if(getenv(GRPC_SSL_CIPHER_SUITES) == nullptr) /* Flawfinder: ignore */
         {
             // the env var has not been set externally
             LOGDEBUG("Setting GRPC_SSL_CIPHER_SUITES to " + SupportedCiphers);

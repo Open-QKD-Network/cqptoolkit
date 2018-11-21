@@ -15,6 +15,7 @@
 #if defined(__unix__)
     #include <unistd.h>
     #include <limits.h>
+    #include <bits/local_lim.h>
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <netdb.h>
@@ -35,12 +36,13 @@ namespace cqp
             std::string result;
             try
             {
-                char hostname[256] = {};
+                char hostname[HOST_NAME_MAX] = {0}; /* FlawFinder: ignore */
                 if(gethostname(hostname, sizeof(hostname)) < 0)
                 {
                     LOGERROR("Failed to get hostname errno =" + std::to_string(errno));
                 }
 
+                hostname[HOST_NAME_MAX-1] = 0; // protect against buffer overflow
                 result = hostname;
 
                 if(fqdn)

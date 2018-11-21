@@ -491,17 +491,17 @@ namespace cqp
 
             stringstream tempStr;
             tempStr << std::put_time(whateverthefputwants, "%Y");
-            strncpy(reinterpret_cast<char*>(date.year), tempStr.str().c_str(), sizeof(date.year));
+            tempStr.str().copy(reinterpret_cast<char*>(date.year), sizeof(date.year));
             tempStr.clear();
             tempStr.str(""); // yes you really need both - DSTM
 
             tempStr << std::put_time(whateverthefputwants, "%m");
-            strncpy(reinterpret_cast<char*>(date.month), tempStr.str().c_str(), sizeof(date.month));
+            tempStr.str().copy(reinterpret_cast<char*>(date.month), sizeof(date.month));
             tempStr.clear();
             tempStr.str(""); // yes you really need both - DSTM
 
             tempStr << std::put_time(whateverthefputwants, "%d");
-            strncpy(reinterpret_cast<char*>(date.day), tempStr.str().c_str(), sizeof(date.day));
+            tempStr.str().copy(reinterpret_cast<char*>(date.day), sizeof(date.day));
             tempStr.clear();
             tempStr.str(""); // yes you really need both - DSTM
 

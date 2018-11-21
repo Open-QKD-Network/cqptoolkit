@@ -46,11 +46,11 @@ namespace cqp
         std::string GetHomeFolder()
         {
 #if defined(_WIN32)
-            TCHAR temp[MAX_PATH];
+            PWSTR folderStr = nullptr;
 
             // Get the folder for the current users my documents folder
-            SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, temp);
-            std::string result = std::string(temp);
+            SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, folderStr);
+            std::string result = std::string(folderStr);
 
 #elif defined(__unix__)
 
@@ -117,24 +117,20 @@ namespace cqp
             std::string result = "";
 
 #if defined(_WIN32)
-            TCHAR temp[MAX_PATH];
+            TCHAR temp[MAX_PATH] {0}; /* FlawFinder: ignore */
 
-            if (GetModuleFileNameA(NULL, temp, MAX_PATH) <= MAX_PATH)
+            if (GetModuleFileNameA(NULL, temp, sizeof(temp)) <= MAX_PATH)
             {
+                // GetModuleFileNameA appends a null character
                 result = PathFindFileName(temp);
             }
 
 #elif defined(__unix__)
-            char *path = new char[PATH_MAX];
-            if (path != nullptr)
+            char path[PATH_MAX] {0}; /* FlawFinder: ignore */
+            if(readlink("/proc/self/exe", path, sizeof(path)) > 0)
             {
-                *path = {0};
-
-                if(readlink("/proc/self/exe", path, PATH_MAX) > 0)
-                {
-                    result = TO_STRING(path);
-                }
-                delete[](path);
+                path[sizeof(path) - 1] = 0;
+                result = path;
             }
 #endif
             return result;

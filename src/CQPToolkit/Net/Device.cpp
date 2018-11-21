@@ -52,7 +52,7 @@ namespace cqp
 
                 if(udpSock > 0)
                 {
-                    strncpy(ipStruct.ifr_ifrn.ifrn_name, devName.c_str(), IFNAMSIZ);
+                    devName.copy(ipStruct.ifr_ifrn.ifrn_name, IFNAMSIZ);
                     ipStruct.ifr_ifru.ifru_addr = *ip.ToStruct(addrSize);
 
                     if(::ioctl(udpSock, SIOCSIFADDR, &ipStruct) < 0)
@@ -110,7 +110,7 @@ namespace cqp
                 struct ifreq ipStruct {};
 
                 LOGTRACE("Getting device flags");
-                strncpy(ipStruct.ifr_ifrn.ifrn_name, devName.c_str(), IFNAMSIZ);
+                devName.copy(ipStruct.ifr_ifrn.ifrn_name, IFNAMSIZ);
                 if(::ioctl(udpSock, SIOCGIFFLAGS, &ipStruct) < 0 )
                 {
                     LOGERROR("Failed to get interface flags");

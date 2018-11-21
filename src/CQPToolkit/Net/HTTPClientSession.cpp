@@ -156,7 +156,7 @@ namespace cqp
                 {
                     HTTPRequest* self = reinterpret_cast<HTTPRequest*>(inStream);
                     size_t bytesCopied = std::min(size * nitems, self->body.size());
-                    std::strncpy(buffer, self->body.c_str(), size * nitems);
+                    self->body.copy(buffer, size * nitems);
                     self->body.erase(0, bytesCopied);
                     return bytesCopied;
                 }

@@ -171,6 +171,7 @@ namespace cqp
             else
             {
                 LOGERROR("Failed to open " + inFileName);
+                result = false;
             }
 
             return result;

@@ -215,8 +215,8 @@ namespace cqp
             RandomNumber rng;
             std::unique_ptr<EmitterReport> emissions { new EmitterReport() };
             std::unique_ptr<ProtocolDetectionReport> detectionReport { new ProtocolDetectionReport() };
-            fs::DataFile::ReadNOXDetections("BobDetections.bin", detectionReport->detections);
-            fs::DataFile::ReadPackedQubits("AliceRandom.bin", emissions->emissions);
+            ASSERT_TRUE(fs::DataFile::ReadNOXDetections("BobDetections.bin", detectionReport->detections));
+            ASSERT_TRUE(fs::DataFile::ReadPackedQubits("AliceRandom.bin", emissions->emissions));
 
             SystemParameters params;
             params.slotWidth = nanoseconds(100);

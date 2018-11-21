@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "EthTap.h"
-#include <cstring>
 #include "Util/Logger.h"
 #include "CQPToolkit/Util/SecFileBuff.h"
 #include "CQPToolkit/Net/Socket.h"
@@ -173,7 +172,7 @@ namespace cqp
                 if(!deviceName.empty())
                 {
                     LOGDEBUG("Forcing name to: " + deviceName);
-                    strcpy(ifr.ifr_name, deviceName.c_str());
+                    deviceName.copy(ifr.ifr_name, sizeof(ifr.ifr_name));
                 }
 
                 if(ioctl(handle, TUNSETIFF, &ifr) < 0)

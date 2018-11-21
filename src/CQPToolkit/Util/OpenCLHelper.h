@@ -18,6 +18,12 @@
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 //#define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
 
+#if defined(__APPLE__) || defined(__MACOSX)
+    #include <OpenCL/cl2.hpp>
+#else
+    #include <CL/cl2.hpp>
+#endif
+
 namespace cl
 {
     class Platform;

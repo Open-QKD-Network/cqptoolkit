@@ -18,17 +18,6 @@
 /// Support for "wide strings" has been removed with great prejudice
 /// see http://utf8everywhere.org/ for rational
 
-/// Standard string conversion used on unicode systems
-/// @param[in] val The data to convert to a string
-/// @returns the string representation of the data provided
-template <typename T>
-std::string TO_STRING(const T& val)
-{
-    std::stringstream convert;
-    convert << val;
-    return convert.str();
-}
-
 #if defined(_WIN32)
     /// The definition of a file handle on the current platform
     #define FILE_HANDLE HANDLE

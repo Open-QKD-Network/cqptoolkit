@@ -12,14 +12,7 @@
 #include "DetectionGating.h"
 #include <cmath>
 
-#if defined(OPENCL_FOUND)
-#if defined(__APPLE__) || defined(__MACOSX)
-    #include <OpenCL/cl2.hpp>
-#else
-    #include <CL/cl2.hpp>
-#endif
 #include "CQPToolkit/Util/OpenCLHelper.h"
-#endif // OPENCL_FOUND
 
 extern const char _binary_Histogram_cl_start[];
 extern const char _binary_Histogram_cl_end[];

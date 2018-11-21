@@ -20,6 +20,7 @@
 #include "CQPToolkit/Util/Application.h"
 #include "CQPToolkit/Net/Socket.h"
 #include "CQPToolkit/Util/ConsoleLogger.h"
+#include "CQPToolkit/Util/FileIO.h"
 
 namespace cqp
 {
@@ -447,6 +448,31 @@ namespace cqp
         {
             ASSERT_EQ(FNV1aHash("HelloHashy"), FNV1aHash("HelloHashy"));
             ASSERT_NE(FNV1aHash("HelloHashy"), FNV1aHash("HelloHashx"));
+        }
+
+        TEST(UtilsTest, Environment)
+        {
+            ASSERT_NE(cqp::fs::GetApplicationName(), "");
+            ASSERT_NE(fs::GetCurrentPath(), "");
+            ASSERT_NE(fs::GetHomeFolder(), "");
+            ASSERT_NE(fs::GetCurrentPath(), "");
+
+            auto tempFile = fs::MakeTemp();
+            ASSERT_NE(tempFile, "");
+            ASSERT_TRUE(fs::Exists(tempFile));
+            ASSERT_FALSE(fs::IsDirectory(tempFile));
+
+            ASSERT_TRUE(fs::Delete(tempFile));
+            ASSERT_FALSE(fs::Exists(tempFile));
+
+            auto tempDir = fs::MakeTemp(true);
+            ASSERT_NE(tempDir, "");
+            ASSERT_TRUE(fs::Exists(tempDir));
+            ASSERT_TRUE(fs::IsDirectory(tempDir));
+
+            ASSERT_TRUE(fs::Delete(tempDir));
+            ASSERT_FALSE(fs::Exists(tempDir));
+
         }
     } // namespace tests
 } // namespace cqp

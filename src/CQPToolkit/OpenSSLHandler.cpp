@@ -155,7 +155,7 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
         {
             std::copy(keyValue.begin(), keyValue.end(), psk);
             std::string keyIdString = "pkcs:object=" + activeHsm->GetSource() + "?id=" + std::to_string(keyId);
-            strncpy(identity, keyIdString.c_str(), max_identity_len);
+            keyIdString.copy(identity, max_identity_len);
             result = keyValue.size();
             LOGTRACE("Key identity=" + identity);
         } // if key found
@@ -176,7 +176,7 @@ unsigned int OpenSSLHandler_ClientCallback(SSL*, const char* hint, char* identit
             {
                 std::copy(keyValue.begin(), keyValue.end(), psk);
                 std::string keyIdString = "pkcs:object=" + activeHsm->GetSource() + "?id=" + std::to_string(keyId);
-                strncpy(identity, keyIdString.c_str(), max_identity_len);
+                keyIdString.copy(identity, max_identity_len);
                 result = keyValue.size();
                 LOGTRACE("Key identity=" + identity);
                 break; // for

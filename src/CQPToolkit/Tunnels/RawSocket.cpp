@@ -73,7 +73,7 @@ namespace cqp
                 memset(&ifaceFlags, 0, sizeof(ifaceFlags));
 
                 /* Set the device to use */
-                strcpy(ifaceFlags.ifr_name, device.c_str());
+                device.copy(ifaceFlags.ifr_name, IFNAMSIZ);
 
                 // put the device into promiscous mode to collect all data that hits the device
                 // see https://stackoverflow.com/questions/114804/reading-from-a-promiscuous-network-device
@@ -111,12 +111,12 @@ namespace cqp
                     LOGTRACE("Binding to device");
                     struct ifreq binddev;
                     memset(&binddev, 0, sizeof(binddev));
-                    strcpy(binddev.ifr_name, device.c_str());
+                    device.copy(binddev.ifr_name, IFNAMSIZ);
 
                     // bind to a specific device
                     //result = setsockopt(self->rawSock, SOL_SOCKET, SO_BINDTODEVICE, &binddev, sizeof(binddev)) == 0;
                     struct ifreq ifid = {};
-                    strncpy(ifid.ifr_name, device.c_str(), IFNAMSIZ);
+                    device.copy(ifid.ifr_name, IFNAMSIZ);
                     if(ioctl(self->handle, SIOCGIFINDEX, &ifid, sizeof(ifid)) == -1)
                     {
                         LOGERROR("Failed to get interface id");
@@ -141,7 +141,7 @@ namespace cqp
 
                     struct ifreq devmtu;
                     memset(&devmtu, 0, sizeof(devmtu));
-                    strcpy(devmtu.ifr_name, device.c_str());
+                    device.copy(devmtu.ifr_name, IFNAMSIZ);
 
                     LOGTRACE("Getting device mtu");
                     if(ioctl(self->handle, SIOCGIFMTU, &devmtu, sizeof(ifaceFlags)) == 0 && devmtu.ifr_ifru.ifru_mtu > 0)

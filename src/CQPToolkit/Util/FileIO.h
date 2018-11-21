@@ -12,6 +12,7 @@
 #include "CQPToolkit/Util/Platform.h"
 #include <vector>
 #include <limits>
+#pragma once
 
 namespace cqp
 {
