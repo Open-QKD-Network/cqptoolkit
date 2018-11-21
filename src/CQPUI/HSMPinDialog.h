@@ -57,7 +57,7 @@ namespace ui
                        cqp::keygen::UserType& login,
                        std::string& pin);
     protected:
-        ::Ui::HSMPinDialog* ui;
+        ::Ui::HSMPinDialog* ui = nullptr;
     }; // class DeviceDialog
 } // namespace ui
 } // namespace cqp

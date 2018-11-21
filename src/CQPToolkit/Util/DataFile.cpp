@@ -102,7 +102,6 @@ namespace cqp
             std::ifstream inFile(inFileName, std::ios::in | std::ios::binary);
             if (inFile)
             {
-                uint64_t droppedDetections = 0;
                 // qubits packed 4/byte
                 inFile.seekg(0, std::ios::end);
                 const auto fileSize = inFile.tellg() * 4;
@@ -113,6 +112,7 @@ namespace cqp
                 }
                 else
                 {
+                    uint64_t droppedDetections = 0;
                     inFile.seekg(0, std::ios::beg);
                     output.reserve(numRecords);
                     bool gotConfig = !waitForConfig;
