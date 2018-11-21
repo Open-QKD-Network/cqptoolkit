@@ -9,11 +9,6 @@ namespace cqp
     namespace fs
     {
 
-        DataFile::DataFile()
-        {
-
-        }
-
         bool DataFile::ReadPackedQubits(const std::string& inFileName, QubitList& output)
         {
             bool result = true;

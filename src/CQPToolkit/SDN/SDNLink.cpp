@@ -89,7 +89,7 @@ namespace cqp
         if(result)
         {
             // walk through the results creating objects for the entries.
-            for(auto link : links.active())
+            for(const auto& link : links.active())
             {
                 LOGDEBUG("Attaching to existing link: " + std::to_string(link.id()));
                 SDNLink* attachedLink = new SDNLink(sdnControllerAddress,

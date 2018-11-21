@@ -16,7 +16,7 @@
     #include <dlfcn.h>
 #endif
 #include <algorithm>
-#include <time.h>
+#include <ctime>
 #include <cstring>
 
 namespace cqp
@@ -393,14 +393,14 @@ namespace cqp
                     {
                         objHandles.resize(objHandles.size() + numToGetEachTime);
                         // the interface doesn't allow for asking how many there are,
-                        // just have to keep getting until theres non left
+                        // just have to keep getting until there's non left
                         result = CheckP11(functions->C_FindObjects(handle, &objHandles[numSoFar], numToGetEachTime, &numThisTime));
                         numSoFar += numThisTime;
                         objHandles.resize(numSoFar);
-                    } // stop when theres an error, we've got our max results or theres no more to get
+                    } // stop when there's an error, we've got our max results or there's no more to get
                     while(result == CKR_OK && numSoFar < maxResults && numThisTime > 0);
 
-                    if(result == CKR_OK && objHandles.size() > 0)
+                    if(result == CKR_OK && !objHandles.empty())
                     {
                         // create the objects for the results
                         results.reserve(objHandles.size());

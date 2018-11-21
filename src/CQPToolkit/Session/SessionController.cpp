@@ -33,7 +33,7 @@ namespace cqp
 
     } // SessionController
 
-    grpc::Status SessionController::StartSession(const remote::OpticalParameters& params)
+    grpc::Status SessionController::StartSession(const remote::OpticalParameters&)
     {
         Status result;
         // make sure the other side has connected to us
@@ -56,7 +56,6 @@ namespace cqp
             // send the command to the other side
             result = otherController->SessionStarting(&ctx, request, &response);
 
-            return result;
         } // if(otherController)
         else
         {
@@ -90,7 +89,7 @@ namespace cqp
 
     SessionController::~SessionController()
     {
-        EndSession();
+        SessionController::EndSession();
         if(server)
         {
             server->Shutdown();

@@ -16,11 +16,6 @@ namespace cqp
     namespace sift
     {
 
-        SiftBase::SiftBase()
-        {
-
-        }
-
         void SiftBase::OnAligned(SequenceNumber seq, std::unique_ptr<QubitList> rawQubits)
         {
             using namespace std;
@@ -59,7 +54,7 @@ namespace cqp
             QubitsByFrame::iterator it = start;
             auto answersIt = answers.answers().begin();
 
-            while(answers.answers().size() > 0 && it != end)
+            while(!answers.answers().empty() && it != end)
             {
 
                 LOGTRACE(std::to_string(answers.answers().size()) + " : " + std::to_string(it->first));
@@ -72,7 +67,7 @@ namespace cqp
                 for(const Qubit& qubit : *it->second)
                 {
                     // test if this qubit is valid, ie the basis matched when they were compared.
-                    if(*seqAnswersIt == true)
+                    if(*seqAnswersIt)
                     {
                         // shift the bit up to the next available slot and or it with the current value
                         value |= static_cast<JaggedDataBlock::value_type>(QubitHelper::BitValue(qubit)) << offset;
@@ -105,7 +100,7 @@ namespace cqp
                 siftedData->bitsInLastByte = offset;
             } // if(offset != 0)
 
-            if(siftedData->size() == 0)
+            if(siftedData->empty())
             {
                 LOGWARN("Empty sifted data.");
             }

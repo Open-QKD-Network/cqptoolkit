@@ -58,7 +58,7 @@ namespace qkdtunnel
         using namespace std;
         using namespace cqp::remote::tunnels;
 
-        for(auto host : services)
+        for(const auto& host : services)
         {
             SetRemote(host.second);
         }

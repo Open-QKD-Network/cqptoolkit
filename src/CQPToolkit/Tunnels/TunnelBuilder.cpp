@@ -407,7 +407,7 @@ namespace cqp
                             }
                             // if it failed and we don't have a key at all: try again
                         }
-                        while(sharedKey.keyvalue().size() == 0 && keepGoing);
+                        while(sharedKey.keyvalue().empty() && keepGoing);
                         // if it failed but we have a key already,
                         //  keep processing incomming data and try again on the next message
 

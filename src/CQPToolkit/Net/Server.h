@@ -31,7 +31,7 @@ namespace cqp
              * @brief Server
              * Constructor
              */
-            Server();
+            Server() = default;
             /**
              * @brief Server
              * Construct and listen on address

@@ -311,7 +311,7 @@ namespace qkdtunnel
 
         }
 
-        for(auto newService : newServices)
+        for(const auto& newService : newServices)
         {
             if(newService.second.interfaces.contains(IKeyFactory::service_full_name()))
             {

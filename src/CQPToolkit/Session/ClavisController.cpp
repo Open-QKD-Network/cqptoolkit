@@ -100,7 +100,7 @@ namespace cqp
 
             do
             {
-                if(toEmit.size() > 0)
+                if(!toEmit.empty())
                 {
                     LOGTRACE("Sending " + to_string(toEmit.size()) + " keys.");
                     unique_lock<mutex> lock(emitMutex);
@@ -113,7 +113,7 @@ namespace cqp
                 }
                 this_thread::sleep_for(chrono::milliseconds(10));
             }
-            while(readerSubTask.wait_for(chrono::seconds(0)) != future_status::ready || toEmit.size() > 0);
+            while(readerSubTask.wait_for(chrono::seconds(0)) != future_status::ready || !toEmit.empty());
 
             // control reaches here when both the task has finished and all keys have been sent
 
@@ -180,7 +180,7 @@ namespace cqp
                 {
                     result = otherController->SessionStarting(&controllerCtx, request, &response);
 
-                    for(auto param : controllerCtx.GetServerTrailingMetadata())
+                    for(const auto& param : controllerCtx.GetServerTrailingMetadata())
                     {
                         if(param.first == wrapperPeerKey)
                         {
@@ -263,7 +263,7 @@ namespace cqp
                 options.mutable_initialsecret()->assign(secret->begin(), secret->end());
             }
             options.set_lineattenuation(request->params().lineattenuation());
-            for(auto param : ctx->client_metadata())
+            for(const auto& param : ctx->client_metadata())
             {
                 if(param.first == wrapperPeerKey)
                 {

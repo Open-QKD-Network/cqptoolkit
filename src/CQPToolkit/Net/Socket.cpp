@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Socket.h"
-#include <string.h>
+#include <cstring>
 #include "CQPToolkit/Util/Logger.h"
 #include "CQPToolkit/Net/DNS.h"
 #include <memory>
@@ -34,11 +34,6 @@ namespace cqp
 {
     namespace net
     {
-
-        Socket::Socket()
-        {
-
-        }
 
         bool Socket::Bind(const SocketAddress& address)
         {
@@ -66,7 +61,7 @@ namespace cqp
             {
 
                 using namespace std::chrono;
-                struct timeval tv;
+                struct timeval tv {};
                 tv.tv_sec = duration_cast<seconds>(timeout).count();
                 tv.tv_usec = duration_cast<microseconds>(timeout).count() - (tv.tv_sec * 1000 * 1000);
                 if(handle != 0)
@@ -146,20 +141,19 @@ namespace cqp
             return (flags & O_NONBLOCK) == 0;
         }
 
-        IPAddress::IPAddress()
+        IPAddress::IPAddress() :
+            ip6({})
         {
-            ip4 = {};
-            ip6 = {};
         }
 
-        IPAddress::IPAddress(const std::string& input)
+        IPAddress::IPAddress(const std::string& input) : IPAddress()
         {
             using namespace std;
-            if(input.find(".") != string::npos)
+            if(input.find('.') != string::npos)
             {
                 ::inet_pton(AF_INET, input.c_str(), reinterpret_cast<int*>(&ip4));
             }
-            else if(input.find(":") != string::npos)
+            else if(input.find(':') != string::npos)
             {
                 ::inet_pton(AF_INET6, input.c_str(), reinterpret_cast<int*>(&ip6));
             }
@@ -273,7 +267,7 @@ namespace cqp
         SocketAddress::SocketAddress(const std::string& value)
         {
             using namespace std;
-            size_t colonPos = value.find(":");
+            size_t colonPos = value.find(':');
             net::ResolveAddress(value.substr(0, colonPos), ip);
             if(colonPos != string::npos)
             {

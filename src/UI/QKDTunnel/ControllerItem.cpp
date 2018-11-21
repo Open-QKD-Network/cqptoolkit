@@ -31,12 +31,12 @@ namespace qkdtunnel
         setText(name);
         setIcon(QIcon(":/icons/Controller"));
 
-        setData(QString::fromStdString(id), Index::Id);
-        setData(QDateTime::currentDateTime(), Index::lastUpdated);
-        setData(-1, Index::localKeyFactoryIndex);
-        setData(true, Index::localKeyFactoryById);
-        setData("", Index::localKeyFactoryId);
-        setData("", Index::localKeyFactoryUri);
+        ControllerItem::setData(QString::fromStdString(id), Index::Id);
+        ControllerItem::setData(QDateTime::currentDateTime(), Index::lastUpdated);
+        ControllerItem::setData(-1, Index::localKeyFactoryIndex);
+        ControllerItem::setData(true, Index::localKeyFactoryById);
+        ControllerItem::setData("", Index::localKeyFactoryId);
+        ControllerItem::setData("", Index::localKeyFactoryUri);
 
         supportedModes.setStringList(DefaultModes);
         supportedSubModes.setStringList(DefaultSubModes);
@@ -221,7 +221,7 @@ namespace qkdtunnel
         bool result = false; // = ep != nullptr;
         /*if(ep)
         {
-            // get the settings from the contorller
+            // get the settings from the controller
             cqp::tunnels::ControllerDetails details;
             result = ep->GetSettings(details);
             SetDetails(details);

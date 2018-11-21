@@ -60,7 +60,7 @@ cqp::remote::PhysicalPath SiteAgentCtlGui::GetHops()
 void SiteAgentCtlGui::OnServiceDetected(const cqp::RemoteHosts& newServices, const cqp::RemoteHosts& deletedServices)
 {
     std::lock_guard<std::mutex> lock(localSiteAgentsMutex);
-    for(auto serv : deletedServices)
+    for(const auto& serv : deletedServices)
     {
         auto foundSites = ui->siteTree->findItems(QString::fromStdString(serv.second.host + ":" + std::to_string(serv.second.port)), Qt::MatchFlag::MatchExactly);
         for(auto found : foundSites)
@@ -70,7 +70,7 @@ void SiteAgentCtlGui::OnServiceDetected(const cqp::RemoteHosts& newServices, con
         }
     }
 
-    for(auto serv : newServices)
+    for(const auto& serv : newServices)
     {
         AddSite(serv.second.host + ":" + std::to_string(serv.second.port));
     }
@@ -116,7 +116,7 @@ void SiteAgentCtlGui::AddSite(const std::string& address)
                     existingSite->setText(0, QString::fromStdString(siteDetails.url()));
                 }
 
-                for(auto device : siteDetails.devices())
+                for(const auto& device : siteDetails.devices())
                 {
                     QTreeWidgetItem* deviceItem = nullptr;
                     for(auto index = 0; index < existingSite->childCount(); index++)

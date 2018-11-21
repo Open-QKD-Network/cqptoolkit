@@ -17,23 +17,18 @@ namespace cqp
 {
     using google::protobuf::Empty;
 
-    NetworkManagerDummy::NetworkManagerDummy()
-    {
-
-    }
-
     NetworkManagerDummy::~NetworkManagerDummy()
     {
         server->Shutdown();
     }
 
-    grpc::Status NetworkManagerDummy::RegisterSite(grpc::ServerContext* context, const cqp::remote::Site* request, Empty* )
+    grpc::Status NetworkManagerDummy::RegisterSite(grpc::ServerContext*, const cqp::remote::Site*, Empty* )
     {
 
         return grpc::Status::OK;
     }
 
-    grpc::Status NetworkManagerDummy::UnregisterSite(grpc::ServerContext* context, const cqp::remote::SiteAddress* request, Empty*)
+    grpc::Status NetworkManagerDummy::UnregisterSite(grpc::ServerContext*, const cqp::remote::SiteAddress*, Empty*)
     {
 
         return grpc::Status::OK;

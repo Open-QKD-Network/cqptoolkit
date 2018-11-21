@@ -25,7 +25,7 @@ namespace cqp
         std::string StatisticsLogger::StatTree(const stats::StatBase* whichStat)
         {
             using namespace std;
-            string result = "";
+            string result;
             auto currentName = whichStat->GetPath().begin();
             if(currentName != whichStat->GetPath().end())
             {

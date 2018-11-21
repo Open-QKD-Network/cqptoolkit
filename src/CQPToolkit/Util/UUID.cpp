@@ -67,7 +67,7 @@ namespace cqp
     UUID UUID::Null()
     {
         UUIDStorage nullValues {};
-        return UUID(nullValues);
+        return {nullValues};
     }
 
     UUID::UUID(const char* str)

@@ -14,16 +14,11 @@
 namespace cqp {
 namespace align {
 
-    TransmissionHandler::TransmissionHandler()
-    {
-
-    }
-
     void TransmissionHandler::OnEmitterReport(std::unique_ptr<EmitterReport> report)
     {
         using namespace std;
-        // collect incomming data, notify listeners of new data
-        LOGTRACE("Recieving emitter report");
+        // collect incoming data, notify listeners of new data
+        LOGTRACE("Receiving emitter report");
         {
             lock_guard<mutex> lock(receivedDataMutex);
             receivedData[report->frame] = move(report);

@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Process.h"
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -21,10 +21,6 @@
 namespace cqp
 {
     enum Direction { Read = 0, Write = 1 };
-
-    Process::Process()
-    {
-    }
 
     Process::~Process()
     {
@@ -61,7 +57,7 @@ namespace cqp
         }
 
         // ensure pipes are flushed
-        ::fflush(0);
+        ::fflush(nullptr);
         // Clone the program into a new process
         int forkPid = ::fork();
 
@@ -76,12 +72,12 @@ namespace cqp
                 // set the first element to the command name and increment the index
                 c_args[argIndex++] = command.c_str();
 
-                for(auto arg : args)
+                for(const auto& arg : args)
                 {
                     // set the arg array to point to the argument string and increment the index
                     // a new string is needed otherwise each element points to the last string
                     c_args[argIndex++] = (new string(arg))->c_str();
-                    // execv will distroy all the memory so these don't need to be cleaned up.
+                    // execv will destroy all the memory so these don't need to be cleaned up.
                 }
                 // the last element should be a null pointer
                 c_args[argIndex++] = nullptr;
@@ -165,7 +161,7 @@ namespace cqp
             // try and find it in the path
             std::vector<std::string> paths;
             SplitString(getenv("PATH"), paths, fs::GetPathEnvSep());
-            for(auto prefix : paths)
+            for(const auto& prefix : paths)
             {
                 cmdToRun = prefix + fs::GetPathSep() + command;
                 if(fs::Exists(cmdToRun))

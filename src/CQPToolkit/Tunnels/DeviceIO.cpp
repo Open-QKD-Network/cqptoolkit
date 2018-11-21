@@ -31,14 +31,13 @@ namespace cqp
 
         size_t DeviceIO::Put2(const unsigned char * inString, size_t length, int, bool)
         {
+            size_t result = 0;
             if(length > 0 && Write(inString, length))
             {
-                return length;
+                result = length;
             }
-            else
-            {
-                return 0;
-            }
+
+            return result;
         } // Put2
 
     } // namespace tunnels

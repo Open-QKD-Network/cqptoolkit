@@ -51,7 +51,7 @@ namespace cqp
             return result;
         } // OnPhoton
 
-        grpc::Status DummyTimeTagger::StartDetecting(grpc::ServerContext*, const google::protobuf::Timestamp* startTime, google::protobuf::Empty*)
+        grpc::Status DummyTimeTagger::StartDetecting(grpc::ServerContext*, const google::protobuf::Timestamp*, google::protobuf::Empty*)
         {
             grpc::Status result;
             using std::chrono::high_resolution_clock;

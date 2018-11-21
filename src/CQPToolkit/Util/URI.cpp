@@ -80,11 +80,11 @@ namespace cqp
 
         result += path;
 
-        if(parameters.size() > 0)
+        if(!parameters.empty())
         {
             bool addPrefix = false;
             result += "?";
-            for(auto param : parameters)
+            for(const auto& param : parameters)
             {
                 if(addPrefix)
                 {
@@ -162,7 +162,7 @@ namespace cqp
                 // full uri
                 scheme = matchResult[2];
                 const string& hostAndPort = matchResult[4];
-                size_t colonPos = hostAndPort.find(":");
+                size_t colonPos = hostAndPort.find(':');
 
                 host = hostAndPort.substr(0, colonPos);
                 if(colonPos != string::npos)
@@ -187,7 +187,7 @@ namespace cqp
                 string param;
                 while(std::getline(inStream, param, '&'))
                 {
-                    size_t equalPos = param.find("=");
+                    size_t equalPos = param.find('=');
                     std::string value;
                     if(equalPos != std::string::npos)
                     {
@@ -356,7 +356,7 @@ namespace cqp
     std::string URI::operator [](const std::string& key) const noexcept
     {
         std::string result;
-        for(auto param : parameters)
+        for(const auto& param : parameters)
         {
             if(StrEqualI(param.first, key))
             {
@@ -407,7 +407,7 @@ namespace cqp
     {
         bool addSep = false;
         path.clear();
-        for(auto element : newPath)
+        for(const auto& element : newPath)
         {
             if(addSep)
             {
@@ -496,7 +496,7 @@ namespace cqp
     void URI::ToDictionary(std::map<std::string, std::string>& destination, char pathSeperator, char keyValueSeperator) const
     {
         cqp::ToDictionary(Decode(path), destination, pathSeperator, keyValueSeperator);
-        for(auto element : parameters)
+        for(const auto& element : parameters)
         {
             destination[element.first] = Decode(element.second);
         }
@@ -508,7 +508,7 @@ namespace cqp
         const std::string encodedKey(Encode(key));
         if(caseSensitive)
         {
-            for(auto param : parameters)
+            for(const auto& param : parameters)
             {
                 if(param.first == encodedKey)
                 {
@@ -520,7 +520,7 @@ namespace cqp
         }
         else
         {
-            for(auto param : parameters)
+            for(const auto& param : parameters)
             {
                 if(StrEqualI(param.first, key))
                 {

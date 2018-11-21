@@ -77,7 +77,7 @@ namespace cqp
         bool useDelim = false;
         const bool haveDeleim = !delimiter.empty();
 
-        for(auto element : strings)
+        for(const auto& element : strings)
         {
             if(haveDeleim)
             {

@@ -24,8 +24,7 @@ namespace cqp
     /// Ansi escape sequence for the default console colour
     static const std::string DefaultColour = "\x1b[39;49m";
 
-    ConsoleLogger::ConsoleLogger():
-        Logger()
+    ConsoleLogger::ConsoleLogger()
     {
         // Attach ourselves as a logger
         DefaultLogger().AttachLogger(this);

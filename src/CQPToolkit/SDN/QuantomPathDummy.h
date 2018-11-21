@@ -27,7 +27,7 @@ namespace cqp
          * @brief QuantomPathDummy
          * Constructor
          */
-        QuantomPathDummy();
+        QuantomPathDummy() = default;
 
         ~QuantomPathDummy();
 

@@ -213,7 +213,7 @@ namespace cqp
              * @brief Socket
              * Constructor
              */
-            Socket();
+            Socket() = default;
 
             /**
              * @brief Bind

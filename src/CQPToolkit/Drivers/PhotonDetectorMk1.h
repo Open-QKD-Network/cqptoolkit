@@ -44,7 +44,7 @@ namespace cqp
         /**
          * Destructor
          */
-        ~PhotonDetectorMk1() override;
+        ~PhotonDetectorMk1() override = default;
 
         /// @name Device interface
         /// @{

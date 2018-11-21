@@ -18,11 +18,6 @@ namespace cqp
     namespace sift
     {
 
-        Receiver::Receiver()
-        {
-
-        }
-
         grpc::Status Receiver::VerifyBases(grpc::ServerContext*, const remote::BasisBySiftFrame* request, remote::AnswersByFrame* response)
         {
             using std::chrono::high_resolution_clock;

@@ -147,7 +147,7 @@ namespace cqp
             LOGTRACE("Using /sys path");
             vector<std::string> files = fs::ListChildren(SysFolder);
 
-            for(auto child : files)
+            for(const auto& child : files)
             {
                 if(fs::Exists(child + "/device"))
                 {
@@ -163,13 +163,13 @@ namespace cqp
         {
             LOGTRACE("Using /dev path");
             // fall back to name matching under proc
-            for(string name : deviceNames)
+            for(const string& name : deviceNames)
             {
 
                 LOGTRACE("Checking " + name);
                 vector<string> files = fs::FindGlob(name);
 
-                for(string foundDev : files)
+                for(const string& foundDev : files)
                 {
                     LOGTRACE("Found " + foundDev);
                     results.push_back(new Serial(foundDev));

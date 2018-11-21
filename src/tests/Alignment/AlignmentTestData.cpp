@@ -69,8 +69,8 @@ namespace cqp
                             using namespace std::chrono;
                             DetectionReport report;
 
-                            report.value = static_cast<Qubit>(std::stoul(elements[0].c_str()) - 1);
-                            const double seconds = std::stod(elements[1].c_str());
+                            report.value = static_cast<Qubit>(std::stoul(elements[0]) - 1);
+                            const double seconds = std::stod(elements[1]);
 
                             report.time = duration_cast<PicoSeconds>(duration<double>(seconds));
 

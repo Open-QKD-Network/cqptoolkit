@@ -96,7 +96,7 @@ namespace cqp
         grpc::Status KeyStoreFactory::GetKeyStores(grpc::ServerContext*, const google::protobuf::Empty*, remote::SiteList* response)
         {
             grpc::Status result;
-            for(auto ks : keystores)
+            for(const auto& ks : keystores)
             {
                 response->add_urls(ks.first);
             }
@@ -162,7 +162,7 @@ namespace cqp
         void KeyStoreFactory::AddReportingCallback(stats::IAllStatsCallback* callback)
         {
             reportingCallbacks.push_back(callback);
-            for(auto ks : keystores)
+            for(const auto& ks : keystores)
             {
                 ks.second->stats.Add(callback);
             }
@@ -179,7 +179,7 @@ namespace cqp
                 }
             }
 
-            for(auto ks : keystores)
+            for(const auto& ks : keystores)
             {
                 ks.second->stats.Remove(callback);
             }

@@ -213,7 +213,7 @@ namespace cqp
                 bool result = true;
 
                 // search for the object
-                while(result && session->FindObjects(attrList, 100, found) == CKR_OK && found.size() > 0)
+                while(result && session->FindObjects(attrList, 100, found) == CKR_OK && !found.empty())
                 {
                     for(auto obj : found)
                     {
@@ -249,7 +249,7 @@ namespace cqp
                 attrList.Set(CKA_LABEL, destination);
                 SetID(attrList, keyId);
                 // search for the object
-                if(session->FindObjects(attrList, 1, found) == CKR_OK && found.size() > 0)
+                if(session->FindObjects(attrList, 1, found) == CKR_OK && !found.empty())
                 {
                     if(found[0].DestroyObject() != CKR_OK)
                     {
@@ -281,7 +281,7 @@ namespace cqp
                 // setup the search parameters
                 AttributeList attrList{*findObjDefaults};
                 // search for the object
-                if(session->FindObjects(attrList, numToSearch, found) == CKR_OK && found.size() > 0)
+                if(session->FindObjects(attrList, numToSearch, found) == CKR_OK && !found.empty())
                 {
                     for(auto item : found)
                     {
@@ -525,7 +525,7 @@ namespace cqp
                 attrList.Set(CKA_LABEL, destination);
                 SetID(attrList, keyId);
                 // search for the object
-                if(CheckP11(session->FindObjects(attrList, 1, found)) == CKR_OK && found.size() > 0)
+                if(CheckP11(session->FindObjects(attrList, 1, found)) == CKR_OK && !found.empty())
                 {
                     result = found[0].GetAttributeValue(CKA_VALUE, output) == CKR_OK;
                 }
@@ -558,7 +558,7 @@ namespace cqp
                     SetID(attrList, keyId);
                 }
                 // search for the object
-                if(CheckP11(session->FindObjects(attrList, 1, found)) == CKR_OK && found.size() > 0)
+                if(CheckP11(session->FindObjects(attrList, 1, found)) == CKR_OK && !found.empty())
                 {
                     result = found[0].GetAttributeValue(CKA_ID, keyId) == CKR_OK;
                     FixKeyID(keyId);
@@ -592,7 +592,7 @@ namespace cqp
 
                 // search for the object
                 CheckP11(session->FindObjects(attrList, 1, found));
-                result = found.size() > 0;
+                result = !found.empty();
             }
             else
             {
@@ -655,7 +655,7 @@ namespace cqp
                 attrList.Set(CKA_LABEL, destination);
                 SetID(attrList, keyId);
                 // search for the object
-                if(session->FindObjects(attrList, 1, found) == CKR_OK && found.size() > 0)
+                if(session->FindObjects(attrList, 1, found) == CKR_OK && !found.empty())
                 {
                     result = found[0].GetAttributeValue(CKA_VALUE, output) == CKR_OK;
                     if(result)
@@ -703,7 +703,7 @@ namespace cqp
                 // use the sensitive status to denote whether it's in use
                 attrList.Set(CKA_START_DATE, zeroStartDate);
 
-                if(session->FindObjects(attrList, 1, found) == CKR_OK && found.size() > 0)
+                if(session->FindObjects(attrList, 1, found) == CKR_OK && !found.empty())
                 {
                     // set the object to sensitive to denote that it's in use.
                     AttributeList updateModifiable;
@@ -765,7 +765,7 @@ namespace cqp
                 attrList.Set(CKA_LABEL, destination);
                 // search for the objects
 
-                if(session->FindObjects(attrList, std::numeric_limits<unsigned long>::max(), found) == CKR_OK && found.size() > 0)
+                if(session->FindObjects(attrList, std::numeric_limits<unsigned long>::max(), found) == CKR_OK && !found.empty())
                 {
                     for(auto obj : found)
                     {

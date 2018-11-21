@@ -7,11 +7,6 @@
 namespace cqp {
     namespace keygen {
 
-        BackingStoreFactory::BackingStoreFactory()
-        {
-
-        }
-
         std::shared_ptr<IBackingStore> BackingStoreFactory::CreateBackingStore(const std::string& url)
         {
             URI bsUrl(url);
@@ -31,13 +26,15 @@ namespace cqp {
                 result.reset(new keygen::FileStore(filename));
             } else
 #endif
-                if(backingStoreType == "pkcs11")
+            if(backingStoreType == "pkcs11")
             {
                 result.reset(new keygen::HSMStore(url));
-            } else if(backingStoreType == "yubihsm2")
+            }
+            else if(backingStoreType == "yubihsm2")
             {
                 result.reset(new keygen::YubiHSM(bsUrl));
-            } else if(backingStoreType.empty())
+            }
+            else if(backingStoreType.empty())
             {
                 // leave as null
             }

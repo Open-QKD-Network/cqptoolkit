@@ -26,7 +26,7 @@ namespace cqp
              * @brief SiftReciever
              * Constructor
              */
-            Receiver();
+            Receiver() = default;
 
             ///@{
             /// @name remote::ISift interface

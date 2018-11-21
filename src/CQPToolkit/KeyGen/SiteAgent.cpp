@@ -86,7 +86,7 @@ namespace cqp
         //deviceFactory->AddReportingCallback(statsLogger.get());
 
         // build devices
-        for(auto devaddr : myConfig.deviceurls())
+        for(const auto& devaddr : myConfig.deviceurls())
         {
             LOGTRACE("Configuring device " + devaddr);
             auto dev = deviceFactory->CreateDevice(devaddr);
@@ -166,7 +166,7 @@ namespace cqp
         }
 
         // disconnect all session controllers
-        for(auto dev : devicesInUse)
+        for(const auto& dev : devicesInUse)
         {
             auto controller = dev.second->GetSessionController();
             if(controller)
@@ -418,7 +418,7 @@ namespace cqp
         using namespace grpc;
         {
             std::string pathString;
-            for(auto element : path->hops())
+            for(const auto& element : path->hops())
             {
                 pathString += element.first().site() + "<->" + element.second().site() + " | ";
             }
@@ -429,7 +429,7 @@ namespace cqp
         grpc::Status result = Status(StatusCode::NOT_FOUND, "No hops applicable to this site");
         // walk through each hop in the path
         // path example = [ [a, b], [b, c] ]
-        for(auto hopPair : path->hops())
+        for(const auto& hopPair : path->hops())
         {
 
             // if we are the left side of a hop, ie a in [a, b]
@@ -594,7 +594,7 @@ namespace cqp
 
         std::lock_guard<std::mutex> lock(statusCallbackMutex);
         otherSites[destination].state = state;
-        for(auto cb : statusCallbacks)
+        for(const auto& cb : statusCallbacks)
         {
             cb.second(statusUpdate);
         }
@@ -634,7 +634,7 @@ namespace cqp
         grpc::Status result = Status(StatusCode::NOT_FOUND, "No hops applicable to this site");
         {
             std::string pathString;
-            for(auto element : path->hops())
+            for(const auto& element : path->hops())
             {
                 pathString += element.first().site() + "<->" + element.second().site() + " | ";
             }
@@ -645,7 +645,7 @@ namespace cqp
 
         // walk through each hop in the path
         // path example = [ [a, b], [b, c] ]
-        for(auto hopPair : path->hops())
+        for(const auto& hopPair : path->hops())
         {
             // if we are the left side of a hop, ie a in [a, b]
             if(AddressIsThisSite(hopPair.first().site()))
@@ -711,7 +711,7 @@ namespace cqp
             };
 
             // send current state
-            for(auto site : otherSites)
+            for(const auto& site : otherSites)
             {
                 cqp::remote::LinkStatus status;
                 status.set_siteto(site.first);

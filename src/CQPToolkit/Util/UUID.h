@@ -91,7 +91,7 @@ namespace cqp
         }
 
         /// the bytes for the uuid
-        UUIDStorage value;
+        UUIDStorage value {};
     };
 
 } // namespace cqp

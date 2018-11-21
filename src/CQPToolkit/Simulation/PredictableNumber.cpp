@@ -18,14 +18,6 @@
 namespace cqp
 {
 
-    PredictableNumber::PredictableNumber()
-    {
-    }
-
-    PredictableNumber::~PredictableNumber()
-    {
-    }
-
     /**
      * This function will return a specific number of random bit from a pre-generated
      * pool of numbers.

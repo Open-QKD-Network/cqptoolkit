@@ -185,7 +185,7 @@ namespace cqp
 
                 auto binId = minBinId;
                 do {
-                    for(auto usableResults : myResults[binId])
+                    for(const auto& usableResults : myResults[binId])
                     {
                         for(auto detection : usableResults.second)
                         {
@@ -344,7 +344,7 @@ namespace cqp
             } // for each thread
 
             // ask the other side for some points of reference to shift our slot index to line up with theirs
-            if(!GetMarkers(channel, frameId, markers).ok() || markers.qubits().size() == 0)
+            if(!GetMarkers(channel, frameId, markers).ok() || markers.qubits().empty())
             {
                 LOGERROR("Invlaid markers provided");
             }
@@ -397,7 +397,7 @@ namespace cqp
                     const auto correctedSlotId = detectionList.first + highestScore.slotIdOffset;
                     // drop the markers and detections past the end of transmission
                     if(correctedSlotId < numSlots &&
-                       detectionList.second.size() > 0 &&
+                       !detectionList.second.empty() &&
                        markers.qubits().find(correctedSlotId) == markers.qubits().end())
                     {
                         detectedSlots.insert(correctedSlotId);

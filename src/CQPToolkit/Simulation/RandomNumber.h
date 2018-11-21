@@ -35,7 +35,7 @@ namespace cqp
         /// Default constructor
         RandomNumber();
         /// Default distructor
-        virtual ~RandomNumber() override;
+        virtual ~RandomNumber() override = default;
         /// @copydoc IRandom::RandInt
         ulong RandULong() override;
 

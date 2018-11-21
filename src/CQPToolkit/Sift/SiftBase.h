@@ -33,7 +33,7 @@ namespace cqp
              * @brief SiftBase
              * Constructor
              */
-            SiftBase();
+            SiftBase() = default;
 
             ///@{
             /// @name IAlignmentCallback Interface

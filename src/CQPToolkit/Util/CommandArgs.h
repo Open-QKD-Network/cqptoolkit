@@ -126,7 +126,7 @@ namespace cqp
         };
 
         /// constructor
-        CommandArgs();
+        CommandArgs() = default;
 
         /**
          * @brief AddOption

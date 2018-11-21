@@ -37,7 +37,7 @@ namespace cqp
              * @brief PrivacyAmplify
              * Constructor
              */
-            PrivacyAmplify();
+            PrivacyAmplify() = default;
 
             /**
              * @brief PerformPrivacyAmplify

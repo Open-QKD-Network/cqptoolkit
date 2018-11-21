@@ -17,7 +17,7 @@
 #include "FileIO.h"
 #include <fstream>
 #include "CQPToolkit/Util/Process.h"
-#include <string.h>
+#include <cstring>
 #include <algorithm>
 
 #if defined(_WIN32)
@@ -28,7 +28,7 @@
     #include <io.h>
 
 #elif defined(__unix__)
-    #include <stdlib.h>
+    #include <cstdlib>
     #include <linux/limits.h>
     #include <sys/stat.h>
     #include <unistd.h>
@@ -69,7 +69,7 @@ namespace cqp
         }
 
         /// The name of the browser used to open a link
-        static std::string browserUsedLast = "";
+        static std::string browserUsedLast;
 
         bool OpenURL(const std::string& url)
         {
@@ -86,14 +86,14 @@ namespace cqp
                 browserUsedLast,
                 GetEnvironmentVar("BROWSER"),
                 "x-www-browser",
-                "start"
+                "start",
                 "xdg-open",
                 url
             };
 
-            for (string possibleBrowser : possibleBrowsers)
+            for (const string& possibleBrowser : possibleBrowsers)
             {
-                if (possibleBrowser != "")
+                if (!possibleBrowser.empty())
                 {
                     try
                     {
@@ -114,7 +114,7 @@ namespace cqp
 
         std::string GetApplicationName()
         {
-            std::string result = "";
+            std::string result;
 
 #if defined(_WIN32)
             TCHAR temp[MAX_PATH] {0}; /* FlawFinder: ignore */
@@ -145,7 +145,7 @@ namespace cqp
             result = (_stat (filename.c_str(), &buffer) == 0);
 
 #elif defined(__unix__)
-            struct stat buffer;
+            struct stat buffer {};
             result = (stat (filename.c_str(), &buffer) == 0);
 #endif
             return result;

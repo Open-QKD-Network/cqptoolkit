@@ -24,16 +24,11 @@ namespace cqp
 
     const std::string DriverName = "TaggerMk1";
 
-    UsbTagger::UsbTagger() : Usb()
+    UsbTagger::UsbTagger()
     {
         configIndex = 1;
     }
 
-
-    UsbTagger::~UsbTagger()
-    {
-
-    }
 
     void UsbTagger::ReadCallback(libusb_transfer * transfer)
     {

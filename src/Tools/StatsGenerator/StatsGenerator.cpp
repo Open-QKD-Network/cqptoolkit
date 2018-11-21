@@ -92,7 +92,7 @@ smallIntDistribution(0, 3000),
     .Bind();
 
     std::string messageTypeNames;
-    for(auto typeName : allMessageTypes)
+    for(const auto& typeName : allMessageTypes)
     {
         if(!messageTypeNames.empty())
         {

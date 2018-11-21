@@ -14,11 +14,6 @@
 namespace cqp
 {
 
-    KeyVerifier::KeyVerifier()
-    {
-
-    }
-
     KeyVerifier::~KeyVerifier()
     {
         using namespace std;
@@ -37,29 +32,22 @@ namespace cqp
         {
             const KeyID keyid = nextId++;
             PSK& element = parent->receivedKeys[keyid];
-            if(element.size() > 0)
+            if(element.empty())
             {
-                if(element.size() == 0)
+
+                // do the comparison
+                if(element != (*keyData)[index])
                 {
-                    // first reciept of this key
-                    element = (*keyData)[index];
+                    parent->Emit(keyid, element, (*keyData)[index]);
+                    LOGERROR("Keys do not match: " + to_string(keyid));
                 }
                 else
                 {
-                    // do the comparison
-                    if(element != (*keyData)[index])
-                    {
-                        parent->Emit(keyid, element, (*keyData)[index]);
-                        LOGERROR("Keys do not match: " + to_string(keyid));
-                    }
-                    else
-                    {
-                        LOGINFO("Key " + to_string(keyid) + " match");
-                    }
-
-                    // delete the stored data
-                    parent->receivedKeys.erase(keyid);
+                    LOGINFO("Key " + to_string(keyid) + " match");
                 }
+
+                // delete the stored data
+                parent->receivedKeys.erase(keyid);
             }
             else
             {

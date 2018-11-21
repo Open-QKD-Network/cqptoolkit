@@ -23,7 +23,6 @@ namespace cqp
     Clavis::Clavis(const std::string& address, bool isAlice, uint8_t inDeviceId, uint8_t keyLength) :
         deviceId(inDeviceId),
         hardwareAddress(address),
-        socket(),
         alice(isAlice)
     {
         using namespace std;
@@ -47,10 +46,6 @@ namespace cqp
             LOGWARN("Invalid device ID, resetting to 1");
             deviceId = 1;
         }
-    }
-
-    Clavis::~Clavis()
-    {
     }
 
     bool Clavis::BeginKeyTransfer(const ClavisKeyID& keyID)
@@ -148,7 +143,7 @@ namespace cqp
             {
                 if(response.errorStatus != ErrorStatus::NoMoreKeys)
                 {
-                    LOGWARN("Key response error: " + string(ErrorStatusString[(int)response.errorStatus]));
+                    LOGWARN("Key response error: " + string(ErrorStatusString[static_cast<int>(response.errorStatus)]));
                 }
                 result = false;
                 status = response.errorStatus;

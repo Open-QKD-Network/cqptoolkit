@@ -21,15 +21,11 @@ namespace align {
 
     }
 
-    DetectionReciever::~DetectionReciever()
-    {
-    }
-
     void DetectionReciever::OnPhotonReport(std::unique_ptr<ProtocolDetectionReport> report)
     {
         using namespace std;
-        // collect incomming data, notify listeners of new data
-        LOGTRACE("Recieving photon report");
+        // collect incoming data, notify listeners of new data
+        LOGTRACE("Receiving photon report");
         {
             lock_guard<mutex> lock(receivedDataMutex);
             receivedData.push(move(report));
@@ -52,7 +48,7 @@ namespace align {
             /*lock scope*/{
                 unique_lock<mutex> lock(receivedDataMutex);
                 bool dataReady = receivedDataCv.wait_for(lock, threadTimeout, [&](){
-                    return receivedData.size() > 0;
+                    return !receivedData.empty();
                 });
 
                 if(dataReady)

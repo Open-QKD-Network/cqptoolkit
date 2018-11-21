@@ -17,14 +17,11 @@
 #include "Interfaces/IQKDDevice.h"                 // for IQKDDevice, IQKDDe...
 #include "Util/Logger.h"                           // for LOGTRACE
 
-using grpc::Status;
-using grpc::StatusCode;
-
 namespace cqp
 {
     class ISessionController;
 
-    ClavisProxy::ClavisProxy(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey):
+    ClavisProxy::ClavisProxy(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t):
         myAddress(address)
     {
         LOGTRACE("Creating controller");

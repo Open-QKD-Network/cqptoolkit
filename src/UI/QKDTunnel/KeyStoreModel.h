@@ -31,9 +31,6 @@ namespace qkdtunnel
             _Last
         };
 
-        /// Contructor
-        KeyStoreModel();
-
         /**
          * @brief AppendRow
          * @param name

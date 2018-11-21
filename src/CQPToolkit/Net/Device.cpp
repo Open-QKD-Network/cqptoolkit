@@ -12,8 +12,7 @@
 #include "Device.h"
 #include "CQPToolkit/Net/Socket.h"
 #include "CQPToolkit/Util/Logger.h"
-
-#include <string.h>
+#include <cstring>
 #if defined(__linux)
     #include <linux/if.h>
     #include <linux/in.h>
@@ -24,11 +23,6 @@ namespace cqp
 {
     namespace net
     {
-
-        Device::Device()
-        {
-
-        }
 
         bool Device::SetAddress(const std::string& devName, const std::string& address, const std::string& netmask)
         {

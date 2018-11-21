@@ -48,7 +48,7 @@ namespace cqp
         public Event<void (IKeyVerificationFailure::*)(const KeyID&, const PSK&, const PSK&), &IKeyVerificationFailure::OnKeyVerifyFailure>
     {
     public:
-        KeyVerifier();
+        KeyVerifier() = default;
         ~KeyVerifier() override;
 
         /**

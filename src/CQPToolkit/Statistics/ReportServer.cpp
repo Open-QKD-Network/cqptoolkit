@@ -16,8 +16,6 @@ namespace cqp
     namespace stats
     {
         using grpc::Status;
-        using grpc::StatusCode;
-        using google::protobuf::Empty;
 
         template<typename T, class RPT>
         void SetReportValues(const stats::Stat<T>* stat, RPT* rpt)
@@ -29,11 +27,6 @@ namespace cqp
             rpt->set_total(stat->GetTotal());
         }
 
-        ReportServer::ReportServer()
-        {
-
-        } // ReportServer
-
         bool ReportServer::ShouldSendStat(const remote::ReportingFilter* filter, const std::chrono::system_clock::time_point& lastUpdate, const remote::SiteAgentReport& report)
         {
             using namespace std::chrono;
@@ -42,14 +35,14 @@ namespace cqp
             {
                 bool match = false;
                 // try and find a match in each filter
-                for(auto filter : filter->filters())
+                for(const auto& filter : filter->filters())
                 {
                     // the name of the stat is built from a tree, eg
                     // TimeTaken -> Sifting -> QKD
                     auto currentStatname = report.path().begin();
                     auto filtername = filter.fullname().begin();
-                    // drop out if theres nothing to compare
-                    match = currentStatname != report.path().end() && filter.fullname().size() > 0;
+                    // drop out if there's nothing to compare
+                    match = currentStatname != report.path().end() && !filter.fullname().empty();
 
                     // walk back through the list of names and check they match
                     // TimeTaken -> Sifting -> QKD != TimeTaken -> Alignment -> QKD
@@ -194,12 +187,12 @@ namespace cqp
             );
             report.set_id(stat->GetId());
 
-            for(auto el : stat->GetPath())
+            for(const auto& el : stat->GetPath())
             {
                 report.add_path(el);
             }
 
-            for(auto param : stat->parameters)
+            for(const auto& param : stat->parameters)
             {
                 report.mutable_parameters()->insert({param.first, param.second});
             }

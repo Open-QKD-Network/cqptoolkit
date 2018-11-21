@@ -25,7 +25,6 @@
 #include "CQPToolkit/Net/DNS.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
 using cqp::remote::tunnels::ControllerDetails;
-using cqp::remote::tunnels::TunnelEndDetails;
 using grpc::Status;
 using grpc::StatusCode;
 using google::protobuf::Empty;
@@ -308,7 +307,7 @@ namespace cqp
 
         void Controller::StartAllTunnels()
         {
-            for(auto tun : settings.tunnels())
+            for(const auto& tun : settings.tunnels())
             {
                 grpc::ServerContext ctx;
                 google::protobuf::StringValue request;
@@ -326,7 +325,7 @@ namespace cqp
         void Controller::OnServiceDetected(const cqp::RemoteHosts& newServices, const cqp::RemoteHosts&)
         {
             bool endpointsChanged = false;
-            for(auto service : newServices)
+            for(const auto& service : newServices)
             {
                 if(service.second.interfaces.contains(remote::tunnels::ITunnelServer::service_full_name()))
                 {

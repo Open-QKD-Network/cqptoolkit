@@ -35,11 +35,6 @@ public:
     /// Constructor
     ExampleConsoleApp();
 
-    /// Distructor
-    ~ExampleConsoleApp() override
-    {
-    }
-
     ///@{
     /// @name IKeyCallback interface
     void OnKeyGeneration(std::unique_ptr<KeyList> keyData) override;
@@ -92,7 +87,7 @@ ExampleConsoleApp::ExampleConsoleApp()
     .Callback(std::bind(&ExampleConsoleApp::HandleOption, this, _1));
 }
 
-void ExampleConsoleApp::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
+void ExampleConsoleApp::OnKeyGeneration(std::unique_ptr<KeyList>)
 {
     keyReceived.notify_one(keyReceived.GetValue() + 1);
 }

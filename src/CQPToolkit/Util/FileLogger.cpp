@@ -24,7 +24,6 @@ namespace cqp
     FileLogger* theFileLogger = nullptr;
 
     FileLogger::FileLogger():
-        Logger(),
         fout(&fileBuffer)
     {
         outputFilename = fs::GetHomeFolder() + fs::GetPathSep() + fs::GetApplicationName() + extension;

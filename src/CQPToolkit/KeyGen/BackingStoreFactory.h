@@ -11,7 +11,7 @@ namespace cqp {
         class CQPTOOLKIT_EXPORT BackingStoreFactory
         {
         public:
-            BackingStoreFactory();
+            BackingStoreFactory() = default;
 
             static std::shared_ptr<IBackingStore> CreateBackingStore(const std::string& url);
         };

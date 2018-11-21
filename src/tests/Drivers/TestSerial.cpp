@@ -19,15 +19,6 @@ namespace cqp
     namespace tests
     {
 
-        TestSerial::TestSerial()
-        {
-        }
-
-        TestSerial::~TestSerial()
-        {
-
-        }
-
         /// This test requires a pair of virtual serial ports which act like a loopback
         /// On windows this is acomplished with (com0com)[https://code.google.com/archive/p/powersdr-iq/downloads]
         /// It assumed that the first two matching serial ports are a pair and tries to use them.
@@ -45,7 +36,7 @@ namespace cqp
             ASSERT_NO_THROW(Serial::Detect(devices, false)) << " Testing detection";
 
             // these are hard coded because they need to be paired
-            // Enmeration can come back in any order
+            // Enumeration can come back in any order
             Serial left("\\\\.\\COM3");
             Serial right("\\\\.\\COM4");
 

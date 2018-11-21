@@ -19,13 +19,8 @@ namespace cqp
 {
 
     RandomNumber::RandomNumber() :
-        intDistribution(),
         qubitDistribution(0, static_cast<int>(BB84::Neg)),
         generator(static_cast<unsigned long>(std::chrono::system_clock::now().time_since_epoch().count()))
-    {
-    }
-
-    RandomNumber::~RandomNumber()
     {
     }
 

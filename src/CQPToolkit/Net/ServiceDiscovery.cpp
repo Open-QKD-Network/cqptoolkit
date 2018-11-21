@@ -160,7 +160,7 @@ namespace cqp
                         std::string idRecord = idString + service.id;
                         std::string interfacesRecord = interfacesString;
 
-                        for(auto iface : service.interfaces)
+                        for(const auto& iface : service.interfaces)
                         {
                             interfacesRecord += iface + ";";
                         }
@@ -532,7 +532,7 @@ namespace cqp
             using namespace std;
             lock_guard<mutex> lock(changeMutex);
 
-            if (services.size() > 0 && listener)
+            if (!services.empty() && listener)
             {
                 // we only send updates when the list changes
                 // send the current list to the new client

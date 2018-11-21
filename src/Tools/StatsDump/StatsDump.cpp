@@ -25,7 +25,7 @@ using namespace cqp;
 
 void StatsDump::OnServiceDetected(const RemoteHosts& newServices, const RemoteHosts&)
 {
-    for(auto service : newServices)
+    for(const auto& service : newServices)
     {
         if(service.second.interfaces.contains(remote::IReporting::service_full_name()))
         {
@@ -157,7 +157,7 @@ void StatsDump::ReadStats(std::string from, std::unique_ptr<remote::IReporting::
 
         bool addPathSep = false;
 
-        for(auto pathSegment : report.path())
+        for(const auto& pathSegment : report.path())
         {
             if(addPathSep)
             {
@@ -231,7 +231,7 @@ void StatsDump::ReadStats(std::string from, std::unique_ptr<remote::IReporting::
 
         output << ", " << report.rate() << ", " << report.updated().seconds() << "." << report.updated().nanos();
 
-        for(auto param : report.parameters())
+        for(const auto& param : report.parameters())
         {
             output << ", " << param.first + "=" + param.second;
         }

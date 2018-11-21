@@ -29,7 +29,7 @@ namespace cqp
              * @brief Interface
              * Constructor
              */
-            Interface();
+            Interface() = default;
 
             /// Kind of address
             enum InterfaceType { Any, Private };
@@ -45,7 +45,7 @@ namespace cqp
             /**
              * @brief GetInterfaceBroadcast
              * @param interfaceType
-             * @return A list of bradcast ip addresses matching the address kind
+             * @return A list of broadcast ip addresses matching the address kind
              * eg: "192.168.1.255"
              */
             static std::vector<std::string> GetInterfaceBroadcast(InterfaceType interfaceType = Any);

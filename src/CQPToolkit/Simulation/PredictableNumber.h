@@ -26,9 +26,9 @@ namespace cqp
 
     public:
         /// Default constructor
-        PredictableNumber();
-        /// Default distructor
-        virtual ~PredictableNumber() override;
+        PredictableNumber() = default;
+        /// Default destructor
+        virtual ~PredictableNumber() override = default;
         /// return a single random number
         /// @return a random integer
         ulong RandULong() override;

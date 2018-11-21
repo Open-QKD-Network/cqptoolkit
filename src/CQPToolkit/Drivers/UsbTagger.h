@@ -48,7 +48,7 @@ namespace cqp
         /// @return The human readable name of the driver
         std::string GetDriverName() const override;
 
-        /// Esatablish communtications with the device
+        /// Establish communications with the device
         /// @return true if the device was successfully detected
         virtual bool Initialise() override;
         /// @copydoc IQKDDevice::GetAddress
@@ -63,8 +63,8 @@ namespace cqp
 
         /// Default constructor
         UsbTagger();
-        /// Default distructor
-        virtual ~UsbTagger() override;
+        /// Default destructor
+        virtual ~UsbTagger() override = default;
     protected:
         /// The vendor id of this device
         const uint16_t usbVid = 0x221A;

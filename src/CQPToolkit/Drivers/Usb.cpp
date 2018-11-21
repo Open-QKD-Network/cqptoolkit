@@ -11,7 +11,7 @@
 */
 #include "CQPToolkit/Drivers/Usb.h"
 #include <libusb-1.0/libusb.h>       // for LIBUSB_SUCCESS, libusb_exit, lib...
-#include <stddef.h>                  // for size_t
+#include <cstddef>                   // for size_t
 #include <sys/types.h>               // for ssize_t
 #include <string>                    // for operator+, to_string, char_traits
 #include <unordered_map>             // for unordered_map
@@ -69,7 +69,7 @@ namespace cqp
 
     Usb::~Usb()
     {
-        Close();
+        Usb::Close();
     }
 
     bool Usb::IsOpen() const
@@ -107,7 +107,7 @@ namespace cqp
         result = (desc.idVendor == vendorId) &&
                  (desc.idProduct == productId);
 
-        if (result == true)
+        if (result)
         {
             LOGTRACE("Opening Device...");
             // Now try to get a handle to the device
@@ -118,7 +118,7 @@ namespace cqp
         return result;
     }
 
-    void Usb::ReadCallback(libusb_transfer * transfer)
+    void Usb::ReadCallback(libusb_transfer *)
     {
         LOGTRACE("ReadCallback called");
     }
@@ -139,7 +139,7 @@ namespace cqp
 
             int currentConfig = -1;
 
-            if (result == true && (LogUsb(libusb_get_configuration(myHandle, &currentConfig)) == LIBUSB_SUCCESS))
+            if (result && (LogUsb(libusb_get_configuration(myHandle, &currentConfig)) == LIBUSB_SUCCESS))
             {
                 if (currentConfig != configIndex)
                 {
@@ -155,7 +155,7 @@ namespace cqp
             LOGTRACE("Attempting to claim interface...");
             result &= LogUsb(libusb_claim_interface(myHandle, interfaceIndex)) == LIBUSB_SUCCESS;
 
-            if (result == true)
+            if (result)
             {
                 libusb_ref_device(myDev);
 

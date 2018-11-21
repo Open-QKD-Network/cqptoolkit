@@ -187,7 +187,7 @@ namespace cqp
 
                 gotLock = cv.wait_for(lock, chrono::seconds(5), [&]()
                 {
-                    return (aliceResults.size() > 0 && bobResults.size() > 0);
+                    return (!aliceResults.empty() && !bobResults.empty());
                 });
             }
 

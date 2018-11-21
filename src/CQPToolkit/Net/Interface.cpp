@@ -24,11 +24,6 @@ namespace cqp
     namespace net
     {
 
-        Interface::Interface()
-        {
-
-        }
-
         /**
          * @brief IsPrivateNet
          * @param addr

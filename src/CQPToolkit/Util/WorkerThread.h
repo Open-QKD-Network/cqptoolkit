@@ -35,7 +35,7 @@ namespace cqp
     {
     public:
         /// Default constructor for a worker
-        WorkerThread();
+        WorkerThread() = default;
         /// Default destructor
         /// @details This will wait for the thread to complete
         virtual ~WorkerThread();

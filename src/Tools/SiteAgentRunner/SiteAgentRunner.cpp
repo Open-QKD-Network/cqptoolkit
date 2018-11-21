@@ -129,7 +129,7 @@ void SiteAgentRunner::DisplayHelp(const CommandArgs::Option&)
     using namespace std;
     const vector<string> drivers = DeviceFactory::GetKnownDrivers();
     string driverNames;
-    for(auto driver : drivers)
+    for(const auto& driver : drivers)
     {
         if(!driverNames.empty())
         {
@@ -453,7 +453,7 @@ int SiteAgentRunner::Main(const std::vector<std::string>& args)
             }
 
             // configure devices
-            for(auto devName : deviceAddresses)
+            for(const auto& devName : deviceAddresses)
             {
                 LOGTRACE("Adding device: " + devName);
                 siteSettings.add_deviceurls(devName);

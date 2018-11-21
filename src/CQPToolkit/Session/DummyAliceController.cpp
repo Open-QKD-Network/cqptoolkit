@@ -50,7 +50,7 @@ namespace cqp
 
         DummyAliceController::~DummyAliceController()
         {
-            EndSession();
+            DummyAliceController::EndSession();
             // disconnect the chain
             photonGen->Detatch();
             alignment->Detatch();

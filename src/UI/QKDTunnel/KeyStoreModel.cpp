@@ -14,11 +14,6 @@
 namespace qkdtunnel
 {
 
-    KeyStoreModel::KeyStoreModel()
-    {
-
-    }
-
     void KeyStoreModel::AppendRow(const std::string& name, const std::string& connectionAddress, const std::string& id)
     {
         QStandardItem* newItem = new QStandardItem();

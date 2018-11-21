@@ -32,7 +32,7 @@ namespace cqp
              * @brief ReportServer
              *  Constructor
              */
-            ReportServer();
+            ReportServer() = default;
 
             ///@{
             /// @name remote::IReporting interface

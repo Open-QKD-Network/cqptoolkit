@@ -178,7 +178,7 @@ namespace cqp
     void DeviceFactory::AddReportingCallback(stats::IAllStatsCallback* callback)
     {
         reportingCallbacks.push_back(callback);
-        for(auto dev : allDevices)
+        for(const auto& dev : allDevices)
         {
             for(auto* collection : dev.second->GetSessionController()->GetStats())
             {
@@ -198,7 +198,7 @@ namespace cqp
             }
         }
 
-        for(auto dev : allDevices)
+        for(const auto& dev : allDevices)
         {
             for(auto* collection : dev.second->GetSessionController()->GetStats())
             {

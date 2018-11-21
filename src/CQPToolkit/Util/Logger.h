@@ -99,7 +99,7 @@ namespace cqp
         }
 
         /// Default distructor
-        virtual ~Logger() override {}
+        virtual ~Logger() override = default;
 
         /// Send output to the logger
         /// @param[in] level message severity
@@ -128,7 +128,7 @@ namespace cqp
         virtual void DecOutputLevel() override;
 
         /// default constructor
-        Logger();
+        Logger() = default;
     protected:
 
         /// The level at which messages will be printed.

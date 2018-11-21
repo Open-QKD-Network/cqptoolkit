@@ -41,11 +41,11 @@ namespace cqp
              * @brief Alignment
              * Constructor
              */
-            ErrorCorrection();
+            ErrorCorrection() = default;
 
             /**
              * @brief ~ErrorCorrection
-             * Distructor
+             * Destructor
              */
             ~ErrorCorrection() override {}
 
@@ -86,7 +86,7 @@ namespace cqp
             /// @{
             /// @name WorkerThread overrides
 
-            /// Perform processing on incomming data
+            /// Perform processing on incoming data
             void DoWork() override;
 
             /// @}

@@ -90,8 +90,8 @@ namespace cqp
             return alice;
         }
 
-        /// Standard distructor
-        virtual ~Clavis();
+        /// Standard destructor
+        virtual ~Clavis() = default;
 
     protected:
 

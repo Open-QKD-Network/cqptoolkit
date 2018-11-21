@@ -15,8 +15,6 @@
 #include "CQPToolkit/Util/Util.h"
 #include "CQPToolkit/Datatypes/Tunnels.h"
 
-using cqp::URI;
-
 namespace qkdtunnel
 {
 

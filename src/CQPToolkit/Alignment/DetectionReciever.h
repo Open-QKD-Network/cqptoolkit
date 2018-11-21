@@ -27,7 +27,7 @@ namespace align {
     public:
         DetectionReciever();
 
-        virtual ~DetectionReciever() override;
+        virtual ~DetectionReciever() override = default;
 
         /// @{
         /// @name IDetectionEventCallback Interface

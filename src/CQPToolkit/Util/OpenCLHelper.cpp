@@ -186,12 +186,12 @@ namespace cqp
         uint64_t bestFlops = 0;
         bool result = false;
 
-        for(auto platform : platforms)
+        for(const auto& platform : platforms)
         {
             vector<Device> devices;
             LogCL(platform.getDevices(CL_DEVICE_TYPE_ALL, &devices));
 
-            for(auto device : devices)
+            for(const auto& device : devices)
             {
                 uint64_t numUnits = 0;
                 uint64_t freq = 0;

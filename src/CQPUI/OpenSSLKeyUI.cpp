@@ -39,7 +39,7 @@ namespace cqp {
             ui->foundModules->clear();
             // build a list of HSMs
             auto foundTokens = cqp::keygen::HSMStore::FindTokens(knownModules);
-            for(auto token : foundTokens)
+            for(const auto& token : foundTokens)
             {
                 std::map<std::string, std::string> dictionary;
                 token.ToDictionary(dictionary);
@@ -138,7 +138,7 @@ namespace cqp {
 
                     if(chooser.WaitForExit() == 0)
                     {
-                        if(lines.size() >= 1)
+                        if(!lines.empty())
                         {
                             storeUrl = lines[0];
                         }

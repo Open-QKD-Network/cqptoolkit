@@ -15,9 +15,6 @@
 
 namespace cqp
 {
-    QuantomPathDummy::QuantomPathDummy()
-    {
-    }
 
     QuantomPathDummy::~QuantomPathDummy()
     {

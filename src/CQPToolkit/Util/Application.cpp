@@ -40,7 +40,7 @@ namespace cqp
         return Main(arguments);
     }
 
-    void Application::HandleVersion(const CommandArgs::Option& option)
+    void Application::HandleVersion(const CommandArgs::Option& )
     {
         std::cout << definedArguments.GetCommandName() << " Version: "
                   << TOOLKIT_VERSION_MAJOR << "."

@@ -45,11 +45,11 @@ namespace cqp
                 attrList.Set(CKA_LABEL, destination);
                 // The start date cannot be used, it's value is not stored
                 // ask for one more than the currently reserved list. the last one should be unreserved.
-                if(session->FindObjects(attrList, reservedKeys[destination].size() + 1, found) == CKR_OK && found.size() > 0)
+                if(session->FindObjects(attrList, reservedKeys[destination].size() + 1, found) == CKR_OK && !found.empty())
                 {
                     // there's nothing on the device we can change
                     // look backwards through the list until an unreserved one is found
-                    for(auto item :
+                    for(const auto& item :
                             {
                                 found.rbegin(), found.rend()
                             })

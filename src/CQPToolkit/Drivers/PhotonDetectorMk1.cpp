@@ -29,17 +29,13 @@ namespace cqp
     PhotonDetectorMk1::PhotonDetectorMk1(const std::string& cmdPortName) :
         serialPortName(cmdPortName)
     {
-        Open();
+        PhotonDetectorMk1::Open();
     }
 
     PhotonDetectorMk1::PhotonDetectorMk1(UsbTagger* const usbDev, Serial* const serialDev)
     {
         highSpeedDev = usbDev;
         commandDev = serialDev;
-    }
-
-    PhotonDetectorMk1::~PhotonDetectorMk1()
-    {
     }
 
     static void DeviceRestDelay()

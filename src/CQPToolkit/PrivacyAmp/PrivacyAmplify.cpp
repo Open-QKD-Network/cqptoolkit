@@ -17,11 +17,6 @@ namespace cqp
     namespace privacy
     {
 
-        PrivacyAmplify::PrivacyAmplify()
-        {
-
-        } // PrivacyAmplify
-
         void PrivacyAmplify::PublishPrivacyAmplify()
         {
             // package data ready for next stage
@@ -36,7 +31,7 @@ namespace cqp
                 (*keys)[0].insert((*keys)[0].end(), block->begin(), block->end());
             }
 
-            if(keys->size() == 0 || (*keys)[0].size() == 0)
+            if(keys->empty() || (*keys)[0].empty())
             {
                 LOGWARN("Empty key");
             }
@@ -52,11 +47,11 @@ namespace cqp
             stats.keysEmitted.Update(numKeys);
         } // PublishPrivacyAmplify
 
-        void PrivacyAmplify::OnCorrected(const ValidatedBlockID blockId,
+        void PrivacyAmplify::OnCorrected(const ValidatedBlockID,
             std::unique_ptr<DataBlock> correctedData)
         {
             LOGTRACE("Corrected Data recieved.");
-            // collect incomming data, notify listeners of new data
+            // collect incoming data, notify listeners of new data
             // TODO
             incommingData.push_back(std::move(correctedData));
             PublishPrivacyAmplify();

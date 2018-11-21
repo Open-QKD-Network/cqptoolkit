@@ -19,11 +19,6 @@ namespace cqp
     namespace net
     {
 
-        Server::Server()
-        {
-
-        }
-
         Server::Server(const SocketAddress& listenAddress)
         {
             Listen(listenAddress);
@@ -47,7 +42,7 @@ namespace cqp
         std::shared_ptr<Stream> Server::AcceptConnection()
         {
             std::shared_ptr<Stream> result;
-            struct sockaddr_storage clientAddr;
+            struct sockaddr_storage clientAddr {};
             socklen_t clientAddrLen = 0;
             int clientHandle = ::accept(handle, reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrLen);
 

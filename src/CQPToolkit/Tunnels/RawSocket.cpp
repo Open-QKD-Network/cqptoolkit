@@ -69,13 +69,13 @@ namespace cqp
             }
             else
             {
-                struct ifreq ifaceFlags;
+                struct ifreq ifaceFlags {};
                 memset(&ifaceFlags, 0, sizeof(ifaceFlags));
 
                 /* Set the device to use */
                 device.copy(ifaceFlags.ifr_name, IFNAMSIZ);
 
-                // put the device into promiscous mode to collect all data that hits the device
+                // put the device into promiscuous mode to collect all data that hits the device
                 // see https://stackoverflow.com/questions/114804/reading-from-a-promiscuous-network-device
                 if(ioctl(self->handle, SIOCGIFFLAGS, &ifaceFlags, sizeof(ifaceFlags)) == -1)
                 {
@@ -89,7 +89,7 @@ namespace cqp
                     /* Set the old flags plus the IFF_PROMISC flag */
                     if(promiscuous)
                     {
-                        LOGTRACE("Setting permisuous flag");
+                        LOGTRACE("Setting promiscuous flag");
                         ifaceFlags.ifr_flags |= IFF_PROMISC;
                         if (ioctl (self->handle, SIOCSIFFLAGS, &ifaceFlags, sizeof(ifaceFlags)) == -1)
                         {
@@ -109,7 +109,7 @@ namespace cqp
                 if(result)
                 {
                     LOGTRACE("Binding to device");
-                    struct ifreq binddev;
+                    struct ifreq binddev {};
                     memset(&binddev, 0, sizeof(binddev));
                     device.copy(binddev.ifr_name, IFNAMSIZ);
 
@@ -139,7 +139,7 @@ namespace cqp
                         }
                     }
 
-                    struct ifreq devmtu;
+                    struct ifreq devmtu {};
                     memset(&devmtu, 0, sizeof(devmtu));
                     device.copy(devmtu.ifr_name, IFNAMSIZ);
 
@@ -210,7 +210,7 @@ namespace cqp
 
         RawSocket::~RawSocket()
         {
-            Close();
+            RawSocket::Close();
         }
 
         bool RawSocket::Read(void* data, size_t length, size_t& bytesReceived)

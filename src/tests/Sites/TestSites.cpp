@@ -173,7 +173,7 @@ namespace cqp
 
             ASSERT_TRUE(reg3) << "Registration 3 failed";
 
-            for(std::string from :
+            for(const std::string& from :
                     {
                         site1.GetConnectionAddress(), site2.GetConnectionAddress(), site3.GetConnectionAddress()
                     })
@@ -189,7 +189,7 @@ namespace cqp
                 ASSERT_NE(response.urls(0), response.urls(1)) << "Same keystore twice";
 
                 // try and get a key from each destination
-                for(auto ksAddr : response.urls())
+                for(const auto& ksAddr : response.urls())
                 {
                     LOGDEBUG("Getting key from " + from + " to " + ksAddr);
                     grpc::ClientContext keyCtx;

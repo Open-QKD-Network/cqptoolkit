@@ -19,10 +19,6 @@
 namespace cqp
 {
 
-    CommandArgs::CommandArgs()
-    {
-
-    }
 
     CommandArgs::Option& CommandArgs::AddOption(const std::string& longName, const std::string& shortName, const std::string& description)
     {
@@ -278,7 +274,7 @@ namespace cqp
     std::string CommandArgs::PropertiesToString() const
     {
         std::string result;
-        for(auto prop : properties)
+        for(const auto& prop : properties)
         {
             result += prop.first + " = " + prop.second + "\n";
         }
@@ -296,7 +292,7 @@ namespace cqp
             std::string line;
             while(getline(inFile, line))
             {
-                size_t equalPos =line.find("=");
+                size_t equalPos =line.find('=');
                 std::string key = line.substr(0, equalPos);
                 trim(key);
                 if(equalPos == std::string::npos)

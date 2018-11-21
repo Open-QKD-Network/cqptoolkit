@@ -101,11 +101,6 @@ namespace cqp
         SetOutputLevel(currentOutput);
     }
 
-    Logger::Logger()
-    {
-
-    }
-
     /// A function definition for retrieving the default logger.
     /// @remarks this currently allows the linker to be defined at link time,
     ///     this may be flexible enough by requires understanding that somthing must implement

@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "ErrorCorrection.h"
-#include <stddef.h>                            // for size_t
+#include <cstddef>                             // for size_t
 #include <ratio>                               // for ratio
 #include "CQPToolkit/ErrorCorrection/Stats.h"  // for Stats
 #include "Statistics/Stat.h"                   // for Stat
@@ -20,10 +20,6 @@ namespace cqp
 {
     namespace ec
     {
-        ErrorCorrection::ErrorCorrection()
-        {
-
-        } // ErrorCorrection
 
         void ErrorCorrection::PublishCorrected()
         {

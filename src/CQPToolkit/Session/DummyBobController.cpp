@@ -24,7 +24,6 @@ namespace cqp
     {
         using google::protobuf::Empty;
         using grpc::Status;
-        using grpc::ClientContext;
 
         DummyBobController::DummyBobController(std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey) :
             SessionController(creds)

@@ -26,7 +26,7 @@ namespace cqp
          * @brief NetworkManagerDummy
          * Constructor
          */
-        NetworkManagerDummy();
+        NetworkManagerDummy() = default;
 
         virtual ~NetworkManagerDummy() override;
 

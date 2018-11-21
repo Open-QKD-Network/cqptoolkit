@@ -24,7 +24,7 @@ namespace align {
             public virtual IEmitterEventCallback
     {
     public:
-        TransmissionHandler();
+        TransmissionHandler() = default;
 
         /// @copydoc IEmitterEventCallback::OnEmitterReport
         void OnEmitterReport(std::unique_ptr<EmitterReport> report) override;

@@ -38,11 +38,6 @@ public:
     /// Constructor
     RemotingExample();
 
-    /// Distructor
-    ~RemotingExample() override
-    {
-    }
-
     ///@{
     /// @name IKeyCallback interface
     void OnKeyGeneration(std::unique_ptr<KeyList> keyData) override;
@@ -138,14 +133,14 @@ void RemotingExample::handleOption(const CommandArgs::Option& option)
     }
 }
 
-void RemotingExample::displayHelp(const CommandArgs::Option& option)
+void RemotingExample::displayHelp(const CommandArgs::Option&)
 {
     definedArguments.PrintHelp(std::cout, "A sample HTTP server supporting the WebSocket protocol.");
     definedArguments.StopOptionsProcessing();
     stopExecution = true;
 }
 
-void RemotingExample::StartAlice(uint16_t port)
+void RemotingExample::StartAlice(uint16_t)
 {
     /// for sending alice's key to the console
     KeyPrinter keyPrinter;
@@ -153,7 +148,7 @@ void RemotingExample::StartAlice(uint16_t port)
 
 }
 
-void RemotingExample::StartBob(const std::string& address)
+void RemotingExample::StartBob(const std::string&)
 {
     /// for sending bob's key to the console
     KeyPrinter keyPrinter;

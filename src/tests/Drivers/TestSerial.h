@@ -23,8 +23,7 @@ namespace cqp
         class TestSerial : public testing::Test
         {
         public:
-            TestSerial();
-            virtual ~TestSerial();
+            virtual ~TestSerial() = default;
 
         protected:
         };

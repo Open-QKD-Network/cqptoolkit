@@ -56,10 +56,8 @@ public:
     /// Constructor
     QKDSim();
 
-    /// Distructor
-    ~QKDSim()
-    {
-    }
+    /// Destructor
+    ~QKDSim() override = default;
 
     /// The application's main logic.
     /// Returns an exit code which should be one of the values
@@ -154,12 +152,12 @@ QKDSim::QKDSim()
 
 }
 
-void QKDSim::DisplayHelp(const CommandArgs::Option& option)
+void QKDSim::DisplayHelp(const CommandArgs::Option&)
 {
     using namespace std;
     const vector<string> drivers = DeviceFactory::GetKnownDrivers();
     string driverNames;
-    for(auto driver : drivers)
+    for(const auto& driver : drivers)
     {
         if(!driverNames.empty())
         {
@@ -230,7 +228,7 @@ int QKDSim::Main(const std::vector<std::string> &args)
             }
 
             // configure devices
-            if(siteSettings.deviceurls().size() == 0)
+            if(siteSettings.deviceurls().empty())
             {
                 siteSettings.mutable_deviceurls()->Add(std::string(DummyQKD::DriverName) + ":///?side=alice");
                 siteSettings.mutable_deviceurls()->Add(std::string(DummyQKD::DriverName) + ":///?side=bob");

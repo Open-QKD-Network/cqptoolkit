@@ -13,7 +13,7 @@
 #include <bits/stdint-uintn.h>                   // for uint64_t
 #include <google/protobuf/empty.pb.h>            // for Empty
 #include <grpcpp/impl/codegen/client_context.h>  // for ClientContext
-#include <stddef.h>                              // for size_t
+#include <cstddef>                               // for size_t
 #include <cstdint>                               // for uint64_t
 #include <ratio>                                 // for ratio
 #include <string>                                // for operator+, to_string

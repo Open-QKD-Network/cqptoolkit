@@ -14,7 +14,7 @@
 #include "CQPToolkit/Net/Socket.h"
 #if defined(__unix__)
     #include <unistd.h>
-    #include <limits.h>
+    #include <climits>
     #include <bits/local_lim.h>
     #include <sys/types.h>
     #include <sys/socket.h>

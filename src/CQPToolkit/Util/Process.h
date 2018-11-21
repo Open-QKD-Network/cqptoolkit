@@ -29,9 +29,9 @@ namespace cqp
         /**
          * @brief Process
          */
-        Process();
+        Process() = default;
 
-        /// Distructor
+        /// Destructor
         ~Process();
 
         /**

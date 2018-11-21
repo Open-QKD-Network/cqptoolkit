@@ -44,7 +44,7 @@ Status IDQWrapper::GetDetails(grpc::ServerContext*, const google::protobuf::Empt
     {
         LOGERROR("Failed to resolve my own address");
         auto addresses = net::GetHostIPs();
-        if(addresses.size() > 0)
+        if(!addresses.empty())
         {
             LOGTRACE("Using first IP: " + addresses[0].ToString());
             response->set_hostname(addresses[0].ToString());
@@ -168,7 +168,7 @@ grpc::Status IDQWrapper::StartQKDSequence(grpc::ServerContext* srvCtx,
                     LOGTRACE("Waiting for key id");
                     bool dataReady = waitingKeyIdsCv.wait_for(lock, std::chrono::seconds(10), [&]()
                     {
-                        return waitingKeyIds.size() > 0;
+                        return !waitingKeyIds.empty();
                     });
 
                     // wait for a key id to be sent to us from alice

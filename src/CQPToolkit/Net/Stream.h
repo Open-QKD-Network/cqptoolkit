@@ -32,7 +32,7 @@ namespace cqp
              */
             Stream();
             /// Destructor
-            ~Stream();
+            ~Stream() = default;
             /**
              * @brief Connect
              * Connect to a server port

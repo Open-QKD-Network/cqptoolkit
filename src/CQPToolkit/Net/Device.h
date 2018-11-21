@@ -28,7 +28,7 @@ namespace cqp
              * @brief Device
              * Constructor
              */
-            Device();
+            Device() = default;
 
             /**
              * @brief SetAddress

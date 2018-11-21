@@ -33,7 +33,7 @@ namespace cqp
         return DriverName;
     }
 
-    LEDAliceMk1::LEDAliceMk1(IRandom* randomSource) : Usb(), randomness(randomSource)
+    LEDAliceMk1::LEDAliceMk1(IRandom* randomSource) : randomness(randomSource)
     {
 
     }

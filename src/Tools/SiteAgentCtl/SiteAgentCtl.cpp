@@ -180,7 +180,7 @@ void SiteAgentCtl::ListSites(remote::IKey::Stub* siteA)
     LOGDEBUG("Listing key store destinations...");
     if(LogStatus(siteA->GetKeyStores(&ctx, request, &response)).ok())
     {
-        for(auto url : response.urls())
+        for(const auto& url : response.urls())
         {
             cout << url << endl;
         }

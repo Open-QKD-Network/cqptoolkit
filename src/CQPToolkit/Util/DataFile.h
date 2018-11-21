@@ -10,7 +10,7 @@ namespace cqp {
         class CQPTOOLKIT_EXPORT DataFile
         {
         public:
-            DataFile();
+            DataFile() = default;
             /**
              * @brief ReadPackedQubits
              * Read a list of qubits from a packed binary file.
@@ -91,7 +91,7 @@ namespace cqp {
                 using FineTime = std::chrono::duration<uint64_t, std::ratio<1, fineRatio>>;
                 /// The structure of the detection message
                 struct Detection {
-                    uint64_t coarse {0};
+                    int64_t coarse {0};
                     uint16_t fine {0};
                     uint8_t channel {0};
                 };

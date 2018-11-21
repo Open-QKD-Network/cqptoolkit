@@ -46,10 +46,6 @@ namespace cqp
             }
         }
 
-        Stream::~Stream()
-        {
-        }
-
         bool Stream::Connect(const SocketAddress& address, std::chrono::milliseconds timeout)
         {
             unsigned int addrSize {};
@@ -74,13 +70,13 @@ namespace cqp
             FD_ZERO(&set);
             FD_SET(handle, &set);
 
-            struct timeval cTimeout;
+            struct timeval cTimeout {};
             std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(timeout);
 
             cTimeout.tv_sec  = sec.count();
             cTimeout.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(timeout - sec).count();
 
-            // on timeout, 0 is retured
+            // on timeout, 0 is returned
             connectResult = ::select(handle + 1, nullptr, &set, nullptr, &cTimeout);
 
             if(connectResult < 0)

@@ -49,11 +49,6 @@ namespace cqp
         LOGTRACE("WorkerThread::ThreadExec Stopping");
     }
 
-    WorkerThread::WorkerThread()
-    {
-
-    }
-
     WorkerThread::~WorkerThread()
     {
         WorkerThread::Stop(true);
@@ -86,7 +81,7 @@ namespace cqp
 
         if (wait )
         {
-            Join();
+            WorkerThread::Join();
         }
         else if(worker.joinable())
         {

@@ -26,7 +26,6 @@
 #include "CQPUI/OpenSSLKeyUI.h"
 
 using grpc::Status;
-using grpc::StatusCode;
 using google::protobuf::Empty;
 using grpc::ClientContext;
 using cqp::remote::IKey;
@@ -56,7 +55,7 @@ KeyViewer::~KeyViewer()
 void KeyViewer::OnServiceDetected(const cqp::RemoteHosts& newServices, const cqp::RemoteHosts& deletedServices)
 {
     std::lock_guard<std::mutex> lock(localSiteAgentsMutex);
-    for(auto serv : deletedServices)
+    for(const auto& serv : deletedServices)
     {
         for(int itemindex = 0; itemindex < ui->localSiteAgents->count(); itemindex++)
         {
@@ -69,7 +68,7 @@ void KeyViewer::OnServiceDetected(const cqp::RemoteHosts& newServices, const cqp
         }
     }
 
-    for(auto serv : newServices)
+    for(const auto& serv : newServices)
     {
         bool found = false;
         for(int itemindex = 0; itemindex < ui->localSiteAgents->count(); itemindex++)
@@ -197,7 +196,7 @@ void KeyViewer::OnSendToHSMShow()
 
     // build a list of HSMs
     auto foundTokens = cqp::keygen::HSMStore::FindTokens(knownModules);
-    for(auto token : foundTokens)
+    for(const auto& token : foundTokens)
     {
         std::map<std::string, std::string> dictionary;
         token.ToDictionary(dictionary);
@@ -277,7 +276,7 @@ void KeyViewer::on_localAgentGo_clicked()
 
             if(getResult.ok())
             {
-                for(auto site : sites.urls())
+                for(const auto& site : sites.urls())
                 {
                     ui->knownSites->addItem(QString::fromStdString(site));
                 }
@@ -349,7 +348,7 @@ void KeyViewer::on_openHsm_clicked()
         if(fromStore)
         {
             ui->destinationCbo->clear();
-            for(auto item : fromStore->GetDestinations())
+            for(const auto& item : fromStore->GetDestinations())
             {
                 ui->destinationCbo->addItem(QString::fromStdString(item));
             }

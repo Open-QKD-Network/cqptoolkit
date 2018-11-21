@@ -262,7 +262,7 @@ namespace cqp
             remote::KeyPathRequest request;
 
             (*request.mutable_sites()->mutable_urls()->Add()) = mySiteFrom;
-            for(auto element : myPath)
+            for(const auto& element : myPath)
             {
                 (*request.mutable_sites()->mutable_urls()->Add()) = element;
             }
@@ -429,7 +429,7 @@ namespace cqp
                 if(!backingStore->StoreKeys(mySiteTo, backingStoreKeys))
                 {
                     LOGWARN("Failed to send keys to backing store, storing locally");
-                    for(auto key : backingStoreKeys)
+                    for(const auto& key : backingStoreKeys)
                     {
                         unusedKeys[key.first] = key.second;
                     }
@@ -463,7 +463,7 @@ namespace cqp
             }/* lock scope */
 
             std::string msg = "Path is now " + mySiteFrom + " -> ";
-            for(auto hop : path)
+            for(const auto& hop : path)
             {
                 msg += hop + " -> ";
             }
