@@ -34,9 +34,9 @@ namespace cqp
     public:
         /// Default constructor
         RandomNumber();
-        /// Default distructor
+        /// Default destructor
         virtual ~RandomNumber() override = default;
-        /// @copydoc IRandom::RandInt
+        /// @copydoc IRandom::RandULong
         ulong RandULong() override;
 
         /// return a single random number
@@ -53,9 +53,9 @@ namespace cqp
          */
         QubitList RandQubitList(size_t NumQubits);
     protected:
-        /// Distrobution algorithms to ensure good distrobution of numbers
+        /// Distribution algorithms to ensure good distribution of numbers
         std::uniform_int_distribution<ulong> intDistribution;
-        /// Distrobution algorithms to ensure good distrobution of numbers
+        /// Distribution algorithms to ensure good distribution of numbers
         std::uniform_int_distribution<int> qubitDistribution;
         /// Random number generator
         std::default_random_engine generator;

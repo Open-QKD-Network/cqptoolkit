@@ -35,6 +35,15 @@ namespace cqp
         using ::testing::_;
         using namespace ::testing;
 
+        class AlignmentTestData
+        {
+        public:
+            QubitList emissions;
+            PicoSeconds emissionPeriod {100000};
+            PicoSeconds emissionDelay  {1000};
+            DetectionReportList detections;
+        };
+
         AlignmentTests::AlignmentTests()
         {
             using namespace std;

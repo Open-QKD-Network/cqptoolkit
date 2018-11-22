@@ -86,7 +86,7 @@ namespace cqp
                 const BinID bin = (adjustedTime % slotWidth) / pulseWidth;
                 // store the value as a bin for later access
                 myResults[bin][slot].push_back(&detection->value);
-                // the value is attomic so we can safely update it
+                // the value is atomic so we can safely update it
                 myCounts[bin]++;
             }
 
@@ -151,7 +151,7 @@ namespace cqp
             } // for offsets to test
 
             return offsetHighscore;
-        }
+        } // ScoreOffsets
 
         void DetectionGating::HistogramWorker(const DetectionGating::DetectionBounds& dataBounds,
             std::pair<uint64_t, uint64_t> myOffsetRange,
@@ -346,7 +346,7 @@ namespace cqp
             // ask the other side for some points of reference to shift our slot index to line up with theirs
             if(!GetMarkers(channel, frameId, markers).ok() || markers.qubits().empty())
             {
-                LOGERROR("Invlaid markers provided");
+                LOGERROR("Invalid markers provided");
             }
 
             {
@@ -385,7 +385,7 @@ namespace cqp
             // it doesn't matter if we get two values for a slot at this point
             DetectedSlots detectedSlots;
             // collapse the sparse 2d array into a 1d array.
-            // The slot id is thrown away at this point as the unsucessfully detected slots are discarded
+            // The slot id is thrown away at this point as the unsuccessfully detected slots are discarded
 
             if(allResults.size() > markers.qubits().size())
             {
@@ -439,7 +439,7 @@ namespace cqp
                 request.add_slotids(slot + offset);
             }
             return LogStatus(otherSide->DiscardTransmissions(&ctx, request, &response));
-        }
+        } // SendValidDetections
 
 #if defined(OPENCL_FOUND)
         void CLTest() {

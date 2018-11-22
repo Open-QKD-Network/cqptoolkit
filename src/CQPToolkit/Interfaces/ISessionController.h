@@ -28,6 +28,8 @@ namespace cqp
         class OpticalParameters;
     }
 
+    /// Manages Key callbacks
+    /// @see Provider
     using IKeyPublisher = Provider<IKeyCallback>;
 
     /**

@@ -21,19 +21,34 @@ namespace cqp {
     class Provider
     {
     public:
+        /// destructor
         virtual ~Provider() = default;
 
-
+        /**
+         * @brief Attach
+         * Set the listener
+         * @param newListener
+         */
         virtual void Attach(Listener* newListener)
         {
             listener = newListener;
         }
 
+        /**
+         * @brief Detatch
+         * Remove the listener
+         */
         virtual void Detatch()
         {
             listener = nullptr;
         }
 
+        /**
+         * Send the data to the listener
+         * @tparam Args The parameters to send to the listener
+         * @param args The values to send to the listener
+         * @param func The function to call on the listener
+         */
         template<typename ...Args>
         void Emit(void(Listener::*func)(Args...), Args&... args)
         {
@@ -46,7 +61,10 @@ namespace cqp {
         }
 
     protected:
+        /// Constructor
         Provider() {}
+
+        /// The listener
         Listener* listener = nullptr;
     };
 

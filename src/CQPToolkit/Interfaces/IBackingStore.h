@@ -25,7 +25,7 @@ namespace cqp
         class IBackingStore
         {
         public:
-            // a key with it's id
+            /// a key with it's id
             using Key = std::pair<KeyID, PSK>;
             /// storage for keys and their ids
             using Keys = std::vector<Key>;

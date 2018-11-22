@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief CQP Toolkit - Usb Tagger
+* @brief CQP Toolkit - DetectionReport
 *
 * @copyright Copyright (C) University of Bristol 2016
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
@@ -43,7 +43,7 @@ namespace cqp
         /// The moment at which the event was detected.
         /// @note
         /// This is different to the value sent by some hardware
-        /// Often this will be converted from a course freerunning clock + tick offset.
+        /// Often this will be converted from a course free running clock + tick offset.
         /// investigations need to be performed to decide whether it is worth processing between the two forms.
         PicoSeconds time {0};
         /// Some identifier for the detector
@@ -51,6 +51,12 @@ namespace cqp
 
     };
 
+    /**
+     * @brief operator ==
+     * Compare detection reports
+     * @param left
+     * @param right
+     * @return true if the time and value are additional     */
     inline bool operator==(const DetectionReport& left, const DetectionReport& right)
     {
         return left.value == right.value && left.time == right.time;
@@ -59,7 +65,7 @@ namespace cqp
     /// A list of detection reports
     using DetectionReportList = std::vector<DetectionReport>;
 
-    /// Stores the data report with the aditional information about which frame it arrived in.
+    /// Stores the data report with the additional information about which frame it arrived in.
     struct CQPTOOLKIT_EXPORT ProtocolDetectionReport
     {
         /// The frame which this detection belongs
@@ -70,14 +76,14 @@ namespace cqp
         DetectionReportList detections;
     };
 
-    /// Stores the data report with the aditional information about which frame it arrived in.
+    /// Stores the data report with the additional information about which frame it arrived in.
     struct CQPTOOLKIT_EXPORT EmitterReport
     {
         /// The frame which this detection belongs
         SequenceNumber frame;
         /// The detections time stamp os relative to this point in time.
         std::chrono::high_resolution_clock::time_point epoc;
-        /// the time between photon emittions
+        /// the time between photon emissions
         PicoSeconds period;
         /// The detection report
         QubitList emissions;

@@ -133,7 +133,7 @@ namespace cqp
      * @param[in] separator How to separate the string
      * @param[in] startAt Start point of value
      */
-    CQPTOOLKIT_EXPORT void SplitString(const std::string& value, std::vector<std::string>& dest, const std::string& seperator, size_t startAt = 0);
+    CQPTOOLKIT_EXPORT void SplitString(const std::string& value, std::vector<std::string>& dest, const std::string& separator, size_t startAt = 0);
 
 
     /**
@@ -144,7 +144,7 @@ namespace cqp
      * @param[in] separator How to separate the string
      * @param[in] startAt Start point of value
      */
-    CQPTOOLKIT_EXPORT void SplitString(const std::string& value, std::unordered_set<std::string>& dest, const std::string& seperator, size_t startAt = 0);
+    CQPTOOLKIT_EXPORT void SplitString(const std::string& value, std::unordered_set<std::string>& dest, const std::string& separator, size_t startAt = 0);
 
     /**
      * @brief ToDictionary
@@ -155,7 +155,7 @@ namespace cqp
      * @param dictionary destination for results
      */
     CQPTOOLKIT_EXPORT void ToDictionary(const std::string& delimited, std::map<std::string, std::string>& dictionary,
-                                        char pairSeperator, char keyValueSep = '=');
+                                        char pairSeparator, char keyValueSep = '=');
 
     /**
      * @brief ToLower

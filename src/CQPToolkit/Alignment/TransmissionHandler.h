@@ -19,6 +19,10 @@ namespace cqp {
 
 namespace align {
 
+    /**
+     * @brief The TransmissionHandler class
+     * Handles requests for alignment data from the detector
+     */
     class CQPTOOLKIT_EXPORT TransmissionHandler : public Alignment,
             public remote::IAlignment::Service,
             public virtual IEmitterEventCallback

@@ -19,9 +19,16 @@ namespace cqp
     /// Used for key negotiation to identify the current conversation
     using SessionID = UUID;
 
+    /**
+     * @brief The SystemParameters struct
+     * Provides configuration parameters for the setup of frames and photon exchange
+     */
     struct CQPTOOLKIT_EXPORT SystemParameters {
+        /// The duration for a frame
         PicoSeconds frameWidth {0};
+        /// The duration for one slot within a frame
         PicoSeconds slotWidth {0};
+        /// The width of a single pulse in a slot
         PicoSeconds pulseWidth {0};
     };
 } // namespace cqp

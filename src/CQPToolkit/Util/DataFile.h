@@ -7,6 +7,10 @@
 namespace cqp {
     namespace fs {
 
+        /**
+         * @brief The DataFile class
+         * Read and write various data formats
+         */
         class CQPTOOLKIT_EXPORT DataFile
         {
         public:
@@ -16,7 +20,7 @@ namespace cqp {
              * Read a list of qubits from a packed binary file.
              * @details
              * 2 bits per qubit, 4 qubits per byte.
-             * @param inFile
+             * @param inFileName
              * @param output
              * @return True on success
              */
@@ -45,7 +49,7 @@ namespace cqp {
              * | 44 - 47    | 4         | blank                 |
              * | 48 - 51    | 4         | channel               |
              * | 52 - 63    | 12        | Fine count            |
-             * @param inFile
+             * @param inFileName
              * @param output
              * @return true on success
              */
@@ -57,8 +61,8 @@ namespace cqp {
              * @details
              * 64bit integer number of picoseconds in network byte order
              * 1 byte Qubit value
-             * @param inFile
-             * @param output
+             * @param inFileName Filename to read from
+             * @param output destination for report
              * @return true on success
              */
             static bool ReadDetectionReportList(const std::string& inFileName, DetectionReportList& output);
@@ -67,13 +71,15 @@ namespace cqp {
              * @brief WriteDetectionReportList
              * @details
              * 64bit integer number of picoseconds in network byte order
-             * @param source
-             * @param outFile
+             * @param source Data to write
+             * @param outFileName Filename for output
              * @return true on success
              */
             static bool WriteDetectionReportList(const DetectionReportList& source, const std::string& outFileName);
 
-            /// Defines the messages sent by the NOX box
+            /**
+             * Defines the messages sent by the NOX box
+             */
             struct NoxReport
             {
             public: // types
@@ -91,8 +97,11 @@ namespace cqp {
                 using FineTime = std::chrono::duration<uint64_t, std::ratio<1, fineRatio>>;
                 /// The structure of the detection message
                 struct Detection {
-                    int64_t coarse {0};
+                    /// course time value
+                    uint64_t coarse {0};
+                    /// fine time value
                     uint16_t fine {0};
+                    /// detection channel
                     uint8_t channel {0};
                 };
 
@@ -101,9 +110,14 @@ namespace cqp {
             public: // members
                 /// Possible variations of the message
                 Detection detection;
+                /// The message type
                 MessageType messageType = MessageType::Invalid;
 
             public: // methods
+                /**
+                 * @brief GetTime
+                 * @return Time in picoseconds
+                 */
                 PicoSeconds GetTime() const;
 
             };

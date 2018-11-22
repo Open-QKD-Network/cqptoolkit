@@ -15,9 +15,15 @@ import public "Qubits.proto";
 
 package cqp.remote;
 
+/**
+ * @brief FakeDetection
+ * Contains the information needed to simulate a detection event
+ */
 message FakeDetection
 {
+    /// The time between the qubits
     uint64 periodPicoseconds = 1;
+    /// The qubits detected
     QubitList values = 2;
 };
 

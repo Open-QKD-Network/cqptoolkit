@@ -15,10 +15,16 @@ import public "Qubits.proto";
 
 package cqp.remote;
 
+/**
+ * a message for the frame id
+ */
 message FrameId {
     uint64 Id = 1;
 };
 
+/**
+ * A list of slots for a frame which where detected
+ */
 message ValidDetections{
     uint64 frameId = 1;
     repeated uint64 slotIds = 2;

@@ -16,7 +16,7 @@
 #include "CQPToolkit/Interfaces/IAlignmentPublisher.h"
 #include <mutex>
 #include <condition_variable>
-#include "tests/Alignment/AlignmentTestData.h"
+#include "CQPToolkit/Util/DataFile.h"
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "CQPToolkit/Simulation/RandomNumber.h"
 

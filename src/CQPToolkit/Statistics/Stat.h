@@ -63,7 +63,7 @@ namespace cqp
              */
             StatBase(std::vector<std::string> const & pathin, Units k = Units::Complex);
 
-            /// Distructor
+            /// Destructor
             virtual ~StatBase() = default;
 
             virtual void ProcessStats() = 0;
@@ -111,7 +111,7 @@ namespace cqp
 
         protected:
 
-            /// controll access to incomming
+            /// control access to incoming
             std::mutex incommingMutex;
             /// The descriptive name of the stat
             const std::vector<std::string> path;
@@ -135,16 +135,32 @@ namespace cqp
             std::shared_ptr<ProcessingWorker> worker;
         };
 
+        /**
+         * @brief The ProcessingWorker class
+         * Processes incoming stats
+         */
         class CQPTOOLKIT_EXPORT ProcessingWorker
         {
         public:
+            /**
+             * @brief Instance
+             * @return The single instance of this class
+             */
             static std::shared_ptr<ProcessingWorker> Instance();
 
+            /**
+             * @brief Enque
+             * Request a stat is processed by the worker
+             * @param me Stat to process
+             */
             void Enque(StatBase* me);
 
+            /// Destructor
             ~ProcessingWorker();
         private:
+            /// Constructor
             ProcessingWorker();
+
             /**
              * @brief Worker
              * Process the waiting stats
@@ -171,7 +187,7 @@ namespace cqp
         class CQPTOOLKIT_EXPORT Stat;
 
         /**
-         * Callback interface for recieving stats
+         * Callback interface for receiving stats
          * @tparam T Datatype which the stat will store
          */
         template<typename T>
@@ -184,13 +200,13 @@ namespace cqp
              * @param stat The stat which has been updated
              */
             virtual void StatUpdated(const Stat<T>* stat) = 0;
-            /// Distructor
+            /// Destructor
             virtual ~IStatCallback() {}
         };
 
         /**
          * @brief The IAllStatsCallback class
-         * Callback interface for recieving all datatypes
+         * Callback interface for receiving all datatypes
          */
         class CQPTOOLKIT_EXPORT IAllStatsCallback :
             public virtual IStatCallback<double>,
@@ -218,7 +234,7 @@ namespace cqp
             {
             }
 
-            /// Distructor
+            /// Destructor
             virtual ~Stat() = default;
 
             /**
@@ -266,7 +282,7 @@ namespace cqp
             /**
              * @brief Update
              * Store a new statistic value
-             * @note It is safe to call this in time sensative regions as the call is dispatched to a worker task
+             * @note It is safe to call this in time sensitive regions as the call is dispatched to a worker task
              *
              * @param value
              */
@@ -283,7 +299,7 @@ namespace cqp
 
             /**
              * @brief DoWork
-             * Process incomming stats and pass them to the listeners
+             * Process incoming stats and pass them to the listeners
              */
             void ProcessStats() override
             {
@@ -298,13 +314,13 @@ namespace cqp
                 {
                     T value = incommingValues.front();
                     incommingValues.pop();
-                    // unlock the incomming queue
+                    // unlock the incoming queue
                     lock.unlock();
 
                     auto timeNow = high_resolution_clock::now();
                     if(modified)
                     {
-                        // calculate the differnet values
+                        // calculate the different values
                         min = std::min(min, value);
                         max = std::max(max, value);
                         // get the duration as seconds, stored in a double
@@ -329,7 +345,7 @@ namespace cqp
                     // notify the listeners
                     this->Emit(this);
 
-                    // relock to check if there are any waiting values
+                    // re-lock to check if there are any waiting values
                     lock.lock();
                 } // while
             }
@@ -337,7 +353,7 @@ namespace cqp
             /**
              * Store a new time based statistic value
              * @see http://en.cppreference.com/w/cpp/chrono/duration
-             * @tparam Rep Repition value
+             * @tparam Rep Repetition value
              * @tparam Period The fixed-point precision multiplier
              * @param duration New value to store
              */
@@ -374,7 +390,7 @@ namespace cqp
             T average = {};
             /// The total value processed by the DoWork Thread
             T total = {};
-            /// The miniumum value processed by the DoWork Thread
+            /// The minimum value processed by the DoWork Thread
             T min = {};
             /// The maximum value processed by the DoWork Thread
             T max = {};

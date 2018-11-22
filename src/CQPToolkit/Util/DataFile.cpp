@@ -25,7 +25,7 @@ namespace cqp
                 {
                     char packedQubits;
                     inFile.read(&packedQubits, sizeof (packedQubits));
-
+                    // shift each pair of bits to LSB and store in the output
                     output[index++] = (packedQubits & 0b00000011);
                     output[index++] = ((packedQubits & 0b00001100) >> 2);
                     output[index++] = ((packedQubits & 0b00110000) >> 4);
@@ -48,10 +48,12 @@ namespace cqp
             std::ofstream outFile(outFileName, std::ios::out | std::ios::binary);
             if (outFile)
             {
+                // for each 4 qubits
                 for(uint64_t index = 0; index < source.size(); index += 4)
                 {
                     uint8_t buffer {0};
 
+                    // pack the quits into a byte
                     buffer = static_cast<uint8_t>(source[index] |
                                                   (source[index+1] << 2) |
                                                   (source[index+2] << 4) |
@@ -59,6 +61,7 @@ namespace cqp
                     outFile.write(reinterpret_cast<char*>(&buffer), sizeof (buffer));
                 }
 
+                // check if there are any unwritten qubits
                 const uint8_t remainder = source.size() % 4;
                 if(remainder != 0)
                 {
