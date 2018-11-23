@@ -50,9 +50,9 @@ The toolkit can store generated key into a HSM or similar device using the PKCS#
 
 ## OpenSSL
 
-[OpenSSL](https://www.openssl.org/) is widly used, mainly in server applications. It supports nearly all standards and ciphers.
-The OpenSSLHandler_ServerCallback and OpenSSLHandler_ClientCallback methods link the OpenSSL PSK callbacks, used to get a key when required. In fact, OpenSSL will not enable the PSK ciphers untill these callbacks are registered.
-OpenSSL does have support for PKCS#11, however there is no connection between the engine mechanisum that it uses and the PSK cipher algorithms, for the perposes of PSK, the PKCS#11 engine is usless.
+[OpenSSL](https://www.openssl.org/) is widely used, mainly in server applications. It supports nearly all standards and ciphers.
+The OpenSSLHandler_ServerCallback and OpenSSLHandler_ClientCallback methods link the OpenSSL PSK callbacks, used to get a key when required. In fact, OpenSSL will not enable the PSK ciphers until these callbacks are registered.
+OpenSSL does have support for PKCS#11, however there is no connection between the engine mechanism that it uses and the PSK cipher algorithms, for the purposes of PSK, the PKCS#11 engine is useless.
 
 ## BoringSSL
 
@@ -60,7 +60,7 @@ Dues to fustrations with OpenSSL, google produced a fork call [BoringSSL](https:
 
 ## NSS
 
-[NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) is the security services behind mozilla products such as [Firefox](https://www.mozilla.org/en-US/firefox/new/). It doesn't support PSK. It does support PKCS#11, however there is no facility to search for keys other that by their id so cannot be directly used by this scheme.
+[NSS](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS) is the security services behind Mozilla products such as [Firefox](https://www.mozilla.org/en-US/firefox/new/). It doesn't support PSK. It does support PKCS#11, however there is no facility to search for keys other that by their id so cannot be directly used by this scheme.
 
 # HSMs
 
@@ -71,10 +71,10 @@ TODO
 ## YubiHSM2
 
 The yubihsm-connector program needs to be running for the pkcs11 tool to work.
-Binaries are provided for ubuntu but as yet there is no soruce available.
+Binaries are provided for Ubuntu but as yet there is no source available.
 The default password is 0001password, the 0001 is the authtoken.
 
-> **Arch linux**
+> **Arch Linux**
 >
 > Use `debtap` to convert the ubuntu 18.04 release to pacman packages.
 > Alter the dependencies for the setup package to suit.

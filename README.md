@@ -1,16 +1,15 @@
 CQP Tool kit {#mainpage}
 ============
 
-This file is written in [markdown](https://en.wikipedia.org/wiki/Markdown), it can be viewed with the Markdown Viewer chrome extenstion.
+This file is written in [markdown](https://en.wikipedia.org/wiki/Markdown), it can be viewed with the Markdown Viewer chrome extension. The generated documentation can be found [on gitlab](https://qcomms.gitlab.io/cqptoolkit/).
 
-This documentation is also available in [pdf form](index.pdf).
-Binary packages can be installed on Ubunutu from [here](ubuntu/dists/release/bionic/main/binary-amd64/).
+Binary packages can be installed on Ubuntu 18.04 from [here](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb).
 
-The system provides variuos components for integrating QKD into a security system.
+The system provides various components for integrating QKD into a security system.
 
-- Fully documented code using doxygen
+- Fully documented code using Doxygen
 - Written in modern ISO standardised C++11
-- The communication uses [GRPC][] which has built in suport for [TLS][].
+- The communication uses [GRPC][] which has built in support for [TLS][].
 - Generic statistic collection and reporting using the cqp::remote::IReporting interface
 - Compatibility drivers for IDQ Clavis 2
 - Site Agent
@@ -26,7 +25,7 @@ The system provides variuos components for integrating QKD into a security syste
     + Uses the IKey interface to get shared keys.
     + Setup of encryption tunnels using 
         * TCP/UDP socket
-        * TUN/TAP device (ala VPN)
+        * TUN/TAP device (aka VPN)
         * Dedicated physical interface
     + Configuration through config file, command line arguments or network interface.
     + Automatic Site Agent and Tunnel Controller discovery using [Zeroconf][]
@@ -35,7 +34,7 @@ The system provides variuos components for integrating QKD into a security syste
 
 This project is intended to be used for both scientific research work and to form part of completed projects. As such it incorporates some approaches which are intended to maintain a production quality level of code and design.
 The build system is based on [CMake][], it is used to produce many different build files from one set of definitions. In order to build the code, one of the build systems, such as gcc, is setup by calling the command `cmake` first. See the build folder for ready made scripts for common environments.
-See the [walkthrough](Walkthrough.md) for details of how the system operates. The [TLS](TLS.md) document details how this system can be used with standard internet communications.
+See the [walk through](Walkthrough.md) for details of how the system operates. The [TLS](TLS.md) document details how this system can be used with standard internet communications.
 
 ## Installation
 
@@ -73,7 +72,7 @@ There are a number of complete programs which use the library:
 ### Interfaces
 There are two kinds of interfaces, all interface classes are prefixed with an 'I':
 1. Internal C++ interfaces used when linking to the library directly. these are under src/CQPToolkit/Interfaces
-2. External [Grpc][] interfaces which are compatible with many languages and platforms. These are in the `cqp::remote` namespace. They are defined by .proto files in `src/QKDInterfaces` whare are turned into C++ code when the build runs
+2. External [Grpc][] interfaces which are compatible with many languages and platforms. These are in the `cqp::remote` namespace. They are defined by .proto files in `src/QKDInterfaces` which are turned into C++ code when the build runs
 
 More details on specific implementations can be found in:
 * [Tunnels](Tunnels.md)
@@ -82,7 +81,7 @@ More details on specific implementations can be found in:
 These instructions assume using a 64bit OS to build for 64bit OSs, alternate libraries will need to be installed for 32bit builds.
 If you only need to make use of the library rather than change it, use the runtime installer CQPToolkit-version-arch.msi
 
-For linux distrobutions, run the setup file  ``setup/setupBuild.sh``, this will install all the nessacary libraries for your system to build the toolkit.
+For linux distributions, run the setup file  ``setup/setupBuild.sh``, this will install all the necessary libraries for your system to build the toolkit.
 
 The build uses [CMake][] to produce makefiles/solutions/etc for many different platforms and is invoked from an empty build folder which will contain all the out files.
 The build can be controlled by passing options to cmake, eg `-DBUILD_TESTING=OFF`. Run cmake with the `-LH` options to list available switches.
@@ -121,7 +120,7 @@ The following configurations are supported
     + Open the [cqp.sln](./build/vs2017_x64/cqp.sln) solution
     + Select Build->Solution
 - [QT Creator for windows][]
-    + QT Creator can use ether the native microsoft compiler or MSYS2. Install MSYS2 separatly, you don't need to install the minGW compiler which comes with the QTCreator installer. Or install the [Windows 10 SDK][]
+    + QT Creator can use ether the native Microsoft compiler or MSYS2. Install MSYS2 separately, you don't need to install the minGW compiler which comes with the QTCreator installer. Or install the [Windows 10 SDK][]
     + Under the component menu, select the components for the compiler your using. E.g msvc2017
     + Using "Open Project", sleect the `CMakeLists.txt` file at the base of the source tree.
 - [MSYS2][] and [Codeblocks][]
@@ -142,7 +141,7 @@ The following configurations are supported
 
 If your project file has deep folder structure (this is a bug), it can be improved by right clicking on the workspace and:
 
-- Unchecking "Disaplay folders as on disk"
+- Unchecking "Display folders as on disk"
 - Checking "Hide Folder Name"
 
 #### To create a release
@@ -151,7 +150,7 @@ If your project file has deep folder structure (this is a bug), it can be improv
 ### Linux
 There is a [docker file][] under [setup](./setup/Dockerfile), run [makeDocker.h](./setup/makeDocker.sh) to create the correct build environment.
 
-The recommended IDE for linux is QT Creator. Open the CMakeLists.txt at the root of the source tree. use the project options to configure what is built.
+The recommended IDE for Linux is QT Creator. Open the CMakeLists.txt at the root of the source tree. use the project options to configure what is built.
 It can be built from the command line with:
 
 ```
@@ -232,7 +231,6 @@ Questions and issues see the [FAQ](FAQ.md)
 [Doxygen]: http://www.stack.nl/~dimitri/doxygen/download.html#srcbin
 [GraphViz]: http://www.graphviz.org/Download_windows.php
 [CMake]: https://cmake.org/download/
-[UML model]: http://tbd.phy.bris.ac.uk/svn/QComms/Docs/Model/CQP
 [Enterprise Archetect]: http://www.sparxsystems.com/products/ea/
 [FTDI Driver]: http://www.ftdichip.com/Drivers/D2XX.htm
 [Wix Toolkit]: http://wixtoolset.org/
@@ -244,7 +242,6 @@ Questions and issues see the [FAQ](FAQ.md)
 [QT Creator for windows]: https://info.qt.io/download-qt-for-application-development
 [GoogleTest Runner for visual studio]: https://marketplace.visualstudio.com/items?itemName=ChristianSoltenborn.GoogleTestAdapter
 [Windows 10 SDK]: https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
-[CQPToolkit Documentation]: https://cqp.cqp-dev.phy.bris.ac.uk/CQPToolkit/
 [docker file]: https://www.digitalocean.com/community/tutorials/docker-explained-using-dockerfiles-to-automate-building-of-images
 [Grpc]: https://grpc.io/docs/
 [TLS]: https://en.wikipedia.org/wiki/Transport_Layer_Security

@@ -2,7 +2,7 @@
 @tableofcontents
 
 ## Style
-Coding style is an emotive topic in the software community. Built into the build is the ```astyle``` pretty printer, building the ```style``` target will format the code to conform with the [Google C++ Style Guide][] with minor changes which are declared in the ```astyle.options```. End of descussion.
+Coding style is an emotive topic in the software community. Built into the build is the ```astyle``` pretty printer, building the ```style``` target will format the code to conform with the [Google C++ Style Guide][] with minor changes which are declared in the ```astyle.options```. End of discussion.
 
 ## Interfaces
 
@@ -107,7 +107,7 @@ private:
 
 ## Testing
 
-An effective approach to writing software is to start with tests which perform the steps you require, at firt these steps will fail, the code is then written to fulfill the requirements of the test. The code can then be written very efficiently and makes you think about what interface/requirements your class will have.
+An effective approach to writing software is to start with tests which perform the steps you require, at first these steps will fail, the code is then written to fulfil the requirements of the test. The code can then be written very efficiently and makes you think about what interface/requirements your class will have.
 When creating the QTunnel classes, the following test was first created to outline what the class should do:
 
 ```cpp
@@ -169,7 +169,7 @@ TEST_F(TestOpenSSL, TestSSLTunnel) {
 
 ## CMake
 ### Build folders
-In order to keep the source code tree free from clutter such as generated files, CMake is configured to prevent *in source builds*. CMake is run from an empty folder where the built files will be placed and given a relative path to the toplevel ```CMakeLists.txt``` file. eg:
+In order to keep the source code tree free from clutter such as generated files, CMake is configured to prevent *in source builds*. CMake is run from an empty folder where the built files will be placed and given a relative path to the top level ```CMakeLists.txt``` file. eg:
 ```bash
 ~/CQPToolkit/build/gcc> cmake ../..
 ```

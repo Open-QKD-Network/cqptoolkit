@@ -1,8 +1,10 @@
 # Howto run a demonstration of the system
 
+Note this requires closed source code from [HPN labs](http://www.bristol.ac.uk/engineering/research/hpn/).
+
 ## Installation
 
-Download the version to install from the [GitLab repository](https://cqp-dev.phy.bris.ac.uk/CQP/CQPToolkit) by going to download -> artifact -> Download 'package:deb'
+Download the version to install from the [GitLab repository](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb) by going to download -> artifact -> Download 'package:deb'
 
 - Copy the file to the installation system, eg with scp: `scp CQPToolkit-package_master.zip rack1:~`
 - unzip on the target, eg `7z x CQPToolkit-package_master.zip`

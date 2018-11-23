@@ -4,13 +4,13 @@
 
 ### Linux
 - Use your package manager to install the QT Creator IDE
-- Open QT Creator, selec "open a project"
+- Open QT Creator, select "open a project"
 - Select the CMakeLists.txt file at the project root (work copy folder)
 - Wait for it to build
 - Code!
 
 ### Windows
-- install Visual studio or QT Creator IDE (see linux)
+- install Visual studio or QT Creator IDE (see Linux)
 
 ## Development
 
@@ -18,7 +18,7 @@
 
 The runtime dependencies need to be ether in the current folder or in the PATH variable. For MinGW, ensure that the mingw/bin folder is in the PATH when running the program. For installed runtimes, add the file to the ***CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS*** variable in ***CMakeFileLists.txt***
 
-## Runtine
+## Runtime
 
 ### Trying to run a gui program crashes with something about protobuf versions
 

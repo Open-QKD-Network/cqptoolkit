@@ -48,10 +48,10 @@ if [ ${DEBUG} -eq 1 ]; then
 fi
 
 if [ ${BUILD} -eq 1 ]; then
-	sudo docker build -t cqp-dev.phy.bris.ac.uk:5000/cqp/toolkit .
+	sudo docker build -t registry.gitlab.com/qcomms/cqptoolkit/runtime .
 	if [ $? -gt 0 ]; then
 		exit $?
 	fi
 fi
-sudo docker run ${OPTIONS} cqp-dev.phy.bris.ac.uk:5000/cqp/toolkit
+sudo docker run ${OPTIONS} registry.gitlab.com/qcomms/cqptoolkit/runtime
 

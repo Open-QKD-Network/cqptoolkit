@@ -6,7 +6,7 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 NETNAME=idq-ipc
-IMAGE=cqp-dev.phy.bris.ac.uk:5000/cqp/idqcontainer
+IMAGE=registry.gitlab.com/qcomms/cqptoolkit/idqcontainer
 IDQPRODUCT=1DDC:
 exposedPort=7030
 

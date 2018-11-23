@@ -8,8 +8,8 @@
 
 VERSION=0.3
 PUSH=false
-REPO=cqp-dev.phy.bris.ac.uk:5000
-NAME=cqp/idqcontainer
+REPO=registry.gitlab.com
+NAME=qcomms/cqptoolkit/idqcontainer
 
 SUDO=sudo
 

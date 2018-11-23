@@ -10,7 +10,7 @@ else
 fi
 
 if [ -f "${DIR}/CMakeLists.txt" ]; then
-        sudo docker run -it --rm -v ${DIR}:/builds/CQP/CQPToolkit cqp-dev.phy.bris.ac.uk:5000/cqp/cqpbuildenv:latest /bin/bash -c 'cd /builds/CQP/CQPToolkit/build/gcc && cmake ../.. && make -j6 -s package'
+        sudo docker run -it --rm -v ${DIR}:/builds/CQP/CQPToolkit registry.gitlab.com/qcomms/cqptoolkit/buildenv:latest /bin/bash -c 'cd /builds/CQP/CQPToolkit/build/gcc && cmake ../.. && make -j6 -s package'
 else 
 	echo "Cannot find source dir, pass it on commandline"
 fi
