@@ -18,7 +18,7 @@
 
 /**
  * @brief The QTunnelServer class
- * A program for controlling encrypted tunnels which use the cqp::remote::IKeyFactory interface to get preshared keys
+ * A program for controlling encrypted tunnels which use the cqp::remote::IKeyFactory interface to get pre-shared keys
  */
 class QTunnelServer : public cqp::Application
 {
@@ -36,7 +36,7 @@ public:
 
     /**
      * @brief LoadConfig
-     * Configure the system based on the coniguration file
+     * Configure the system based on the configuration file
      * @return true on success
      */
     bool LoadConfig();

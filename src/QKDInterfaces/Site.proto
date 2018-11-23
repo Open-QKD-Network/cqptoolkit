@@ -18,7 +18,7 @@ package cqp.remote;
 /// and certificates to encrypt communications
 message Credentials {
     /// Whether they TLS should be turned on
-    /// Keys are not nessacarilly needed for client connections
+    /// Keys are not necessarily needed for client connections
     bool useTLS = 1;
     /// Filename for the private key file
     string privateKeyFile = 2;
@@ -55,7 +55,7 @@ message Side {
     enum Type {
         Alice = 0;
         Bob = 1;
-        /// For device independant QKD
+        /// For device independent QKD
         Any = 2;
     }
     /// Value
@@ -136,7 +136,7 @@ enum BackingStoreKind {
 /// Configuration for a site agent, used for loading settings from json
 message SiteAgentConfig
 {
-    /// User readable identifer for display only
+    /// User readable identifier for display only
     string name = 1;
     /// UUID for the site agent
     string id = 2;
@@ -154,7 +154,7 @@ message SiteAgentConfig
     string connectionAddress = 8;
     /// The certificate settings for encrypting connections
     Credentials credentials = 9;
-    /// whether to use autodiscovery
+    /// whether to use auto discovery
     bool useAutoDiscover = 10;
     /// connection path for the backing store
     string backingStoreUrl = 11;

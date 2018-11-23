@@ -44,8 +44,8 @@ namespace cqp
          * @param address The url of the IDQWrapper instance
          * @details
          *  URI fields:
-         *      host = host accessable location of the IIDQWrapper interface, usually localhost
-         *      port = host accessable port of the IIDQWrapper interface
+         *      host = host accessible location of the IIDQWrapper interface, usually localhost
+         *      port = host accessible port of the IIDQWrapper interface
          *          docker maps port 7000 to this port on the host
          *      parameters
          *          side = alice or bob

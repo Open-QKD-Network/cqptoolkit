@@ -27,7 +27,7 @@ namespace cqp
         /**
          * @brief IsPrivateNet
          * @param addr
-         * @return true if the ip address one specified by rfc 1918 for private internets
+         * @return true if the ip address one specified by rfc 1918 for private Internets
          */
         bool IsPrivateNet(const struct sockaddr_in* addr)
         {
@@ -90,7 +90,7 @@ namespace cqp
                         {
                             if(std::string(ifa->ifa_name) == "lo")
                             {
-                                // the loopback device doesnt set a broadcast address but 127.255.255.255 can be used instead
+                                // the loopback device doesn't set a broadcast address but 127.255.255.255 can be used instead
                                 items.push_back("127.255.255.255");
                             }
                             else

@@ -37,7 +37,7 @@ namespace cqp
     /// From the opencl website:
     ///     OpenCL (Open Computing Language) is the open, royalty-free standard for cross-platform, parallel programming of diverse processors found in personal computers, servers, mobile devices and embedded platforms. OpenCL greatly improves the speed and responsiveness of a wide spectrum of applications in numerous market categories from gaming and entertainment to scientific and medical software.
     ///
-    /// for intel: https://wiki.tiker.net/OpenCLHowTo
+    /// for Intel: https://wiki.tiker.net/OpenCLHowTo
     class CQPTOOLKIT_EXPORT OpenCLHelper
     {
     public:
@@ -50,7 +50,7 @@ namespace cqp
 
         /// Get the error string for a return value
         /// @param[in] error The return code of an OpenCL call
-        /// @return The desriptive string for the error code.
+        /// @return The descriptive string for the error code.
         static const std::string ClErrorString(int32_t error);
 
     }; // class OpenCLHelper

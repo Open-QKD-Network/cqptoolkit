@@ -46,12 +46,12 @@ namespace cqp
             /**
              * @brief GetHSMPin
              * @param tokenSerial The serial number of the token being accessed
-             * @param tokenLabel The name of the token being accessed
+             * @param tokenName The name of the token being accessed
              * @param[out] login Destination for the kind of login that should be used - defaults to User
              * @param[out] pin Destination for the pin to use to log in.
-             * @return true on successfully oibtaining a pin
+             * @return true on successfully obtaining a pin
              */
-            virtual bool GetHSMPin(const std::string& tokenSerial, const std::string& tokenLabel,
+            virtual bool GetHSMPin(const std::string& tokenSerial, const std::string& tokenName,
                                    UserType& login, std::string& pin) = 0;
 
             /// destructor
@@ -67,8 +67,8 @@ namespace cqp
         public:
             /**
              * @brief HSMStore
-             * Contruct a store from the PKCS url. Path and property values are percent encoded.
-             * Paths are seperated by ``;``
+             * Construct a store from the PKCS url. Path and property values are percent encoded.
+             * Paths are separated by ``;``
              * See [RFC7512](https://tools.ietf.org/html/rfc7512) for details.
              *
              * The properties of the  url __must__ contain:
@@ -77,7 +77,7 @@ namespace cqp
              * - ``module-path`` - full path to library
              *
              * __One of__ these path elements to define which token to use:
-             * - ``serial`` - Serialnumber for a token
+             * - ``serial`` - Serial number for a token
              * - ``token`` - Token Label defined during initialisation
              * - ``slot-id`` - Slot index number for the token
              *
@@ -124,7 +124,7 @@ namespace cqp
              */
             static FoundTokenList FindTokens(const std::vector<std::string>& modules);
 
-            /// Distructor
+            /// Destructor
             virtual ~HSMStore() override;
 
             /**
@@ -142,7 +142,7 @@ namespace cqp
              * Find a key for a destination
              * @param destination The paired site
              * @param[in,out] keyId The ID to find or, if this is 0, on success it will contain the chosen key's id
-             * @param[out] outputoutput the output for the key material
+             * @param[out] output the output for the key material
              * @return true if a key was found
              */
             bool FindKey(const std::string& destination, KeyID& keyId, PSK& output);
@@ -181,13 +181,19 @@ namespace cqp
 
             /**
              * @brief GetSource
-             * @return The source identigier for all keys
+             * @return The source identifier for all keys
              */
             std::string GetSource() const {
                 return source;
             }
 
-            /// @copydoc IBackingStore::RemoveKey
+            /**
+             * @brief RemoveKey
+             * Delete the key from storage.
+             * @param[in] destination The far end point which these keys have been shared with
+             * @param[in] keyId The id of the key to extract
+             * @return true on success
+             */
             bool RemoveKey(const std::string& destination, KeyID keyId);
 
             /**
@@ -269,7 +275,7 @@ namespace cqp
 
             /**
              * @brief SessionEventCallback
-             * Recieves callbacks from the pkcs11 layer
+             * Receives callbacks from the pkcs11 layer
              * @param hSession
              * @param event
              * @param pApplication

@@ -48,7 +48,7 @@ namespace cqp
             if(lineAttenuation == 0.0)
             {
                 lineAttenuation = 3.0;
-                LOGWARN("Provided line attenuation is 0, reseting to default: " + std::to_string(lineAttenuation));
+                LOGWARN("Provided line attenuation is 0, resetting to default: " + std::to_string(lineAttenuation));
             }
 
             alice = false;

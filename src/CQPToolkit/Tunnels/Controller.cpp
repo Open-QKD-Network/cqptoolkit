@@ -47,7 +47,7 @@ namespace cqp
                 keyFactoryChannel = grpc::CreateChannel(keyStoreFactoryUri, clientCreds);
             }
 
-            LOGINFO("Tunneling controller started with ID: " + settings.id());
+            LOGINFO("Tunnelling controller started with ID: " + settings.id());
         }
 
         Status Controller::GetSupportedSchemes(grpc::ServerContext*, const google::protobuf::Empty*, remote::tunnels::EncryptionSchemes* response)
@@ -347,7 +347,7 @@ namespace cqp
 
                 using remote::tunnels::ControllerDetails;
 
-                if(!keyFactoryChannel && // dont have the key factory yet
+                if(!keyFactoryChannel && // don't have the key factory yet
                         service.second.interfaces.contains(remote::IKeyFactory::service_full_name()) && // this is a key factory
                         settings.localKeyFactory_case() == ControllerDetails::LocalKeyFactoryCase::kLocalKeyFactoryUuid && // we have the id for the key factory
                         service.second.id == settings.localkeyfactoryuuid()) // this is the key factory we're looking for

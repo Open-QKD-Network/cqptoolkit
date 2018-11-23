@@ -120,7 +120,7 @@ namespace qkdtunnel
 
         /**
          * @brief GetCryptoModes
-         * @return The choises for the user
+         * @return The choices for the user
          */
         QAbstractItemModel* GetCryptoModes()
         {
@@ -129,7 +129,7 @@ namespace qkdtunnel
 
         /**
          * @brief GetCryptoSubModes
-         * @return The choises for the user
+         * @return The choices for the user
          */
         QAbstractItemModel* GetCryptoSubModes()
         {
@@ -138,7 +138,7 @@ namespace qkdtunnel
 
         /**
          * @brief GetCryptoBlockCyphers
-         * @return The choises for the user
+         * @return The choices for the user
          */
         QAbstractItemModel* GetCryptoBlockCyphers()
         {
@@ -147,7 +147,7 @@ namespace qkdtunnel
 
         /**
          * @brief GetCryptoKeySizes
-         * @return The choises for the user
+         * @return The choices for the user
          */
         QAbstractItemModel* GetCryptoKeySizes()
         {
@@ -169,7 +169,7 @@ namespace qkdtunnel
 
         /**
          * @brief isModified
-         * @return true if there are uncommited changes
+         * @return true if there are uncommitted changes
          */
         bool isModified() const;
 
@@ -186,7 +186,7 @@ namespace qkdtunnel
         ///@}
     protected:
 
-        /// Has the data changed since the last time it was commited
+        /// Has the data changed since the last time it was committed
         bool modified = false;
 
         /// list of choices for the user

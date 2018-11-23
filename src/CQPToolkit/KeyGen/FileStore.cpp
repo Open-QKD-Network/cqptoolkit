@@ -58,7 +58,7 @@ namespace cqp
                 const std::string stmt = "PRAGMA writable_schema = 1;"
                                          "PRAGMA TEMP_STORE=MEMORY;"
                                          "PRAGMA JOURNAL_MODE=WAL;"
-                                         "PRAGMA SYNCHRONOUS=OFF;" // may loose data on power failure, use NORMAL with WAL for purfect safety (slower)
+                                         "PRAGMA SYNCHRONOUS=OFF;" // may loose data on power failure, use NORMAL with WAL for perfect safety (slower)
                                          "PRAGMA SECURE_DELETE=FAST;"
                                          "BEGIN TRANSACTION;"
                                          "CREATE TABLE IF NOT EXISTS `keys` ("
@@ -113,7 +113,7 @@ namespace cqp
                 command = "SELECT NextKeyID FROM links WHERE LinkID = ?";
                 result |= CheckSQLite(sqlite3_prepare_v2(db, command.c_str(), command.length(), &getNextIdStmt, nullptr));
 
-                // if you add a statement, add a finialize call to the distructor
+                // if you add a statement, add a finalize call to the destructor
             }
 
             if(result != SQLITE_OK)
@@ -147,7 +147,7 @@ namespace cqp
             const uint64_t link = FNV1aHash(destination);
 
             // start a transaction
-            // suspect using a prepared statement he would cuase issues with multiple threads
+            // suspect using a prepared statement he would cause issues with multiple threads
             CheckSQLite(sqlite3_exec(db, "BEGIN", nullptr, nullptr, nullptr));
             // setup the link table insert
             CheckSQLite(sqlite3_bind_int64(insertLinkStmt, 1, link));
@@ -159,7 +159,7 @@ namespace cqp
 
             for(auto key : keys)
             {
-                // load the incomming values in to the statement
+                // load the incoming values in to the statement
                 CheckSQLite(sqlite3_bind_int64(insertStmt, 1, link));
                 CheckSQLite(sqlite3_bind_int64(insertStmt, 2, key.first));
                 CheckSQLite(sqlite3_bind_blob(insertStmt, 3, key.second.data(), key.second.size(), nullptr));

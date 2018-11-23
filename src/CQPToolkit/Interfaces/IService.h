@@ -23,7 +23,7 @@ namespace cqp
     public:
         /**
          * @brief ~IServiceCallback
-         * distructor
+         * destructor
          */
         virtual ~IServiceCallback() = default;
 

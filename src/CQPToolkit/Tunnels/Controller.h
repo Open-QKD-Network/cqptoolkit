@@ -114,7 +114,7 @@ namespace cqp
             grpc::Status CompleteTunnel(grpc::ServerContext*, const remote::tunnels::CompleteTunnelRequest* request, remote::tunnels::CompleteTunnelResponse* response) override;
             ///@}
 
-            /// Default distructor
+            /// Default destructor
             virtual ~Controller() override;
 
             /**
@@ -155,7 +155,7 @@ namespace cqp
 
             /// The current settings for this controller
             remote::tunnels::ControllerDetails settings;
-            /// Prevent curruption of settings
+            /// Prevent corruption of settings
             std::mutex settingsMutex;
 
             /// credentials to use to connect to peers
@@ -163,7 +163,7 @@ namespace cqp
             /// credentials to use to start server
             std::shared_ptr<grpc::ServerCredentials> serverCreds;
 
-            /// a list of chennels for different tunnel controllers
+            /// a list of channels for different tunnel controllers
             using ControllerList = std::unordered_map<std::string, std::shared_ptr<grpc::Channel>>;
             /// Other known controllers which can be contacted
             ControllerList endpointsByName;

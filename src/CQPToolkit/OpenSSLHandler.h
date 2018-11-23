@@ -94,7 +94,7 @@ CQPTOOLKIT_EXPORT void OpenSSLHandler_SetPinCallback(OpenSSLHandler_PinCallback 
 
 /**
  * @brief OpenSSLHandler_SetHSM
- * sets the HSM to use for furture use of OpenSSLHandler_ClientCallback and OpenSSLHandler_ServerCallback
+ * sets the HSM to use for future use of OpenSSLHandler_ClientCallback and OpenSSLHandler_ServerCallback
  * @param url pkcs url for module
  * @return non-zero on success, 0 on failure
  */

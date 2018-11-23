@@ -170,7 +170,7 @@ int RemotingExample::Main(const std::vector<std::string> &args)
         grpc::ServerBuilder builder;
         int listenPort = 0;
         builder.AddListeningPort("localhost:0", grpc::InsecureServerCredentials(), &listenPort);
-        //builder.RegisterService(&reciever);
+        //builder.RegisterService(&receiver);
 
         std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
 

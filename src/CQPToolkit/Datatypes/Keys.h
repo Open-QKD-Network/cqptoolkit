@@ -18,14 +18,14 @@
 namespace cqp
 {
 
-    /// A sequence number for identifing individual keys
+    /// A sequence number for identifying individual keys
     using KeyID = uint64_t;
 
     /// A pre shared key type
     class CQPTOOLKIT_EXPORT PSK : public DataBlock
     {
     public:
-        /// Deafult constructor
+        /// Default constructor
         PSK() {}
         /// Construct a PSK from a data block
         /// @param a source data
@@ -45,8 +45,8 @@ namespace cqp
             if(size() == right.size())
             {
                 // Tests were done with optimising this by using the full word width,
-                // no measureable improvement was found when running in release mode,
-                // for readability it is left to the compilier to optimise
+                // no measurable improvement was found when running in release mode,
+                // for readability it is left to the compiler to optimise
                 /*
                  * const uint8_t bytesInWord = sizeof(size_t);
                  *

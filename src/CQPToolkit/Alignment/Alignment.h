@@ -10,21 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include <memory>                              // for shared_ptr
-#include <grpcpp/impl/codegen/status.h>                   // for Status
-#include <chrono>                                         // for seconds
-#include <condition_variable>                             // for condition_v...
-#include <memory>                                         // for unique_ptr
-#include <mutex>                                          // for mutex
 #include "CQPToolkit/Alignment/Stats.h"                   // for Statistics
 #include "CQPToolkit/Interfaces/IAlignmentPublisher.h"    // for IAlignmentC...
-#include "CQPToolkit/Interfaces/IDetectionEventPublisher.h"  // for IPhotonEven...
 #include "CQPToolkit/Util/Provider.h"                        // for Event, Even...
-#include "CQPToolkit/Util/WorkerThread.h"                 // for WorkerThread
-#include "CQPToolkit/Datatypes/Base.h"                               // for SequenceNumber
-#include "CQPToolkit/Datatypes/DetectionReport.h"                    // for ProtocolDet...
-#include "CQPToolkit/Datatypes/Qubits.h"                             // for QubitList
-#include "QKDInterfaces/IAlignment.grpc.pb.h"             // for IAlignment
 
 namespace google
 {
@@ -81,7 +69,7 @@ namespace cqp
             /// How long to wait for new data before checking if the thread should be stopped
             const std::chrono::seconds threadTimeout {1};
 
-            /// our alignement sequence counter
+            /// our alignment sequence counter
             SequenceNumber seq = 0;
 
         }; // Alignment

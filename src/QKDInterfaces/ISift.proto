@@ -23,7 +23,7 @@ service ISift {
     /**
     * @brief VerifyBases
     * Compare the local basis with the measured basis provided to see if they match
-    * @note Reciept of an empty list means that nothing was detected and that frame can be discarded
+    * @note Receipt of an empty list means that nothing was detected and that frame can be discarded
     * @param request The bases to sift
     * @param response Whether the bases match
     * @return Success if a key was reserved (check response for the id which was reserved)

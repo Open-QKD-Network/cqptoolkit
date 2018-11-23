@@ -49,7 +49,7 @@ namespace cqp
 
             /**
              * @brief Connect
-             * @param channel The IPhotonSim endpint to send photons to
+             * @param channel The IPhotonSim endpoint to send photons to
              */
             void Connect(std::shared_ptr<grpc::ChannelInterface> channel);
 

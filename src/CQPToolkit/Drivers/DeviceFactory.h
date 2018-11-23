@@ -94,7 +94,7 @@ namespace cqp
         /**
          * @brief RegisterDriver
          * @param name The driver name
-         * @param createFunc Function which will create the deivce
+         * @param createFunc Function which will create the device
          */
         static void RegisterDriver(const std::string& name, const DeviceCreateFunc& createFunc);
 
@@ -126,7 +126,7 @@ namespace cqp
         static std::unordered_map<std::string /*driver name*/, DeviceCreateFunc> driverMapping;
         /// a list of all devices
         std::unordered_map<std::string /*driver+address*/, std::shared_ptr<IQKDDevice>> allDevices;
-        /// devices which havn't been checked out with CreateDevice
+        /// devices which haven't been checked out with CreateDevice
         std::unordered_map<std::string /*driver+address*/, std::shared_ptr<IQKDDevice>> unusedDevices;
         /// control access to the lists
         std::mutex changeMutex;

@@ -21,8 +21,8 @@ namespace cqp
         /**
          * @brief The YubiHSM class
          * This provides easy access to the YubiHSM2 device
-         * This device is not a capable or true HSM so some featues are handled in class.
-         * The keys can only be stored witha 2 byte ID and a 40 byte label with no other meta data.
+         * This device is not a capable or true HSM so some features are handled in class.
+         * The keys can only be stored with a 2 byte ID and a 40 byte label with no other meta data.
          *
          * **Example pkcs11 urls**
          *

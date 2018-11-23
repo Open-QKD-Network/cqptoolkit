@@ -47,7 +47,7 @@ namespace cqp
             KeyStore(const std::string& thisSiteAddress, std::shared_ptr<grpc::ChannelCredentials> creds,
                      const std::string& destination, KeyStoreFactory* ksf, std::shared_ptr<IBackingStore> bs);
 
-            /// Distructor
+            /// Destructor
             ~KeyStore() override;
 
             /// @name IKeyStore Interface realisation
@@ -74,8 +74,8 @@ namespace cqp
 
             /** @copydoc IKeyCallback::OnKeyGeneration
              * @details
-             * @startuml KeyStoreIncommingKey
-             *     title KeyStore Incomming Key
+             * @startuml KeyStoreIncomingKey
+             *     title KeyStore Incoming Key
              *     hide footbox
              *
              *     participant KeyStore as ks
@@ -132,7 +132,7 @@ namespace cqp
 
             /**
              * @brief SetCacheThreashold
-             * Sets the numer of keys to hold in memory.
+             * Sets the number of keys to hold in memory.
              * Once this limit is reached, any new keys will be sent to the backing store.
              * Lowering this value will not immediately move key to the backing store.
              * @param limit The new cache limit
@@ -180,7 +180,7 @@ namespace cqp
             std::shared_ptr<IBackingStore> backingStore;
             /// How many keys to store locally before sending them to the backing store
             uint64_t cacheThreashold = 10;
-            /// a counter for assigning incomming keys an id
+            /// a counter for assigning incoming keys an id
             std::atomic_uint64_t nextKeyId {1};
         protected: // methods
 
@@ -189,7 +189,7 @@ namespace cqp
              * Allocate a key from existing keys
              * @param[out] identity The key id allocated
              * @param[out] output The key value
-             * @param[in] waitForKey If false, the function will return immidiatly if there is no key available
+             * @param[in] waitForKey If false, the function will return immediately if there is no key available
              * @return true if a key was successfully allocated
              */
             bool GetNewDirectKey(KeyID& identity, PSK& output, bool waitForKey);

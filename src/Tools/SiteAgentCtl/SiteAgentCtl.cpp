@@ -221,7 +221,7 @@ void SiteAgentCtl::GetDetails(remote::ISiteAgent::Stub* siteA)
     Empty request;
     remote::Site response;
 
-    LOGDEBUG("Getting Site detiails...");
+    LOGDEBUG("Getting Site details...");
     if(LogStatus(siteA->GetSiteDetails(&ctx, request, &response)).ok())
     {
         string details;

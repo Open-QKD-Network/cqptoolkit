@@ -60,7 +60,7 @@ namespace cqp
         /// @param[in] level The severity of the log message
         /// @param[in] message The message to display
         virtual void Log(LogLevel level, const std::string& message) override;
-        /// Standard distructor
+        /// Standard destructor
         virtual ~ConsoleLogger() override;
         /// Start using the console logger
         /// Calling this when already enabled will have no effect

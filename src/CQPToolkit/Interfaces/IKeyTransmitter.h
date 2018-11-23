@@ -18,11 +18,11 @@
 
 namespace cqp
 {
-    /// External interface which will provide a quantom source
+    /// External interface which will provide a quantum source
     class CQPTOOLKIT_EXPORT IKeyTransmitter : public virtual IProtocolEvent
     {
     public:
-        /// The reciever would like to initiate an exchange
+        /// The receiver would like to initiate an exchange
         /// @details This is the first step in the protocol, the transmitter will respond
         /// by calling ReturnCapabilities()
         virtual void RequestCapabilities() =0;
@@ -34,10 +34,10 @@ namespace cqp
             const SessionID& session,
             const SequenceNumber& frame) =0;
 
-        /// The reveiver will call this if it has agreed on a protocol.
+        /// The receiver will call this if it has agreed on a protocol.
         virtual void RequestKeySession() =0;
 
-        /// pure virtual distructor
+        /// pure virtual destructor
         virtual ~IKeyTransmitter() = default;
     };
 }

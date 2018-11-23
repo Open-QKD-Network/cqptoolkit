@@ -108,7 +108,7 @@ namespace cqp
         virtual std::vector<stats::StatCollection*> GetStats() const = 0;
         /**
          * @brief ~ISessionController
-         * Distructor
+         * Destructor
          */
         virtual ~ISessionController() = default;
     };

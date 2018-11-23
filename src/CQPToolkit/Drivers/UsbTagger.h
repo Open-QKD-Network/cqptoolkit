@@ -26,7 +26,7 @@ namespace cqp
     /// A collection of USB Taggers
     using UsbTaggerList = std::vector<UsbTagger*>;
 
-    /// Class for controlling the "RWN 11" time tagger and coincedence counter built at UOB.
+    /// Class for controlling the "RWN 11" time tagger and coincidence counter built at UOB.
     class CQPTOOLKIT_EXPORT UsbTagger : public Usb, public virtual IQKDDevice
     {
     public:
@@ -70,7 +70,7 @@ namespace cqp
         const uint16_t usbVid = 0x221A;
         /// The product id of the device
         const uint16_t usbPid = 0x0100;
-        /// the request id for the standard builk transfer read
+        /// the request id for the standard bulk transfer read
         const uint8_t BulkReadRequest = 0x82;
         /// Called by Usb::ReadCallback() when a read has completed
         /// @param transfer Details of the transfer

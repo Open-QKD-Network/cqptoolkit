@@ -18,7 +18,7 @@
 #include <vector>
 
 #if !defined(CQP_LOGGER)
-/// Allow definition of the logger to be overidden
+/// Allow definition of the logger to be overridden
 /// If a different default logger is required, define this symbol
 #define CQP_LOGGER
 namespace cqp
@@ -61,7 +61,7 @@ namespace cqp
     /// Used for producing standard prefixs to levels
     using LevelMap = std::unordered_map<LogLevel, std::string, EnumClassHash>;
 #else
-    /// Used for producing standard prefixs to levels
+    /// Used for producing standard prefixes to levels
     using LevelMap = std::unordered_map<LogLevel, std::string>;
 #endif
 
@@ -73,7 +73,7 @@ namespace cqp
 #define CATCHLOGERROR
 #endif
 
-    /// Used for producing standard prefixs to levels
+    /// Used for producing standard prefixes to levels
     const static LevelMap LEVELPREFIX =
     {
         {LogLevel::Debug, "DEBUG: "},
@@ -89,7 +89,7 @@ namespace cqp
     public:
 
         /// Change the level out output from the logger
-        /// @param[in] level Message which are as or more sevear as this will be printed
+        /// @param[in] level Message which are as or more severe as this will be printed
         virtual void SetOutputLevel(LogLevel level) override;
         /// Gets the current setting of the filter for logging
         /// @return The currently limited log level
@@ -98,7 +98,7 @@ namespace cqp
             return currentOutput;
         }
 
-        /// Default distructor
+        /// Default destructor
         virtual ~Logger() override = default;
 
         /// Send output to the logger
@@ -106,14 +106,14 @@ namespace cqp
         /// @param[in] message The Message to display
         virtual void Log(LogLevel level, const std::string& message) override
         {
-            // Pass the message on to any loggsers attached to us
+            // Pass the message on to any loggers attached to us
             for (ILogger* childLogger : subLoggers)
             {
                 childLogger->Log(level, message);
             }
         }
 
-        /// Daisy chain another logger so that it will recieve the same messages as the top level logger.
+        /// Daisy chain another logger so that it will receive the same messages as the top level logger.
         /// @param newLogger The logger to attach
         virtual void AttachLogger(ILogger* const newLogger) override;
 
@@ -140,7 +140,7 @@ namespace cqp
 
     /// A function definition for retrieving the default logger.
     /// @remarks this currently allows the linker to be defined at link time,
-    ///     this may be flexible enough by requires understanding that somthing must implement
+    ///     this may be flexible enough by requires understanding that something must implement
     ///     this function for the link to be a success.
     /// @return The default logger
     CQPTOOLKIT_EXPORT ILogger& DefaultLogger();

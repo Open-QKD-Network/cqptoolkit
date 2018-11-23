@@ -35,7 +35,7 @@ message ReportingFilter {
 /// Stores values as a double
 message ReportValueDouble
 {
-    /// The most recient value
+    /// The most resent value
     double latest = 1;
     /// mean value
     double average = 2;
@@ -50,7 +50,7 @@ message ReportValueDouble
 /// Stores values as a long
 message ReportValueLong
 {
-    /// The most recient value
+    /// The most resent value
     int64 latest = 1;
     /// mean value
     int64 average = 2;
@@ -83,7 +83,7 @@ message SiteAgentReport {
     {
         /// doesn't hold any value but groups other statistics
         Complex = 0;
-        /// A number of occourences
+        /// A number of occurrences
         Count = 1;
         /// Duration
         Milliseconds = 2;
@@ -99,7 +99,7 @@ message SiteAgentReport {
     repeated string path = 1;
     /// ID of stat unique to the reporting server
     uint64 id = 2;
-    /// key,value pairs of abritrary data for the stat
+    /// key,value pairs of arbitrary data for the stat
     map<string, string> parameters = 3;
     /// What the values mean
     Units unit = 4;

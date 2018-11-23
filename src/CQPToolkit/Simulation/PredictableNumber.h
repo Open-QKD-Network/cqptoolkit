@@ -20,7 +20,7 @@ namespace cqp
 {
     /// Simple source of random numbers for simulation.
     /// @todo add functions for getting different amounts of random numbers as needed
-    /// @todo Provide a means of controling the method/ditrobution of numbers for simulation.
+    /// @todo Provide a means of controlling the method/distribution of numbers for simulation.
     class CQPTOOLKIT_EXPORT PredictableNumber : public virtual IRandom
     {
 
@@ -41,7 +41,7 @@ namespace cqp
     protected:
         /// The current index into the data
         unsigned int currentPos = 0;
-        /// precalcualted values
+        /// pre-calculated values
         const std::vector<long> data =
         {
             -15702,23351,63325,

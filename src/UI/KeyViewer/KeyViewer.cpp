@@ -237,14 +237,14 @@ void KeyViewer::HSMPicked(QAction* action)
     if(theStore->StoreKeys(ui->knownSites->currentItem()->text().toStdString(), keys))
     {
 
-        QMessageBox successDialog(QMessageBox::Icon::Information, "Key Transfer", "Key transfered successfully", QMessageBox::Ok, this);
+        QMessageBox successDialog(QMessageBox::Icon::Information, "Key Transfer", "Key transferred successfully", QMessageBox::Ok, this);
         successDialog.exec();
         ClearKey();
     }
     else
     {
 
-        QMessageBox successDialog(QMessageBox::Icon::Critical, "Key Transfer", "Key transfered Failed.", QMessageBox::Ok, this);
+        QMessageBox successDialog(QMessageBox::Icon::Critical, "Key Transfer", "Key transferred Failed.", QMessageBox::Ok, this);
         successDialog.exec();
     }
 }

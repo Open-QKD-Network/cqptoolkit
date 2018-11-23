@@ -44,7 +44,7 @@ namespace cqp
             }
 
             // TODO: Randomly pick bases and simulate errors
-            LOGTRACE("Recieved " + std::to_string(detections.size()) + " photons");
+            LOGTRACE("Received " + std::to_string(detections.size()) + " photons");
 
             std::lock_guard<std::mutex> lock(collectedPhotonsMutex);
             collectedPhotons.assign(detections.begin(), detections.end());

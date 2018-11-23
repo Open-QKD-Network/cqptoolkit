@@ -25,7 +25,7 @@ namespace cqp
 
     /**
      * @brief LogStatus
-     * Logs any error that may occuur
+     * Logs any error that may occur
      * @param status The status to check
      * @param extraMessage Any other information to include if there is an error
      * @return The status passed in

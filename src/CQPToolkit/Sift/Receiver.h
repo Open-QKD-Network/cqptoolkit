@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief SiftReciever
+* @brief SiftReceiver
 *
 * @copyright Copyright (C) University of Bristol 2017
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
@@ -17,13 +17,13 @@ namespace cqp
     namespace sift
     {
 
-        /// Accespt data from the alignment processor and stores it, notifying anything waiting for the data.
+        /// Accepts data from the alignment processor and stores it, notifying anything waiting for the data.
         class CQPTOOLKIT_EXPORT Receiver : public SiftBase, public remote::ISift::Service
         {
         public:
 
             /**
-             * @brief SiftReciever
+             * @brief SiftReceiver
              * Constructor
              */
             Receiver() = default;
@@ -52,7 +52,7 @@ namespace cqp
             ///@}
         protected:
 
-        }; // SiftReciever
+        }; // SiftReceiver
 
     } // namespace Sift
 } // namespace cqp

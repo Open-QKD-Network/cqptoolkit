@@ -32,7 +32,7 @@ service IQuantumPath {
 
     /**
     * @brief CreatePath
-    *  Construct the optical. Once this funcitons returns the path will be ready to use.
+    *  Construct the optical. Once this functions returns the path will be ready to use.
     * @param request The path to create
     * @return status
     */

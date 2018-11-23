@@ -35,6 +35,7 @@ namespace cqp
             const ValidatedBlockID blockId,
             std::unique_ptr<DataBlock> correctedData) = 0;
 
+        /// destructor
         virtual ~IErrorCorrectCallback() = default;
     };
 

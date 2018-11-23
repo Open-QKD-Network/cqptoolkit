@@ -94,7 +94,7 @@ namespace cqp
 
             if(offset != 0)
             {
-                // There wern't enough bits to completly fill the last word,
+                // There weren't enough bits to completely fill the last word,
                 // Add the remaining, the mask will show which bits are valid
                 siftedData->push_back(value);
                 siftedData->bitsInLastByte = offset;

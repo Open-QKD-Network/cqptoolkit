@@ -81,11 +81,11 @@ namespace cqp
                             {
                                 prevSeq = it->first;
                                 ++it;
-                                // dont stop, we may have more to use
+                                // don't stop, we may have more to use
                             }
                             else
                             {
-                                // stop walking thorugh the data, theres a hole
+                                // stop walking through the data, there's a hole
                                 break;
                             }
                         }

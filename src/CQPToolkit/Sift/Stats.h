@@ -31,7 +31,7 @@ namespace cqp
             stats::Stat<size_t> bytesProduced {{parent, "Bytes Produced"}, stats::Units::Count};
 
             /// The total number of bytes processed by this instance
-            stats::Stat<size_t> qubitsDisgarded {{parent, "Qubits Disgarded"}, stats::Units::Count};
+            stats::Stat<size_t> qubitsDisgarded {{parent, "Qubits Discarded"}, stats::Units::Count};
 
             /// The time taken to compare qubit bases
             stats::Stat<double> comparisonTime {{parent, "Comparison Time"}, stats::Units::Count};

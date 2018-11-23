@@ -344,7 +344,7 @@ void SiteAgentRunner::RunTests(remote::SiteAgentConfig& siteSettings)
         {
             if(key1Value != key2Value)
             {
-                LOGERROR("Direct Keys dont match");
+                LOGERROR("Direct Keys don't match");
                 keepGoing = false;
                 exitCode = 1;
             }
@@ -366,7 +366,7 @@ void SiteAgentRunner::RunTests(remote::SiteAgentConfig& siteSettings)
         {
             if(key1Value != key2Value)
             {
-                LOGERROR("Indirect Keys dont match");
+                LOGERROR("Indirect Keys don't match");
                 keepGoing = false;
                 exitCode = 2;
             }

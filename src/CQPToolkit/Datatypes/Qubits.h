@@ -23,7 +23,7 @@ namespace cqp
     /// The name used to identify Qubit classes
     static const std::string QubitName = "Qubit";
 
-    /// Defintion of a single photon
+    /// Definition of a single photon
     using Qubit = uint8_t;
 
     /// Defines the possible orientation of the Qubit
@@ -31,7 +31,7 @@ namespace cqp
     {
         Retiliniear = 0x00,
         Diagonal    = 0x02,
-        Circular    = 0x04,    // For compatibility with furture systems
+        Circular    = 0x04,    // For compatibility with future systems
         Invalid     = 0x06,
 
         _First = Retiliniear,
@@ -56,7 +56,7 @@ namespace cqp
         _Last = Invalid
     }; // BB84
 
-    /// Definition and accessability operators for a single Qubit
+    /// Definition and accessibility operators for a single Qubit
     /// @details Each qubit takes 2 bits to store the information.
     /// There are a number of different schemes for representing a qubit
     /// Currently only BB84 is provided.
@@ -64,7 +64,7 @@ namespace cqp
     {
     public:
 
-        /// Returns the Basis of the Qubit, disgarding the binary value
+        /// Returns the Basis of the Qubit, discarding the binary value
         /// @param storedValue input value
         /// @returns the basis of the qubit
         static Basis Base(Qubit storedValue)
@@ -72,7 +72,7 @@ namespace cqp
             return static_cast<Basis>(storedValue & 0x06);
         } // Base
 
-        /// The binary value of the Qubit, disgarding the basis.
+        /// The binary value of the Qubit, discarding the basis.
         /// @param storedValue input value
         /// @return the binary value of the qubit
         static bool BitValue(Qubit storedValue)

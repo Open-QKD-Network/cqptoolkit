@@ -62,7 +62,7 @@ namespace cqp
         /// Disconnect from the device.
         /// @return true if disconnection completed without error
         /// @remarks The object must be return to a clean, disconnected state by this call
-        ///         even if errors occour.
+        ///         even if errors occur.
         virtual bool Close();
 
         /// Called by the subsystem when new data has arrived
@@ -107,7 +107,7 @@ namespace cqp
         URI GetAddress();
     protected:
 
-        /// Class to pass relevent data to the event listeners
+        /// Class to pass relevant data to the event listeners
         class EventData {};
 
         /// The subsystem device which this is attached to
@@ -132,7 +132,7 @@ namespace cqp
 
         /**
          * @brief StandardReadCallback
-         * Called by the subsystem when a read completes, used to marchall the call to a member function
+         * Called by the subsystem when a read completes, used to marshal the call to a member function
          * @param transfer details of the transfer
          */
         static void LIBUSB_CALL StandardReadCallback(struct libusb_transfer *transfer);
@@ -148,7 +148,7 @@ namespace cqp
         /// usb parameter
         unsigned int writeTimeout = 0;
     private:
-        /// buffer for incomming data
+        /// buffer for incoming data
         uint8_t readBuffer[MaxBulkRead] = { 0 };
 
     };

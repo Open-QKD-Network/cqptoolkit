@@ -26,7 +26,7 @@ namespace cqp
     {
     public:
         /// Change the level out output from the logger
-        /// @param[in] level Message which are as or more sevear as this will be printed
+        /// @param[in] level Message which are as or more severe as this will be printed
         virtual void SetOutputLevel(LogLevel level) = 0;
         /// Gets the current setting of the filter for logging
         /// @return The currently limited log level
@@ -37,19 +37,19 @@ namespace cqp
         virtual void DecOutputLevel() = 0;
 
         /// Send output to the logger
-        /// @param[in] level The deverity of the message
+        /// @param[in] level The severity of the message
         /// @param[in] message The text to display
         virtual void Log(LogLevel level, const std::string& message) = 0;
 
-        /// Daisy chain another logger so that it will recieve the same messages as the top level logger.
+        /// Daisy chain another logger so that it will receive the same messages as the top level logger.
         /// @param[in] newLogger The logger to add to the chain
         virtual void AttachLogger(ILogger* const newLogger) = 0;
 
-        /// Daisy chain another logger so that it will recieve the same messages as the top level logger.
+        /// Daisy chain another logger so that it will receive the same messages as the top level logger.
         /// @param[in] logger The logger to remove from the chain
         virtual void DettachLogger(ILogger* const logger) = 0;
 
-        /// pure virtual distructor
+        /// pure virtual destructor
         virtual ~ILogger() = default;
     };
 

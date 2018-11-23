@@ -74,14 +74,14 @@ namespace cqp
 
         /**
          * @brief Parse
-         * @param input String value to conver to a URI
+         * @param input String value to convert to a URI
          * @return true on success
          */
         bool Parse(const std::string& input);
 
         /**
          * @brief GetScheme
-         * @return The sheme section
+         * @return The scheme section
          */
         std::string GetScheme() const;
         /**
@@ -183,9 +183,9 @@ namespace cqp
 
         /**
          * @brief SetPath
-         * Set the path using key value pairs, seperated by sep
+         * Set the path using key value pairs, separated by sep
          * @param newPath elements of the path
-         * @param sep seperator
+         * @param sep separator
          * @param encode Encode the path elements
          */
         void SetPath(const std::vector<std::string>& newPath, const std::string& sep, bool encode = true);
@@ -248,7 +248,7 @@ namespace cqp
 
         /**
          * @brief Decode
-         * Convert any encoded charaters back to thier standard unsafe values
+         * Convert any encoded characters back to their standard unsafe values
          * @note this is done automatically by all the get functions
          * @param input escaped string
          * @return unsafe, unescaped string
@@ -258,16 +258,16 @@ namespace cqp
         /**
          * @brief ToDictionary
          * Splits elements of the uri into a dictionary. This is mainly intended to turn non-standard urls
-         * like pkcs into somehting useful. Only the path and parameters are extracted, both are treated like
+         * like pkcs into something useful. Only the path and parameters are extracted, both are treated like
          * key-value pairs and stored in destination
          * @details
          * For example: pkcs:module=abc;id=123?some=thing => { { "module", "abc"}, {"id", "123"}, {"some", "thing"} }
          * @param destination
-         * @param pathSeperator
-         * @param keyValueSeperator
+         * @param pathSeparator
+         * @param keyValueSeparator
          */
-        void ToDictionary(std::map<std::string, std::string>& destination, char pathSeperator = ';',
-                          char keyValueSeperator = '=') const;
+        void ToDictionary(std::map<std::string, std::string>& destination, char pathSeparator = ';',
+                          char keyValueSeparator = '=') const;
 
     protected:
         /// the first part of the uri (eg: http)
@@ -279,12 +279,12 @@ namespace cqp
         // TODO: username
         /// Section after the first / after the scheme
         std::string path;
-        /// key value pairs after the '?' sign, seperated by '&'
+        /// key value pairs after the '?' sign, separated by '&'
         std::vector<std::pair<std::string, std::string>> parameters;
         /// string appended to the path after the '#' sign
         std::string fragment;
 
-        /// regular expression used to disect the string
+        /// regular expression used to dissect the string
         std::regex urlRegEx;
     };
 
@@ -294,7 +294,7 @@ namespace cqp
 namespace std
 {
     /**
-     * Templated hash algorithm for arrays, allowing them to be used in unordred_map's
+     * Templated hash algorithm for arrays, allowing them to be used in unordered_map's
      */
     template<>
     struct hash<cqp::URI>

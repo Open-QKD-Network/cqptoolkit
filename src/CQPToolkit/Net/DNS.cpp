@@ -120,10 +120,10 @@ namespace cqp
                     while(currentAddr != nullptr)
                     {
                         struct sockaddr_storage* ipAddress = reinterpret_cast<struct sockaddr_storage*>(currentAddr->ai_addr);
-                        // use the ipv6 address if thats all there is or we prefer it
+                        // use the ipv6 address if that's all there is or we prefer it
                         if(addr->ai_family == AF_INET6 && (!result || preferIPv6))
                         {
-                            // copy the data somewhere usful
+                            // copy the data somewhere useful
                             ip.FromStruct(*ipAddress);
 
                             result = true;
@@ -135,13 +135,13 @@ namespace cqp
                         }
                         else if(currentAddr->ai_family == AF_INET)
                         {
-                            // copy the data somewhere usful
+                            // copy the data somewhere useful
                             ip.FromStruct(*ipAddress);
 
                             result = true;
                             if(!preferIPv6)
                             {
-                                // we dont want a v6 address, stop processing
+                                // we don't want a v6 address, stop processing
                                 break; // while
                             }
                         }

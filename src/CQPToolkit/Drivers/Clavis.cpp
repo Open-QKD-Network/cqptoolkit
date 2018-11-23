@@ -216,7 +216,7 @@ namespace cqp
                     switch(status)
                     {
                     case ErrorStatus::Success:
-                        LOGERROR("Strange responce from ReadKeyResponse");
+                        LOGERROR("Strange response from ReadKeyResponse");
                         break;
                     case ErrorStatus::NoMoreKeys:
 

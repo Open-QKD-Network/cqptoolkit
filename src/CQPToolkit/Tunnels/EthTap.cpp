@@ -103,7 +103,7 @@ namespace cqp
 
                     if(ifa && (ifa->ifa_addr || (ifa->ifa_flags & tapFlags)))
                     {
-                        // found an ethernet like device
+                        // found an Ethernet like device
                         DeviceDetails foundDevice;
                         bool isValid = false;
 
@@ -156,7 +156,7 @@ namespace cqp
                  *
                  *        IFF_NO_PI - Do not provide packet information
                  */
-                // use tap to ack like an ethernet switch, all ethernet packets are handled
+                // use tap to ack like an Ethernet switch, all Ethernet packets are handled
                 ifr.ifr_flags = IFF_NO_PI;
                 switch(mode)
                 {
@@ -188,7 +188,7 @@ namespace cqp
                     // get the real name of the device
                     name = ifr.ifr_name;
                     LOGINFO("Created tun device " + name);
-                    // TODO: use multiqueue interface to speed up data transfer, see https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/networking/tuntap.txt?id=HEAD
+                    // TODO: use multi queue interface to speed up data transfer, see https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/networking/tuntap.txt?id=HEAD
                     bufferSize = static_cast<size_t>(ifr.ifr_ifru.ifru_mtu);
 
                     net::Device::SetAddress(name, address, netMask);

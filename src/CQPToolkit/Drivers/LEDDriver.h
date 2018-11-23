@@ -26,7 +26,7 @@ namespace cqp
         // Care should be taken to ensure that each structure meets the alignment requirements of the target system.
 #pragma pack(push, 1)
 
-        /// The command being issued or replyed to.
+        /// The command being issued or replied to.
         enum class Command : uint8_t
         {
             Invalid     = 0x00,
@@ -61,7 +61,7 @@ namespace cqp
             Qubit    bits;
         };
 
-        /// Data preoended to all packets sent to/received from the device
+        /// Data common to all packets sent to/received from the device
         struct Header
         {
         public:

@@ -22,8 +22,8 @@
 
 /**
  * @brief The IDQWrapper program
- * Listens for commands to start the QKDSequence program to interface with the Clavis deivces from IDQuantique
- * It can be run from within a docker contianer to use multiple devices on the same host
+ * Listens for commands to start the QKDSequence program to interface with the Clavis devices from IDQuantique
+ * It can be run from within a docker container to use multiple devices on the same host
  */
 class IDQWrapper : public cqp::Application, public cqp::remote::IIDQWrapper::Service
 {

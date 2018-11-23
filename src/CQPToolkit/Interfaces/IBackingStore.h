@@ -19,7 +19,7 @@ namespace cqp
     {
         /**
          * @brief The IBackingStore interface
-         * for storing and retreiving keys. All methods assume that the keys are store for this location for
+         * for storing and retrieving keys. All methods assume that the keys are store for this location for
          * another destination, not between two arbitrary points
          */
         class IBackingStore
@@ -34,7 +34,7 @@ namespace cqp
              * @brief StoreKeys
              * Put keys into storage
              * @details
-             * The keys parameter will be modified so that if any keys dont reach the backing store,
+             * The keys parameter will be modified so that if any keys don't reach the backing store,
              * maybe because of lack of space, they will remain in the keys list.
              * @param[in] destination The far end point which these keys have been shared with
              * @param[in, out] keys The keys to store
@@ -64,7 +64,7 @@ namespace cqp
             /**
              * @brief ReserveKey
              * Returns a key id which is not in use so that it can later be retrieved with RemoveKey.
-             * Subsequent calls to this funtion should not return the same id
+             * Subsequent calls to this function should not return the same id
              * @param[in] destination The far end point which these keys have been shared with
              * @param[out] keyId The id of the free key.
              * @return true on success
@@ -87,7 +87,7 @@ namespace cqp
              */
             virtual uint64_t GetNextKeyId(const std::string& destination) = 0;
 
-            /// default distructor
+            /// default destructor
             virtual ~IBackingStore() = default;
         };
     }

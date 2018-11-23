@@ -38,7 +38,7 @@ message KeyIdValue {
     uint64 keyId = 1;
 }
 
-/// message for creating a multihop path
+/// message for creating a multi hop path
 message KeyPathRequest {
     /// The first hops' key id
     uint64 originatingKeyId = 1;

@@ -103,13 +103,13 @@ protected:
     /// the possible types of messages
     std::map<std::string, bool> allMessageTypes;
 
-    /// Distrobution algorithms to ensure good distrobution of numbers
+    /// Distribution algorithms to ensure good distribution of numbers
     std::uniform_int_distribution<int> smallIntDistribution;
-    /// Distrobution algorithms to ensure good distrobution of numbers
+    /// Distribution algorithms to ensure good distribution of numbers
     std::uniform_real_distribution<double> percentDistribution;
-    /// Distrobution algorithms to ensure good distrobution of numbers
+    /// Distribution algorithms to ensure good distribution of numbers
     std::uniform_int_distribution<int> tinyIntDistribution;
-    /// Distrobution algorithms to ensure good distrobution of numbers
+    /// Distribution algorithms to ensure good distribution of numbers
     std::uniform_int_distribution<int> updateDistribution;
 
     /// Random number generator

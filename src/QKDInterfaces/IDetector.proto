@@ -23,14 +23,14 @@ package cqp.remote;
 service IDetector {
     /**
     * @brief StartDetecting
-    * Instructs the dector to expect photons
+    * Instructs the detector to expect photons
     * @return status
     */
     rpc StartDetecting(google.protobuf.Timestamp) returns (google.protobuf.Empty);
 
     /**
     * @brief StopDetecting
-    * Instructs the dector that no more photons will be sent
+    * Instructs the detector that no more photons will be sent
     * @return status
     */
     rpc StopDetecting(google.protobuf.Timestamp) returns (google.protobuf.Empty);

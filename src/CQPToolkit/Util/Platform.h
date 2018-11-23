@@ -47,7 +47,7 @@ constexpr size_t sizeof_array(T(&)[N]) noexcept
     #define __stdcall
 #endif // defined(_WIN32)
 
-// ignore any __stdcall specifiers on linux
+// ignore any __stdcall specifiers on Linux
 #if defined(__GNUC__)
     #define __stdcall
 #endif // !defined(_WIN32)
@@ -69,7 +69,7 @@ struct EnumClassHash
 #define CONSTSTRING constexpr const char*
 
 /// @def NAMEDSTRING(Name)
-/// Macro for defining a string whos value is the same as it's name
+/// Macro for defining a string who's value is the same as it's name
 /// @param Name The name of the string and it's value
 /// @return Name
 #define NAMEDSTRING(Name) \

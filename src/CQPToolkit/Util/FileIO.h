@@ -21,19 +21,19 @@ namespace cqp
         /// Get the directory owned by the user
         /// @details This should be writable by the user. On windows this equates
         /// to the users My Documents folder
-        /// On linus this is the value of $HOME
+        /// On Linux this is the value of $HOME
         /// @return A string with the full path the users home path
         CQPTOOLKIT_EXPORT std::string GetHomeFolder();
 
-        /// Gets the correct seperator for paths in the current OS
-        /// @return a character which can be used to seperate folder names
+        /// Gets the correct separator for paths in the current OS
+        /// @return a character which can be used to separate folder names
         CQPTOOLKIT_EXPORT std::string GetPathSep();
 
-        /// Gets the correct seperator for paths defiend in the PATH environment variable for the current OS
-        /// @return a character which is used to seperate paths in the PATH variable
+        /// Gets the correct separator for paths defined in the PATH environment variable for the current OS
+        /// @return a character which is used to separate paths in the PATH variable
         CQPTOOLKIT_EXPORT std::string GetPathEnvSep();
 
-        /// open a borwser window at the URL specified using the users default browser
+        /// open a browser window at the URL specified using the users default browser
         /// @param[in] url The URL to display
         /// @return true on success
         CQPTOOLKIT_EXPORT bool OpenURL(const std::string& url);
@@ -71,14 +71,14 @@ namespace cqp
          * @brief Parent
          * Get the parent path of the full path to a filename
          * @param path full path to split
-         * @return The path up until the final path seperator
+         * @return The path up until the final path separator
          */
         CQPTOOLKIT_EXPORT std::string Parent(const std::string& path);
         /**
          * @brief BaseName
          * Get the filename from a full path
          * @param path
-         * @return the filename after the final path seperator
+         * @return the filename after the final path separator
          */
         CQPTOOLKIT_EXPORT std::string BaseName(const std::string& path);
 
@@ -123,7 +123,7 @@ namespace cqp
         /**
          * @brief ListChildren
          * @param path
-         * @return names of immidiate children
+         * @return names of immediate children
          */
         CQPTOOLKIT_EXPORT std::vector<std::string> ListChildren(const std::string& path);
         /**

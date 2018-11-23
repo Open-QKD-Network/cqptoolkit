@@ -99,7 +99,7 @@ namespace cqp
         const uint16_t UsbPID = 0x100;
         /// usb end point to use
         const int UsbEndpoint = 0x02;
-        /// how many bits are stransmitted for each qubit
+        /// how many bits are transmitted for each qubit
         const uint8_t bitsPerQubit = 2;
         /// Stuff to send over serial to get Alice to send at 10MHz with a reasonable pulse width (7ns?)
         const unsigned char divEndpoint = 0x46;

@@ -20,11 +20,11 @@ namespace cqp
     {
 
         /// This test requires a pair of virtual serial ports which act like a loopback
-        /// On windows this is acomplished with (com0com)[https://code.google.com/archive/p/powersdr-iq/downloads]
+        /// On windows this is accomplished with (com0com)[https://code.google.com/archive/p/powersdr-iq/downloads]
         /// It assumed that the first two matching serial ports are a pair and tries to use them.
         /// "emulate baud rate" should be enabled in the setup.
         ///
-        /// To run these tests on linux, install the socat utility
+        /// To run these tests on Linux, install the socat utility
         TEST_F(TestSerial, EnumerationTest)
         {
             ConsoleLogger::Enable();

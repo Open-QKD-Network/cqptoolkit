@@ -24,14 +24,14 @@ namespace cqp
     {
         /**
          * @brief The EthTap class
-         * A data stream class which connects to an ethernet tap/tun device
+         * A data stream class which connects to an Ethernet tap/tun device
          * @see https://en.wikipedia.org/wiki/TUN/TAP
          */
         class CQPTOOLKIT_EXPORT EthTap : public DeviceIO, protected net::Socket
         {
         public:
             /// The mode for the device
-            /// Tun devices don't include ethernet headers
+            /// Tun devices don't include Ethernet headers
             enum class Mode { Tun, Tap};
 
             /// names of parameters in url
@@ -86,7 +86,7 @@ namespace cqp
             /**
              * @brief SetPersist
              * Set whether the device is kept once the last file handle is closed
-             * @param on If true, the system will not delete the tun device onces all handles are closed
+             * @param on If true, the system will not delete the tun device once all handles are closed
              * @return true if the request succeeded
              */
             bool SetPersist(bool on);
@@ -102,7 +102,7 @@ namespace cqp
 
             /**
              * @brief ~EthTap
-             * Distructor
+             * Destructor
              */
             virtual ~EthTap() override;
 

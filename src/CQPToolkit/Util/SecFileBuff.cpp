@@ -24,11 +24,11 @@ namespace cqp
 {
 
     SecFileBuff::SecFileBuff(FILE_HANDLE fd, size_t size) : fileDescriptor(fd), bufferSize(size),
-        //ensure there's unouch space to store incomming data based on the maximum packet size
+        //ensure there's enough space to store incoming data based on the maximum packet size
         underflowBuffer(size), overflowBuffer(size)
     {
-        // Sec block is an array, not a vector, end points to teh end of the allocated block
-        // set the get pointer's start point to the end - ie, theres no data so the first call to get
+        // Sec block is an array, not a vector, end points to the end of the allocated block
+        // set the get pointer's start point to the end - ie, there's no data so the first call to get
         // will cause an underflow
         setg(underflowBuffer.begin(), underflowBuffer.end(), underflowBuffer.end());
         // set the put pointer to the empty buffer, overflow will be called when it is full.

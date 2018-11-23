@@ -50,7 +50,7 @@ namespace cqp
         void PrivacyAmplify::OnCorrected(const ValidatedBlockID,
             std::unique_ptr<DataBlock> correctedData)
         {
-            LOGTRACE("Corrected Data recieved.");
+            LOGTRACE("Corrected Data received.");
             // collect incoming data, notify listeners of new data
             // TODO
             incommingData.push_back(std::move(correctedData));

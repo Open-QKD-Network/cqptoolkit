@@ -154,7 +154,7 @@ namespace cqp {
                     OpenSSLKeyUI ui;
                     if(ui.exec() == DialogCode::Accepted)
                     {
-                        LOGTRACE("HSM selecteion made");
+                        LOGTRACE("HSM selection made");
                         // create the class to manage the module
                         storeUrl = ui.GetStoreUrl();
 

@@ -21,7 +21,7 @@ namespace cqp
 
         /**
          * @brief The ReportServer class
-         * Recieves statistics and emits reports to listeners
+         * Receives statistics and emits reports to listeners
          */
         class CQPTOOLKIT_EXPORT ReportServer :
             public remote::IReporting::Service,

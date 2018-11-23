@@ -156,7 +156,7 @@ namespace cqp
     {
         if(netMan)
         {
-            // unregister from the network manager
+            // un-register from the network manager
             google::protobuf::Empty response;
             remote::SiteAddress siteAddress;
             (*siteAddress.mutable_url()) = GetConnectionAddress();
@@ -240,7 +240,7 @@ namespace cqp
             if(controller)
             {
                 LOGTRACE("Starting controller");
-                // start the controller so that it can recieve connections from the other controller
+                // start the controller so that it can receive connections from the other controller
                 result = LogStatus(
                              controller->StartServer());
                 if(result.ok())
@@ -508,7 +508,7 @@ namespace cqp
             {
                 // the path is forward - we are on the left
                 dest = path->hops().rbegin()->second().site();
-                // skip the first element, thats our site
+                // skip the first element, that's our site
                 for (int index = 1; index < path->hops().size(); index++)
                 {
                     // use the first element to end up with a list of sites in the middle

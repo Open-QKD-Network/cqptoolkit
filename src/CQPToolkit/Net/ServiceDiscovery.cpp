@@ -309,7 +309,7 @@ namespace cqp
                     /* The server records are now being established. This
                     * might be caused by a host name change. We need to wait
                     * for our own records to register until the host name is
-                    * properly esatblished. */
+                    * properly established. */
                     if (self->group)
                         avahi_entry_group_reset(self->group);
                     break;

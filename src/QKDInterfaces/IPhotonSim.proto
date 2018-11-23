@@ -29,13 +29,13 @@ message FakeDetection
 
 /**
  * @brief The IEncryptedData class
- * Interface which encapsulates the data required when sending/recieving encrypted data
+ * Interface which encapsulates the data required when sending/receiving encrypted data
  */
 service IPhotonSim {
     /**
      * @brief OnPhoton
      * Process encrypted data
-     * @param reader A stream of qubits
+     * @param request Detections to process
      * @return status
      */
     rpc OnPhoton(FakeDetection) returns (google.protobuf.Empty);

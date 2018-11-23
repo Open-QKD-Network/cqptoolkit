@@ -27,7 +27,7 @@
 #define CK_DECLARE_FUNCTION(returnType, name) \
     returnType __declspec(dllimport) name
 #else
-/// Function declatation macro
+/// Function declaration macro
 #define CK_DECLARE_FUNCTION(returnType, name) \
     returnType name
 #endif
@@ -37,17 +37,17 @@
 #define CK_DECLARE_FUNCTION_POINTER(returnType, name) \
     returnType __declspec(dllimport) (* name)
 #else
-/// Function pointer declatation macro
+/// Function pointer declaration macro
 #define CK_DECLARE_FUNCTION_POINTER(returnType, name) \
     returnType (* name)
 #endif
 
-/// Callback Function declatation macro
+/// Callback Function declaration macro
 #define CK_CALLBACK_FUNCTION(returnType, name) \
     returnType (* name)
 
 #if !defined(NULL_PTR)
-    /// Null pointer defintion
+    /// Null pointer definition
     #define NULL_PTR nullptr
 #endif
 
@@ -89,14 +89,14 @@ namespace cqp
         using ObjectList = std::vector<DataObject>;
         /// A list of slots
         using SlotList = std::vector<::CK_SLOT_ID>;
-        /// A list of mechanisums
+        /// A list of mechanisms
         using MechanismList = std::vector<::CK_MECHANISM_TYPE>;
 
         /// The number of characters a label is padded/truncated to
         const int LabelSize = 32;
 
         /**
-         * @brief Convert a whitespace padded string to a normal string
+         * @brief Convert a white space padded string to a normal string
          * @tparam N Length of fixed length string
          * @param str String to trim
          * @return str trimmed from the right of any white space
@@ -115,14 +115,14 @@ namespace cqp
             /**
              * @brief Create
              * Open a PKCS library, if the initialisation fails, it will return a null pointer
-             * @param libName filename of the library to load, in linux this would be like "libmypkcs.so"
+             * @param libName filename of the library to load, in Linux this would be like "libmypkcs.so"
              * Full paths /can/ be included
              * @param reserved The value to pass in the reserved field of the initialisation data.
              * @return A Module instance if the loading was successful
              */
             static std::shared_ptr<Module> Create(const std::string& libName, const void* reserved = nullptr);
 
-            /// distructor
+            /// destructor
             ~Module();
 
             /**
@@ -162,7 +162,7 @@ namespace cqp
             /// Parameters to initialise the library with
             ::CK_C_INITIALIZE_ARGS initArgs {};
 
-            // modules can only loaded once
+            /// modules can only loaded once
             static std::map<std::string, std::weak_ptr<Module>> loadedModules;
         }; // class Module
 
@@ -187,7 +187,7 @@ namespace cqp
              * @param slotId The ID of the slot
              */
             Slot(std::shared_ptr<Module> module, ::CK_SLOT_ID slotId);
-            /// Distructor
+            /// Destructor
             ~Slot();
 
             /**
@@ -203,17 +203,17 @@ namespace cqp
 
             /**
              * @brief GetMechanismList
-             * Get a list of mechanisums (A process for implementing a cryptographic operation.)
-             * @param[out] mechanismList Desination for the list
+             * Get a list of mechanisms (A process for implementing a cryptographic operation.)
+             * @param[out] mechanismList Destination for the list
              * @return CK_OK on success
              */
             ::CK_RV GetMechanismList(MechanismList& mechanismList);
 
             /**
              * @brief GetMechanismInfo
-             * Get details of a specific mechanisum
-             * @param[in] mechType Which mechanisum to get
-             * @param[out] info Desintation for the info
+             * Get details of a specific mechanism
+             * @param[in] mechType Which mechanism to get
+             * @param[out] info Destination for the info
              * @return CK_OK on success
              */
             ::CK_RV GetMechanismInfo(::CK_MECHANISM_TYPE mechType, ::CK_MECHANISM_INFO& info);
@@ -242,7 +242,7 @@ namespace cqp
             std::shared_ptr<Module> myModule;
             /// This slots id
             ::CK_SLOT_ID id {};
-            /// PKCS funtions
+            /// PKCS functions
             const ::CK_FUNCTION_LIST * const functions;
         }; // class Slot
 
@@ -266,7 +266,7 @@ namespace cqp
              * @param slot The slot to attach this session to
              * @param flags Initialisation flags
              * @param callbackData Data passed to the callback
-             * @param callback Provide a notification callback funtion to recieve details about
+             * @param callback Provide a notification callback function to receive details about
              * cryptographic functions. see section 5.16 of the [PKCS11 documentation](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html#_Toc416959752)
              * @return A pointer to the new session object
              */
@@ -277,7 +277,7 @@ namespace cqp
                 CK_NOTIFY callback = nullptr
             );
 
-            // distructor
+            // destructor
             ~Session();
 
             /**
@@ -313,7 +313,7 @@ namespace cqp
              * @brief FindObjects
              * Create DataObject instances based on search parameters
              * @param[in] searchParams a list of attributes to search on
-             * @param[in] maxResults The maimum number of results to return
+             * @param[in] maxResults The maximum number of results to return
              * @param[out] results DataObjects representing the results
              * @return CK_OK on success
              * @details
@@ -345,8 +345,8 @@ namespace cqp
              * @param mechanism The wrapping mechanism
              * @param unwrappingKey The unwrapping key
              * @param wrappedkey The key to be unwrapped
-             * @param keyTemplate Tempalte for the new key
-             * @param wrappedKey the result
+             * @param keyTemplate Template for the new key
+             * @param key the result
              * @return CK_OK on success
              */
             CK_RV UnwrapKey(CK_MECHANISM_PTR mechanism, const DataObject& unwrappingKey,
@@ -382,7 +382,7 @@ namespace cqp
              * @param slot Slot to connect to this session
              * @param flags initialisation flags
              * @param callbackData Data passed to the callback
-             * @param callback Provide a notification callback funtion to recieve details about
+             * @param callback Provide a notification callback function to receive details about
              * cryptographic functions. see section 5.16 of the [PKCS11 documentation](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html#_Toc416959752)
              */
             Session(std::shared_ptr<Slot> slot, ::CK_FLAGS flags = CKF_RW_SESSION, void* callbackData = nullptr, const ::CK_NOTIFY callback = nullptr);
@@ -392,7 +392,7 @@ namespace cqp
             std::shared_ptr<Slot> mySlot;
             /// handle from library
             ::CK_SESSION_HANDLE handle {};
-            /// PKCS funtions
+            /// PKCS functions
             const ::CK_FUNCTION_LIST * const functions;
             /// whether we're logged in
             bool loggedIn = false;
@@ -412,8 +412,8 @@ namespace cqp
 
             /**
              * @brief AttributeList
-             * Contruct a partially populated list
-             * @param types Which types to prepopulate,
+             * Construct a partially populated list
+             * @param types Which types to pre-populate,
              * each will have a null value
              */
             inline AttributeList(const std::vector<::CK_ATTRIBUTE_TYPE>& types);
@@ -497,12 +497,12 @@ namespace cqp
             {
                 /// The attribute structure this storage item relates to
                 ::CK_ATTRIBUTE* attribute = nullptr;
-                /// the sotrage for the data
+                /// the storage for the data
                 Value value;
             };
             /// dictionary of values to attribute types
             using Storage = std::map<::CK_ATTRIBUTE_TYPE, MappedValue>;
-            /// a list of attributes for compaibility with C API
+            /// a list of attributes for compatibility with C API
             using Attributes = std::vector<::CK_ATTRIBUTE>;
             /// allocated memory for values
             Storage valueStorage;
@@ -548,7 +548,7 @@ namespace cqp
 
             /**
              * @brief Request the attribute values from the device using the current handle
-             * @param[in,out] value The attribute(s) to query. The results will be stored in the placehodlers
+             * @param[in,out] value The attribute(s) to query. The results will be stored in the placeholders
              * @return CK_OK on success
              * @details
              * Example usage:
@@ -586,7 +586,7 @@ namespace cqp
              * @brief SetAttributeValue
              * Change/set an attribute value
              * @tparam T Type of value to set
-             * @param type identitier for the value
+             * @param type identifier for the value
              * @param value new value to set
              * @return CK_OK on success
              */
@@ -605,7 +605,7 @@ namespace cqp
             std::shared_ptr<Session> mySession;
             /// object handle from the api
             ::CK_OBJECT_HANDLE handle = 0;
-            /// PKCS funtions
+            /// PKCS functions
             const ::CK_FUNCTION_LIST * const functions;
         }; // class DataObject
 
@@ -663,7 +663,7 @@ namespace cqp
                 auto& currentStorage = valueStorage[type];
                 // copy the data into the storage
                 currentStorage.value.assign(inputOverlay, inputOverlay + sizeof(value));
-                // setup the attribute fields, this will exists because of caling Set(type) above
+                // setup the attribute fields, this will exists because of calling Set(type) above
                 currentStorage.attribute->type = type;
                 currentStorage.attribute->pValue = currentStorage.value.data();
                 currentStorage.attribute->ulValueLen = currentStorage.value.size();
@@ -712,7 +712,7 @@ namespace cqp
             return attributes.size();
         } // AttributeList::GetCount
 
-        // DataOject implementations
+        // DataObject implementations
 
         template<typename T>
         ::CK_RV DataObject::GetAttributeValue(::CK_ATTRIBUTE_TYPE type, T& value)

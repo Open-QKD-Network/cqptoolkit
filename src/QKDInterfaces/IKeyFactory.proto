@@ -31,7 +31,7 @@ service IKeyFactory
     * @return Success if a key was reserved
     * @details
     * @startuml BuildXorKeyBehaviour
-    *     title Multi-hop key distrobution - Pull model
+    *     title Multi-hop key distribution - Pull model
     *     hide footbox
     *
     *     box "Site A"
@@ -140,7 +140,7 @@ service IKeyFactory
     rpc MarkKeyInUse(KeyRequest) returns (KeyIdValue);
 
     /**
-    * Called by the right most site agent when generating a multihop key
+    * Called by the right most site agent when generating a multi hop key
     * This will generate a new key by Xoring two other keys
     * @param request The key id and other two sites to use to create the complete key
     * @param response The combined key and and the key id used to create it.

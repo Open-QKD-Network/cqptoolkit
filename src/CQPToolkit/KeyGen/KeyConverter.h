@@ -44,7 +44,7 @@ namespace cqp
             void OnKeyGeneration(std::unique_ptr<KeyList> keyData) override;
             ///@}
         protected:
-            /// The bits may be used on furture key generations
+            /// The bits may be used on future key generations
             std::bitset<sizeof(uintmax_t) * CHAR_BIT> spares;
 
             /// Storage for bytes carried over between calls to BuildKeyList

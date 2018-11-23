@@ -14,6 +14,7 @@
 #include "CQPToolkit/Simulation/RandomNumber.h"
 #include "CQPToolkit/Interfaces/IEmitterEventPublisher.h"
 #include "CQPToolkit/Util/Provider.h"
+#include "QKDInterfaces/IAlignment.grpc.pb.h"
 
 namespace cqp {
 
@@ -43,8 +44,11 @@ namespace align {
         grpc::Status DiscardTransmissions(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) override;
         ///@}
     protected:
+        /// The data to process
         EmitterReportList receivedData;
+        /// A source of randomness
         RandomNumber rng;
+        /// What fraction of the data to send for markers
         uint64_t markerFractionToSend = 3;
     };
 

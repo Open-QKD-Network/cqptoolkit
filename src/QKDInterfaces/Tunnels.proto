@@ -29,7 +29,7 @@ message EncryptionSchemes{
     repeated uint32 keySizes = 6;
 };
 
-/// Defines the defintion of a cryptography scheme
+/// Defines the definition of a cryptography scheme
 message CryptoScheme
 {
     /// The mode, eg GCM
@@ -50,7 +50,7 @@ message TunnelEndDetails
 {
     /// The source of unencrypted data
     string clientDataPortUri = 1;
-    /// The port number for listening for incomming encrypted data
+    /// The port number for listening for incoming encrypted data
     uint32 localChannelPort = 3;
     /// The address to use for sending encrypted data.
     string channelUri = 4;
@@ -141,6 +141,6 @@ message ControllerDetails
     map<string, Tunnel> tunnels = 10;
     /// Authentication credentials to use when connecting
     Credentials credentials = 11;
-    /// whether to use autodiscovery
+    /// whether to use auto discovery
     bool useAutoDiscover = 12;
 }

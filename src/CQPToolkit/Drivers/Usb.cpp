@@ -81,7 +81,7 @@ namespace cqp
     {
         vendor = vendorId;
         product = productId;
-        LOGTRACE("Getting device decscriptor...");
+        LOGTRACE("Getting device descriptor...");
         configIndex = newConfigIndex;
         interfaceIndex = newInterfaceIndex;
         bool result = false;
@@ -92,7 +92,7 @@ namespace cqp
             myDev = libusb_get_device(myHandle);
         }
 
-        /// The descrition of the connected device
+        /// The description of the connected device
         struct libusb_device_descriptor desc = libusb_device_descriptor();
 
         if (myDev == nullptr || LogUsb(libusb_get_device_descriptor(myDev, &desc)) != LIBUSB_SUCCESS)
@@ -239,7 +239,7 @@ namespace cqp
         if (result != LIBUSB_SUCCESS)
         {
             std::string message = "LibUsb: " + std::string(libusb_error_name(result));
-// strerror is not provided by eairlier versions of libusb
+// strerror is not provided by earlier versions of libusb
 #if defined(libusb_strerror)
             message += " : " + std::string(libusb_strerror(static_cast<libusb_error>(result)))
 #endif
@@ -253,7 +253,7 @@ namespace cqp
         LOGTRACE("EventHandler Running...");
         // negative results from libusb are errors, positive are warnings
         // TODO: Still not convinced by the wording in the libusb async docs
-        //      This may need to be a single thread per context, which is more difficault to manage.
+        //      This may need to be a single thread per context, which is more difficult to manage.
         if (LogUsb(libusb_handle_events_completed(nullptr, nullptr)) < LIBUSB_SUCCESS)
         {
             LOGERROR("Libusb Events failed.");

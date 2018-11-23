@@ -51,7 +51,7 @@ namespace cqp
              */
             void PublishPrivacyAmplify();
 
-            /// the publisher for this instnace
+            /// the publisher for this instance
             Statistics stats;
 
         protected:
@@ -63,7 +63,7 @@ namespace cqp
             /// @{
             /// @name WorkerThread overrides
 
-            /// Perform processing on incomming data
+            /// Perform processing on incoming data
             void DoWork() override;
 
             /// @}
@@ -71,7 +71,7 @@ namespace cqp
             /// How long to wait for new data before checking if the thread should be stopped
             const std::chrono::seconds threadTimeout {1};
 
-            /// data recieved from error correction
+            /// data received from error correction
             std::vector<std::unique_ptr<DataBlock>> incommingData;
             // IErrorCorrectCallback interface
         public:

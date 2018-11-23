@@ -28,7 +28,7 @@ namespace cqp
         /// Standard destructor
         virtual ~FileLogger();
 
-        /// @brief Output a message at a given deverity level
+        /// @brief Output a message at a given severity level
         /// @note The current output level may hide the message.
         /// @param[in] level The severity of the log message
         /// @param[in] message The message to display

@@ -98,7 +98,7 @@ int IDQKeyExtraction::Main(const std::vector<std::string>& args)
                 if(getDetailsStatus.ok())
                 {
                     LOGINFO("Connected to wrapper on: " + definedArguments.GetStringProp(Names::local) +
-                            " with intername address: " +
+                            " with internal name address: " +
                             wrapperDetails.hostname() + ":" + std::to_string(wrapperDetails.portnumber()));
 
                     using namespace std;
@@ -144,7 +144,7 @@ int IDQKeyExtraction::Main(const std::vector<std::string>& args)
                         LogStatus(reader->Finish());
                     }
 
-                    LOGTRACE("StartQKDSequence finsihed");
+                    LOGTRACE("StartQKDSequence finished");
                 }
             }
             else

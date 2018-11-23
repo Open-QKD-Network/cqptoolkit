@@ -173,7 +173,7 @@ namespace cqp
                     }
                     else
                     {
-                        LOGERROR("Failed to get funtion list");
+                        LOGERROR("Failed to get function list");
                         result.reset();
                     }
                 }
@@ -473,7 +473,7 @@ namespace cqp
             auto& currentStorage = valueStorage[type];
             // copy the data into the storage
             currentStorage.value.assign(value.begin(), value.end());
-            // setup the attribute fields, this will exists because of caling Set(type) above
+            // setup the attribute fields, this will exists because of calling Set(type) above
             currentStorage.attribute->type = type;
             currentStorage.attribute->pValue = currentStorage.value.data();
             currentStorage.attribute->ulValueLen = currentStorage.value.size();
@@ -512,7 +512,7 @@ namespace cqp
             // copy the data into the storage
             auto* valuePtr = reinterpret_cast<uint8_t*>(&date);
             currentStorage.value.assign(valuePtr, valuePtr + sizeof (date));
-            // setup the attribute fields, this will exists because of caling Set(type) above
+            // setup the attribute fields, this will exists because of calling Set(type) above
             currentStorage.attribute->type = type;
             currentStorage.attribute->pValue = currentStorage.value.data();
             currentStorage.attribute->ulValueLen = currentStorage.value.size();
@@ -646,7 +646,7 @@ namespace cqp
                 auto& currentStorage = valueStorage[type];
                 // copy the data into the storage
                 currentStorage.value.assign(value.begin(), value.end());
-                // setup the attribute fields, this will exists because of caling Set(type) above
+                // setup the attribute fields, this will exists because of calling Set(type) above
                 currentStorage.attribute->type = type;
                 currentStorage.attribute->pValue = currentStorage.value.data();
                 currentStorage.attribute->ulValueLen = currentStorage.value.size();

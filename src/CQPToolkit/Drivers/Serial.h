@@ -99,7 +99,7 @@ namespace cqp
         /// @param[in] portName The OS Specific name for the port
         /// @param[in] initialBaud Initialise the port with this rate
         Serial(const std::string& portName, BaudRate initialBaud = BaudRate::B_9600);
-        /// default distructor
+        /// default destructor
         virtual ~Serial();
 
         /// Perform device detection
@@ -118,7 +118,7 @@ namespace cqp
             return "serial:///" + port + "?baud=" + std::to_string(static_cast<uint32_t>(baud));
         }
 
-        /// Determins if the device is open.
+        /// Determines if the device is open.
         /// @return true if the device is ready to use.
         virtual bool IsOpen() const;
 
@@ -136,7 +136,7 @@ namespace cqp
         /// Disconnect from the device.
         /// @return true if disconnection completed without error
         /// @remarks The object must be return to a clean, disconnected state by this call
-        ///         even if errors occour.
+        ///         even if errors occur.
         /// @return returns true on success
         bool Close();
 

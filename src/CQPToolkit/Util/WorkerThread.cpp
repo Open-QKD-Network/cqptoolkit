@@ -121,7 +121,7 @@ namespace cqp
             // real time
             if(priority <= 0)
             {
-                LOGWARN("Priority for real time schedular must be > 0, setting to 1, see man sched 7");
+                LOGWARN("Priority for real time scheduler must be > 0, setting to 1, see man sched 7");
                 schParams.sched_priority = 1;
             }
             else

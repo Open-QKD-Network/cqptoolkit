@@ -148,7 +148,7 @@ namespace cqp
             {
                 ASSERT_NE(data[mod.first], mod.second) << "Change value == original, check " + std::to_string(mod.first);
                 ASSERT_NE(QubitHelper::Base(data[mod.first]), QubitHelper::Base(mod.second)) <<
-                        "Not changin the base from "
+                        "Not changing the base from "
                         << std::to_string((int)QubitHelper::Base(data[mod.first]))
                         << ", check " + std::to_string(mod.first);
                 touched[mod.first] = mod.second;

@@ -68,7 +68,7 @@ namespace cqp
          */
         int WaitForExit();
     protected:
-        /// system id for the proccess
+        /// system id for the process
         int pid = 0;
     private:
         /**

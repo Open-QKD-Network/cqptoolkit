@@ -34,7 +34,7 @@ namespace cqp
         public:
             /**
              * @brief ServiceDiscovery
-             * Default constructure
+             * Default constructor
              */
             ServiceDiscovery();
 
@@ -66,7 +66,7 @@ namespace cqp
         protected:
             /// give the impl class access to protected
             friend ServiceDiscoveryImpl;
-            /// implementation class to hide extranious complexity
+            /// implementation class to hide extraneous complexity
             ServiceDiscoveryImpl* impl = nullptr;
 
             /// Services which have been detected so far.

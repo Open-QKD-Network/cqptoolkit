@@ -49,7 +49,7 @@ namespace qkdtunnel
 
         /**
          * @brief ~MainWindow
-         * Distructor
+         * Destructor
          */
         virtual ~MainWindow() override;
     protected:

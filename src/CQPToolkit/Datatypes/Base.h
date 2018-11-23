@@ -22,7 +22,7 @@ namespace cqp
     /// Standard list of integers for general use.
     using IntList = std::vector<int>;
 
-    /// Definiton of a generic/opaque block of data.
+    /// Definition of a generic/opaque block of data.
     using DataBlock = std::vector<uint8_t>;
 
     /**
@@ -33,7 +33,7 @@ namespace cqp
     {
     public:
         /// The number of valid bits in the final byte
-        /// 0 and 8 are equivilant
+        /// 0 and 8 are equivalent
         uint8_t bitsInLastByte = 0;
 
         /**
@@ -97,7 +97,7 @@ namespace cqp
 namespace std
 {
     /**
-     * Templated hash algorithm for arrays, allowing them to be used in unordred_map's
+     * Templated hash algorithm for arrays, allowing them to be used in unordered_map's
      */
     template<typename T, size_t N>
     struct hash<array<T, N> >

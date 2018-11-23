@@ -27,9 +27,9 @@ namespace cqp
         /// The number of frames to process before closing the session
         const std::string NumberFrames = "NumberFrames";
 
-        /// a parameter which specifies the unique id of the quantom channel endpoint which which this device is connected to.
+        /// a parameter which specifies the unique id of the quantum channel endpoint which which this device is connected to.
         const std::string AliceEndpointIdentifier = "AliceEndpointIdentifier";
-        /// a parameter which specifies the unique id of the quantom channel endpoint which which this device is connected to.
+        /// a parameter which specifies the unique id of the quantum channel endpoint which which this device is connected to.
         const std::string BobEndpointIdentifier = "BobEndpointIdentifier";
 
     }

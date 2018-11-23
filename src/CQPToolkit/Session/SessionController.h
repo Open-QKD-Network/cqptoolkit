@@ -67,7 +67,7 @@ namespace cqp
 
     protected: // members
 
-        /// Our authenticatio token for getting shared secrets
+        /// Our authentication token for getting shared secrets
         std::string keyToken;
         /// the address to connect to us
         std::string myAddress;
@@ -94,7 +94,7 @@ namespace cqp
          */
         explicit SessionController(std::shared_ptr<grpc::ChannelCredentials> creds);
 
-        /// Distructor
+        /// Destructor
         ~SessionController() override;
 
         /**

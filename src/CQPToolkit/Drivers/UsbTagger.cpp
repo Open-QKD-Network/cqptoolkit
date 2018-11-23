@@ -55,7 +55,7 @@ namespace cqp
         ssize_t numDevices = libusb_get_device_list(nullptr, &devs);
         LOGDEBUG("Found " + std::to_string(numDevices) + " usb devices.");
 
-        // Create an object which will hopfully connect
+        // Create an object which will hopefully connect
         UsbTagger* newDevice = new UsbTagger();
         for (int devIndex = 0; devIndex < numDevices; devIndex++)
         {

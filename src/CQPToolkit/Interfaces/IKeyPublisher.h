@@ -17,7 +17,7 @@
 
 namespace cqp
 {
-    /// Callback class to be inmplemented when ready to use key is needed.
+    /// Callback class to be implemented when ready to use key is needed.
     class CQPTOOLKIT_EXPORT IKeyCallback
     {
     public:
@@ -26,7 +26,7 @@ namespace cqp
         /// @param[in] keyData An array of words which represent the key
         virtual void OnKeyGeneration(std::unique_ptr<KeyList> keyData) =0;
 
-        /// pure virtual distructor
+        /// pure virtual destructor
         virtual ~IKeyCallback() = default;
     };
 

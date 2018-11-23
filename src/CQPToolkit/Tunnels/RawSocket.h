@@ -49,11 +49,11 @@ namespace cqp
             /// This dictates which headers are kept
             enum class Level
             {
-                /// Kernel handles ethernet and IP level, we see tcp
+                /// Kernel handles Ethernet and IP level, we see tcp
                 datagram,
-                /// Kernel handles ethernet, we see IP level
+                /// Kernel handles Ethernet, we see IP level
                 ip,
-                /// Kernel handles nothing, we see ethernet packets
+                /// Kernel handles nothing, we see Ethernet packets
                 eth
             };
 
@@ -77,7 +77,7 @@ namespace cqp
 
             /**
              * @brief ~RawSocket
-             * Distructor
+             * Destructor
              */
             virtual ~RawSocket() override;
 

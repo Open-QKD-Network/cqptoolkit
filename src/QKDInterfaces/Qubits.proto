@@ -16,7 +16,7 @@ package cqp.remote;
 
 /// Value of a qubit
 message BB84 {
-    /// this is done to scope the enum so names donot clash
+    /// this is done to scope the enum so names do not clash
     enum Type {
         Zero    = 0x00;
         One     = 0x01;
@@ -47,7 +47,7 @@ message Basis {
     enum Type {
         Retiliniear = 0x00;
         Diagonal    = 0x02;
-        Circular    = 0x04;    // For compatibility with furture systems
+        Circular    = 0x04;    // For compatibility with future systems
         Basis_Invalid     = 0x06;
     }
 }

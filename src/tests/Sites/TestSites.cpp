@@ -90,7 +90,7 @@ namespace cqp
             LOGINFO("Site2 = " + site2.GetConnectionAddress());
             LOGINFO("Site3 = " + site3.GetConnectionAddress());
 
-            // expectg a registration, but do nothing
+            // expecting a registration, but do nothing
             EXPECT_CALL(netman, OnRegistered(_)).WillOnce(Invoke([&](const remote::Site*)
             {
                 LOGDEBUG("Register 1 called");
@@ -114,7 +114,7 @@ namespace cqp
                 google::protobuf::Empty response;
 
                 auto hop = request.mutable_hops()->Add();
-                // specifiy the hop from site 1 alice to site 2 bob
+                // specify the hop from site 1 alice to site 2 bob
                 // To create a curve ball later, start it backwards send 2-1 to 2.
                 // When 1 - 2, 2 - 3 is sent later, it should be able to cope
                 hop->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config2.deviceurls(1)));
@@ -146,7 +146,7 @@ namespace cqp
                 google::protobuf::Empty response;
 
                 auto hop1 = request.mutable_hops()->Add();
-                // specifiy the hop from site 1 alice to site 2 bob
+                // specify the hop from site 1 alice to site 2 bob
                 hop1->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config1.deviceurls(0)));
                 hop1->mutable_first()->set_site(site1.GetConnectionAddress());
 
@@ -154,7 +154,7 @@ namespace cqp
                 hop1->mutable_second()->set_site(site2.GetConnectionAddress());
 
                 auto hop2 = request.mutable_hops()->Add();
-                // specifiy the hop from site 1 alice to site 2 bob
+                // specify the hop from site 1 alice to site 2 bob
                 hop2->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config2.deviceurls(1)));
                 hop2->mutable_first()->set_site(site2.GetConnectionAddress());
 
@@ -211,7 +211,7 @@ namespace cqp
                 google::protobuf::Empty response;
 
                 auto hop1 = request.mutable_hops()->Add();
-                // specifiy the hop from site 1 alice to site 2 bob
+                // specify the hop from site 1 alice to site 2 bob
                 hop1->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config1.deviceurls(0)));
                 hop1->mutable_first()->set_site(site1.GetConnectionAddress());
 
@@ -219,7 +219,7 @@ namespace cqp
                 hop1->mutable_second()->set_site(site2.GetConnectionAddress());
 
                 auto hop2 = request.mutable_hops()->Add();
-                // specifiy the hop from site 1 alice to site 2 bob
+                // specify the hop from site 1 alice to site 2 bob
                 hop2->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config2.deviceurls(1)));
                 hop2->mutable_first()->set_site(site2.GetConnectionAddress());
 

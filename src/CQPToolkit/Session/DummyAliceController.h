@@ -47,7 +47,7 @@ namespace cqp
 
         /**
          * @brief The DummyAliceController class
-         * Provides a software only QKD device - Transmists photons
+         * Provides a software only QKD device - Transmits photons
          */
         class CQPTOOLKIT_EXPORT DummyAliceController : public SessionController,
             protected WorkerThread
@@ -61,7 +61,7 @@ namespace cqp
              */
             DummyAliceController(std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
 
-            /// Disctructor
+            /// Destructor
             ~DummyAliceController() override;
 
             ///@{

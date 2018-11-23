@@ -82,7 +82,7 @@ service ITunnelServer
 
     /**
      * @brief CompleteTunnel
-     * @param request Defintion of the tunnel endpoint to setup, assumes that the caller has setup the other side of the tunnel
+     * @param request Definition of the tunnel endpoint to setup, assumes that the caller has setup the other side of the tunnel
      * @param response The connection address to send encrypted data to
      * @return true on success
      */

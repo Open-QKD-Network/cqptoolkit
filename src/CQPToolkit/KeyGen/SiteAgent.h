@@ -121,7 +121,7 @@ namespace cqp
 
         /// our server
         std::unique_ptr<grpc::Server> server;
-        /// chennel to the network manager
+        /// channel to the network manager
         std::shared_ptr<grpc::Channel> netmanChannel;
         /// Stores the state of the site
         struct SiteState
@@ -142,7 +142,7 @@ namespace cqp
         std::unique_ptr<DeviceFactory> deviceFactory;
         /// metadata tag name for pass a session controller address
         const char* sessionAddress = "sessionaddress";
-        /// a list of devices being activly used
+        /// a list of devices being actively used
         std::unordered_map<std::string, std::shared_ptr<IQKDDevice>> devicesInUse;
         /// collects statistics reports and publishes them to clients
         std::unique_ptr<stats::ReportServer> reportServer;
@@ -156,9 +156,9 @@ namespace cqp
     protected: // methods
         /**
          * @brief GetSiteChannel
-         * records know sites and creates a chennel to them
+         * records know sites and creates a channel to them
          * @param connectionAddress The address of the other site agent
-         * @return A chennel to that agent
+         * @return A channel to that agent
          */
         std::shared_ptr<grpc::Channel> GetSiteChannel(const std::string& connectionAddress);
         /**
@@ -191,7 +191,7 @@ namespace cqp
         /**
          * @brief StopNode
          * Stop generating key with the specified device
-         * @param deviceUri which divice to stop
+         * @param deviceUri which device to stop
          * @return status of command
          */
         grpc::Status StopNode(const std::string& deviceUri);

@@ -27,7 +27,7 @@ namespace cqp
 
         /**
          * @brief UUID
-         * @return A gaurenteed unique identifier
+         * @return A guaranteed unique identifier
          */
         UUID();
         /**
@@ -99,7 +99,7 @@ namespace cqp
 namespace std
 {
     /**
-     * Templated hash algorithm for arrays, allowing them to be used in unordred_map's
+     * Templated hash algorithm for arrays, allowing them to be used in unordered_map's
      */
     template<>
     struct hash<cqp::UUID>

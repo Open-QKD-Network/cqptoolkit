@@ -15,7 +15,7 @@ namespace cqp
 {
 
     /// @brief Receive notification of interpreted photon detections.
-    /// @details Called by implementors of IDetectionReports when registered using IEvent
+    /// @details Called by implementers of IDetectionReports when registered using IEvent
     class CQPTOOLKIT_EXPORT IEmitterEventCallback
     {
     public:

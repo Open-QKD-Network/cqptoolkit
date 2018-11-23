@@ -16,7 +16,7 @@
 namespace cqp
 {
     /// Provides a standard source of random numbers.
-    /// @todo Make the interface usful
+    /// @todo Make the interface useful
     class CQPTOOLKIT_EXPORT IRandom
     {
     public:
@@ -29,7 +29,7 @@ namespace cqp
         /// @return A random Qubit
         virtual Qubit RandQubit() = 0;
 
-        /// pure virtual distructor
+        /// pure virtual destructor
         virtual ~IRandom() = default;
 
         // TODO: virtual void Fill(IntList& out, size_t count) = 0;

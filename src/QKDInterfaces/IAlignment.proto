@@ -36,11 +36,18 @@ message ValidDetections{
  */
 service IAlignment {
 
+    /**
+     * @brief GetAlignmentMarks
+     * Requests markers for a frame to help align the received data.
+     * @param request The frame to query
+     * @param response A sparse set of data to provide comparison points within the data
+     * @return status
+     */
     rpc GetAlignmentMarks(FrameId) returns (QubitByIndex);
 
     /**
      * @brief DiscardTransmissions
-     * Insrtucts the transmitter to discard all but the supplied indexes
+     * Instructs the transmitter to discard all but the supplied indexes
      * @param request
      * @return status
      */

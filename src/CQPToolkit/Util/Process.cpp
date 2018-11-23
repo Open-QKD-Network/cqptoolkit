@@ -105,7 +105,7 @@ namespace cqp
                     ::dup2(pipeErr[Write], STDERR_FILENO);
                     ::close(pipeErr[Write]);
                 }
-                // this is the new thread, lauch the program
+                // this is the new thread, launch the program
                 ::execv(command.c_str(), const_cast<char* const*>(c_args));
 
                 // exec only returns on error

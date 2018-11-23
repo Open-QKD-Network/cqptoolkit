@@ -174,7 +174,7 @@ namespace cqp
          * @brief operator !=
          * @param lhs
          * @param rhs
-         * @return return true if the ip addresses dont match
+         * @return return true if the ip addresses don't match
          */
         CQPTOOLKIT_EXPORT inline bool operator !=(const IPAddress& lhs, const IPAddress& rhs)
         {
@@ -195,7 +195,7 @@ namespace cqp
          * @brief operator !=
          * @param lhs
          * @param rhs
-         * @return return true if the address dont match
+         * @return return true if the address don't match
          */
         CQPTOOLKIT_EXPORT inline bool operator !=(const SocketAddress& lhs, const SocketAddress& rhs)
         {
@@ -273,7 +273,7 @@ namespace cqp
             /**
              * @brief Write
              * Send data over the socket
-             * @param data Data to sned
+             * @param data Data to send
              * @param length Number of bytes to send
              * @return true on success
              */

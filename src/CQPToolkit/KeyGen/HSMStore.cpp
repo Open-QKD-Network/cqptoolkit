@@ -372,7 +372,7 @@ namespace cqp
                 }
                 else
                 {
-                    LOGWARN("Unkown login user type: " + loginString);
+                    LOGWARN("Unknown login user type: " + loginString);
                 }
             }
 
@@ -437,7 +437,7 @@ namespace cqp
             // This will be set to a real value once it's reserved
             newObjDefaults->Set(CKA_START_DATE, zeroStartDate);
 
-            // accessability...
+            // accessibility...
             newObjDefaults->Set(CKA_TOKEN, true); // otherwise its a session object
             newObjDefaults->Set(CKA_EXTRACTABLE, true);
             newObjDefaults->Set(CKA_DESTROYABLE, true);

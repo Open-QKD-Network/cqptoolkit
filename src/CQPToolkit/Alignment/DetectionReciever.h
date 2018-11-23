@@ -13,20 +13,27 @@
 #include "CQPToolkit/Alignment/Alignment.h"
 #include "CQPToolkit/Alignment/DetectionGating.h"
 #include "CQPToolkit/Simulation/RandomNumber.h"
+#include "CQPToolkit/Interfaces/IDetectionEventPublisher.h"
 
 namespace cqp {
     struct SystemParameters;
 
 namespace align {
 
+    /**
+     * @brief The DetectionReciever class
+     * handles incoming photon reports
+     */
     class CQPTOOLKIT_EXPORT DetectionReciever : public Alignment,
     /* Interfaces */
         virtual public IDetectionEventCallback,
             protected WorkerThread
     {
     public:
+        /// constructor
         DetectionReciever();
 
+        /// destructor
         virtual ~DetectionReciever() override = default;
 
         /// @{
@@ -34,7 +41,7 @@ namespace align {
 
         /**
          * @brief OnPhotonDetection
-         * Photons have been recieved
+         * Photons have been received
          * @param report
          * @startuml OnPhotonBehaviour
          * [-> Alignment : OnTimeTagReport
@@ -48,7 +55,13 @@ namespace align {
 
         /// @}
 
+        /**
+         * @brief SetSystemParameters
+         * @param parameters Values to set
+         * @return true on success
+         */
         bool SetSystemParameters(const SystemParameters& parameters);
+
         /**
          * @brief Connect Connect to the other side to exchange alignment detail
          * @param channel
@@ -58,16 +71,23 @@ namespace align {
             Start();
         }
 
+        /**
+         * @brief Disconnect
+         */
         void Disconnect()
         {
             Stop(true);
             transmitter.reset();
         }
 
+        /**
+         * @brief DoWork
+         */
         void DoWork() override;
     protected:
-        /// storage for incomming data
+        /// storage for incoming data
         ProtocolDetectionReportList receivedData;
+        /// Source of randomness
         RandomNumber rng;
         DetectionGating gatingHandler;
         std::shared_ptr<grpc::Channel> transmitter;

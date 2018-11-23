@@ -27,12 +27,12 @@ namespace cqp
 
         /**
          * @brief The MockAlignmentCallback class
-         * Mock method for recieving output from a publisher
+         * Mock method for receiving output from a publisher
          */
         class MockAlignmentCallback: public IAlignmentCallback
         {
         public:
-            /// dummy callback for oreacting to test data
+            /// dummy callback for reacting to test data
             MOCK_METHOD2(OnAligned2, void(SequenceNumber seq, QubitList* rawQubits));
             void OnAligned(SequenceNumber seq, std::unique_ptr<QubitList> rawQubits) override {
                 OnAligned2(seq, rawQubits.get());
@@ -41,7 +41,7 @@ namespace cqp
 
         /**
          * @brief The MockAlignmentCallback class
-         * Mock method for recieving output from a publisher
+         * Mock method for receiving output from a publisher
          */
         class MockTxCallback: public remote::IAlignment::Service
         {
@@ -55,7 +55,7 @@ namespace cqp
         /**
          * @test
          * @brief Alignment::Alignment
-         * Base calss for testing alignment interface
+         * Base class for testing alignment interface
          */
         class AlignmentTests : public testing::Test
         {
@@ -67,9 +67,9 @@ namespace cqp
             AlignmentTests();
 
         protected:
-            /// dummy callback for oreacting to test data
+            /// dummy callback for reacting to test data
             MockAlignmentCallback aliceCallback;
-            /// dummy callback for oreacting to test data
+            /// dummy callback for reacting to test data
             MockAlignmentCallback bobCallback;
 
             /// mutex for access to test results

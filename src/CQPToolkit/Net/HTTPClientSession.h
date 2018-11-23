@@ -66,7 +66,7 @@ namespace cqp
 
             /**
              * @brief ReadCallback
-             * Handles asyncronous requests for the body
+             * Handles asynchronous requests for the body
              * @param buffer destination for body data
              * @param size max size of the buffer
              * @param nitems number of buffers (total bytes = nitems * size)
@@ -82,17 +82,17 @@ namespace cqp
          */
         struct CQPTOOLKIT_EXPORT HTTPResponse : public HTTPMessage
         {
-            /// Code indecating the whether the request suceeded
+            /// Code indicating the whether the request succeeded
             enum Status { Ok = 200 };
 
-            /// whether the request suceeded
+            /// whether the request succeeded
             Status status;
             /// more detail for the status
             std::string reason;
 
             /**
              * @brief WriteCallback
-             * Handles asyncronous requests for the body of the message
+             * Handles asynchronous requests for the body of the message
              * @param buffer Source of the data to store in the body field
              * @param size number of bytes in buffer
              * @param nmemb number of buffers (total bytes = nmemb * size)

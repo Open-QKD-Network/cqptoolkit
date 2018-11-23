@@ -111,7 +111,7 @@ namespace cqp
 
         Status DummyAliceController::StartSession(const remote::OpticalParameters& params)
         {
-            // stession is being started locally
+            // session is being started locally
             Status result = SessionController::StartSession(params);
             if(result.ok() && !IsRunning())
             {

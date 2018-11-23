@@ -30,7 +30,7 @@ namespace cqp
          */
         Application() noexcept;
 
-        /// Distructor
+        /// Destructor
         virtual ~Application() {}
 
         /**
@@ -70,7 +70,7 @@ namespace cqp
 
     /// Macro for creating a standard main entry into a program
     /// @param name The class name to instantiate.
-    /// This must have a function calledf `main` or be decended from Application
+    /// This must have a function calledf `main` or be descended from Application
 #define CQP_MAIN(name) \
     int main(int argc, const char* argv[]) \
     { \

@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief SiftReciever
+* @brief SiftReceiver
 *
 * @copyright Copyright (C) University of Bristol 2017
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
@@ -24,7 +24,7 @@ namespace cqp
             using namespace std;
             using google::protobuf::RepeatedField;
             using grpc::Status;
-            // wait for incomming data
+            // wait for incoming data
             /*lock scope*/{
                 unique_lock<mutex> lock(collectedStatesMutex);
                 collectedStatesCv.wait(lock, [&](){
@@ -50,7 +50,7 @@ namespace cqp
                 {
                     if(mySeqIt != collectedStates.end())
                     {
-                        // shortcuts for readablility
+                        // shortcuts for readability
                         const auto& theirBasisList = theirSeqIt->second;
                         RepeatedField<bool>* myAnswers = (*response->mutable_answers())[theirSeqIt->first].mutable_answers();
                         QubitList::const_iterator myQubitIt = mySeqIt->second->begin();
@@ -71,8 +71,8 @@ namespace cqp
                         } // if
                         else
                         {
-                            LOGERROR("Length missmatch in basis listSift Sequence ID=" + to_string(mySeqIt->first));
-                            result = Status(grpc::StatusCode::OUT_OF_RANGE, "Length missmatch in basis list", "Sequence ID=" + to_string(mySeqIt->first));
+                            LOGERROR("Length mismatch in basis listSift Sequence ID=" + to_string(mySeqIt->first));
+                            result = Status(grpc::StatusCode::OUT_OF_RANGE, "Length mismatch in basis list", "Sequence ID=" + to_string(mySeqIt->first));
                             break;
                         } // else
                     } //if(mySeqIt != collectedStates.end())

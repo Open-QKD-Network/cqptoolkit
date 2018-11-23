@@ -82,7 +82,7 @@ namespace cqp
              * @param crypto The kind of encryption to use
              * @param[in,out] transferListenPort The port number to use for encrypted data transfer
              * @param creds The server credentials to use
-             * @param clientCreds Teh credentials to use when connecting to peer
+             * @param clientCreds The credentials to use when connecting to peer
              */
             TunnelBuilder(const remote::tunnels::CryptoScheme& crypto, int& transferListenPort, std::shared_ptr<grpc::ServerCredentials> creds,
                           std::shared_ptr<grpc::ChannelCredentials> clientCreds);
@@ -154,7 +154,7 @@ namespace cqp
 
             ///@}
 
-            /// Distructor
+            /// Destructor
             ~TunnelBuilder() override;
 
             /// stats created my this class
@@ -170,7 +170,7 @@ namespace cqp
 
             /**
              * @brief EncodingWorker
-             * Process incomming data from the client and encrypt it, passing it to the other end
+             * Process incoming data from the client and encrypt it, passing it to the other end
              * @details
              * @startuml EncodingWorkerBehaviour
                 hide footbox
@@ -197,7 +197,7 @@ namespace cqp
 
                         TunnelBuilder -> client : Read()
                         note over TunnelBuilder
-                            Wait for incomming data
+                            Wait for incoming data
                         end note
                         TunnelBuilder -> encryptorCypher : PushData()
                         TunnelBuilder -> ITransfer : Transfer(encryptedData)

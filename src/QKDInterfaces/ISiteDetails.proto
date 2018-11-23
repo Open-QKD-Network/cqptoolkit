@@ -23,7 +23,7 @@ package cqp.remote;
 service ISiteDetails
 {
     /**
-    * Recieve updates on the state of key generation between this site and site
+    * Receive updates on the state of key generation between this site and site
     * specified in SiteList
     * @param response Each state change on a link between sites will generate a message detailing the change.
     * @return status

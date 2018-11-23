@@ -61,7 +61,7 @@ namespace cqp
                 break;
             }
 
-            // create a raw socket to capture and send ethernet packets
+            // create a raw socket to capture and send Ethernet packets
             self->handle = socket(domain, packetType, htons(protocol));
             if(self->handle < 0)
             {
@@ -199,7 +199,7 @@ namespace cqp
                 }
                 else
                 {
-                    LOGERROR("Unkown level value: " + levelStr);
+                    LOGERROR("Unknown level value: " + levelStr);
                 }
             }
 

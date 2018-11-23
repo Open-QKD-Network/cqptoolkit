@@ -27,7 +27,7 @@ namespace cqp
         class CQPTOOLKIT_EXPORT DeviceIO : public CryptoPP::Bufferless<CryptoPP::Sink>
         {
         public:
-            /// Distructor
+            /// Destructor
             virtual ~DeviceIO() override {}
 
             /**

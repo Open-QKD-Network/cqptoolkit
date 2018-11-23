@@ -70,7 +70,7 @@ namespace cqp
          * @param niceLevel Higher number == less chance it will run, more nice
          * @param realtimePriority Higher number == more chance it will run
          * @param policy The kind of scheduler to use
-         * @return true on succes
+         * @return true on success
          */
         static bool SetPriority(std::thread& theThread, int niceLevel, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
 
@@ -80,7 +80,7 @@ namespace cqp
          * @param niceLevel Higher number == less chance it will run, more nice
          * @param realtimePriority Higher number == more chance it will run
          * @param policy The kind of scheduler to use
-         * @return true on succes
+         * @return true on success
          */
         bool SetPriority(int niceLevel, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
 
@@ -88,7 +88,7 @@ namespace cqp
         /// Member function for performing work on the separate thread.
         /// @details The WorkerThread will call this when the thread is allowed to run,
         /// if the function returns it will be called repeatedly until WorkerThread::Stop() is called.
-        /// If this thread doesn't return, the parent will wait indefinatly for it when WorkerThread::Stop() is called.
+        /// If this thread doesn't return, the parent will wait indefinitely for it when WorkerThread::Stop() is called.
         /// @remarks This function is wrapped in an exception handler to ensure that the
         /// thread is never killed unless it is explicitly stopped
         virtual void DoWork() = 0;
@@ -106,11 +106,11 @@ namespace cqp
 
         /// @internal
 
-        /// Controls acccess to various variables used to control execution
+        /// Controls access to various variables used to control execution
         std::mutex accessMutex;
         /// The thread on which the WorkerThread::ThreadExec() runs
         std::thread worker;
-        /// Method for managing exicution of the thread, this will call WorkerThread::DoWork() as nessacary
+        /// Method for managing execution of the thread, this will call WorkerThread::DoWork() as necessary
         void ThreadExec();
     };
 

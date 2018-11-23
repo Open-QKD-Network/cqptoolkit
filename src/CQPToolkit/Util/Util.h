@@ -178,7 +178,7 @@ namespace cqp
      */
     CQPTOOLKIT_EXPORT std::vector<uint8_t> HexToBytes(const std::string& hex);
 
-    /// initial value for the hash funtion
+    /// initial value for the hash function
     constexpr uint64_t FNVOffset = 0xcbf29ce484222325;
     /// hash multiplier
     constexpr uint64_t FNVPrime = 0x100000001b3;

@@ -100,7 +100,7 @@ namespace cqp
                 //               ^
                 //      keyGen --'
 
-                // the encryption filter uses the encryptorCypher to encypt the data and put it in the encryptorOutput
+                // the encryption filter uses the encryptorCypher to encrypt the data and put it in the encryptorOutput
 
                 try
                 {
@@ -183,7 +183,7 @@ namespace cqp
                 // store the new values for creating the key
                 currentKeyStoreTo = keyStoreTo;
                 currentKeyLifespan = keyLifespan;
-                // channel for transfering the encrypted data
+                // channel for transferring the encrypted data
                 farSideEP = grpc::CreateChannel(details.channeluri(), clientCreds);
                 // channel for getting keys
                 myKeyFactoryChannel = keyFactoryChannel;
@@ -295,7 +295,7 @@ namespace cqp
             {
             case str2int(DeviceTypes::tap):
             case str2int(DeviceTypes::tun):
-                // raw ethernet/ip packets
+                // raw Ethernet/ip packets
                 client = EthTap::Create(portUri);
                 break;
 
@@ -443,7 +443,7 @@ namespace cqp
 
                             // push data into the encryptor
                             encryptor->Put2(buffer.data(), numRead, -1, true);
-                            // because of earlier attachment, the encrypto output will be put into the message payload
+                            // because of earlier attachment, the encryptor output will be put into the message payload
                             messageData.set_payload(payload);
 
                             // send for decryption at the other side

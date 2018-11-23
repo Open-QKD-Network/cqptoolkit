@@ -21,7 +21,7 @@ namespace cqp
     // pulse width
     // avg. photons per pulse (<1.0)
     // filter bias of bases
-    // wavelength + tolerence
+    // wavelength + tolerance
     // photon state purity
 
     /// @brief  A device which produces photons.
@@ -33,13 +33,13 @@ namespace cqp
         /// @details This must block until the transmission has been completed
         virtual void Fire() = 0;
 
-        /// Notify the reciever that the frame has started
+        /// Notify the receiver that the frame has started
         virtual void StartFrame() = 0;
 
-        /// Notify the reciever that the frame has ended
+        /// Notify the receiver that the frame has ended
         virtual void EndFrame() = 0;
 
-        /// pure virtual distructor
+        /// pure virtual destructor
         virtual ~IPhotonGenerator() = default;
     };
 

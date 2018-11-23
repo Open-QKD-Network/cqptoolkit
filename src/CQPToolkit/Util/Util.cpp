@@ -18,7 +18,7 @@
 
 namespace cqp
 {
-    /// Holds precalculated crc values
+    /// Holds pre-calculated crc values
     static unsigned long crc32_table[256] = {};
 
     /// populate the crc32_table

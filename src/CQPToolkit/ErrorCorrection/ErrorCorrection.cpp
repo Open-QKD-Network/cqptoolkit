@@ -38,7 +38,7 @@ namespace cqp
                 listener->OnCorrected(id, move(corrected));
             }
 
-            // exmaple stat publish
+            // example stat publish
             stats.TimeTaken.Update(high_resolution_clock::now() - timerStart);
             stats.Errors.Update(0.0L);
 
@@ -46,7 +46,7 @@ namespace cqp
 
         void ErrorCorrection::OnSifted(const SequenceNumber id, std::unique_ptr<JaggedDataBlock> siftedData)
         {
-            LOGTRACE("Sifted data recieved");
+            LOGTRACE("Sifted data received");
             // collect incoming data, notify listeners of new data
             // TODO
             //receivedDataCv.notify_one();

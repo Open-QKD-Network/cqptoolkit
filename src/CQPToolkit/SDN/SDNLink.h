@@ -45,11 +45,11 @@ namespace cqp
         bool Connected();
 
         /// Send the create link command to the server
-        /// @returns true if the command succeded
+        /// @returns true if the command succeeded
         bool CreateLink();
 
         /// Send the delete link command to the server
-        /// @returns true if the command succeded
+        /// @returns true if the command succeeded
         bool DeleteLink();
 
         /// Destructor

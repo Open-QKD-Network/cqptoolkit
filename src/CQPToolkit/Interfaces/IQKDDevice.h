@@ -40,11 +40,11 @@ namespace cqp
          */
         virtual URI GetAddress() const = 0;
 
-        /// Get the deescrition of the device which this instance manages
+        /// Get the description of the device which this instance manages
         /// @return The human readable name of the device
         virtual std::string GetDescription() const = 0;
 
-        /// Esatablish communtications with the device
+        /// Establish communications with the device
         /// @return true if the device was successfully detected
         virtual bool Initialise() = 0;
 
@@ -60,7 +60,7 @@ namespace cqp
          */
         virtual remote::Device GetDeviceDetails() = 0;
 
-        /// virtual distructor
+        /// virtual destructor
         virtual ~IQKDDevice() = default;
 
         /// URI parameter names

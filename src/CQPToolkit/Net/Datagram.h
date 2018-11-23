@@ -43,7 +43,7 @@ namespace cqp
              * @brief SendTo
              * Send data
              * @param data Data to send
-             * @param length legnth of data
+             * @param length length of data
              * @param destination address to send to
              * @return true on success
              */

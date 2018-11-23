@@ -54,7 +54,7 @@ namespace cqp
         {
             if (listener != nullptr)
             {
-                // Not overly efficient but the number of listeners is likly to be low and
+                // Not overly efficient but the number of listeners is likely to be low and
                 // Removal from the list is unusual
                 for (unsigned index = 0; index < listeners.size(); index++)
                 {
@@ -81,27 +81,27 @@ namespace cqp
     };
 
     /// @brief Event
-    /// Standard mechanisum for providing callbacks to known interfaces
+    /// Standard mechanism for providing callbacks to known interfaces
     /// @details Create an implementation of this template to provide an event
     /// Example usage:
     /// @code{.cpp}   Event<void (IDetectorCallback::*)(const DetectorId&), &IDetectorCallback::OnDetection> detectorEvents; @endcode
     /// @tparam Interface The class which implements the callback function
     /// @tparam Args The type(s) of data which will be passed to the callback
-    /// @tparam Func The Interface member function which is to be called when the event occours
+    /// @tparam Func The Interface member function which is to be called when the event occurs
     /// @see http://stackoverflow.com/questions/36549237/template-parameter-function-pointer-with-variadic-arguments
     /// @note The Args... parameter allows multiple parameters to be passed to the template.
     template<class FuncSig, FuncSig, size_t MaxListeners = std::numeric_limits<std::size_t>::max()>
     class Event;
 
     /// @brief Event
-    /// Standard mechanisum for providing callbacks to known interfaces
-    /// @warning For simplicity, the Interface parameter can be ommited.
+    /// Standard mechanism for providing callbacks to known interfaces
+    /// @warning For simplicity, the Interface parameter can be omitted.
     /// @details Create an implementation of this template to provide an event
     /// Example usage:
     /// @code{.cpp}   Event<Interface, void (IDetectorCallback::*)(const DetectorId&), &IDetectorCallback::OnDetection> detectorEvents; @endcode
     /// @tparam Interface The class which implements the callback function
     /// @tparam Args The type(s) of data which will be passed to the callback
-    /// @tparam Func The Interface member function which is to be called when the event occours
+    /// @tparam Func The Interface member function which is to be called when the event occurs
     /// @see http://stackoverflow.com/questions/36549237/template-parameter-function-pointer-with-variadic-arguments
     /// @note The Args... parameter allows multiple parameters to be passed to the template.
     template<class Interface, typename ...Args, void (Interface::*Func)(Args...), size_t MaxListeners>
@@ -126,7 +126,7 @@ namespace cqp
             {
                 // Allow the os to pass this to a thread pool if possible
                 // Bind the template parameter function pointer to the object cb, then call the result
-                // asyncronously
+                // asynchronously
 
 #if defined(PARALLEL_EMIT)
                 futures.push_back(async(launch::async, [args..., cb]()

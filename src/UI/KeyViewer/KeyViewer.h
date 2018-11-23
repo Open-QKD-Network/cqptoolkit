@@ -35,7 +35,7 @@ public:
     /// constructor
     /// @param parent Parent widget
     explicit KeyViewer(QWidget *parent = nullptr);
-    /// Distructor
+    /// Destructor
     ~KeyViewer() override;
 
 private:

@@ -218,8 +218,8 @@ namespace cqp
             // check the parameters make sense
             if(siteList.size() > 2 && *siteList.rbegin() == siteAddress)
             {
-                // Set the inital values for the first run of DoCombinedKey
-                KeyID leftKeyID = 0; // dont know this for the first run
+                // Set the initial values for the first run of DoCombinedKey
+                KeyID leftKeyID = 0; // don't know this for the first run
                 bool leftKeyIDKnown = false;
                 KeyID rightKeyID = 0;
 

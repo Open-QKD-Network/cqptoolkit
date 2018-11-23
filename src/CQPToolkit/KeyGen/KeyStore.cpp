@@ -59,7 +59,7 @@ namespace cqp
 
         grpc::Status KeyStore::GetExistingKey(const KeyID& identity, PSK& output)
         {
-            grpc::Status result = Status(StatusCode::NOT_FOUND, "No key found within timout.");
+            grpc::Status result = Status(StatusCode::NOT_FOUND, "No key found within timeout.");
 
             std::unique_lock<std::mutex> lock(allKeys_lock);
             bool waitResult = allKeys_cv.wait_for(lock, waitTimeout, [&]
@@ -180,7 +180,7 @@ namespace cqp
                 }
                 else
                 {
-                    // fail immediatly if there's no key available
+                    // fail immediately if there's no key available
                     result = ReserveNewKey(lock, keyID);
                 }
 
@@ -287,7 +287,7 @@ namespace cqp
                 Empty response;
                 request.set_originatingkeyid(identity);
 
-                // TODO: This could be wrapped in async and the call made asyncronus so that the
+                // TODO: This could be wrapped in async and the call made asynchronous so that the
                 // building can go on while this returns to the caller.
                 Status buildStatus = LogStatus(partnerFactory->BuildXorKey(&ctx, request, &response));
                 result = buildStatus.ok();
@@ -326,13 +326,13 @@ namespace cqp
             // try getting it from the backing store
             else if(backingStore && backingStore->RemoveKey(mySiteTo, identity, reservedKeys[identity]))
             {
-                // key was extracterd from the backing store
+                // key was extracted from the backing store
                 alternative = identity;
             }
             else // if(reservedIt == reservedKeys.end())
             {
                 // key hasn't arrived yet or it's already taken
-                // add a placeholder to make sure the key isn't used elseware
+                // add a placeholder to make sure the key isn't used elsewhere
                 reservedKeys[identity] = PSK();
                 // wait for key to arrive
 
@@ -393,7 +393,7 @@ namespace cqp
 
         void KeyStore::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
         {
-            LOGTRACE("Recieving " + std::to_string(keyData->size()) + " key(s)");
+            LOGTRACE("Receiving " + std::to_string(keyData->size()) + " key(s)");
             IBackingStore::Keys backingStoreKeys;
 
             /*lock scope*/

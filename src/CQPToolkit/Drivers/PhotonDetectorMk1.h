@@ -62,17 +62,17 @@ namespace cqp
         ///         even if errors occour.
         virtual bool Close();
 
-        /// Get the deescrition of the device which this instance manages
+        /// Get the description of the device which this instance manages
         /// @return The human readable name of the device
         virtual std::string GetDescription() const override;
 
-        /// Esatablish communtications with the device
+        /// Establish communications with the device
         /// @return true if the device was successfully detected
         bool Initialise() override;
         /// @}
 
         /// Begin the calibration steps for this device
-        /// @return true if calibration was sucessful
+        /// @return true if calibration was successful
         bool Calibrate();
 
         /// start collecting data
@@ -84,7 +84,7 @@ namespace cqp
     protected:
         /// Device used for the C&C of the device
         Serial* commandDev = nullptr;
-        /// Transfers the results using builk transfer
+        /// Transfers the results using bulk transfer
         UsbTagger* highSpeedDev = nullptr;
         /// OS Specific name for connecting to the port
         std::string serialPortName;

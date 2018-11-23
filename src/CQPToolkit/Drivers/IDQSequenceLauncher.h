@@ -32,7 +32,7 @@ namespace cqp
         /// @param[in] otherUnit Address of the paired device
         /// @param[in] lineAttenuation in db
         IDQSequenceLauncher(const DataBlock& initialPsk, const std::string& otherUnit, double lineAttenuation);
-        /// Distructor
+        /// Destructor
         virtual ~IDQSequenceLauncher();
 
         /// USB vendor ID for claivs 2 devices
@@ -72,7 +72,7 @@ namespace cqp
         /// @param args arguments to pass to the process
         void LaunchProc(const std::vector<std::string>& args);
         /// Generate a pre-shared key and store it in the required location for the IDQ driver
-        /// @param psk preshared key for the device pair
+        /// @param psk pre-shared key for the device pair
         /// @returns true on success
         bool CreateInitialPsk(const DataBlock& psk);
 

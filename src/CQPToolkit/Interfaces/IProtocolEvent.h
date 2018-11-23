@@ -27,7 +27,7 @@ namespace cqp
         virtual void CloseSession(
             const SessionID& session) = 0;
 
-        /// pure virtual distructor
+        /// pure virtual destructor
         virtual ~IProtocolEvent() = default;
 
         /// The frame id used at the start of each session

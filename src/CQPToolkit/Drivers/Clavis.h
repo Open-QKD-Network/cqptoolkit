@@ -24,7 +24,7 @@ namespace cqp
     public:
         /// The standard port which IDQSequence runs on
         static constexpr const uint16_t DefaultPort = 5323;
-        /// The highest device id the clavis will accecpt
+        /// The highest device id the clavis will accept
         static constexpr const uint8_t MAX_DEV_ID = 12;
         /// The largest number of bits the clavis will return for a key
         static constexpr const uint8_t MaxKeyLength = 32;
@@ -44,13 +44,13 @@ namespace cqp
         /// Request and emit a particular key from the device
         /// @param[out] newKey The secret key bytes
         /// @param[in] keyId The id which has been requested by the other side
-        /// @return true if the key was sucessfully obtained
+        /// @return true if the key was successfully obtained
         bool GetExistingKey(PSK& newKey, const Clavis::ClavisKeyID& keyId);
 
         /// Request and emit a new key
         /// @param[out] newKey The secret key bytes
         /// @param[out] keyId The identifier for the new key
-        /// @return true if the key was sucessfully obtained
+        /// @return true if the key was successfully obtained
         bool GetNewKey(PSK& newKey, Clavis::ClavisKeyID& keyId);
 
         /// Change the number of times a key is requested when there are no key available before giving up
@@ -67,7 +67,7 @@ namespace cqp
         {
             return deviceId;
         }
-        /// Returns the number of bytes within each key emited by GetExistingKey or GetNewKey
+        /// Returns the number of bytes within each key emitted by GetExistingKey or GetNewKey
         /// @returns bytes within each key
         uint8_t GetKeyLength() const
         {
@@ -141,7 +141,7 @@ namespace cqp
         /// If keyId = 0, a new key will be requested and keyId will be filled with the new id
         /// @param[out] newKey The secret key bytes
         /// @param[in,out] keyId The identifier for the key
-        /// @return true if the key was sucessfully obtained
+        /// @return true if the key was successfully obtained
         bool GetKey(PSK& newKey, ClavisKeyID& keyId);
 
 #pragma pack(push, 1)

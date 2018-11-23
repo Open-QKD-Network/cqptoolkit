@@ -51,7 +51,7 @@ namespace cqp
 
         /**
          * @brief DummyQKD
-         * Contruct using a device url
+         * Construct using a device url
          * @param address The url of the device
          * @param creds credentials to use when talking to peer
          * @param bytesPerKey
@@ -60,7 +60,7 @@ namespace cqp
 
         /**
          * @brief ~DummyQKD
-         * distructor
+         * destructor
          */
         ~DummyQKD() override {}
 

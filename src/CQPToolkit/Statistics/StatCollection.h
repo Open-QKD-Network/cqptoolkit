@@ -56,7 +56,7 @@ namespace cqp
                 }
             }
 
-            /// Distructor
+            /// Destructor
             virtual ~StatCollection() {}
         protected:
 

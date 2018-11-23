@@ -21,7 +21,7 @@ namespace cqp
 
         /**
          * @brief The Stream class
-         * TCP statefull socket
+         * TCP state-full socket
          */
         class CQPTOOLKIT_EXPORT Stream : public Socket
         {

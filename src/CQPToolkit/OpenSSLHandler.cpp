@@ -108,7 +108,7 @@ unsigned int OpenSSLHandler_ServerCallback(SSL*, const char* identity, unsigned 
     }
     else
     {
-        LOGERROR("Unknown indenty URL: " + identity);
+        LOGERROR("Unknown identity URL: " + identity);
     }
 
     LOGTRACE("Leaving");
@@ -119,7 +119,7 @@ unsigned int OpenSSLHandler_ServerCallback(SSL*, const char* identity, unsigned 
 int OpenSSLHandler_SessionCallback(SSL*, const EVP_MD* md, const unsigned char** id, size_t* idlen, SSL_SESSION** sess)
 {
     // md will be NULL on first invocation for a connection
-    // if called again, it will contain the digest for the chosen ciphersuite
+    // if called again, it will contain the digest for the chosen cipher suite
 
     // TODO
     return 0;

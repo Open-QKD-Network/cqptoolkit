@@ -530,7 +530,7 @@ namespace qkdtunnel
             }
             else
             {
-                // dont let it go below 0
+                // don't let it go below 0
                 ui->tunKeyMaxBytes->setValue(0);
             }
         }
@@ -544,7 +544,7 @@ namespace qkdtunnel
             }
             else
             {
-                // dont let it go above 1024
+                // don't let it go above 1024
                 ui->tunKeyMaxBytes->setValue(1024);
             }
         }

@@ -35,7 +35,7 @@ namespace cqp
          */
         virtual void OnKeyVerifyFailure(const KeyID& id, const PSK& first, const PSK& second) = 0;
 
-        /// Virtual distructor
+        /// Virtual destructor
         virtual ~IKeyVerificationFailure() = default;
     };
 
@@ -63,7 +63,7 @@ namespace cqp
 
             /**
              * @brief OnKeyGeneration
-             * Stores the incomming key until another instance is recieved, when they will be compared, if they do not match
+             * Stores the incoming key until another instance is received, when they will be compared, if they do not match
              * OnKeyVerifyFailure is called on all listeners
              * @param keyData
              */
@@ -74,7 +74,7 @@ namespace cqp
             /**
              * @brief Receiver
              * Constructor
-             * @param kv parent class which holds the recieved keys
+             * @param kv parent class which holds the received keys
              * @param side Which of the pair of keys is this receiving
              */
             Receiver(KeyVerifier* kv, bool side): parent(kv), isLeft(side) {}

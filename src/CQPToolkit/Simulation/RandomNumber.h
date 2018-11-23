@@ -27,7 +27,7 @@ namespace cqp
 {
     /// Simple source of random numbers for simulation.
     /// @todo add functions for getting different amounts of random numbers as needed
-    /// @todo Provide a means of controling the method/ditrobution of numbers for simulation.
+    /// @todo Provide a means of controlling the method/distribution of numbers for simulation.
     class CQPTOOLKIT_EXPORT RandomNumber : public virtual IRandom
     {
 

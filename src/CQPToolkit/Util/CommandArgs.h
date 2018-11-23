@@ -22,7 +22,7 @@ namespace cqp
 
     /**
      * @brief The CommandArgs class
-     * Provides convienient access to an applicatons command line arguments
+     * Provides convenient access to an applications command line arguments
      */
     class CQPTOOLKIT_EXPORT CommandArgs
     {
@@ -34,7 +34,7 @@ namespace cqp
         class CQPTOOLKIT_EXPORT Option
         {
         public:
-            /// Callback function used to process incomming values
+            /// Callback function used to process incoming values
             /// used with the Callback method
             using Func = std::function<void(const Option& option)>;
 
@@ -112,7 +112,7 @@ namespace cqp
             /// Any value which has been parsed
             /// This is only parsed if HasArgument or Bind has been called
             std::string value;
-            /// If speciifed, a parsed value will be stored in the application parameter dictionary
+            /// If specified, a parsed value will be stored in the application parameter dictionary
             /// Implies HasArgument
             std::string boundTo;
             /// Should the next value be interpreted as a value for this option
@@ -144,7 +144,7 @@ namespace cqp
          * @brief Parse
          * Process the list of strings, assigning values to the defined options
          * @param args
-         * @return true on successfull parsing
+         * @return true on successful parsing
          */
         bool Parse(const std::vector<std::string>& args);
         /**
@@ -164,8 +164,8 @@ namespace cqp
 
         /**
          * @brief PropertiesToString
-         * Only relevent for options which have been bound with Bind()
-         * @return All the values collected as properties formated as "key = value"
+         * Only relevant for options which have been bound with Bind()
+         * @return All the values collected as properties formatted as "key = value"
          */
         std::string PropertiesToString() const;
         /**
@@ -255,7 +255,7 @@ namespace cqp
         /// properties set from options which have been bound with Bind()
         std::unordered_map<std::string, std::string> properties;
         /// The name of the command from the system
-        /// this does not nessacarilly equal the compiled application name
+        /// this does not necessarily equal the compiled application name
         std::string cmdName;
     };
 

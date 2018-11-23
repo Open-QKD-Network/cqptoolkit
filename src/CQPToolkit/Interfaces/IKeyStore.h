@@ -18,7 +18,7 @@
 namespace cqp
 {
 
-    /// @brief Stores and manages pre shared key
+    /// @brief Stores and manages pre-shared key
     /// Key stores are unique to a pair of endpoints.
     class CQPTOOLKIT_EXPORT IKeyStore
     {
@@ -65,7 +65,7 @@ namespace cqp
          */
         virtual bool SetPath(const std::vector<std::string>& path) = 0;
 
-        /// pure virtual distructor
+        /// pure virtual destructor
         virtual ~IKeyStore() = default;
     };
 

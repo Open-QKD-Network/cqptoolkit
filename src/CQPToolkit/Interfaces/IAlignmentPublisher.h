@@ -19,7 +19,7 @@ namespace cqp
     /**
      * @brief The IAlignmentCallback class
      * @details
-     * Interface for recieving the results of alignment
+     * Interface for receiving the results of alignment
      */
     class IAlignmentCallback
     {
@@ -33,7 +33,7 @@ namespace cqp
         virtual void OnAligned(SequenceNumber seq,
                                std::unique_ptr<QubitList> rawQubits) = 0;
 
-        /// Virtual distructor
+        /// Virtual destructor
         virtual ~IAlignmentCallback() = default;
     };
 

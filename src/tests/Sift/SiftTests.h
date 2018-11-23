@@ -23,7 +23,7 @@ namespace cqp
 
         /**
          * @brief The MockSiftCallback class
-         * Mock method for recieving output from a publisher
+         * Mock method for receiving output from a publisher
          */
         class MockSiftCallback: public virtual ISiftedCallback
         {
@@ -59,9 +59,9 @@ namespace cqp
             virtual ~SiftTests() {}
 
         protected:
-            /// dummy callback for oreacting to test data
+            /// dummy callback for reacting to test data
             MockSiftCallback aliceCallback;
-            /// dummy callback for oreacting to test data
+            /// dummy callback for reacting to test data
             MockSiftCallback bobCallback;
 
 

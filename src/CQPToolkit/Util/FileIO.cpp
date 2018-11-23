@@ -273,7 +273,7 @@ namespace cqp
             // could return pointers to statically allocated memory which
             // may be overwritten by subsequent calls. Alternatively,
             // they may return a pointer to some part of path!
-            // so dont free anything
+            // so don't free anything
 
             result = ::dirname(const_cast<char*>(path.c_str()));
 #elif defined(WIN32)
@@ -332,7 +332,7 @@ namespace cqp
             // could return pointers to statically allocated memory which
             // may be overwritten by subsequent calls. Alternatively,
             // they may return a pointer to some part of path!
-            // so dont free anything
+            // so don't free anything
 
             result = ::basename(const_cast<char*>(path.c_str()));
 #elif defined(WIN32)

@@ -62,7 +62,7 @@ service IIDQWrapper
     * When key is available it will be written to the stream
     * One side will request new keys, the other will wait for UseKeyID
     * to be called, at which point the key will be sent over the stream.
-    * Canceling the call will terminate the program.
+    * Cancelling the call will terminate the program.
     * @param request Launch options
     * @param writer A stream for the caller to read key from
     * @return status
