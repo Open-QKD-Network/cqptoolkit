@@ -248,16 +248,20 @@ namespace cqp
             int listenPort = 0;
             builder.AddListeningPort("localhost:0", grpc::InsecureServerCredentials(), &listenPort);
             builder.RegisterService(&txHandler);
+            builder.SetMaxMessageSize(150*1024*1024);
 
             auto server= builder.BuildAndStart();
 
-            auto clientChannel = grpc::CreateChannel("localhost:" + std::to_string(listenPort), grpc::InsecureChannelCredentials());
+            grpc::ChannelArguments clientArgs;
+            clientArgs.SetMaxReceiveMessageSize(-1);
+            auto clientChannel = grpc::CreateCustomChannel("localhost:" + std::to_string(listenPort), grpc::InsecureChannelCredentials(), clientArgs);
 
             MockAlignmentCallback txCallback;
             MockAlignmentCallback rxCallback;
             detection.Attach(&rxCallback);
             txHandler.Attach(&txCallback);
             detection.SetSystemParameters(params);
+            detection.GetGatingHandler().ResetDrift(align::DetectionGating::PicoSecondOffset(34900));
             detection.Connect(clientChannel);
 
 

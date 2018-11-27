@@ -61,9 +61,9 @@ namespace align {
                    while(response->mutable_qubits()->size() < markersToSend)
                    {
                        auto index = rng.RandULong() % emissions->emissions.size();
-                       (*response->mutable_qubits())[index] = remote::BB84::Type(emissions->emissions[index]);
+                       response->mutable_qubits()->insert({index, remote::BB84::Type(emissions->emissions[index])});
                    }
-                   LOGDEBUG("Sent " + std::to_string(markersToSend) + " markers");
+                   LOGDEBUG("Sent " + std::to_string(markersToSend) + " markers out of " + std::to_string(emissions->emissions.size()) + " emissions.");
                } else {
                    result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Not prepared correctly");
                }

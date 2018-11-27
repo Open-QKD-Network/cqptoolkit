@@ -9,7 +9,7 @@ namespace cqp
     namespace fs
     {
 
-        bool DataFile::ReadPackedQubits(const std::string& inFileName, QubitList& output)
+        bool DataFile::ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues)
         {
             bool result = true;
             std::ifstream inFile(inFileName, std::ios::in | std::ios::binary);
@@ -18,10 +18,15 @@ namespace cqp
                 uint64_t index = 0;
                 // qubits packed 4/byte
                 inFile.seekg(0, std::ios::end);
-                output.resize(static_cast<size_t>(inFile.tellg() * 4));
+                auto qubitsToGet = static_cast<size_t>(inFile.tellg() * 4);
+                if(maxValues != 0)
+                {
+                    qubitsToGet = std::min(maxValues, qubitsToGet);
+                }
                 inFile.seekg(0, std::ios::beg);
+                output.resize(qubitsToGet);
 
-                while(!inFile.eof())
+                while(!inFile.eof() && output.size() < qubitsToGet)
                 {
                     char packedQubits;
                     inFile.read(&packedQubits, sizeof (packedQubits));
@@ -32,6 +37,7 @@ namespace cqp
                     output[index++] = ((packedQubits & 0b11000000) >> 6);
                 }
                 inFile.close();
+                LOGDEBUG("Loaded " + std::to_string(output.size()) + " Qubits.");
                 result = true;
             }
             else
@@ -79,6 +85,8 @@ namespace cqp
                     outFile.write(reinterpret_cast<char*>(&buffer), sizeof (buffer));
                 }
                 outFile.close();
+
+                LOGDEBUG("Wrote " + std::to_string(source.size()) + " Qubits.");
                 result = true;
 
             }
@@ -93,7 +101,7 @@ namespace cqp
         const std::vector<Qubit> DataFile::DefautlCahnnelMappings = { 0, 1, 2, 3 };
 
         bool DataFile::ReadNOXDetections(const std::string& inFileName, DetectionReportList& output,
-                                         const  std::vector<Qubit>& channelMappings, bool waitForConfig)
+                                         const  std::vector<Qubit>& channelMappings, bool waitForConfig, uint64_t maxCourseTime)
         {
 
             bool result = true;
@@ -114,6 +122,7 @@ namespace cqp
                     inFile.seekg(0, std::ios::beg);
                     output.reserve(numRecords);
                     bool gotConfig = !waitForConfig;
+                    bool keepReading = true;
 
                     do
                     {
@@ -135,23 +144,28 @@ namespace cqp
                                                                  static_cast<uint64_t>(buffer[5]) >>4
                                                              );
 
-                                noxReport.detection.fine = static_cast<uint16_t>((buffer[6] & 0x0F) << 8) | buffer[7];
-
-                                noxReport.detection.channel = (buffer[6] >> 4) -1;
-
-                                if(noxReport.detection.channel < channelMappings.size())
+                                if(maxCourseTime != 0 && noxReport.detection.coarse >= maxCourseTime)
                                 {
-                                    DetectionReport report;
-                                    report.value = channelMappings[noxReport.detection.channel];
-                                    report.time = noxReport.GetTime();
-                                    output.push_back(report);
-                                }
-                                else
-                                {
-                                    LOGWARN("Channel " + std::to_string(noxReport.detection.channel) + " not mapped.");
-                                    droppedDetections++;
-                                }
+                                    keepReading = false;
+                                } else {
+                                    noxReport.detection.fine = static_cast<uint16_t>((buffer[6] & 0x0F) << 8) | buffer[7];
 
+                                    noxReport.detection.channel = (buffer[6] >> 4) -1;
+
+
+                                    if(noxReport.detection.channel < channelMappings.size())
+                                    {
+                                        DetectionReport report;
+                                        report.value = channelMappings[noxReport.detection.channel];
+                                        report.time = noxReport.GetTime();
+                                        output.push_back(report);
+                                    }
+                                    else
+                                    {
+                                        LOGWARN("Channel " + std::to_string(noxReport.detection.channel) + " not mapped.");
+                                        droppedDetections++;
+                                    }
+                                }
                             }
                             else if(noxReport.messageType == NoxReport::MessageType::Config)
                             {
@@ -161,9 +175,9 @@ namespace cqp
                             result = true;
                         }
                     }
-                    while(!inFile.eof());
+                    while(!inFile.eof() && keepReading);
                     inFile.close();
-                    LOGINFO("Dropped " + std::to_string(droppedDetections) + " detections");
+                    LOGINFO("Read " + std::to_string(output.size()) + " detections. Dropped " + std::to_string(droppedDetections) + " detections");
                 }
             }
             else

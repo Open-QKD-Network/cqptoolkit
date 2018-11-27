@@ -22,9 +22,10 @@ namespace cqp {
              * 2 bits per qubit, 4 qubits per byte.
              * @param inFileName
              * @param output
+             * @param maxValues Maximum number of values to get. 0 = no limit
              * @return True on success
              */
-            static bool ReadPackedQubits(const std::string& inFileName, QubitList& output);
+            static bool ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues = 0);
 
             /**
              * @brief WriteQubits
@@ -51,10 +52,12 @@ namespace cqp {
              * | 52 - 63    | 12        | Fine count            |
              * @param inFileName
              * @param output
+             * @param waitForConfig If true, drop records before the first config record
+             * @param maxCourseTime If none-zero, stop reading records when the course time reaches this value.
              * @return true on success
              */
             static bool ReadNOXDetections(const std::string& inFileName, DetectionReportList& output,
-                                          const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings, bool waitForConfig = true);
+                                          const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings, bool waitForConfig = true, uint64_t maxCourseTime = 0);
 
             /**
              * @brief ReadDetectionReportList
@@ -90,7 +93,7 @@ namespace cqp {
                     Detection = 0x24
                 };
                 /// The ratio of clock ticks to seconds
-                using CourseTime = std::chrono::duration<uint64_t, std::ratio<1, 225000000>>;
+                using CourseTime = std::chrono::duration<uint64_t, std::ratio<1, 130000000>>;
                 /// The number of ticks per clock cycle
                 static constexpr const auto fineRatio = CourseTime::period::den * 4096;
                 /// The ratio of fine taps to seconds
