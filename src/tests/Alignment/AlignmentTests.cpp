@@ -261,7 +261,6 @@ namespace cqp
             detection.Attach(&rxCallback);
             txHandler.Attach(&txCallback);
             detection.SetSystemParameters(params);
-            detection.GetGatingHandler().ResetDrift(align::DetectionGating::PicoSecondOffset(34900));
             detection.Connect(clientChannel);
 
 
