@@ -15,7 +15,7 @@
 #include <string>                              // for string
 #include "CQPToolkit/Interfaces/IQKDDevice.h"  // for IQKDDevice
 #include "QKDInterfaces/Site.pb.h"             // for Device
-#include "CQPToolkit/Util/Platform.h"                     // for CONSTSTRING
+                     // for CONSTSTRING
 #include "CQPToolkit/Util/URI.h"                          // for URI
 namespace grpc
 {

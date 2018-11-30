@@ -11,7 +11,7 @@
 */
 #include "SDNLink.h"
 
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include <google/protobuf/util/json_util.h>
 #include <QKDInterfaces/Polatis.pb.h>
 

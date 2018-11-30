@@ -15,7 +15,7 @@
 #include "CQPToolkit/Tunnels/TCPServerTunnel.h"
 #include "CQPToolkit/Tunnels/TCPTunnel.h"
 #include "CQPToolkit/Tunnels/UDPTunnel.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/KeyGen/KeyStoreFactory.h"
 #include "CQPToolkit/KeyGen/KeyStore.h"
 #include "CQPToolkit/Drivers/IDQSequenceLauncher.h"
@@ -52,6 +52,7 @@ using cqp::remote::tunnels::TunnelEndDetails;
 
 #include <grpc++/server_builder.h>
 #include "CQPToolkit/Util/Units.h"
+#include "CQPAlgorithms/Util/Strings.h"
 
 #include <thread>
 using grpc::Status;

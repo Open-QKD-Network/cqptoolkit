@@ -16,7 +16,7 @@
 #include "CQPToolkit/Session/DummyBobController.h"    // for DummyBobController
 #include "Interfaces/IQKDDevice.h"                    // for IQKDDevice, IQK...
 #include "Session/SessionController.h"                // for SessionController
-#include "Util/Logger.h"                              // for LOGERROR
+#include "CQPAlgorithms/Logging/Logger.h"                              // for LOGERROR
 
 namespace cqp
 {

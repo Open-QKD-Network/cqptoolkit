@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/Platform.h"
+
 #include <memory>
 #include "CQPToolkit/Net/HTTPClientSession.h"
 #include "CQPToolkit/Util/URI.h"

@@ -11,7 +11,7 @@
 */
 #include "Datagram.h"
 #include "CQPToolkit/Util/URI.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #if defined (__unix__)
     #include <unistd.h>
     #include <sys/types.h>

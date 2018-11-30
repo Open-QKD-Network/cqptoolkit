@@ -13,7 +13,7 @@
 #include "CQPToolkit/Util/URI.h"
 #include "CQPToolkit/KeyGen/HSMStore.h"
 #include "CQPToolkit/KeyGen/YubiHSM.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/Util.h"
 
 static std::vector<std::string> searchModules = { "libsofthsm2.so" };

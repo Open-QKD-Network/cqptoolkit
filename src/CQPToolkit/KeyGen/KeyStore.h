@@ -11,7 +11,7 @@
 */
 #pragma once
 
-#include "CQPToolkit/Util/Platform.h"
+
 #include "CQPToolkit/Interfaces/IKeyStore.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "QKDInterfaces/IKeyFactory.grpc.pb.h"

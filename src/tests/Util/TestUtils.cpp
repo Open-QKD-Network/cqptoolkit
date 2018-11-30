@@ -11,16 +11,16 @@
 */
 #include "TestUtils.h"
 #include "CQPToolkit/Util/Util.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 #include <chrono>
 #include "CQPToolkit/Util/URI.h"
-#include "CQPToolkit/Util/UUID.h"
-#include "CQPToolkit/Util/Process.h"
-#include "CQPToolkit/Util/FileIO.h"
-#include "CQPToolkit/Util/Application.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
+#include "CQPAlgorithms/Util/Process.h"
+#include "CQPAlgorithms/Util/FileIO.h"
+#include "CQPAlgorithms/Util/Application.h"
 #include "CQPToolkit/Net/Socket.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
-#include "CQPToolkit/Util/FileIO.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "CQPAlgorithms/Util/FileIO.h"
 
 namespace cqp
 {

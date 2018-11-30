@@ -11,7 +11,7 @@
 */
 #pragma once
 #include <iostream>
-#include "CQPToolkit/Util/Platform.h"
+
 #include <chrono>
 #include <condition_variable>
 #include <cryptopp/filters.h>

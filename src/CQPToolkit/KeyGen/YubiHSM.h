@@ -13,6 +13,7 @@
 #include <string>
 #include <CQPToolkit/KeyGen/HSMStore.h>
 #include <memory>
+#include "CQPAlgorithms/Util/Strings.h"
 
 namespace cqp
 {

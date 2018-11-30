@@ -17,7 +17,7 @@
 #include <grpcpp/server.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/KeyGen/FileStore.h"
-#include "CQPToolkit/Util/FileIO.h"
+#include "CQPAlgorithms/Util/FileIO.h"
 
 namespace cqp
 {

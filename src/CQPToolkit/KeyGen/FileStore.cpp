@@ -15,9 +15,9 @@
 #include <limits>                      // for numeric_limits
 #include <utility>                     // for pair
 #include "CQPToolkit/Util/Util.h"      // for FNV1aHash
-#include "Datatypes/Keys.h"            // for PSK, KeyID
+#include "CQPAlgorithms/Datatypes/Keys.h"            // for PSK, KeyID
 #include "Interfaces/IBackingStore.h"  // for IBackingStore::Keys
-#include "Util/Logger.h"               // for LOGERROR
+#include "CQPAlgorithms/Logging/Logger.h"               // for LOGERROR
 
 namespace cqp
 {

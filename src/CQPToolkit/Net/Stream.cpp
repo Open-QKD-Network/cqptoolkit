@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Stream.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #if defined (__unix__)
     #include <sys/types.h>
     #include <sys/socket.h>

@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "ControllerItem.h"
-#include "CQPToolkit/Util/UUID.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
 #include "CQPToolkit/Util/URI.h"
 #include <QUrl>
 #include "QKDInterfaces/Tunnels.pb.h"

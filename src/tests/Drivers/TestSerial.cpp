@@ -11,7 +11,7 @@
 */
 #include "TestSerial.h"
 #include "CQPToolkit/Drivers/Serial.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include <string>
 
 namespace cqp

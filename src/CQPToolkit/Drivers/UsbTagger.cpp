@@ -13,7 +13,7 @@
 #include <libusb-1.0/libusb.h>       // for libusb_exit, libusb_free_device_...
 #include <sys/types.h>               // for ssize_t
 #include <string>                    // for string, operator+, to_string
-#include "CQPToolkit/Util/Logger.h"  // for LOGDEBUG, LOGERROR, LOGTRACE
+#include "CQPAlgorithms/Logging/Logger.h"  // for LOGDEBUG, LOGERROR, LOGTRACE
 #include "Drivers/Usb.h"             // for Usb
 #include "QKDInterfaces/Site.pb.h"   // for Device, Side_Type, Side_Type_Bob
 

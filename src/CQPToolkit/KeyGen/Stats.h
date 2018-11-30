@@ -10,8 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Statistics/Stat.h"
-#include "CQPToolkit/Statistics/StatCollection.h"
+#include "CQPAlgorithms/Statistics/Stat.h"
+#include "CQPAlgorithms/Statistics/StatCollection.h"
 
 namespace cqp
 {

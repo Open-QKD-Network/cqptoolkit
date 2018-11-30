@@ -9,7 +9,7 @@
 * @date 18/4/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPToolkit/Util/RingBuffer.hpp"
+#include "CQPAlgorithms/Datatypes/RingBuffer.hpp"
 #include "gtest/gtest.h"
 
 namespace cqp

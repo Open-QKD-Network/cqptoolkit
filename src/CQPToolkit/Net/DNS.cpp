@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "DNS.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Net/Socket.h"
 #if defined(__unix__)
     #include <unistd.h>

@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "RawSocket.h"
-#include "Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include <cstring>
 #include "CQPToolkit/Net/Device.h"
 #if defined(__linux)

@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "KeyPrinter.h"
-#include "Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include <iomanip>
 
 namespace cqp

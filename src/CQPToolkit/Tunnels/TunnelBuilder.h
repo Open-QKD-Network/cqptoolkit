@@ -11,9 +11,8 @@
 */
 #pragma once
 #include "CQPToolkit/cqptoolkit_export.h"
-#include "CQPToolkit/Util/Platform.h"
+
 #include "CQPToolkit/Util/URI.h"
-#include "CQPToolkit/Datatypes/Tunnels.h"
 #include "QKDInterfaces/ITransfer.grpc.pb.h"
 #include "QKDInterfaces/Tunnels.pb.h"
 #include "CQPToolkit/Util/Units.h"
@@ -22,6 +21,7 @@
 #include <cryptopp/filters.h>
 #include <thread>
 #include <grpc++/security/server_credentials.h>
+#include "CQPAlgorithms/Util/Strings.h"
 
 namespace grpc
 {
@@ -67,7 +67,18 @@ namespace cqp
             NAMEDSTRING(RDRAND);
             NAMEDSTRING(SWRNG);
         }
-
+        /// string constants for devices types
+        namespace DeviceTypes
+        {
+            NAMEDSTRING(eth);
+            NAMEDSTRING(tun);   // raw IP packets
+            NAMEDSTRING(tap);   // raw ethernet packets
+            NAMEDSTRING(tcp);
+            NAMEDSTRING(tcpsrv);
+            NAMEDSTRING(udp);
+            NAMEDSTRING(clavis2);
+            NAMEDSTRING(crypto);
+        }
         /**
          * @brief The TunnelBuilder class
          * Constructs the sockets needed to transfer the data

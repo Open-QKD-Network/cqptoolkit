@@ -15,11 +15,11 @@
 #include <map>                         // for map, _Rb_tree_iterator, map<>:...
 #include <memory>                      // for allocator, __shared_ptr_access
 #include <utility>                     // for pair, move
-#include "CQPToolkit/Util/FileIO.h"    // for ReadEntireFile
+#include "CQPAlgorithms/Util/FileIO.h"    // for ReadEntireFile
 #include "CQPToolkit/Util/Util.h"      // for StrEqualI, ToDictionary, ToHex...
 #include "Interfaces/IBackingStore.h"  // for IBackingStore::Keys
 #include "KeyGen/PKCS11Wrapper.h"      // for AttributeList, FromPKCSString
-#include "Util/Logger.h"               // for LOGERROR, LOGINFO, LOGWARN
+#include "CQPAlgorithms/Logging/Logger.h"               // for LOGERROR, LOGINFO, LOGWARN
 #include "Util/URI.h"                  // for URI
 #include "CQPToolkit/KeyGen/PKCS11Wrapper.h"      // for CKU_USER, CK_USER_TYPE
 

@@ -14,7 +14,7 @@
 #include "QKDInterfaces/INetworkManager.grpc.pb.h"
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
 #include "QKDInterfaces/ISiteDetails.grpc.pb.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 #include <grpc++/server.h>
 #include <unordered_map>
 

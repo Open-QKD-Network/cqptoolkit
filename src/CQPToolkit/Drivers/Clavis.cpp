@@ -10,11 +10,11 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Clavis.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include <iomanip>
 #include "CQPToolkit/Util/Util.h"
 #include "CQPToolkit/Net/Socket.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 #include <thread>
 
 namespace cqp

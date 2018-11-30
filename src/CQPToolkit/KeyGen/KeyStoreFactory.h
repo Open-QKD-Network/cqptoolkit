@@ -16,7 +16,7 @@
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include <unordered_map>
 #include <grpcpp/security/credentials.h>
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 #include "CQPToolkit/Net/Socket.h"
 #include "CQPToolkit/KeyGen/FileStore.h"
 

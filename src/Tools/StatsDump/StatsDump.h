@@ -10,12 +10,14 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/Application.h"
+#include "CQPAlgorithms/Util/Application.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Net/ServiceDiscovery.h"
-#include "CQPToolkit/Util/CommandArgs.h"
+#include "CQPAlgorithms/Util/CommandArgs.h"
 #include <grpcpp/channel.h>
 #include "QKDInterfaces/IReporting.grpc.pb.h"
 #include "QKDInterfaces/Site.pb.h"
+#include "CQPToolkit/Interfaces/IService.h"
 
 /**
  * @brief The SiteAgentRunner class

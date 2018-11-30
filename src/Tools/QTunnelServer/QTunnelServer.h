@@ -10,8 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/Application.h"
-#include "CQPToolkit/Util/CommandArgs.h"
+#include "CQPAlgorithms/Util/Application.h"
+#include "CQPAlgorithms/Util/CommandArgs.h"
 #include "CQPToolkit/Net/ServiceDiscovery.h"
 #include "CQPToolkit/Tunnels/Controller.h"
 #include "CQPToolkit/Statistics/ReportServer.h"

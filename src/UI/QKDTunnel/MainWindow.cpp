@@ -12,7 +12,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "DeviceDialog.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include <QInputDialog>
 #include <QAbstractItemDelegate>
 #include <QStyledItemDelegate>
@@ -30,6 +30,7 @@
 #include "QKDInterfaces/IKeyFactory.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "QKDInterfaces/ITunnelServer.grpc.pb.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
 
 /// cast to int
 #define SCtoInt(x) static_cast<int>(x)

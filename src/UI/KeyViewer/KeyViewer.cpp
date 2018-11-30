@@ -16,7 +16,7 @@
 #include <QMessageBox>
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include <openssl/pem.h>
 #include <openssl/pem2.h>

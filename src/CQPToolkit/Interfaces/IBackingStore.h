@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 
 namespace cqp
 {

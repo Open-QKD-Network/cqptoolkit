@@ -8,8 +8,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Datatypes/DetectionReport.h"
-#include "CQPToolkit/Util/Platform.h"
+#include "CQPAlgorithms/Datatypes/DetectionReport.h"
+
 
 namespace cqp
 {

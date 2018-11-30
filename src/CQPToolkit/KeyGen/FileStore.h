@@ -14,7 +14,7 @@
 #include <bits/stdint-uintn.h>                    // for uint64_t
 #include <mutex>                                  // for mutex
 #include <string>                                 // for string
-#include "CQPToolkit/Datatypes/Keys.h"            // for KeyID
+#include "CQPAlgorithms/Datatypes/Keys.h"            // for KeyID
 #include "CQPToolkit/Interfaces/IBackingStore.h"  // for IBackingStore::Keys
 
 struct sqlite3;

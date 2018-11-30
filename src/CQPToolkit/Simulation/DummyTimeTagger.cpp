@@ -12,8 +12,8 @@
 #include "DummyTimeTagger.h"
 #include <chrono>
 #include <mutex>
-#include "CQPToolkit/Interfaces/IRandom.h"
-#include "CQPToolkit/Statistics/Stat.h"
+#include "CQPAlgorithms/Random/IRandom.h"
+#include "CQPAlgorithms/Statistics/Stat.h"
 
 namespace cqp
 {

@@ -10,13 +10,14 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/Application.h"
-#include "CQPToolkit/Util/CommandArgs.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Util/Application.h"
+#include "CQPAlgorithms/Util/CommandArgs.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Util/KeyPrinter.h"
 #include <mutex>
 #include <condition_variable>
-
+#include "QKDInterfaces/Site.pb.h"
+#include "CQPAlgorithms/Util/Strings.h"
 
 /// This application provides both Alice and Bob applications for driving the IDQuantique Clavis 2 QKD devices
 /// via the IDQWrapper interface. Once established, the devices will be

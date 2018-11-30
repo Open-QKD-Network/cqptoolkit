@@ -12,11 +12,10 @@
 */
 
 #include <iostream>
-#include "CQPToolkit/Util/ConsoleLogger.h"
-#include "CQPToolkit/Util/ProtectedVariable.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/KeyVerifier.h"
-#include "CQPToolkit/Util/Application.h"
-#include "CQPToolkit/Util/Process.h"
+#include "CQPAlgorithms/Util/Application.h"
+#include "CQPAlgorithms/Util/Process.h"
 
 #include <fstream>
 #if defined(__unix__)
@@ -70,7 +69,9 @@ private:
     KeyVerifier keyVerifier;
 
     /// condition to wait for
-    ProtectedVariable<unsigned long> keyReceived;
+    unsigned long keyReceived;
+    std::condition_variable keyCv;
+    std::mutex keyMut;
 
     /// should the help message be displayed
     bool _helpRequested = false;
@@ -89,7 +90,8 @@ ExampleConsoleApp::ExampleConsoleApp()
 
 void ExampleConsoleApp::OnKeyGeneration(std::unique_ptr<KeyList>)
 {
-    keyReceived.notify_one(keyReceived.GetValue() + 1);
+    keyReceived++;
+    keyCv.notify_one();
 }
 
 void ExampleConsoleApp::HandleOption(const CommandArgs::Option& option)

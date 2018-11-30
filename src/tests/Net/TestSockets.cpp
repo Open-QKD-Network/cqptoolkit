@@ -19,7 +19,7 @@
 #include <condition_variable>
 #include "CQPToolkit/Util/URI.h"
 #include "CQPToolkit/Tunnels/RawSocket.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 
 namespace cqp
 {

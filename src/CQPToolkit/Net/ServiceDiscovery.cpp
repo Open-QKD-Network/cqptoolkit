@@ -10,12 +10,12 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "ServiceDiscovery.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "Net/Interface.h"
 #include "CQPToolkit/Interfaces/IService.h"
-#include "CQPToolkit/Util/UUID.h"
-#include "CQPToolkit/Util/WorkerThread.h"
-#include "CQPToolkit/Util/Util.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
+#include "CQPAlgorithms/Util/WorkerThread.h"
+#include "CQPAlgorithms/Util/Strings.h"
 
 #if defined(AVAHI_FOUND)
     #include <avahi-common/alternative.h>

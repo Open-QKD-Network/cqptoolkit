@@ -18,7 +18,7 @@
 #include <vector>                                 // for vector
 #include "CQPToolkit/Interfaces/IBackingStore.h"  // for IBackingStore::Keys
 #include "CQPToolkit/Util/URI.h"                  // for URI
-#include "CQPToolkit/Datatypes/Keys.h"                       // for KeyID, PSK (ptr only)
+#include "CQPAlgorithms/Datatypes/Keys.h"                       // for KeyID, PSK (ptr only)
 #include <chrono>
 #include <set>
 

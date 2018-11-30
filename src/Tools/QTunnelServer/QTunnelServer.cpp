@@ -9,14 +9,16 @@
 * @date 1/5/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "QTunnelServer.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Net/DNS.h"
 #include <thread>
-#include "CQPToolkit/Util/FileIO.h"
+#include "CQPAlgorithms/Util/FileIO.h"
 #include <google/protobuf/util/json_util.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
-#include "QTunnelServer.h"
+#include "CQPAlgorithms/Util/Strings.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
 
 using namespace cqp;
 

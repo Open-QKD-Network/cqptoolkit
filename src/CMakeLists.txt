@@ -19,6 +19,7 @@ if(TARGET gRPC::grpc)
 endif(TARGET gRPC::grpc)
 
 # Add the library build
+add_subdirectory(CQPAlgorithms)
 add_subdirectory(CQPToolkit)
 add_subdirectory(CQPUI)
 # Pull the value from the subfolder

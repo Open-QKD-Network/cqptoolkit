@@ -13,6 +13,7 @@
 #include "CQPToolkit/Alignment/Stats.h"                   // for Statistics
 #include "CQPToolkit/Interfaces/IAlignmentPublisher.h"    // for IAlignmentC...
 #include "CQPToolkit/Util/Provider.h"                        // for Event, Even...
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace google
 {

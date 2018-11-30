@@ -14,6 +14,7 @@
 #include "CQPToolkit/Tunnels/DeviceIO.h"
 #include "CQPToolkit/Util/URI.h"
 #include "CQPToolkit/Net/Socket.h"
+#include "CQPAlgorithms/Util/Strings.h"
 
 namespace cqp
 {

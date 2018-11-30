@@ -29,6 +29,9 @@ EmbedResources("Alignment/Histogram.cl")
 
 # Generate a standard setup for a library
 CQP_LIBRARY_PROJECT()
+add_dependencies(${PROJECT_NAME} CQPAlgorithms)
+add_dependencies(${PROJECT_NAME}_Shared CQPAlgorithms_Shared)
+add_dependencies(${PROJECT_NAME}_Static CQPAlgorithms_Static)
 add_dependencies(${PROJECT_NAME} QKDInterfaces)
 add_dependencies(${PROJECT_NAME}_Static QKDInterfaces_Static)
 add_dependencies(${PROJECT_NAME}_Shared QKDInterfaces_Shared)
@@ -38,6 +41,7 @@ add_dependencies(${PROJECT_NAME}_Shared QKDInterfaces_Shared)
 if(TARGET ${PROJECT_NAME}_Shared)
 
     target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
+        CQPAlgorithms_Shared
         QKDInterfaces_Shared
     )
 

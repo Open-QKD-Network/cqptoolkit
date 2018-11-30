@@ -12,7 +12,7 @@
 #pragma once
 
 #include "CQPToolkit/cqptoolkit_export.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 #include <grpc++/grpc++.h>
 
 namespace cqp

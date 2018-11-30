@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "DummyAliceController.h"
-#include "Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Simulation/DummyTransmitter.h"
 #include "CQPToolkit/Interfaces/IPhotonGenerator.h"
 #include "CQPToolkit/Net/TwoWayServerConnector.h"

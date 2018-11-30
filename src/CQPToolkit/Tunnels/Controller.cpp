@@ -14,7 +14,7 @@
 #include "Drivers/Clavis.h"
 #include "CQPToolkit/Net/Interface.h"
 #include "CQPToolkit/Util/Util.h"
-#include "CQPToolkit/Util/UUID.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
 #include "CQPToolkit/Util/URI.h"
 #include "CQPToolkit/Tunnels/TunnelBuilder.h"
 #include "CQPToolkit/Util/GrpcLogger.h"

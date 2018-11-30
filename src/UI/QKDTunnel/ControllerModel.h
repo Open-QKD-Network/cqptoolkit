@@ -12,9 +12,9 @@
 #ifndef CONTROLLERMODEL_H
 #define CONTROLLERMODEL_H
 
-#include "CQPToolkit/Datatypes/Services.h"
+#include "CQPAlgorithms/Datatypes/Services.h"
 #include "ControllerItem.h"
-#include "CQPToolkit/Datatypes/Base.h"
+#include "CQPAlgorithms/Datatypes/Base.h"
 #include <QStandardItem>
 #include "QKDInterfaces/Tunnels.pb.h"
 

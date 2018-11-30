@@ -11,7 +11,7 @@
 */
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "CQPToolkit/Util/Provider.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 #include <bitset>
 #include <climits>
 #pragma once

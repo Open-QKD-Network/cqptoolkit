@@ -11,14 +11,14 @@
 */
 
 #include <iostream>
-#include "CQPToolkit/Util/ConsoleLogger.h"
-#include "CQPToolkit/Util/Application.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "CQPAlgorithms/Util/Application.h"
 #include "CQPToolkit/KeyGen/KeyStoreFactory.h"
 #include "CQPToolkit/KeyGen/SiteAgent.h"
 #include "CQPToolkit/Drivers/DummyQKD.h"
 #include "CQPToolkit/Drivers/DeviceFactory.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Util/FileIO.h"
+#include "CQPAlgorithms/Util/FileIO.h"
 
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>

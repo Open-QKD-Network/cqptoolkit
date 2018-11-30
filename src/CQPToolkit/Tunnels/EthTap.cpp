@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "EthTap.h"
-#include "Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Util/SecFileBuff.h"
 #include "CQPToolkit/Net/Socket.h"
 #include "CQPToolkit/Net/Device.h"

@@ -11,7 +11,7 @@
 */
 #include "HTTPClientSession.h"
 #include <curl/curl.h>
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 
 namespace cqp
 {

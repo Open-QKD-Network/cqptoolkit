@@ -12,7 +12,7 @@
 #pragma once
 
 #include "CQPToolkit/cqptoolkit_export.h"
-#include "CQPToolkit/Datatypes/Qubits.h"
+#include "CQPAlgorithms/Datatypes/Qubits.h"
 
 namespace cqp
 {

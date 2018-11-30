@@ -11,9 +11,9 @@
 */
 #include "URI.h"
 #include "Util.h"
-#include "Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Net/Socket.h"
-#include "CQPToolkit/Util/Util.h"
+#include "CQPAlgorithms/Util/Strings.h"
 #include "CQPToolkit/Net/DNS.h"
 #include "curl/curl.h"
 

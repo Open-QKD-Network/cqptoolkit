@@ -11,7 +11,7 @@
 */
 #include "Device.h"
 #include "CQPToolkit/Net/Socket.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include <cstring>
 #if defined(__linux)
     #include <linux/if.h>

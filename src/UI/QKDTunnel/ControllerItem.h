@@ -15,7 +15,6 @@
 #include <QStandardItem>
 #include <QStringListModel>
 #include "TunnelItem.h"
-#include "CQPToolkit/Datatypes/Tunnels.h"
 
 namespace qkdtunnel
 {

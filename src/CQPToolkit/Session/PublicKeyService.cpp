@@ -16,7 +16,7 @@
 #endif
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include <cryptopp/osrng.h>
-#include "CQPToolkit/Util/UUID.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
 namespace cqp
 {
 

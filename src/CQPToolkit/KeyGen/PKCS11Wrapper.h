@@ -61,10 +61,11 @@
 #include <vector>
 #include <memory>
 #include <map>
-#include "CQPToolkit/Util/Logger.h"
-#include "CQPToolkit/Util/Util.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Logging/Logger.h"
+#include "CQPAlgorithms/Util/Strings.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 #include <chrono>
+#include "CQPToolkit/cqptoolkit_export.h"
 
 // the global namespace prefix (::) is used here just to clarify that a type is
 // a pure C definition.

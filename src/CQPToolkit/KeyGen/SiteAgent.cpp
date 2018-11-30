@@ -12,7 +12,7 @@
 #include "SiteAgent.h"
 #include "CQPToolkit/KeyGen/KeyStoreFactory.h"
 #include "CQPToolkit/Drivers/DeviceFactory.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Drivers/DeviceFactory.h"
 #include "CQPToolkit/Session/SessionController.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
@@ -21,7 +21,7 @@
 #include "CQPToolkit/KeyGen/KeyStore.h"
 #include "CQPToolkit/Net/ServiceDiscovery.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
-#include "CQPToolkit/Statistics/StatisticsLogger.h"
+#include "CQPAlgorithms/Statistics/StatisticsLogger.h"
 #include "CQPToolkit/Net/DNS.h"
 #include "CQPToolkit/KeyGen/HSMStore.h"
 #include <grpc++/server_builder.h>

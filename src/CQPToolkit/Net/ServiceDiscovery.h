@@ -10,11 +10,11 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/Platform.h"
-#include "CQPToolkit/Util/Event.h"
+#include "CQPAlgorithms/Util/Event.h"
 #include <thread>
 #include <unordered_map>
 #include "CQPToolkit/Interfaces/IService.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {

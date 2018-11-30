@@ -11,7 +11,7 @@
 */
 #include "Socket.h"
 #include <cstring>
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Net/DNS.h"
 #include <memory>
 #include <iomanip>

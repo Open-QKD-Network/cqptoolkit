@@ -11,13 +11,13 @@
 */
 #include "LEDAliceMk1.h"
 #include <cstdlib>                  // for labs
-#include "Datatypes/Base.h"         // for DataBlock
-#include "Datatypes/Qubits.h"       // for Qubit
-#include "Drivers/Serial.h"         // for Serial
-#include "Drivers/Usb.h"            // for Usb
-#include "Interfaces/IRandom.h"     // for IRandom
+#include "CQPAlgorithms/Datatypes/Base.h"         // for DataBlock
+#include "CQPAlgorithms/Datatypes/Qubits.h"       // for Qubit
+#include "CQPToolkit/Drivers/Serial.h"         // for Serial
+#include "CQPToolkit/Drivers/Usb.h"            // for Usb
+#include "CQPAlgorithms/Random/IRandom.h"     // for IRandom
 #include "QKDInterfaces/Site.pb.h"  // for Device, Side_Type, Side_Type_Alice
-#include "Util/Logger.h"            // for LOGERROR
+#include "CQPAlgorithms/Logging/Logger.h"            // for LOGERROR
 namespace cqp
 {
     class ISessionController;

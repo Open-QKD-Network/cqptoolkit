@@ -16,7 +16,6 @@
 #include "cryptopp/rng.h"
 #include "cryptopp/seckey.h"
 #include "QKDInterfaces/Tunnels.pb.h"
-#include "CQPToolkit/Datatypes/Tunnels.h"
 #include <condition_variable>
 
 namespace grpc

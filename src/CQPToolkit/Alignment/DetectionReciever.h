@@ -12,8 +12,9 @@
 #pragma once
 #include "CQPToolkit/Alignment/Alignment.h"
 #include "CQPToolkit/Alignment/DetectionGating.h"
-#include "CQPToolkit/Simulation/RandomNumber.h"
+#include "CQPAlgorithms/Random/RandomNumber.h"
 #include "CQPToolkit/Interfaces/IDetectionEventPublisher.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp {
     struct SystemParameters;

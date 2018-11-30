@@ -2,7 +2,8 @@
 #include "CQPToolkit/KeyGen/YubiHSM.h"
 #include "CQPToolkit/KeyGen/HSMStore.h"
 #include "CQPToolkit/KeyGen/FileStore.h"
-#include "CQPToolkit/Util/Util.h"
+#include "CQPAlgorithms/Util/Strings.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 
 namespace cqp {
     namespace keygen {

@@ -20,7 +20,7 @@
 #include <google/protobuf/util/json_util.h>
 #include <QClipboard>
 #include <QMessageBox>
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 
 SiteAgentCtlGui::SiteAgentCtlGui(QWidget *parent) :
     QMainWindow(parent),

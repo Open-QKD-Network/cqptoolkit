@@ -14,6 +14,7 @@
 #include "CQPToolkit/cqptoolkit_export.h"
 #include "CQPToolkit/Util/Util.h"
 #include <string>
+#include "CQPAlgorithms/Util/Strings.h"
 
 namespace cqp
 {

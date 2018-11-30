@@ -10,9 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/Application.h"
-#include "CQPToolkit/Util/CommandArgs.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Util/Application.h"
+#include "CQPAlgorithms/Util/CommandArgs.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/KeyGen/SiteAgent.h"
 #include "CQPToolkit/SDN/NetworkManagerDummy.h"
 

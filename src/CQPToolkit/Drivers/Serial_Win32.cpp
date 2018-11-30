@@ -12,8 +12,8 @@
 #if defined(_WIN32)
 #include "stdafx.h"
 #include "CQPToolkit/Drivers/Serial.h"
-#include "CQPToolkit/Util/Logger.h"
-#include "CQPToolkit/Util/Platform.h"
+#include "CQPAlgorithms/Logging/Logger.h"
+
 #include <iterator>
 #include <regex>
 #include <devpropdef.h>

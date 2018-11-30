@@ -13,7 +13,7 @@
 #include <grpc++/security/credentials.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/create_channel.h>
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include <thread>
 #include "CQPToolkit/Util/GrpcLogger.h"
 

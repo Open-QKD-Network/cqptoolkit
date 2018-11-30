@@ -11,7 +11,7 @@
 */
 #pragma once
 #include "CQPToolkit/Util/Provider.h"
-#include "CQPToolkit/Interfaces/IRandom.h"
+#include "CQPAlgorithms/Random/IRandom.h"
 #include "CQPToolkit/Interfaces/IPhotonGenerator.h"
 #include "CQPToolkit/Interfaces/IEmitterEventPublisher.h"
 #include "QKDInterfaces/IPhotonSim.grpc.pb.h"

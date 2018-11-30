@@ -10,8 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "KeyConverter.h"
-#include "CQPToolkit/Datatypes/QKDParameters.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Datatypes/QKDParameters.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 
 namespace cqp
 {

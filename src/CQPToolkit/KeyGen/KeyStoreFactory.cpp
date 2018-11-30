@@ -10,12 +10,12 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "KeyStoreFactory.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
 #include "CQPToolkit/Net/Socket.h"
 #include "CQPToolkit/KeyGen/KeyStore.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Net/DNS.h"
-#include "CQPToolkit/Util/Util.h"
+#include "CQPAlgorithms/Util/Strings.h"
 #include "CQPToolkit/../Version.h"
 #include "CQPToolkit/Util/URI.h"
 

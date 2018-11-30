@@ -13,8 +13,9 @@
 #include <bits/stdint-uintn.h>         // for uint32_t
 #include <string>                      // for operator+, string, to_string
 #include <vector>                      // for allocator, vector
-#include "CQPToolkit/Util/Platform.h"  // for FILE_HANDLE
+  // for FILE_HANDLE
 #include "CQPToolkit/Util/URI.h"       // for URI
+#include "CQPAlgorithms/Util/FileIO.h"
 
 #if defined(_MSC_VER)
     #pragma warning(push)

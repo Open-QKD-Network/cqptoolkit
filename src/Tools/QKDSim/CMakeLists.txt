@@ -27,6 +27,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     protobuf::libprotobuf
     libCurl
     PkgConfig::CRYPTOPP
+    CQPAlgorithms_Static
     )
 
 

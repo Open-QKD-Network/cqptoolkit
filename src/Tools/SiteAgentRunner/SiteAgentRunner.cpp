@@ -9,9 +9,11 @@
 * @date 1/5/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPToolkit/Util/ConsoleLogger.h"
+
+#include "SiteAgentRunner.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Drivers/DeviceFactory.h"
-#include "CQPToolkit/Util/FileIO.h"
+#include "CQPAlgorithms/Util/FileIO.h"
 
 #include <grpc++/create_channel.h>
 #include <grpc++/server_builder.h>
@@ -33,7 +35,6 @@
 #include "CQPToolkit/Drivers/ClavisProxy.h"
 // ^^^^^^ Add new drivers here ^^^^^^^^^
 
-#include "SiteAgentRunner.h"
 #include <future>
 
 using namespace cqp;

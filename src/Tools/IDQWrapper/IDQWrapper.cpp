@@ -9,7 +9,8 @@
 * @date 1/5/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "IDQWrapper.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 
 #include <grpc++/create_channel.h>
@@ -21,8 +22,7 @@
 #include <thread>
 
 #include "CQPToolkit/Net/DNS.h"
-#include "IDQWrapper.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "CQPAlgorithms/Datatypes/Keys.h"
 
 using namespace cqp;
 using grpc::Status;

@@ -13,7 +13,8 @@
 #include <memory>                    // for allocator
 #include <stdlib.h>                  // for getenv, setenv
 #include <string>                    // for operator+, allocator, char_traits
-#include "CQPToolkit/Util/Logger.h"
+#include "CQPAlgorithms/Logging/Logger.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace grpc
 {

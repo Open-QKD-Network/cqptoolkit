@@ -13,7 +13,7 @@
 #include "CQPToolkit/Tunnels/RawSocket.h"
 #include "CQPToolkit/Tunnels/EthTap.h"
 #include "CQPToolkit/Util/Util.h"
-#include "CQPToolkit/Datatypes/Tunnels.h"
+#include "CQPToolkit/Tunnels/TunnelBuilder.h"
 
 namespace qkdtunnel
 {

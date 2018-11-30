@@ -9,8 +9,8 @@
 * @date 1/5/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPToolkit/Util/ConsoleLogger.h"
-#include "CQPToolkit/Util/FileIO.h"
+#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "CQPAlgorithms/Util/FileIO.h"
 
 #include <grpc++/create_channel.h>
 #include <grpc++/client_context.h>
@@ -18,7 +18,7 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include "CQPToolkit/Util/URI.h"
-#include "CQPToolkit/Util/UUID.h"
+#include "CQPAlgorithms/Datatypes/UUID.h"
 #include <thread>
 #include "StatsGenerator.h"
 
@@ -26,6 +26,7 @@
 #include "CQPToolkit/KeyGen/Stats.h"
 #include "CQPToolkit/Session/Stats.h"
 #include <algorithm>
+#include "CQPAlgorithms/Util/Strings.h"
 
 using namespace cqp;
 

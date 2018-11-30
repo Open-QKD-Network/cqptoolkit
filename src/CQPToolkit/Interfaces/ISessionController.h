@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Datatypes/Base.h"
+#include "CQPAlgorithms/Datatypes/Base.h"
 #include "CQPToolkit/Util/URI.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "grpc++/grpc++.h"
