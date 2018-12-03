@@ -46,7 +46,6 @@ if(TARGET ${PROJECT_NAME}_Shared)
     )
 
     target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
-        libCurl
         PkgConfig::libUSB_1
         PkgConfig::CRYPTOPP
     )

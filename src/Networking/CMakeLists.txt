@@ -36,12 +36,12 @@ add_dependencies(${PROJECT_NAME}_Static KeyManagement_Static)
 if(TARGET ${PROJECT_NAME}_Shared)
 
     target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
-        CQPToolkit_Shared
         KeyManagement_Shared
     )
 
     if(TARGET PkgConfig::avahi-client)
-        target_link_libraries(${PROJECT_NAME}_Shared PRIVATE PkgConfig::avahi-client)
+        target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
+            PkgConfig::avahi-client)
     endif()
 
 endif(TARGET ${PROJECT_NAME}_Shared)
