@@ -16,7 +16,7 @@
 #include "CQPToolkit/Interfaces/IQKDDevice.h"  // for IQKDDevice
 #include "QKDInterfaces/Site.pb.h"             // for Device
                      // for CONSTSTRING
-#include "CQPToolkit/Util/URI.h"                          // for URI
+#include "Algorithms/Datatypes/URI.h"                          // for URI
 namespace grpc
 {
     class ChannelCredentials;

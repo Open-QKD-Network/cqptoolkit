@@ -19,4 +19,5 @@ CQP_EXE_PROJECT()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     CQPToolkit_Shared
+    KeyManagement_Shared
     )

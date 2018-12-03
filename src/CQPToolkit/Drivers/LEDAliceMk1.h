@@ -19,7 +19,7 @@
 #include "CQPToolkit/Interfaces/IPhotonGenerator.h"  // for IPhotonGenerator
 #include "CQPToolkit/Interfaces/IQKDDevice.h"        // for IQKDDevice
 #include "QKDInterfaces/Site.pb.h"                   // for Device
-#include "Util/URI.h"                                // for URI
+#include "Algorithms/Datatypes/URI.h"                                // for URI
 
 namespace cqp
 {

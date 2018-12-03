@@ -15,9 +15,9 @@
 
 #include <array>
 #include <cryptopp/secblock.h>
-#include "CQPAlgorithms/Util/Process.h"
-#include "CQPAlgorithms/Datatypes/Base.h"
-#include "CQPAlgorithms/Util/Strings.h"
+#include "Algorithms/Util/Process.h"
+#include "Algorithms/Datatypes/Base.h"
+#include "Algorithms/Util/Strings.h"
 
 namespace cqp
 {

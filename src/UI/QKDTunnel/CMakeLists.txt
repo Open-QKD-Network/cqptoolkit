@@ -20,6 +20,6 @@ if(${Qt5Widgets_FOUND})
     # Next, using precompiler, compiler and linker
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        CQPToolkit_Shared)
+        KeyManagement_Shared)
 
 endif(${Qt5Widgets_FOUND})

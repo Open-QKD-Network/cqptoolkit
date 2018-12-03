@@ -15,7 +15,7 @@
 #include "CQPToolkit/Session/PublicKeyService.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "QKDInterfaces/IIDQWrapper.grpc.pb.h"
-#include "CQPToolkit/Util/Provider.h"
+#include "Algorithms/Util/Provider.h"
 #include <grpc++/channel.h>
 #include <thread>
 

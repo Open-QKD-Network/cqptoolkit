@@ -9,7 +9,7 @@
 * @date 18/4/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPAlgorithms/Util/Event.h"
+#include "Algorithms/Util/Event.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 

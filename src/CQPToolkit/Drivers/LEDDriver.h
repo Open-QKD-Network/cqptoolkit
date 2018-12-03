@@ -12,7 +12,7 @@
 #pragma once
 #include "CQPToolkit/Drivers/Serial.h"
 #include "CQPToolkit/cqptoolkit_export.h"
-#include "CQPAlgorithms/Datatypes/Qubits.h"
+#include "Algorithms/Datatypes/Qubits.h"
 
 //////// DANGER : In Flux ///////
 namespace cqp

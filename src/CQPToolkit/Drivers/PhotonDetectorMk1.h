@@ -13,8 +13,8 @@
 #include <string>                                         // for string
 #include "CQPToolkit/Interfaces/IDetectionEventPublisher.h"  // for IPhotonEven...
 #include "CQPToolkit/Interfaces/IQKDDevice.h"             // for IQKDDevice
-#include "Util/URI.h"                                     // for URI
-#include "CQPToolkit/Util/Provider.h"
+#include "Algorithms/Datatypes/URI.h"                                     // for URI
+#include "Algorithms/Util/Provider.h"
 
 namespace cqp
 {

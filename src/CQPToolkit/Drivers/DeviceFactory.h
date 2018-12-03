@@ -18,7 +18,8 @@
 #include <string>                   // for string
 #include <unordered_map>            // for unordered_map
 #include <vector>                   // for vector
-#include "CQPToolkit/Util/URI.h"    // for URI
+#include "Algorithms/Datatypes/URI.h"    // for URI
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace grpc
 {

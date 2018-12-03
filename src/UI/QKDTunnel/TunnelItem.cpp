@@ -11,7 +11,7 @@
 */
 #include "TunnelItem.h"
 #include <QUrl>
-#include "CQPAlgorithms/Datatypes/UUID.h"
+#include "Algorithms/Datatypes/UUID.h"
 #include "QKDInterfaces/Tunnels.pb.h"
 #include <QTime>
 

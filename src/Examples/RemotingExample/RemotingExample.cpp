@@ -14,8 +14,8 @@
 
 #include "CQPToolkit/Util/KeyVerifier.h"
 #include "CQPToolkit/Util/KeyPrinter.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
-#include "CQPAlgorithms/Util/Application.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Util/Application.h"
 
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>

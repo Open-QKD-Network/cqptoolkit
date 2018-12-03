@@ -13,9 +13,9 @@
 #include <bits/stdint-uintn.h>             // for uint16_t, uint8_t
 #include <cstddef>                         // for size_t
 #include <vector>                          // for vector
-#include "CQPAlgorithms/Datatypes/Base.h"     // for IntList, DataBlock
-#include "CQPToolkit/Util/URI.h"           // for URI
-#include "CQPAlgorithms/Util/WorkerThread.h"  // for WorkerThread
+#include "Algorithms/Datatypes/Base.h"     // for IntList, DataBlock
+#include "Algorithms/Datatypes/URI.h"           // for URI
+#include "Algorithms/Util/WorkerThread.h"  // for WorkerThread
 
 #if defined(_MSC_VER)
     #pragma warning(push)

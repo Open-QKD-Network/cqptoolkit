@@ -10,10 +10,10 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "AuthUtil.h"
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "Algorithms/Util/FileIO.h"
 #include <grpcpp/security/credentials.h>
 #include <grpcpp/security/server_credentials.h>
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 #include "grpc/grpc_security_constants.h"
 #include <utility>                               // for pair, move
 #include <vector>                                // for vector

@@ -12,10 +12,10 @@
 */
 
 #include <iostream>
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/KeyVerifier.h"
-#include "CQPAlgorithms/Util/Application.h"
-#include "CQPAlgorithms/Util/Process.h"
+#include "Algorithms/Util/Application.h"
+#include "Algorithms/Util/Process.h"
 
 #include <fstream>
 #if defined(__unix__)

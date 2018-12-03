@@ -10,15 +10,15 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "QTunnelServer.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
-#include "CQPToolkit/Net/DNS.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Net/DNS.h"
 #include <thread>
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "Algorithms/Util/FileIO.h"
 #include <google/protobuf/util/json_util.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
-#include "CQPAlgorithms/Util/Strings.h"
-#include "CQPAlgorithms/Datatypes/UUID.h"
+#include "Algorithms/Util/Strings.h"
+#include "Algorithms/Datatypes/UUID.h"
 
 using namespace cqp;
 

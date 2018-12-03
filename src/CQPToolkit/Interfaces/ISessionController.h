@@ -10,11 +10,11 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Datatypes/Base.h"
-#include "CQPToolkit/Util/URI.h"
+#include "Algorithms/Datatypes/Base.h"
+#include "Algorithms/Datatypes/URI.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "grpc++/grpc++.h"
-#include "CQPToolkit/Util/Provider.h"
+#include "Algorithms/Util/Provider.h"
 
 namespace cqp
 {

@@ -13,8 +13,8 @@
 #include <cstddef>                             // for size_t
 #include <ratio>                               // for ratio
 #include "CQPToolkit/ErrorCorrection/Stats.h"  // for Stats
-#include "CQPAlgorithms/Statistics/Stat.h"                   // for Stat
-#include "CQPAlgorithms/Logging/Logger.h"                       // for LOGTRACE
+#include "Algorithms/Statistics/Stat.h"                   // for Stat
+#include "Algorithms/Logging/Logger.h"                       // for LOGTRACE
 
 namespace cqp
 {

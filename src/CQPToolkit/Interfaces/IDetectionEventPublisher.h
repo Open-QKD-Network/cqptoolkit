@@ -11,7 +11,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Datatypes/DetectionReport.h"
+#include "Algorithms/Datatypes/DetectionReport.h"
 
 
 namespace cqp

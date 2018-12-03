@@ -10,12 +10,12 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "TestYubiHSM.h"
-#include "CQPToolkit/KeyGen/YubiHSM.h"
-#include "CQPAlgorithms/Util/Process.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "KeyManagement/KeyStores/YubiHSM.h"
+#include "Algorithms/Util/Process.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPUI/OpenSSLKeyUI.h"
 #include <QApplication>
-#include "CQPToolkit/Util/Util.h"
+#include "Algorithms/Util/Strings.h"
 #define YH_ALGO_OPAQUE_DATA 30
 
 namespace cqp

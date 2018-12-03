@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "gtest/gtest.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 
 int main(int argc, char **argv)
 {

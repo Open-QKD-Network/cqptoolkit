@@ -10,8 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Datatypes/Qubits.h"
-#include "CQPAlgorithms/Datatypes/Framing.h"
+#include "Algorithms/Datatypes/Qubits.h"
+#include "Algorithms/Datatypes/Framing.h"
 
 namespace cqp
 {

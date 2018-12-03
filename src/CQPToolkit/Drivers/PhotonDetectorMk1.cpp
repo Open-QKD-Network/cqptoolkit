@@ -12,7 +12,7 @@
 #include "CQPToolkit/Drivers/PhotonDetectorMk1.h"
 #include <chrono>                    // for seconds
 #include <thread>                    // for sleep_for
-#include "CQPAlgorithms/Logging/Logger.h"  // for LOGINFO, LOGERROR
+#include "Algorithms/Logging/Logger.h"  // for LOGINFO, LOGERROR
 #include "Drivers/Serial.h"          // for Serial
 #include "Drivers/UsbTagger.h"       // for UsbTagger, UsbTaggerList
 

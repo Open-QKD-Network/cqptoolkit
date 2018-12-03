@@ -11,8 +11,8 @@
 */
 #include "ControllerModel.h"
 #include <QStandardItem>
-#include "CQPAlgorithms/Datatypes/UUID.h"
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Datatypes/UUID.h"
+#include "Algorithms/Logging/Logger.h"
 #include "QKDInterfaces/Tunnels.pb.h"
 #include "QKDInterfaces/ITunnelServer.grpc.pb.h"
 

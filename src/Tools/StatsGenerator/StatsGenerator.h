@@ -10,14 +10,14 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Util/Application.h"
-#include "CQPToolkit/Net/ServiceDiscovery.h"
-#include "CQPAlgorithms/Util/CommandArgs.h"
+#include "Algorithms/Util/Application.h"
+#include "KeyManagement/Net/ServiceDiscovery.h"
+#include "Algorithms/Util/CommandArgs.h"
 #include <grpcpp/channel.h>
 #include "QKDInterfaces/IReporting.grpc.pb.h"
 #include <random>
 #include "CQPToolkit/Statistics/ReportServer.h"
-#include "CQPAlgorithms/Statistics/StatisticsLogger.h"
+#include "Algorithms/Statistics/StatisticsLogger.h"
 #include "QKDInterfaces/Site.pb.h"
 
 /**

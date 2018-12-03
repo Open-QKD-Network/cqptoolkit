@@ -10,11 +10,12 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Clavis.h"
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 #include <iomanip>
-#include "CQPToolkit/Util/Util.h"
-#include "CQPToolkit/Net/Socket.h"
-#include "CQPAlgorithms/Datatypes/Keys.h"
+#include "Algorithms/Net/Sockets/Socket.h"
+#include "Algorithms/Util/Hash.h"
+#include "Algorithms/Datatypes/Keys.h"
+#include "Algorithms/Net/DNS.h"
 #include <thread>
 
 namespace cqp
@@ -26,19 +27,22 @@ namespace cqp
         alice(isAlice)
     {
         using namespace std;
+        URI addressUri(address);
 
         // wait for one second for response
         socket.SetReceiveTimeout(std::chrono::milliseconds(5000));
 
-        if(hardwareAddress.GetHost().empty())
+        if(addressUri.GetHost().empty())
         {
-            hardwareAddress.SetHost("localhost");
+            addressUri.SetHost("localhost");
         }
 
-        if(hardwareAddress.GetPort() == 0)
+        if(addressUri.GetPort() == 0)
         {
-            hardwareAddress.SetPort(DefaultPort);
+            addressUri.SetPort(DefaultPort);
         }
+
+        addressUri.ResolveAddress(hardwareAddress);
 
         myKeyLength = keyLength;
         if(deviceId < 1 || deviceId > Clavis::MAX_DEV_ID)
@@ -91,13 +95,7 @@ namespace cqp
 
         bool result = true;
         KeyResponse response = {};
-        net::SocketAddress expectedSender;
         net::SocketAddress sender;
-
-        if(!hardwareAddress.ResolveAddress(expectedSender))
-        {
-            LOGERROR("Failed to resolve: " + hardwareAddress.ToString());
-        }
 
         // Try to get a packet from the device
         size_t bytesRead = 0;
@@ -107,9 +105,9 @@ namespace cqp
 
         if(result)
         {
-            if (sender != expectedSender)
+            if (sender != hardwareAddress)
             {
-                LOGWARN("Unknown sender:" + sender.ToString() + "!=" + expectedSender.ToString());
+                LOGWARN("Unknown sender:" + sender.ToString() + "!=" + hardwareAddress.ToString());
             }
 
             // validate the message

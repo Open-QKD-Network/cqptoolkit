@@ -13,9 +13,9 @@
 
 #include <QMainWindow>
 #include <QStringListModel>
-#include "CQPToolkit/Net/ServiceDiscovery.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
-#include "CQPToolkit/Tunnels/Controller.h"
+#include "KeyManagement/Net/ServiceDiscovery.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
+#include "Networking/Tunnels/Controller.h"
 #include "ControllerModel.h"
 #include <QDataWidgetMapper>
 #include <QFileDialog>

@@ -10,9 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "IDQKeyExtraction.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPAlgorithms/Util/Strings.h"
+#include "Algorithms/Util/Strings.h"
 #include "QKDInterfaces/IIDQWrapper.grpc.pb.h"
 #include <iostream>
 #include <iomanip>

@@ -11,9 +11,9 @@
 */
 #pragma once
 #include "CQPToolkit/Alignment/Alignment.h"
-#include "CQPAlgorithms/Random/RandomNumber.h"
+#include "Algorithms/Random/RandomNumber.h"
 #include "CQPToolkit/Interfaces/IEmitterEventPublisher.h"
-#include "CQPToolkit/Util/Provider.h"
+#include "Algorithms/Util/Provider.h"
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "CQPToolkit/cqptoolkit_export.h"
 

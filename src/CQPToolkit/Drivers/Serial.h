@@ -14,8 +14,9 @@
 #include <string>                      // for operator+, string, to_string
 #include <vector>                      // for allocator, vector
   // for FILE_HANDLE
-#include "CQPToolkit/Util/URI.h"       // for URI
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "Algorithms/Datatypes/URI.h"       // for URI
+#include "Algorithms/Util/FileIO.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 #if defined(_MSC_VER)
     #pragma warning(push)

@@ -11,23 +11,23 @@
 */
 
 #include "SiteAgentRunner.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Drivers/DeviceFactory.h"
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "Algorithms/Util/FileIO.h"
 
 #include <grpc++/create_channel.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/client_context.h>
 #include <google/protobuf/util/json_util.h>
 
-#include "CQPToolkit/KeyGen/KeyStoreFactory.h"
-#include "CQPToolkit/KeyGen/KeyStore.h"
+#include "KeyManagement/KeyStores/KeyStoreFactory.h"
+#include "KeyManagement/KeyStores/KeyStore.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Net/ServiceDiscovery.h"
-#include "CQPToolkit/Net/DNS.h"
+#include "KeyManagement/Net/ServiceDiscovery.h"
+#include "Algorithms/Net/DNS.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include <thread>
-#include "CQPToolkit/Util/Util.h"
+#include "Algorithms/Util/Strings.h"
 #include "QKDInterfaces/ISiteDetails.grpc.pb.h"
 
 // Site agent compatible drivers

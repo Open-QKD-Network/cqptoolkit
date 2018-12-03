@@ -21,13 +21,14 @@ SET_COMPONENT_NAME("Simulate" CQP_INSTALL_COMPONENT)
 CQP_EXE_PROJECT()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    KeyManagement_Static
     CQPToolkit_Static
     QKDInterfaces_Static
+    Algorithms_Static
     gRPC::grpc++
     protobuf::libprotobuf
     libCurl
     PkgConfig::CRYPTOPP
-    CQPAlgorithms_Static
     )
 
 

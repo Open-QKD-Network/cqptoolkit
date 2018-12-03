@@ -17,8 +17,8 @@
 #include <string>                       // for string, operator+, basic_string
 #include <vector>                       // for vector
 #include "CQPToolkit/Drivers/Serial.h"  // for Serial, SerialList, Serial::B...
-#include "CQPAlgorithms/Util/FileIO.h"     // for Exists, FindGlob, IsDirectory
-#include "CQPAlgorithms/Logging/Logger.h"     // for LOGTRACE
+#include "Algorithms/Util/FileIO.h"     // for Exists, FindGlob, IsDirectory
+#include "Algorithms/Logging/Logger.h"     // for LOGTRACE
 
 
 namespace cqp

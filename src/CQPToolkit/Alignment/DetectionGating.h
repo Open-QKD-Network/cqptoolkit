@@ -12,13 +12,13 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include "CQPAlgorithms/Datatypes/DetectionReport.h"
+#include "Algorithms/Datatypes/DetectionReport.h"
 #include <future>
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 #include <unordered_set>
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPAlgorithms/Random/IRandom.h"
+#include "Algorithms/Random/IRandom.h"
 
 namespace cqp
 {

@@ -10,8 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "TestSites.h"
-#include "CQPToolkit/SDN/NetworkManagerDummy.h"
-#include "CQPToolkit/KeyGen/SiteAgent.h"
+#include "KeyManagement/SDN/NetworkManagerDummy.h"
+#include "KeyManagement/Sites/SiteAgent.h"
 #include "CQPToolkit/Drivers/DeviceFactory.h"
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include <grpc++/create_channel.h>

@@ -16,9 +16,9 @@
 #include "CQPToolkit/Interfaces/IAlignmentPublisher.h"
 #include <mutex>
 #include <condition_variable>
-#include "CQPAlgorithms/Util/DataFile.h"
+#include "Algorithms/Util/DataFile.h"
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
-#include "CQPAlgorithms/Random/RandomNumber.h"
+#include "Algorithms/Random/RandomNumber.h"
 
 namespace cqp
 {

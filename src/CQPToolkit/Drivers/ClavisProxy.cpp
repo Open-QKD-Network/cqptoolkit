@@ -15,7 +15,7 @@
 #include "CQPToolkit/Drivers/DeviceFactory.h"      // for DeviceFactory
 #include "CQPToolkit/Session/ClavisController.h"   // for ClavisController
 #include "CQPToolkit/Interfaces/IQKDDevice.h"                 // for IQKDDevice, IQKDDe...
-#include "CQPAlgorithms/Logging/Logger.h"                           // for LOGTRACE
+#include "Algorithms/Logging/Logger.h"                           // for LOGTRACE
 
 namespace cqp
 {

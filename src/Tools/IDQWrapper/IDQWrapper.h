@@ -10,15 +10,15 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Util/Application.h"
-#include "CQPAlgorithms/Util/CommandArgs.h"
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Util/Application.h"
+#include "Algorithms/Util/CommandArgs.h"
+#include "Algorithms/Logging/Logger.h"
 #include "CQPToolkit/Drivers/Clavis.h"
 #include "CQPToolkit/Drivers/IDQSequenceLauncher.h"
 #include "QKDInterfaces/IIDQWrapper.grpc.pb.h"
 #include <grpcpp/server.h>
 #include <queue>
-#include "CQPAlgorithms/Datatypes/Keys.h"
+#include "Algorithms/Datatypes/Keys.h"
 
 /**
  * @brief The IDQWrapper program

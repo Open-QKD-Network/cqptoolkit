@@ -13,7 +13,8 @@
 
 #include <streambuf>
 #include <cryptopp/secblock.h>
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "Algorithms/Util/FileIO.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {

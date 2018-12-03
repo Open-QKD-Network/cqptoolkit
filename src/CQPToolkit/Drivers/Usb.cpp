@@ -15,11 +15,11 @@
 #include <sys/types.h>               // for ssize_t
 #include <string>                    // for operator+, to_string, char_traits
 #include <unordered_map>             // for unordered_map
-#include "CQPAlgorithms/Logging/Logger.h"  // for LOGTRACE, LOGERROR, DefaultLogger
-#include "CQPAlgorithms/Datatypes/Base.h"          // for DataBlock, IntList
-#include "CQPAlgorithms/Logging/ILogger.h"      // for LogLevel, ILogger, LogLevel::Debug
+#include "Algorithms/Logging/Logger.h"  // for LOGTRACE, LOGERROR, DefaultLogger
+#include "Algorithms/Datatypes/Base.h"          // for DataBlock, IntList
+#include "Algorithms/Logging/ILogger.h"      // for LogLevel, ILogger, LogLevel::Debug
            // for EnumClassHash
-#include "CQPToolkit/Util/URI.h"                // for URI
+#include "Algorithms/Datatypes/URI.h"                // for URI
 
 namespace cqp
 {

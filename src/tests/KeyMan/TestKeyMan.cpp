@@ -10,14 +10,14 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "TestKeyMan.h"
-#include "CQPToolkit/KeyGen/KeyStoreFactory.h"
-#include "CQPToolkit/KeyGen/KeyStore.h"
+#include "KeyManagement/KeyStores/KeyStoreFactory.h"
+#include "KeyManagement/KeyStores/KeyStore.h"
 #include "CQPToolkit/Session/PublicKeyService.h"
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/KeyGen/FileStore.h"
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "KeyManagement/KeyStores/FileStore.h"
+#include "Algorithms/Util/FileIO.h"
 
 namespace cqp
 {

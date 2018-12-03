@@ -10,13 +10,13 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Util/Application.h"
-#include "CQPAlgorithms/Util/CommandArgs.h"
-#include "CQPAlgorithms/Logging/Logger.h"
-#include "CQPToolkit/Net/ServiceDiscovery.h"
+#include "Algorithms/Util/Application.h"
+#include "Algorithms/Util/CommandArgs.h"
+#include "Algorithms/Logging/Logger.h"
+#include "KeyManagement/Net/ServiceDiscovery.h"
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
 #include "QKDInterfaces/IKey.grpc.pb.h"
-#include "CQPToolkit/KeyGen/SiteAgent.h"
+#include "KeyManagement/Sites/SiteAgent.h"
 
 /**
  * @brief The SiteAgentCtl class

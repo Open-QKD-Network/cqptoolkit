@@ -12,7 +12,7 @@
 #include "AlignmentTests.h"
 #include "CQPToolkit/Alignment/Alignment.h"
 #include <ctime>
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server.h>
@@ -25,7 +25,7 @@
 #include "CQPToolkit/Alignment/TransmissionHandler.h"
 #include "CQPToolkit/Alignment/DetectionReciever.h"
 #include <chrono>
-#include "CQPAlgorithms/Util/DataFile.h"
+#include "Algorithms/Util/DataFile.h"
 
 namespace cqp
 {

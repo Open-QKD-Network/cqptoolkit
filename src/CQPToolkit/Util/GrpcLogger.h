@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 #include <grpc++/grpc++.h>
 #include <google/protobuf/stubs/status.h>
 #include "CQPToolkit/cqptoolkit_export.h"

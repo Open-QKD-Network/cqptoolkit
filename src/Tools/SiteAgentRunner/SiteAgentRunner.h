@@ -10,11 +10,11 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPAlgorithms/Util/Application.h"
-#include "CQPAlgorithms/Util/CommandArgs.h"
-#include "CQPAlgorithms/Logging/Logger.h"
-#include "CQPToolkit/KeyGen/SiteAgent.h"
-#include "CQPToolkit/SDN/NetworkManagerDummy.h"
+#include "Algorithms/Util/Application.h"
+#include "Algorithms/Util/CommandArgs.h"
+#include "Algorithms/Logging/Logger.h"
+#include "KeyManagement/Sites/SiteAgent.h"
+#include "KeyManagement/SDN/NetworkManagerDummy.h"
 
 /**
  * @brief The SiteAgentRunner class

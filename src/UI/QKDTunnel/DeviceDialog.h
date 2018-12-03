@@ -12,7 +12,7 @@
 #pragma once
 #include "ui_DeviceDialog.h"
 #include <QDialog>
-#include "CQPToolkit/Util/URI.h"
+#include "Algorithms/Datatypes/URI.h"
 
 namespace qkdtunnel
 {

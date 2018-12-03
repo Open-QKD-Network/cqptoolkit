@@ -10,17 +10,18 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "TestUtils.h"
-#include "CQPToolkit/Util/Util.h"
-#include "CQPAlgorithms/Datatypes/Keys.h"
+#include "Algorithms/Util/Strings.h"
+#include "Algorithms/Datatypes/Keys.h"
 #include <chrono>
-#include "CQPToolkit/Util/URI.h"
-#include "CQPAlgorithms/Datatypes/UUID.h"
-#include "CQPAlgorithms/Util/Process.h"
-#include "CQPAlgorithms/Util/FileIO.h"
-#include "CQPAlgorithms/Util/Application.h"
-#include "CQPToolkit/Net/Socket.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "Algorithms/Datatypes/URI.h"
+#include "Algorithms/Datatypes/UUID.h"
+#include "Algorithms/Util/Process.h"
+#include "Algorithms/Util/FileIO.h"
+#include "Algorithms/Util/Application.h"
+#include "Algorithms/Net/Sockets/Socket.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Util/FileIO.h"
+#include "Algorithms/Util/Hash.h"
 
 namespace cqp
 {

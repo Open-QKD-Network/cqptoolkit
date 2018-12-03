@@ -12,7 +12,7 @@
 #if defined(OPENCL_FOUND)
 #include "OpenCLHelper.h"
 #include <algorithm>
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 
 #include <type_traits>
 #include <memory>

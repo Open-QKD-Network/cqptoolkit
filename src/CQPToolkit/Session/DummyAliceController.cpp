@@ -10,10 +10,10 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "DummyAliceController.h"
-#include "CQPAlgorithms/Logging/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 #include "CQPToolkit/Simulation/DummyTransmitter.h"
 #include "CQPToolkit/Interfaces/IPhotonGenerator.h"
-#include "CQPToolkit/Net/TwoWayServerConnector.h"
+#include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Alignment/TransmissionHandler.h"
 #include "CQPToolkit/Sift/Transmitter.h"

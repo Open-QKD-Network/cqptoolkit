@@ -10,16 +10,16 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "SiteAgentCtl.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Net/DNS.h"
+#include "Algorithms/Net/DNS.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include <grpc++/create_channel.h>
 #include <grpc++/client_context.h>
 #include <google/protobuf/util/json_util.h>
 #include <thread>
-#include "CQPAlgorithms/Util/Strings.h"
-#include "CQPToolkit/Util/URI.h"
+#include "Algorithms/Util/Strings.h"
+#include "Algorithms/Datatypes/URI.h"
 
 using namespace cqp;
 

@@ -11,17 +11,17 @@
 */
 
 #include "StatsDump.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
-#include "CQPAlgorithms/Util/FileIO.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Util/FileIO.h"
 
 #include <grpc++/create_channel.h>
 #include <grpc++/client_context.h>
 
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
-#include "CQPToolkit/Util/URI.h"
+#include "Algorithms/Datatypes/URI.h"
 #include <thread>
-#include "CQPAlgorithms/Util/Strings.h"
+#include "Algorithms/Util/Strings.h"
 
 using namespace cqp;
 

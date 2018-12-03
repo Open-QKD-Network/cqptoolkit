@@ -12,8 +12,8 @@
 #pragma once
 
 #include "CQPToolkit/cqptoolkit_export.h"
-#include "CQPAlgorithms/Util/IEvent.h"
-#include "CQPAlgorithms/Datatypes/Keys.h"
+#include "Algorithms/Util/IEvent.h"
+#include "Algorithms/Datatypes/Keys.h"
 #include <memory>
 
 namespace cqp

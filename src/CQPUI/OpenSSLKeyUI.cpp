@@ -1,13 +1,13 @@
 #include "OpenSSLKeyUI.h"
 #include "ui_OpenSSLKeyUI.h"
-#include "CQPToolkit/KeyGen/HSMStore.h"
-#include "CQPToolkit/KeyGen/YubiHSM.h"
-#include "CQPAlgorithms/Logging/ConsoleLogger.h"
+#include "KeyManagement/KeyStores/HSMStore.h"
+#include "KeyManagement/KeyStores/YubiHSM.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPUI/HSMPinDialog.h"
-#include "CQPToolkit/Util/Util.h"
+#include "Algorithms/Util/Strings.h"
 #include <QInputDialog>
 #include <QPushButton>
-#include "CQPAlgorithms/Util/Process.h"
+#include "Algorithms/Util/Process.h"
 #if defined(__unix__)
     #include <unistd.h>
 #endif

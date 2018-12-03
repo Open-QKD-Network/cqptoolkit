@@ -22,5 +22,6 @@ CQP_TEST_PROJECT()
 
 # Standard linking to gtest stuff.
 target_link_libraries(${PROJECT_NAME}  PRIVATE
-    CQPToolkit_Shared)
+    CQPToolkit_Shared
+    Networking_Shared)
 

@@ -12,7 +12,7 @@
 #pragma once
 
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
-#include "CQPAlgorithms/Util/Event.h"
+#include "Algorithms/Util/Event.h"
 #include <mutex>
 
 
