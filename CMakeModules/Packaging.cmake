@@ -9,6 +9,9 @@
 ### @author Richard Collins <richard.collins@bristol.ac.uk>
 ### 
 # setup cpack to create installation packages using the generators we support
+cmake_minimum_required (VERSION 3.7.2)
+
+include_once()
 
 if(WIN32 AND NOT UNIX)
     LIST(APPEND CPACK_GENERATOR "WIX" "ZIP")
@@ -60,24 +63,24 @@ else()
 
     #HACK:
     # again doing this here because at the package level this has no effect
-    SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "CQP Toolkit Tools")
-    SET(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://gitlab.com/QComms/cqptoolkit")
-
-    SET(CPACK_DEBIAN_QKDINTERFACES_PACKAGE_DEPENDS "libgrpc++1 (>= 1.10.0)")
-    SET(CPACK_DEBIAN_CQPTOOLKIT_PACKAGE_DEPENDS "cqp-qkdinterfaces (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_CQPUI_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_EXAMPLES_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_TOOLS_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_TESTS_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_UI_PACKAGE_DEPENDS "cqp-cqpui (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-
-    SET(CPACK_DEBIAN_QKDINTERFACESD_PACKAGE_DEPENDS "libgrpc++1 (>= 1.10.0)")
-    SET(CPACK_DEBIAN_CQPTOOLKITD_PACKAGE_DEPENDS "cqp-qkdinterfacesd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_CQPUID_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_EXAMPLESD_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_TOOLSD_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_TESTSD_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
-    SET(CPACK_DEBIAN_UID_PACKAGE_DEPENDS "cqp-cqpuid (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "CQP Toolkit Tools")
+    #SET(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://gitlab.com/QComms/cqptoolkit")
+    #
+    #SET(CPACK_DEBIAN_QKDINTERFACES_PACKAGE_DEPENDS "libgrpc++1 (>= 1.10.0)")
+    #SET(CPACK_DEBIAN_CQPTOOLKIT_PACKAGE_DEPENDS "cqp-qkdinterfaces (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_CQPUI_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_EXAMPLES_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_TOOLS_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_TESTS_PACKAGE_DEPENDS "cqp-cqptoolkit (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_UI_PACKAGE_DEPENDS "cqp-cqpui (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #
+    #SET(CPACK_DEBIAN_QKDINTERFACESD_PACKAGE_DEPENDS "libgrpc++1 (>= 1.10.0)")
+    #SET(CPACK_DEBIAN_CQPTOOLKITD_PACKAGE_DEPENDS "cqp-qkdinterfacesd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_CQPUID_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_EXAMPLESD_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_TOOLSD_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_TESTSD_PACKAGE_DEPENDS "cqp-cqptoolkitd (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
+    #SET(CPACK_DEBIAN_UID_PACKAGE_DEPENDS "cqp-cqpuid (>= ${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR})")
 
     if(RPM_ENABLED)
         LIST(APPEND CPACK_GENERATOR "RPM")
@@ -87,11 +90,12 @@ endif()
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY   "CQP Toolkit")
 SET(CPACK_PACKAGE_VENDOR                "University of Bristol")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY   "Centre for Quantum Photonics Toolkit")
-SET(CPACK_RESOURCE_FILE_LICENSE         "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+SET(CPACK_RESOURCE_FILE_LICENSE         "${CMAKE_SOURCE_DIR}/LICENSE")
 SET(CPACK_PACKAGE_VERSION               ${BUILD_VERSION})
 SET(CPACK_CYGWIN_PATCH_NUMBER           ${BUILD_VERSION_PATCH})
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY     "CQPToolkit")
 SET(CPACK_PACKAGE_CONTACT               "Richard.Collins@bristol.ac.uk")
+
 
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make
@@ -124,106 +128,6 @@ cpack_add_component_group(Development
 cpack_add_component_group(Examples
     DESCRIPTION     "Simple programs demonstrating the use of the libraries"
     )
-
-#cpack_add_component_group(Tests
-#    DESCRIPTION     "Programs for performing regression tests on the libraries"
-#    )
-
-########## Components ###########
-#CPACK_ADD_COMPONENT(Simulate
-#    DISPLAY_NAME    "Simulation tools"
-#    GROUP           Runtime
-#)
-#CPACK_ADD_COMPONENT(RunTimeDeps
-#    DISPLAY_NAME    "Toolkit Dependencies"
-#    GROUP           Runtime
-#    DEPENDS         CQPToolkit_Runtime
-#    INSTALL_TYPES   Runtime
-#)
-#
-#CPACK_ADD_COMPONENT(CQPToolkit_Runtime
-#    DISPLAY_NAME    "CQP Toolkit Runtime"
-#    GROUP           Runtime
-#    DESCRIPTION     "Install the dynamically loaded library which may be needed by other programs."
-#    INSTALL_TYPES   Runtime
-#)
-#
-#CPACK_ADD_COMPONENT(CQPToolkit_Devel
-#    DISPLAY_NAME    "CQP Toolkit SDK"
-#    GROUP           Development
-#    DEPENDS         RunTimeDeps
-#    DESCRIPTION     "Install the static library for linking directly to."
-#    INSTALL_TYPES   Development
-#)
-
-#if(GEN_DOC)
-#    CPACK_ADD_COMPONENT(CQP_Docs
-#        DISPLAY_NAME    "Documentation"
-#        DESCRIPTION     "Toolkit library documentation in html."
-#        GROUP           Development
-#        INSTALL_TYPES   Development
-#        DEPENDS         doc
-#    )
-#endif(GEN_DOC)
-#
-#if(BUILD_CQP_EXAMPLES)
-#    CPACK_ADD_COMPONENT(NewDriver_Devel
-#        DISPLAY_NAME    "Driver example prgram"
-#        GROUP           Examples
-#        DEPENDS         CQPToolkit_Devel
-#        INSTALL_TYPES   Development
-#    )
-#
-#    CPACK_ADD_COMPONENT(NewDriver_Runtime
-#        DISPLAY_NAME    "Driver example prgram"
-#        GROUP           Examples
-#        DEPENDS         CQPToolkit_Runtime
-#        INSTALL_TYPES   Development
-#    )
-#
-#endif(BUILD_CQP_EXAMPLES)
-#
-#if(BUILD_TESTING)
-#    CPACK_ADD_COMPONENT(DllArchBridgeTests
-#        DISPLAY_NAME    "Dll ArchBridge Tests"
-#        DESCRIPTION     "Run specific tests on the toolkit."
-#        GROUP           Tests
-#        DEPENDS         CQPToolkit_Runtime
-#        INSTALL_TYPES   Runtime Development
-#    )
-#
-#    CPACK_ADD_COMPONENT(CQPDriverTests
-#        DISPLAY_NAME    "CQP Driver Tests"
-#        DESCRIPTION     "Run specific tests on the toolkit."
-#        GROUP           Tests
-#        DEPENDS         CQPToolkit_Runtime
-#        INSTALL_TYPES   Runtime Development
-#    )
-#
-#    CPACK_ADD_COMPONENT(CQPInterfaceTests
-#        DISPLAY_NAME    "CQP Interface Tests"
-#        DESCRIPTION     "Run specific tests on the toolkit."
-#        GROUP           Tests
-#        DEPENDS         CQPToolkit_Runtime
-#        INSTALL_TYPES   Runtime Development
-#    )
-#
-#    CPACK_ADD_COMPONENT(CQPRemoteObjectTests
-#        DISPLAY_NAME    "CQP RemoteObject Tests"
-#        DESCRIPTION     "Run specific tests on the toolkit."
-#        GROUP           Tests
-#        DEPENDS         CQPToolkit_Runtime
-#        INSTALL_TYPES   Runtime Development
-#    )
-#
-#    CPACK_ADD_COMPONENT(CQPUtilTests
-#        DISPLAY_NAME    "CQP Utility Tests"
-#        DESCRIPTION     "Run specific tests on the toolkit."
-#        GROUP           Tests
-#        DEPENDS         CQPToolkit_Runtime
-#        INSTALL_TYPES   Runtime Development
-#    )
-#endif(BUILD_TESTING)
 
 ########### Special build steps for making the bundle (not supported by CPack)
 
