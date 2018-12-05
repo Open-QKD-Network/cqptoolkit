@@ -29,6 +29,10 @@ set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_V
 CQP_LIBRARY_PROJECT()
 # Now tell the compiler and linker where to find specific libs
 
+add_dependencies(${PROJECT_NAME} CQPToolkit)
+add_dependencies(${PROJECT_NAME}_Shared CQPToolkit_Shared)
+add_dependencies(${PROJECT_NAME}_Static CQPToolkit_Static)
+
 if(TARGET ${PROJECT_NAME}_Shared)
 
     target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
