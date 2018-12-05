@@ -40,11 +40,6 @@ if(TARGET ${PROJECT_NAME}_Shared)
         libCurl
     )
 
-    if(TARGET PkgConfig::avahi-client)
-        target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
-            PkgConfig::avahi-client)
-    endif()
-
 endif(TARGET ${PROJECT_NAME}_Shared)
 # packaging
-SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "CQP Key Management")
+SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "CQP Networking")
