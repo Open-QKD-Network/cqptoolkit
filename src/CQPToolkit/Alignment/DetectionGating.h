@@ -12,13 +12,13 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include "CQPToolkit/Datatypes/DetectionReport.h"
+#include "Algorithms/Datatypes/DetectionReport.h"
 #include <future>
-#include "CQPToolkit/Util/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 #include <unordered_set>
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Interfaces/IRandom.h"
+#include "Algorithms/Random/IRandom.h"
 
 namespace cqp
 {
@@ -51,9 +51,6 @@ namespace cqp
         class CQPTOOLKIT_EXPORT DetectionGating
         {
         public:
-            /// signed duration value to allow drift to go in both directions
-            using PicoSecondOffset = std::chrono::duration<int64_t, PicoSeconds::period>;
-
             /// How far away from the origin to check for a spike in the histogram
             constexpr static const uint64_t DefaultoffsetTestRange = 100;
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift

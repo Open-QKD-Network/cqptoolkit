@@ -12,10 +12,10 @@
 #pragma once
 #include "CQPToolkit/Interfaces/IAlignmentPublisher.h"
 #include "CQPToolkit/Interfaces/ISiftedPublisher.h"
-#include "CQPToolkit/Util/Provider.h"
+#include "Algorithms/Util/Provider.h"
 #include "CQPToolkit/Sift/Stats.h"
 #include "QKDInterfaces/ISift.grpc.pb.h"
-
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {

@@ -11,7 +11,7 @@
 */
 #pragma once
 #include "CQPToolkit/Interfaces/IDetectionEventPublisher.h"
-#include "CQPToolkit/Util/Provider.h"
+#include "Algorithms/Util/Provider.h"
 #include <chrono>
 #include "QKDInterfaces/IDetector.grpc.pb.h"
 #include "QKDInterfaces/IPhotonSim.grpc.pb.h"

@@ -16,7 +16,7 @@
 #include "CQPToolkit/Drivers/Usb.h"            // for Usb
 #include "CQPToolkit/Interfaces/IQKDDevice.h"  // for IQKDDevice
 #include "QKDInterfaces/Site.pb.h"             // for Device
-#include "Util/URI.h"                          // for URI
+#include "Algorithms/Datatypes/URI.h"                          // for URI
 struct libusb_transfer;
 
 namespace cqp

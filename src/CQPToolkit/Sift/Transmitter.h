@@ -10,8 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/WorkerThread.h"
-#include "CQPToolkit/Util/ProtectedVariable.h"
+#include "Algorithms/Util/WorkerThread.h"
 #include "SiftBase.h"
 #include <chrono>
 #include <grpc++/channel.h>

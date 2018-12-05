@@ -11,8 +11,8 @@
 */
 #pragma once
 #include "CQPToolkit/cqptoolkit_export.h"
-#include "CQPToolkit/Datatypes/Framing.h"
-#include "CQPToolkit/Datatypes/Qubits.h"
+#include "Algorithms/Datatypes/Framing.h"
+#include "Algorithms/Datatypes/Qubits.h"
 #include "CQPToolkit/Interfaces/IProtocolEvent.h"
 
 namespace cqp

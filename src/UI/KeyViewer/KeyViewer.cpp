@@ -16,13 +16,13 @@
 #include <QMessageBox>
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include <openssl/pem.h>
 #include <openssl/pem2.h>
 #include <openssl/pkcs12.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/KeyGen/YubiHSM.h"
+#include "KeyManagement/KeyStores/YubiHSM.h"
 #include "CQPUI/OpenSSLKeyUI.h"
 
 using grpc::Status;

@@ -9,17 +9,16 @@
 * @date 1/5/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPToolkit/Util/Platform.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "IDQKeyExtraction.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Util/Util.h"
+#include "Algorithms/Util/Strings.h"
 #include "QKDInterfaces/IIDQWrapper.grpc.pb.h"
 #include <iostream>
 #include <iomanip>
 #include <grpc++/create_channel.h>
 #include <grpc++/security/credentials.h>
 #include "CQPToolkit/Auth/AuthUtil.h"
-#include "IDQKeyExtraction.h"
 
 using namespace cqp;
 

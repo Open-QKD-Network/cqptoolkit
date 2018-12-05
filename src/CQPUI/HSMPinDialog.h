@@ -11,7 +11,7 @@
 */
 #pragma once
 #include <QDialog>
-#include "CQPToolkit/KeyGen/HSMStore.h"
+#include "KeyManagement/KeyStores/HSMStore.h"
 #include "CQPUI/cqpui_export.h"
 
 namespace Ui

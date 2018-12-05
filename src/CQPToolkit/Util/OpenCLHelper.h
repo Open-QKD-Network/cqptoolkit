@@ -11,7 +11,7 @@
 */
 #pragma once
 #if defined(OPENCL_FOUND)
-#include "Platform.h"
+
 #include <vector>
 #include <memory>
 

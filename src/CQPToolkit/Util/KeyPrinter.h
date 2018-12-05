@@ -9,7 +9,7 @@
 * @date 08 Feb 2016
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "Platform.h"
+
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include <mutex>
 #pragma once

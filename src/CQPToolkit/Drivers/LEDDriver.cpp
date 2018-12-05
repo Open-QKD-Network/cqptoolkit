@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "LEDDriver.h"
-#include "CQPToolkit/Util/Platform.h"
+
 #include <string>
 
 namespace cqp

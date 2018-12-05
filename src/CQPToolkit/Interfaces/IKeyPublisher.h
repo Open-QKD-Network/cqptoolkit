@@ -12,8 +12,9 @@
 #pragma once
 
 #include "CQPToolkit/cqptoolkit_export.h"
-#include "IEvent.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "Algorithms/Util/IEvent.h"
+#include "Algorithms/Datatypes/Keys.h"
+#include <memory>
 
 namespace cqp
 {

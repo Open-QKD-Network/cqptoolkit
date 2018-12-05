@@ -29,6 +29,9 @@ EmbedResources("Alignment/Histogram.cl")
 
 # Generate a standard setup for a library
 CQP_LIBRARY_PROJECT()
+add_dependencies(${PROJECT_NAME} Algorithms)
+add_dependencies(${PROJECT_NAME}_Shared Algorithms_Shared)
+add_dependencies(${PROJECT_NAME}_Static Algorithms_Static)
 add_dependencies(${PROJECT_NAME} QKDInterfaces)
 add_dependencies(${PROJECT_NAME}_Static QKDInterfaces_Static)
 add_dependencies(${PROJECT_NAME}_Shared QKDInterfaces_Shared)
@@ -38,11 +41,11 @@ add_dependencies(${PROJECT_NAME}_Shared QKDInterfaces_Shared)
 if(TARGET ${PROJECT_NAME}_Shared)
 
     target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
+        Algorithms_Shared
         QKDInterfaces_Shared
     )
 
     target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
-        libCurl
         PkgConfig::libUSB_1
         PkgConfig::CRYPTOPP
     )
@@ -51,13 +54,6 @@ if(TARGET ${PROJECT_NAME}_Shared)
     	target_link_libraries(${PROJECT_NAME}_Shared PRIVATE OpenCL::OpenCL)
     endif()
 
-    if(TARGET PkgConfig::avahi-client)
-    	target_link_libraries(${PROJECT_NAME}_Shared PRIVATE PkgConfig::avahi-client)
-    endif()
-
-    if(TARGET PkgConfig::SQLITE3)
-        target_link_libraries(${PROJECT_NAME}_Shared PRIVATE PkgConfig::SQLITE3)
-    endif()
 endif(TARGET ${PROJECT_NAME}_Shared)
 # packaging
 SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "CQP Toolkit")

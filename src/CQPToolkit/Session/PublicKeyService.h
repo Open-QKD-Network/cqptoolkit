@@ -17,6 +17,7 @@
 #include <cryptopp/rsa.h>
 #include <cryptopp/eccrypto.h>
 #include <unordered_map>
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {
@@ -32,7 +33,7 @@ namespace cqp
          * @brief PublicKeyService
          * Constructor
          */
-        PublicKeyService();
+        [[deprecated]] PublicKeyService();
 
         /**
          * @brief SharePublicKey

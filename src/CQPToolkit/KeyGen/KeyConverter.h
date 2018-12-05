@@ -10,8 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
-#include "CQPToolkit/Util/Provider.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "Algorithms/Util/Provider.h"
+#include "Algorithms/Datatypes/Keys.h"
 #include <bitset>
 #include <climits>
 #pragma once

@@ -11,7 +11,7 @@
 */
 #include "DetectionGating.h"
 #include <cmath>
-
+#include <sstream>
 #include "CQPToolkit/Util/OpenCLHelper.h"
 
 extern const char _binary_Histogram_cl_start[];

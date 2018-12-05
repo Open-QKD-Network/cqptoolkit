@@ -8,3 +8,9 @@
 ### @date 04 April 2016
 ### @author Richard Collins <richard.collins@bristol.ac.uk>
 ### 
+cmake_minimum_required (VERSION 3.7.2)
+
+project(ExampleInterfaces CXX)
+include(CommonSetup)
+
+CQP_Library_PROJECT()

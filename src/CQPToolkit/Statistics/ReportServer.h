@@ -10,8 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
+#include "CQPToolkit/cqptoolkit_export.h"
 #include "QKDInterfaces/IReporting.grpc.pb.h"
-#include "CQPToolkit/Statistics/Stat.h"
+#include "Algorithms/Statistics/Stat.h"
 #include <condition_variable>
 
 namespace cqp

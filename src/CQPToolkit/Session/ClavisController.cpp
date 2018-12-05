@@ -20,7 +20,7 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Drivers/DeviceFactory.h"
 #include "CQPToolkit/Drivers/ClavisProxy.h"
-#include "CQPToolkit/Net/TwoWayServerConnector.h"
+#include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include <future>
 
 namespace cqp

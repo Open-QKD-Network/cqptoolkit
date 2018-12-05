@@ -10,10 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "DeviceDialog.h"
-#include "CQPToolkit/Tunnels/RawSocket.h"
-#include "CQPToolkit/Tunnels/EthTap.h"
-#include "CQPToolkit/Util/Util.h"
-#include "CQPToolkit/Datatypes/Tunnels.h"
+#include "Networking/Tunnels/RawSocket.h"
+#include "Networking/Tunnels/EthTap.h"
+#include "Networking/Tunnels/TunnelBuilder.h"
 
 namespace qkdtunnel
 {

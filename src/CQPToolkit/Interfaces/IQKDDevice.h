@@ -11,8 +11,8 @@
 */
 #pragma once
 #include <string>
-#include "CQPToolkit/Util/Platform.h"
-#include "CQPToolkit/Util/URI.h"
+#include "Algorithms/Util/Strings.h"
+#include "Algorithms/Datatypes/URI.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include <memory>
 

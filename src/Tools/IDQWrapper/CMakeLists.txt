@@ -20,6 +20,7 @@ CQP_EXE_PROJECT()
 target_link_libraries(${PROJECT_NAME} PRIVATE
     QKDInterfaces_Static
     CQPToolkit_Static
+    Algorithms_Static
     gRPC::grpc++
     protobuf::libprotobuf
     libCurl

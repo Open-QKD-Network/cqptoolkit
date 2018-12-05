@@ -12,14 +12,14 @@
 #include "TestSockets.h"
 #include <thread>
 #include <chrono>
-#include "CQPToolkit/Net/Datagram.h"
-#include "CQPToolkit/Net/Server.h"
-#include "CQPToolkit/Net/Stream.h"
+#include "Algorithms/Net/Sockets/Datagram.h"
+#include "Algorithms/Net/Sockets/Server.h"
+#include "Algorithms/Net/Sockets/Stream.h"
 #include <future>
 #include <condition_variable>
-#include "CQPToolkit/Util/URI.h"
-#include "CQPToolkit/Tunnels/RawSocket.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "Algorithms/Datatypes/URI.h"
+#include "Networking/Tunnels/RawSocket.h"
+#include "Algorithms/Logging/Logger.h"
 
 namespace cqp
 {

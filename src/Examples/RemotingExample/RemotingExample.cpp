@@ -12,11 +12,10 @@
 
 #include <iostream>
 
-#include "CQPToolkit/Util/ProtectedVariable.h"
 #include "CQPToolkit/Util/KeyVerifier.h"
 #include "CQPToolkit/Util/KeyPrinter.h"
-#include "CQPToolkit/Util/ConsoleLogger.h"
-#include "CQPToolkit/Util/Application.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Util/Application.h"
 
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>
@@ -72,7 +71,9 @@ private:
     KeyVerifier keyVerifier;
 
     /// condition to wait for
-    ProtectedVariable<unsigned long> keyReceived;
+    unsigned long keyReceived;
+    std::condition_variable keyCv;
+    std::mutex keyMut;
 
     std::string connectionAddress = "127.0.0.1:8000";
     uint16_t listenPort = 8000;
@@ -104,7 +105,8 @@ RemotingExample::RemotingExample()
 
 void RemotingExample::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
 {
-    keyReceived.notify_one(keyReceived.GetValue() + 1);
+    keyReceived++;
+    keyCv.notify_one();
 }
 
 void RemotingExample::handleOption(const CommandArgs::Option& option)
@@ -185,8 +187,10 @@ int RemotingExample::Main(const std::vector<std::string> &args)
             StartBob(connectionAddress);
         }
 
-        unsigned long result =0;
-        keyReceived.wait_for(std::chrono::seconds(3), result);
+        std::unique_lock<std::mutex> lock(keyMut);
+        keyCv.wait_for(lock, std::chrono::seconds(3), [&](){
+            return keyReceived != 0;
+        });
     }
     catch(const std::exception& e)
     {

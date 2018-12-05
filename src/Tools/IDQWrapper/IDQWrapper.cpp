@@ -9,20 +9,19 @@
 * @date 1/5/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "IDQWrapper.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 
 #include <grpc++/create_channel.h>
 #include <grpc++/client_context.h>
 
-#include "CQPToolkit/Net/DNS.h"
+#include "Algorithms/Net/DNS.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
-#include "CQPToolkit/Util/URI.h"
+#include "Algorithms/Datatypes/URI.h"
 #include <thread>
 
-#include "CQPToolkit/Net/DNS.h"
-#include "IDQWrapper.h"
-#include "CQPToolkit/Datatypes/Keys.h"
+#include "Algorithms/Datatypes/Keys.h"
 
 using namespace cqp;
 using grpc::Status;

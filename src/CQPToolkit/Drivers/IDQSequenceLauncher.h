@@ -12,11 +12,12 @@
 #pragma once
 #include <string>
 #include <thread>
-#include "CQPToolkit/Util/Platform.h"
+
 #include <array>
 #include <cryptopp/secblock.h>
-#include "CQPToolkit/Util/Process.h"
-#include "CQPToolkit/Datatypes/Base.h"
+#include "Algorithms/Util/Process.h"
+#include "Algorithms/Datatypes/Base.h"
+#include "Algorithms/Util/Strings.h"
 
 namespace cqp
 {

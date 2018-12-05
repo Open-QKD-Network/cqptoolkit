@@ -10,12 +10,12 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "SessionController.h"
-#include "CQPToolkit/Util/Logger.h"
+#include "Algorithms/Logging/Logger.h"
 #include "CQPToolkit/Session/PublicKeyService.h"
-#include "CQPToolkit/Net/TwoWayServerConnector.h"
+#include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Simulation/RandomNumber.h"
-#include "CQPToolkit/Net/DNS.h"
+#include "Algorithms/Random/RandomNumber.h"
+#include "Algorithms/Net/DNS.h"
 
 namespace cqp
 {

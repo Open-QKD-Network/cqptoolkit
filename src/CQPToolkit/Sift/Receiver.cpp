@@ -45,6 +45,7 @@ namespace cqp
                 QubitsByFrame::iterator mySeqIt = firstAnswer;
 
                 auto theirSeqIt = request->basis().begin();
+
                 // for each sequence id
                 while(theirSeqIt != request->basis().end())
                 {
@@ -53,21 +54,21 @@ namespace cqp
                         // shortcuts for readability
                         const auto& theirBasisList = theirSeqIt->second;
                         RepeatedField<bool>* myAnswers = (*response->mutable_answers())[theirSeqIt->first].mutable_answers();
-                        QubitList::const_iterator myQubitIt = mySeqIt->second->begin();
                         LOGTRACE("Their list: " + std::to_string(theirBasisList.basis_size()) +
                                  " My List: " + std::to_string(mySeqIt->second->size()));
 
                         if(static_cast<unsigned long>(theirBasisList.basis_size()) == mySeqIt->second->size())
                         {
-                            //myAnswers.reserve(theirBasisList.basis_size());
-                            // for each basis, compare to our basis
-                            for(auto element : theirBasisList.basis())
-                            {
-                                // store the answer
-                                myAnswers->Add(Basis(element) == QubitHelper::Base(*myQubitIt));
-                                // move to the next element in our list
-                                ++myQubitIt;
-                            } // for(Qubit::Basis element : theirBasisList)
+                            myAnswers->Resize(theirBasisList.basis().size(), false);
+
+                            // for each basis, compare to our basis, putting the answer in myAnswers
+                            std::transform(theirBasisList.basis().begin(), theirBasisList.basis().end(),
+                                           mySeqIt->second->begin(),
+                                           myAnswers->begin(),
+                                           [](auto left, auto right){
+                                return Basis(left) == QubitHelper::Base(right);
+                            });
+
                         } // if
                         else
                         {

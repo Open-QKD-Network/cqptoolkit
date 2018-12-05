@@ -13,8 +13,10 @@
 #include <bits/stdint-uintn.h>         // for uint32_t
 #include <string>                      // for operator+, string, to_string
 #include <vector>                      // for allocator, vector
-#include "CQPToolkit/Util/Platform.h"  // for FILE_HANDLE
-#include "CQPToolkit/Util/URI.h"       // for URI
+  // for FILE_HANDLE
+#include "Algorithms/Datatypes/URI.h"       // for URI
+#include "Algorithms/Util/FileIO.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 #if defined(_MSC_VER)
     #pragma warning(push)

@@ -12,8 +12,8 @@
 #pragma once
 #include "CQPToolkit/Interfaces/IErrorCorrectPublisher.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
-#include "CQPToolkit/Util/Provider.h"
-#include "CQPToolkit/Util/WorkerThread.h"
+#include "Algorithms/Util/Provider.h"
+#include "Algorithms/Util/WorkerThread.h"
 #include "QKDInterfaces/IPrivacyAmplify.grpc.pb.h"
 #include "CQPToolkit/PrivacyAmp/Stats.h"
 

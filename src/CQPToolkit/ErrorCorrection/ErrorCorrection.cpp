@@ -13,8 +13,8 @@
 #include <cstddef>                             // for size_t
 #include <ratio>                               // for ratio
 #include "CQPToolkit/ErrorCorrection/Stats.h"  // for Stats
-#include "Statistics/Stat.h"                   // for Stat
-#include "Util/Logger.h"                       // for LOGTRACE
+#include "Algorithms/Statistics/Stat.h"                   // for Stat
+#include "Algorithms/Logging/Logger.h"                       // for LOGTRACE
 
 namespace cqp
 {
@@ -52,6 +52,7 @@ namespace cqp
             //receivedDataCv.notify_one();
             // just pass it on
             std::unique_ptr<DataBlock> corrected(new DataBlock);
+            corrected->resize(siftedData->size());
             std::copy(siftedData->begin(), siftedData->end(), corrected->begin());
 
             if(listener)

@@ -19,7 +19,10 @@ if(TARGET gRPC::grpc)
 endif(TARGET gRPC::grpc)
 
 # Add the library build
+add_subdirectory(Algorithms)
 add_subdirectory(CQPToolkit)
+add_subdirectory(KeyManagement)
+add_subdirectory(Networking)
 add_subdirectory(CQPUI)
 # Pull the value from the subfolder
 get_directory_property(CQPToolkit_INCLUDE_DIRS DIRECTORY CQPToolkit DEFINITION CQPToolkit_INCLUDE_DIRS)

@@ -10,9 +10,11 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/Platform.h"
+
 #include <streambuf>
 #include <cryptopp/secblock.h>
+#include "Algorithms/Util/FileIO.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {

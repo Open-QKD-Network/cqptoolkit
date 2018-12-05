@@ -10,8 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "TestPKCS11.h"
-#include "CQPToolkit/KeyGen/PKCS11Wrapper.h"
-#include "CQPToolkit/KeyGen/HSMStore.h"
+#include "KeyManagement/KeyStores/PKCS11Wrapper.h"
+#include "KeyManagement/KeyStores/HSMStore.h"
 
 #define YH_ALGO_AES256_CCM_WRAP 42
 
@@ -32,7 +32,7 @@ namespace cqp
 {
     namespace tests
     {
-        TEST(KeyMan, PKCS)
+        TEST(KeyMan, DISABLED_PKCS)
         {
             using namespace p11;
             using std::shared_ptr;

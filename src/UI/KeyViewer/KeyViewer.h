@@ -12,10 +12,10 @@
 #pragma once
 
 #include <QMainWindow>
-#include "CQPToolkit/Interfaces/IService.h"
-#include "CQPToolkit/Net/ServiceDiscovery.h"
+#include "KeyManagement/Net/IService.h"
+#include "KeyManagement/Net/ServiceDiscovery.h"
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
-#include "CQPToolkit/KeyGen/HSMStore.h"
+#include "KeyManagement/KeyStores/HSMStore.h"
 #include <QMenu>
 #include "CQPUI/HSMPinDialog.h"
 

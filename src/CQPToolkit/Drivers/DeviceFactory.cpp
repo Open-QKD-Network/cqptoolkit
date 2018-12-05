@@ -14,11 +14,11 @@
 #include <utility>                                     // for move, pair
 #include "CQPToolkit/Interfaces/IQKDDevice.h"          // for IQKDDevice
 #include "CQPToolkit/Interfaces/ISessionController.h"  // for ISessionContro...
-#include "CQPToolkit/Statistics/StatCollection.h"      // for StatCollection
-#include "CQPToolkit/Util/Logger.h"                    // for LOGERROR, LOGT...
-#include "CQPToolkit/Util/Util.h"                      // for StrEqualI
+#include "Algorithms/Statistics/StatCollection.h"      // for StatCollection
+#include "Algorithms/Logging/Logger.h"                    // for LOGERROR, LOGT...
+#include "Algorithms/Util/Strings.h"                      // for StrEqualI
 #include "QKDInterfaces/Site.pb.h"                     // for Side, Side::Any
-#include "Util/URI.h"                                  // for URI
+#include "Algorithms/Datatypes/URI.h"                                  // for URI
 
 namespace cqp
 {

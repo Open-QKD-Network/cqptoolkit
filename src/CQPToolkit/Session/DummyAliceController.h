@@ -11,7 +11,7 @@
 */
 #pragma once
 #include "CQPToolkit/Session/SessionController.h"
-#include "CQPToolkit/Util/WorkerThread.h"
+#include "Algorithms/Util/WorkerThread.h"
 #include "QKDInterfaces/IDetector.grpc.pb.h"
 #include "CQPToolkit/Session/Stats.h"
 

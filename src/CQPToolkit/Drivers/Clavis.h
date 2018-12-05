@@ -10,8 +10,11 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Net/Datagram.h"
-#include "CQPToolkit/Util/URI.h"
+#include "Algorithms/Net/Sockets/Datagram.h"
+#include "Algorithms/Datatypes/URI.h"
+#include <cstdint>
+#include <string>
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {
@@ -111,7 +114,7 @@ namespace cqp
         /// Number of bytes returned by the device when requesting a key.
         uint8_t myKeyLength = Clavis::MaxKeyLength;
         /// The devices udp address
-        URI hardwareAddress;
+        net::SocketAddress hardwareAddress;
         /// Socket on which requests are sent
         net::Datagram socket;
         /// Number of times to retry when there is no more key

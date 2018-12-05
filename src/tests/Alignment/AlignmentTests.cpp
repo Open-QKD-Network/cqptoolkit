@@ -12,7 +12,7 @@
 #include "AlignmentTests.h"
 #include "CQPToolkit/Alignment/Alignment.h"
 #include <ctime>
-#include "CQPToolkit/Util/ConsoleLogger.h"
+#include "Algorithms/Logging/ConsoleLogger.h"
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server.h>
@@ -25,7 +25,7 @@
 #include "CQPToolkit/Alignment/TransmissionHandler.h"
 #include "CQPToolkit/Alignment/DetectionReciever.h"
 #include <chrono>
-#include "CQPToolkit/Util/DataFile.h"
+#include "Algorithms/Util/DataFile.h"
 
 namespace cqp
 {
@@ -92,7 +92,7 @@ namespace cqp
             align::DetectionGating gating(rng);
             gating.SetSystemParameters(frameWidth, slotWidth, pulseWidth, 5, 0.01);
             gating.SetNumberThreads(1);
-            gating.ResetDrift(align::DetectionGating::PicoSecondOffset(-100000));
+            gating.ResetDrift(PicoSecondOffset(-100000));
             QubitList fixedEmissions;
             std::set<uint64_t> markerIds;
 
@@ -218,7 +218,7 @@ namespace cqp
             ASSERT_EQ(txIncomming, rxIncomming) << "Data doesn't match";
         }
 
-        TEST_F(AlignmentTests, RealData)
+        TEST_F(AlignmentTests, DISABLED_RealData)
         {
             using namespace std::chrono;
             RandomNumber rng;

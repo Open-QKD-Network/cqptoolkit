@@ -12,7 +12,8 @@
 #pragma once
 #include "QKDInterfaces/ISession.grpc.pb.h"
 #include "CQPToolkit/Interfaces/ISessionController.h"
-#include "CQPToolkit/Util/Provider.h"
+#include "Algorithms/Util/Provider.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {
@@ -28,7 +29,7 @@ namespace cqp
     /**
      * @brief The SessionController class
      */
-    class SessionController :
+    class CQPTOOLKIT_EXPORT SessionController :
         public remote::ISession::Service,
         public virtual ISessionController
     {

@@ -12,8 +12,8 @@
 #if defined(OPENCL_FOUND)
 #include "OpenCLHelper.h"
 #include <algorithm>
-#include "Logger.h"
-#include "Platform.h"
+#include "Algorithms/Logging/Logger.h"
+
 #include <type_traits>
 #include <memory>
 

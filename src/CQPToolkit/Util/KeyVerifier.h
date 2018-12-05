@@ -10,9 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "Platform.h"
+
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
-#include "CQPToolkit/Util/Event.h"
+#include "Algorithms/Util/Event.h"
 #include <mutex>
 
 

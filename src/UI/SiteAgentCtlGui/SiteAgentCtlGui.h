@@ -12,7 +12,7 @@
 #pragma once
 #include <QMainWindow>
 #include <QTreeWidgetItem>
-#include "CQPToolkit/Net/ServiceDiscovery.h"
+#include "KeyManagement/Net/ServiceDiscovery.h"
 
 namespace Ui {
     class SiteAgentCtlGui;

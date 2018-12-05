@@ -10,10 +10,10 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "TestWeb.h"
-#include "CQPToolkit/Net/DNS.h"
-#include "CQPToolkit/Util/URI.h"
-#include "CQPToolkit/Net/Socket.h"
-#include "CQPToolkit/Net/HTTPClientSession.h"
+#include "Algorithms/Net/DNS.h"
+#include "Algorithms/Datatypes/URI.h"
+#include "Algorithms/Net/Sockets/Socket.h"
+#include "KeyManagement/SDN/HTTPClientSession.h"
 
 namespace cqp
 {

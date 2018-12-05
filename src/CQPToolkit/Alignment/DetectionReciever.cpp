@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "DetectionReciever.h"
-#include "CQPToolkit/Datatypes/Framing.h"
+#include "Algorithms/Datatypes/Framing.h"
 
 namespace cqp {
 namespace align {

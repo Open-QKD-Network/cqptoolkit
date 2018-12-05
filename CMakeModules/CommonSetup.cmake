@@ -15,6 +15,15 @@ cmake_minimum_required (VERSION 3.7.2)
 
 set(verbose FALSE)
 
+macro(include_once)
+  if (INCLUDED_${CMAKE_CURRENT_LIST_FILE})
+    return()
+  endif()
+  set(INCLUDED_${CMAKE_CURRENT_LIST_FILE} true)
+endmacro()
+
+include_once()
+
 # Enable ExternalProject CMake module
 include(ExternalProject REQUIRED)
 
@@ -262,9 +271,6 @@ macro(CQP_LIBRARY_PROJECT)
     # for dependencies with other projects
     include_directories("${CMAKE_BINARY_DIR}/src")
 
-    set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS "ON")
-    set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY ">=")
-
     SET_COMPONENT_NAME("${PROJECT_NAME}" _componentName)
 
     # Produce a header file which defines whether functions are imported/exported.
@@ -435,6 +441,10 @@ macro(CQP_TEST_PROJECT)
     CQP_EXE_PROJECT()
 
     include_directories("${GTEST_INCLUDE_DIRS}" "${GMOCK_INCLUDE_DIRS}")
+
+    if(TARGET GTest_External)
+        add_dependencies(${PROJECT_NAME} GTest_External)
+    endif()
     target_link_libraries(${PROJECT_NAME} PRIVATE gtest gtest_main gmock)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Tests")
 

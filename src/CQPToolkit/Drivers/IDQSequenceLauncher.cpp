@@ -11,11 +11,12 @@
 */
 #include "IDQSequenceLauncher.h"
 #include <thread>
-#include "CQPToolkit/Util/Logger.h"
-#include "CQPToolkit/Util/Util.h"
-#include "CQPToolkit/Util/URI.h"
-#include "CQPToolkit/Net/Socket.h"
-#include "CQPToolkit/Util/FileIO.h"
+#include "Algorithms/Logging/Logger.h"
+#include "Algorithms/Util/Strings.h"
+#include "Algorithms/Datatypes/URI.h"
+#include "Algorithms/Net/Sockets/Socket.h"
+#include "Algorithms/Net/DNS.h"
+#include "Algorithms/Util/FileIO.h"
 #include <fstream>
 #include <iomanip>
 #if defined(__unix__)

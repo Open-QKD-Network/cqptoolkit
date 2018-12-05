@@ -16,7 +16,7 @@
 #include "CQPToolkit/ErrorCorrection/ErrorCorrection.h"
 #include "CQPToolkit/PrivacyAmp/PrivacyAmplify.h"
 #include "CQPToolkit/KeyGen/KeyConverter.h"
-#include "CQPToolkit/Net/TwoWayServerConnector.h"
+#include "CQPToolkit/Session/TwoWayServerConnector.h"
 
 namespace cqp
 {

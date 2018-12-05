@@ -59,7 +59,7 @@ project(CQP NONE)
 
 #HACK:
 # I can't get this to work at the package level so it goes here.
-SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/src/CQPToolkit;${CMAKE_BINARY_DIR}/src/QKDInterfaces;${CMAKE_BINARY_DIR}/src/CQPUI")
+SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/src/Algorithms;${CMAKE_BINARY_DIR}/src/CQPToolkit;${CMAKE_BINARY_DIR}/src/QKDInterfaces;${CMAKE_BINARY_DIR}/src/KeyManagement;${CMAKE_BINARY_DIR}/src/Networking;${CMAKE_BINARY_DIR}/src/CQPUI")
 
 # Perform some standard setup steps like detecting the platform.
 include(CommonSetup)
