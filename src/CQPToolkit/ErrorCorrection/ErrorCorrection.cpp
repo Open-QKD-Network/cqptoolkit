@@ -52,6 +52,7 @@ namespace cqp
             //receivedDataCv.notify_one();
             // just pass it on
             std::unique_ptr<DataBlock> corrected(new DataBlock);
+            corrected->resize(siftedData->size());
             std::copy(siftedData->begin(), siftedData->end(), corrected->begin());
 
             if(listener)

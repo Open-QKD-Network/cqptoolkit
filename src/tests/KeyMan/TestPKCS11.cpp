@@ -32,7 +32,7 @@ namespace cqp
 {
     namespace tests
     {
-        TEST(KeyMan, PKCS)
+        TEST(KeyMan, DISABLED_PKCS)
         {
             using namespace p11;
             using std::shared_ptr;

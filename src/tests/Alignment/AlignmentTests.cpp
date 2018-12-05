@@ -218,7 +218,7 @@ namespace cqp
             ASSERT_EQ(txIncomming, rxIncomming) << "Data doesn't match";
         }
 
-        TEST_F(AlignmentTests, RealData)
+        TEST_F(AlignmentTests, DISABLED_RealData)
         {
             using namespace std::chrono;
             RandomNumber rng;
