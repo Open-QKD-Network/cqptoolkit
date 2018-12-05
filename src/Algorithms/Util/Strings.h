@@ -160,19 +160,59 @@ namespace cqp {
         return result.str();
     }
 
-    inline char FromHex (
-        char ch
+    /// Lookup table to go from a hex character to it's number
+    struct CharToIntTable {
+        char tab[256] {0};
+
+      constexpr CharToIntTable() : tab {} {
+        tab[0u + '1'] = 1;
+        tab[0u + '2'] = 2;
+        tab[0u + '3'] = 3;
+        tab[0u + '4'] = 4;
+        tab[0u + '5'] = 5;
+        tab[0u + '6'] = 6;
+        tab[0u + '7'] = 7;
+        tab[0u + '8'] = 8;
+        tab[0u + '9'] = 9;
+        tab[0u + 'a'] = 10;
+        tab[0u + 'A'] = 10;
+        tab[0u + 'b'] = 11;
+        tab[0u + 'B'] = 11;
+        tab[0u + 'c'] = 12;
+        tab[0u + 'C'] = 12;
+        tab[0u + 'd'] = 13;
+        tab[0u + 'D'] = 13;
+        tab[0u + 'e'] = 14;
+        tab[0u + 'E'] = 14;
+        tab[0u + 'f'] = 15;
+        tab[0u + 'F'] = 15;
+      }
+      constexpr char operator[](char const idx) const { return tab[static_cast<size_t>(idx)]; }
+
+    } constexpr charToIntTable;
+
+
+    /**
+     * @brief CharFromHex
+     * Take a hex string (00-FF) to it's integral value
+     * @param hexString A 2 character string
+     * @return the integral value of the hex string
+     */
+    inline char CharFromHex (
+        const std::string& hexString
     )
     {
-        if (ch <= '9' && ch >= '0')
-            ch -= '0';
-        else if (ch <= 'f' && ch >= 'a')
-            ch -= 'a' - 10;
-        else if (ch <= 'F' && ch >= 'A')
-            ch -= 'A' - 10;
-        else
-            ch = 0;
-        return ch;
+        char result {};
+        if(hexString.length() >= 2)
+        {
+            // convert the hex character to a nibble
+            const char upper = charToIntTable[hexString[0]];
+            const char lower = charToIntTable[hexString[1]];
+            // shift the upper nibble up and combine with the lower
+            result = static_cast<char>(upper << 4) + lower;
+        }
+
+        return result;
     }
 
 } // namespace cqp

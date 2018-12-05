@@ -489,7 +489,7 @@ namespace cqp
                     result.push_back(SpaceSeperator);
                 } else
                 {
-                    result.append(EscapeChar + ToHexString(c >> 4) + ToHexString(c % 16));
+                    result.append(EscapeChar + ToHexString(c));
                 }
             }
         }
@@ -510,9 +510,11 @@ namespace cqp
                 } else if(input[index] == EscapeChar && input.size() > (index + 2))
                 {
                     // decode the escaped character
-                    const auto c1 = FromHex(input[index + 1]);
-                    const auto c2 = FromHex(input[index + 2]);
-                    result.push_back((c1 << 4) | c2);
+                    std::string code;
+                    code.push_back(input[index + 1]);
+                    code.push_back(input[index + 2]);
+                    result.push_back(CharFromHex(code));
+                    index += 2;
                 } else {
                     // copy as is
                     result.push_back(input[index]);
