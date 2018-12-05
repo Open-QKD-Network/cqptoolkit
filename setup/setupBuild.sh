@@ -7,7 +7,7 @@
 # 
 
 COMMON_PACKAGES="gcc cmake pkg-config subversion"
-UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev"
+UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev texlive-font-utils"
 ARCH_PACKAGES="base-devel libusb crypto++ libcap protobuf git sqlite"
 
 COMMON_TOOLS="git doxygen graphviz astyle "
@@ -20,7 +20,7 @@ MAKETHREADS=`expr \`grep -c ^processor /proc/cpuinfo\` / 2 + 1`
 MAKE="make -s -j${MAKETHREADS}"
 
 PROTOBUF_VERSION=3.6.1
-GRPC_VERSION=1.13.1
+GRPC_VERSION=1.17.0
 
 pushd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SCRIPTDIR=`pwd`

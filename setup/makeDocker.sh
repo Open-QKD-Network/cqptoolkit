@@ -6,7 +6,7 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 
-VERSION=3.7.2
+VERSION=3.7.3
 PUSH=false
 RUNTIME=false
 REPO=richardcollinsbris
