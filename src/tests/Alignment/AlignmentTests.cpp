@@ -26,6 +26,7 @@
 #include "CQPToolkit/Alignment/DetectionReciever.h"
 #include <chrono>
 #include "Algorithms/Util/DataFile.h"
+#include "Algorithms/Alignment/Filter.h"
 
 namespace cqp
 {
@@ -59,6 +60,20 @@ namespace cqp
 
             clientChannel = grpc::CreateChannel("localhost:" + std::to_string(listenPort), grpc::InsecureChannelCredentials());
 
+        }
+
+        TEST_F(AlignmentTests, Filter)
+        {
+            const auto windowOdd = align::Filter::GaussianWindow1D(5.0, 3);
+            ASSERT_DOUBLE_EQ(windowOdd[1], 1.0);
+            ASSERT_DOUBLE_EQ(windowOdd[0], 0.9801986733067553);
+            ASSERT_DOUBLE_EQ(windowOdd[2], windowOdd[0]);
+
+            const auto windowEven = align::Filter::GaussianWindow1D(5.0, 20);
+            ASSERT_DOUBLE_EQ(windowEven[0], 0.1644744565771549);
+            ASSERT_DOUBLE_EQ(windowEven[9], 0.9950124791926823);
+            ASSERT_DOUBLE_EQ(windowEven[9], windowEven[10]);
+            ASSERT_DOUBLE_EQ(windowEven[0], windowEven[19]);
         }
 
         TEST_F(AlignmentTests, Gating)
