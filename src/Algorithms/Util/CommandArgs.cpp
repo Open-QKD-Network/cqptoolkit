@@ -417,6 +417,25 @@ namespace cqp
         return result;
     }
 
+    bool CommandArgs::GetProp(const std::string& key, uint32_t& out) const
+    {
+        bool result = false;
+        auto it = properties.find(key);
+        if(it != properties.end())
+        {
+            try
+            {
+                out = static_cast<uint32_t>(std::stoul(it->second));
+                result = true;
+            }
+            catch (const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
+        }
+        return result;
+    }
+
     bool CommandArgs::GetProp(const std::string& key, std::string& out) const
     {
         bool result = false;

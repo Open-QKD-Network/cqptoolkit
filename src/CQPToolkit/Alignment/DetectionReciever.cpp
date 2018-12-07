@@ -58,7 +58,7 @@ namespace align {
                 }
             } /*lock scope*/
 
-            if(report && !report->detections.empty())
+            if(report && !report->detections.times.empty())
             {
                 using namespace std::chrono;
                 using std::chrono::high_resolution_clock;

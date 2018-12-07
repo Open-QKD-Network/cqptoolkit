@@ -85,6 +85,8 @@ namespace align {
          * @brief DoWork
          */
         void DoWork() override;
+
+        DetectionGating& GetGatingHandler() { return gatingHandler; }
     protected:
         /// storage for incoming data
         ProtocolDetectionReportList receivedData;

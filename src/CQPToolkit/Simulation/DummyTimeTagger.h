@@ -65,7 +65,7 @@ namespace cqp
             /// Protection for collectedPhotons
             std::mutex collectedPhotonsMutex;
             /// The photons which have arrived
-            DetectionReportList collectedPhotons;
+            DetectionReports collectedPhotons;
             /// The point at which the frame was started
             std::chrono::high_resolution_clock::time_point epoc;
             /// current frame number

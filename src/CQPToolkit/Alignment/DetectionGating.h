@@ -54,7 +54,7 @@ namespace cqp
             /// How far away from the origin to check for a spike in the histogram
             constexpr static const uint64_t DefaultoffsetTestRange = 100;
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
-            constexpr static const double DefaultAcceptanceRatio = 0.1;
+            constexpr static const double DefaultAcceptanceRatio = 0.5;
 
             /**
              * @brief DetectionGating
@@ -180,23 +180,10 @@ namespace cqp
              * @return The final processed data.
              */
             std::unique_ptr<QubitList> BuildHistogram(
-                    const DetectionReportList& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel);
-
-        protected: // types
-
-            /// The histogram storage type
-            using CountsByBin = std::vector<uint64_t>;
+                    const DetectionReports& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel);
 
             /// Identifier type for slots
             using SlotID = uint64_t;
-            /// Identifier type bins
-            using BinID = uint64_t;
-
-            /// A list of slot ids
-            using DetectedSlots = std::set<SlotID>;
-
-            /// Upper and lower bounds for detections
-            using DetectionBounds = std::pair<DetectionReportList::const_iterator, DetectionReportList::const_iterator>;
 
             /// Assumptions:
             /// the number of detections per slot per bin are sparse
@@ -204,8 +191,32 @@ namespace cqp
             /// this needs to be ordered so that the list can be collapsed, dripping the slots we missed
             using ValuesBySlot = std::map<SlotID, std::vector<const Qubit*>>;
 
-            /// A list of results
-            using ResultsByBin = std::unordered_map<BinID, ValuesBySlot>;
+            /// Identifier type bins
+            using BinID = uint64_t;
+            /// A list of results with each bin is a list of slots for the data
+            using ResultsByBinBySlot = std::unordered_map<BinID, ValuesBySlot>;
+
+
+            /// Upper and lower bounds for detections
+            using DetectionBounds = std::pair<DetectionTimes::const_iterator, DetectionTimes::const_iterator>;
+
+            /// The histogram storage type
+            using CountsByBin = std::vector<uint64_t>;
+
+            /**
+             * @brief CountDetections
+             * @param dataBounds
+             * @param myResults
+             */
+            static void CountDetections(const DetectionGating::DetectionBounds& dataBounds,
+                                        uint64_t numBins,
+                                        const PicoSecondOffset& drift, const PicoSeconds& slotWidth,
+                                        const PicoSeconds& pulseWidth, ResultsByBinBySlot &myResults, CountsByBin& counts);
+
+        protected: // types
+
+            /// A list of slot ids
+            using DetectedSlots = std::set<SlotID>;
 
             /**
              * @brief The OffsetHighscore struct
@@ -258,7 +269,7 @@ namespace cqp
             /// The duration for a single photon (for filtering processes)
             PicoSeconds pulseWidth    {100};
             /// The number of possible positions within a slot for a detection
-            uint64_t numBins {100};
+            uint32_t numBins {100};
 
         protected: // members
 
@@ -327,13 +338,6 @@ namespace cqp
              */
             static OffsetHighscore ScoreOffsets(const std::pair<uint64_t, uint64_t>& myOffsetRange,
                                        const remote::QubitByIndex& markers, const ValuesBySlot &allResults);
-
-            /**
-             * @brief CountDetections
-             * @param dataBounds
-             * @param myResults
-             */
-            void CountDetections(const DetectionGating::DetectionBounds& dataBounds, ResultsByBin &myResults);
 
             /**
              * @brief CalculateDrift

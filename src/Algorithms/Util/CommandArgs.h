@@ -199,6 +199,8 @@ namespace cqp
         /// @copydoc GetProp
         bool GetProp(const std::string& key, uint16_t& out) const;
         /// @copydoc GetProp
+        bool GetProp(const std::string& key, uint32_t& out) const;
+        /// @copydoc GetProp
         bool GetProp(const std::string& key, std::string& out) const;
 
         /**

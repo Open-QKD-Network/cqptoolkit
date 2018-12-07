@@ -2,7 +2,9 @@
 #include <string>
 #include "Algorithms/Datatypes/Qubits.h"
 #include "Algorithms/Datatypes/DetectionReport.h"
-
+#include <fstream>
+#include "Algorithms/Logging/Logger.h"
+#include <sstream>
 
 namespace cqp {
     namespace fs {
@@ -56,7 +58,7 @@ namespace cqp {
              * @param maxCourseTime If none-zero, stop reading records when the course time reaches this value.
              * @return true on success
              */
-            static bool ReadNOXDetections(const std::string& inFileName, DetectionReportList& output,
+            static bool ReadNOXDetections(const std::string& inFileName, DetectionReports& output,
                                           const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings, bool waitForConfig = true, uint64_t maxCourseTime = 0);
 
             /**
@@ -68,7 +70,7 @@ namespace cqp {
              * @param output destination for report
              * @return true on success
              */
-            static bool ReadDetectionReportList(const std::string& inFileName, DetectionReportList& output);
+            static bool ReadDetectionReportList(const std::string& inFileName, DetectionReports& output);
 
             /**
              * @brief WriteDetectionReportList
@@ -78,7 +80,7 @@ namespace cqp {
              * @param outFileName Filename for output
              * @return true on success
              */
-            static bool WriteDetectionReportList(const DetectionReportList& source, const std::string& outFileName);
+            static bool WriteDetectionReportList(const DetectionReports& source, const std::string& outFileName);
 
             /**
              * Defines the messages sent by the NOX box
@@ -124,6 +126,36 @@ namespace cqp {
                 PicoSeconds GetTime() const;
 
             };
+
+            template<class Iter>
+            static bool WriteCSV(const std::string& filename, const Iter& begin, const Iter& end,
+                                 const std::string& seperator = ", ")
+            {
+                bool result = false;
+                try {
+                    std::ofstream outFile(filename, std::ios::out | std::ios::binary);
+                    if (outFile)
+                    {
+                        for(auto it = begin; it != end; it++)
+                        {
+                            std::stringstream value;
+                            if(it != begin)
+                            {
+                                value << seperator;
+                            }
+                            value << *it;
+                            outFile.write(value.str().data(), value.str().size());
+                        }
+                        outFile.close();
+                        result = true;
+                    }
+
+                } catch (const std::exception& e) {
+                    LOGERROR(e.what());
+                }
+
+                return result;
+            }
         };
 
     } // namespace fs

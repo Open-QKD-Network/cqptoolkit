@@ -65,40 +65,37 @@ namespace cqp
             }
         }
 
-        void DetectionGating::CountDetections(const DetectionGating::DetectionBounds& dataBounds, ResultsByBin& myResults)
+        void DetectionGating::CountDetections(const DetectionGating::DetectionBounds& dataBounds,
+                                              uint64_t numBins,
+                                              const PicoSecondOffset& drift,
+                                              const PicoSeconds& slotWidth,
+                                              const PicoSeconds& pulseWidth,
+                                              ResultsByBinBySlot& slotResults,
+                                              CountsByBin& counts)
         {
             using namespace std;
-            unordered_map<BinID, uint64_t> myCounts;
+            counts.resize(numBins);
             // for each detection
             //   calculate it's slot and bin ids and store a reference to the original data
             //   count the bin ids
-            for(DetectionReportList::const_iterator detection = dataBounds.first; detection != dataBounds.second; ++detection)
+            for(DetectionTimes::const_iterator detection = dataBounds.first; detection != dataBounds.second; ++detection)
             {
                 using namespace std::chrono;
                 // calculate the offset in whole picoseconds (signed)
                 const PicoSecondOffset offset(static_cast<int64_t>(
-                            ceil((static_cast<double>(calculatedDrift.count()) * static_cast<double>(detection->time.count())) / 1000000000.0)
+                            ceil((static_cast<double>(drift.count()) * static_cast<double>(detection->count())) / 1000000000.0)
                             ));
                 // offset the time without the original value being converted to a float
-                const PicoSeconds adjustedTime = detection->time + offset;
+                const PicoSeconds adjustedTime = *detection + offset;
                 // C++ truncates on integer division
                 const SlotID slot = adjustedTime / slotWidth;
                 const BinID bin = (adjustedTime % slotWidth) / pulseWidth;
                 // store the value as a bin for later access
-                myResults[bin][slot].push_back(&detection->value);
+                //slotResults[bin][slot].push_back(detection);
                 // the value is atomic so we can safely update it
-                myCounts[bin]++;
+                counts[bin]++;
             }
 
-            /*lock scope*/{
-                // get a lock
-                unique_lock<mutex> lock(threadStaging.summationMutex);
-                // add our counts to the global list
-                for(auto binIt : myCounts)
-                {
-                    globalCounts[binIt.first] += binIt.second;
-                }
-            }/*lock scope*/
         }
 
         DetectionGating::OffsetHighscore DetectionGating::ScoreOffsets(
@@ -113,7 +110,7 @@ namespace cqp
             {
                 int score = 0;
                 uint64_t markersFoundThisTime = 0;
-                for(auto& marker : markers.qubits())
+                for(const auto& marker : markers.qubits())
                 {
                     auto valueIt = allResults.find(marker.first + testOffset);
                     if(valueIt != allResults.end())
@@ -161,9 +158,17 @@ namespace cqp
             using namespace std;
             LOGDEBUG("Running...");
 
-            ResultsByBin myResults;
+            ResultsByBinBySlot myResults;
+            CountsByBin myCounts;
 
-            CountDetections(dataBounds, myResults);
+            CountDetections(dataBounds, numBins, calculatedDrift, slotWidth, pulseWidth, myResults, myCounts);
+
+            /*lock scope*/{
+                // get a lock
+                unique_lock<mutex> lock(threadStaging.summationMutex);
+                // add our counts to the global list
+                std::transform(myCounts.begin(), myCounts.end(), globalCounts.begin(), globalCounts.begin(), std::plus<CountsByBin::value_type>());
+            }/*lock scope*/
 
             // decrement the counter to find out if the other threads are done
             if(threadStaging.threadsActive.fetch_sub(1) == 1) // true if we just set threadsActive to 0
@@ -239,13 +244,17 @@ namespace cqp
             using namespace std;
             BinID targetBinId = 0;
 
+            stringstream debugResults;
+
             for(uint64_t index = 0; index < globalCounts.size(); index++)
             {
+                debugResults << globalCounts[index] << ",";
                 if(globalCounts[index] > globalCounts[targetBinId])
                 {
                     targetBinId = index;
                 }
             } // for counts
+            LOGDEBUG("Before drift: " + debugResults.str());
 
             minBinId = targetBinId;
             maxBinId = targetBinId;
@@ -268,13 +277,13 @@ namespace cqp
 
             for(uint64_t index = 1; index < numBins; index++)
             {
-                const BinID indexToCheck = static_cast<BinID>((numBins + targetBinId - index) % numBins);
+                const BinID indexToCheck = (numBins + targetBinId - index) % numBins;
                 // find the first one which is too small
                 if(globalCounts[indexToCheck] >= minCount)
                 {
                     // nudge the drift to the left
                     driftOffset--;
-                    minBinId = index;
+                    minBinId = indexToCheck;
                 } else {
                     break; // for
                 }
@@ -286,15 +295,20 @@ namespace cqp
             driftValue << calculatedDrift.count();
             LOGDEBUG("Calculated drift offset:" + std::to_string(driftOffset) + " Drift: " + driftValue.str());
             LOGDEBUG("Min Bin: " + to_string(minBinId) + " target: " + to_string(targetBinId) + " max bin: " + to_string(maxBinId));
+            if(minBinId == targetBinId + 1 && maxBinId == targetBinId - 1)
+            {
+                LOGERROR("All bins within drift tolerance. Noise level too high.");
+            }
 
         } // CalculateDrift
 
-        std::unique_ptr<QubitList> DetectionGating::BuildHistogram(const DetectionReportList& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel)
+        std::unique_ptr<QubitList> DetectionGating::BuildHistogram(const DetectionReports& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel)
         {
             using namespace std;
             using std::vector;
             std::unique_ptr<QubitList> results(new QubitList);
 
+            /*
             CountsByBin counts(numBins);
 
             // each thread will have at least one item to process
@@ -341,6 +355,7 @@ namespace cqp
                 DetectionGating::DetectionBounds bounds = {start, end};
                 threadPool[threadId].theThread = thread(
                             &DetectionGating::HistogramWorker, this, bounds, startOffsetRange, ref(markers), ref(threadPool[threadId].highScoreOffset));
+
             } // for each thread
 
             // ask the other side for some points of reference to shift our slot index to line up with theirs
@@ -421,7 +436,9 @@ namespace cqp
             // pass the known slots to the other side so we can shorten the lists
             grpc::Status txResult = SendValidDetections(channel, frameId, detectedSlots, highestScore.slotIdOffset);
             allResults.clear();
+            */
             return results;
+
         } // BuildHistogram
 
         grpc::Status DetectionGating::SendValidDetections(
