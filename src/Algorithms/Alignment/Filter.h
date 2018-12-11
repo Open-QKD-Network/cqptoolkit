@@ -4,8 +4,10 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <map>
 #include "Algorithms/Datatypes/Chrono.h"
 #include "Algorithms/Datatypes/DetectionReport.h"
+#include <functional>
 
 namespace cqp {
     namespace align {
@@ -16,12 +18,31 @@ namespace cqp {
         class ALGORITHMS_EXPORT Filter
         {
         public:
-            /// Constructor
-            Filter(double sigma = 5.0, size_t filterWidth = 21, double cutoff = 0.2, size_t stride = 25);
+            static constexpr double DefaultSigma = 5.0;
+            static constexpr size_t DefaultFilterWidth = 21;
+            static constexpr double DefaultCutoff = 0.2;
+            static constexpr size_t DefaultStride = 25;
 
-            void Isolate(const DetectionTimes& timeTags,
-                         DetectionTimes::const_iterator& start,
-                         DetectionTimes::const_iterator& end);
+            /** Constructor
+            * @param sigma value for the Gaussian filter
+            * @param filterWidth number of elements for the Gaussian filter
+            * @param cutoff The signal level which signifies a valid transmission as a percentage (0 - 1)
+            * @param stride How many elements to reduce the data set by when detecting the transmission
+            */
+            Filter(double sigma = DefaultSigma, size_t filterWidth = DefaultFilterWidth,
+                   double cutoff = DefaultCutoff, size_t stride = DefaultStride);
+
+            /**
+             * @brief Isolate
+             * Find the start and end of transmission by looking for an increase in detections
+             * @param timeTags Raw times of detections
+             * @param[out] start The start of detections
+             * @param[out] end The end of detections
+             */
+            void Isolate(const DetectionReportList& timeTags,
+                         DetectionReportList::const_iterator& start,
+                         DetectionReportList::const_iterator& end);
+
 
             /**
              * @brief Gaussian
@@ -85,9 +106,23 @@ namespace cqp {
             } // GaussianWindow1D
 
             /**
-             *
+             * @brief
+             * Perform a "valid" convolution to the data using the filter by multiplying the two
+             * arrays.
+             * Only elements which the filter can be applied to are returned
+             * Filter:        |****|
+             * Data:   |-----------|
+             * Result: |=======|
+             *                  ^^^ These elements cannot be completely convolved
+             * so are not returned in the result.
              * @details
              * The data size must be >= filter size
+             * @tparam T The type of the result
+             * @param inBegin The first element of data
+             * @param inEnd The element past the last data element
+             * @param filterBegin The first element of the filter
+             * @param filterEnd The element pas the last filter element
+             * @param result The storage for the result. It will be resized to fit.
              */
             template<typename T, typename DataIter, typename FilterIter>
             static void ConvolveValid(
@@ -103,7 +138,7 @@ namespace cqp {
 
                     for(size_t index = 0; index < result.size(); index++)
                     {
-                        for(size_t filterIndex = 0; filterIndex < filterSize; filterIndex++)
+                        for(ssize_t filterIndex = 0; filterIndex < filterSize; filterIndex++)
                         {
                             // offset the start iterator and using it's value, multiply by the filter value
                             const auto& dataValue = *(inBegin + index + filterIndex);
@@ -113,9 +148,74 @@ namespace cqp {
                     }
                 }
             }
+
+            /**
+             * Find the edges of a noisy square wave using a binary search.
+             * This will find a transison from high to low with the default less than comparitor
+             * or a low to high edge with the greater than comaritor
+             * @verbatim
+             * |        ##  #####
+             * |       #  ##
+             * |----- # --------- cutoff
+             * | ##  #
+             * |#  ##
+             * |_________________
+             *  ^     ^          ^
+             *  Start |          End
+             *        ` Edge detected
+             * @endverbatim
+             * @note The result is undefined if the data contains more than one edge in the search direction.
+             * @tparam T The data storage and cutoff type
+             * @tparam Iter The iterator type for a collection of T
+             * @param start Start the search from here
+             * @param end End of search region
+             * @param cutoff The transision value for the edge to be considered
+             * @param[out] edge The edge if found, otherwise it will equal end
+             * @param comparator The comparsion operator to use for detecting the edge condition.
+             * The default < will detect a rising edge, use std::greater<T>() to detect a falling edge
+             * @return true if the edge was found.
+             */
+            template<typename T, typename Iter>
+            static bool FindEdge(Iter start, Iter end, T cutoff,
+                          Iter& edge,
+                          std::function<bool (const T&, const T&)> comparator = std::less<T>())
+            {
+                ssize_t lowerBound = 0;
+                ssize_t upperBound = std::distance(start, end);
+                auto searchIndex = upperBound / 2;
+                bool result = false;
+                edge = end;
+
+                while((start + searchIndex) < end)
+                {
+                    if(comparator(*(start + searchIndex), cutoff))
+                    {
+                        // found a lower point, look left for the edge
+                        upperBound = searchIndex;
+                    } else {
+                        // the value to the left is assumed to be no good
+                        lowerBound = searchIndex;
+                    }
+                    // set the search point to half way between the two bounds
+                    searchIndex = lowerBound + (upperBound - lowerBound) / 2;
+                    if(lowerBound >= upperBound - 1)
+                    {
+                        // the bounds have meet store the result
+                        edge = start + upperBound;
+                        result = true;
+                        break; // stop searching
+                    } // if bounds meet
+                } // while
+
+                return result;
+            } // FindEdge
+
         protected:
+            /// The filter to apply
             const std::vector<double> filter;
+            /// The signal level which signifies a valid transmission as a percentage (0 - 1)
             double cutoff;
+            /// How many elements to reduce the data set by when detecting the transmission
             size_t stride;
         };
 

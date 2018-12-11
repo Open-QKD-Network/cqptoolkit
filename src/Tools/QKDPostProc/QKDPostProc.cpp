@@ -14,6 +14,7 @@
 #include "Algorithms/Util/DataFile.h"
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Alignment/Filter.h"
+#include "Algorithms/Alignment/Gating.h"
 
 #include "QKDPostProc.h"
 
@@ -29,7 +30,6 @@ struct Names
 {
     static CONSTSTRING noxData= "noxdata";
     static CONSTSTRING packedQubits= "packed";
-    static CONSTSTRING findDrift= "find-drift";
     static CONSTSTRING driftMax = "drift-max";
     static CONSTSTRING driftStep = "drift-step";
     static CONSTSTRING bins = "bins";
@@ -57,8 +57,6 @@ QKDPostProc::QKDPostProc()
             .Bind();
     definedArguments.AddOption(Names::packedQubits, "p", "Read transmissions from packed Qubits file")
             .Bind();
-    definedArguments.AddOption(Names::findDrift, "d", "Search the detections for a drift value")
-            .Bind();
     definedArguments.AddOption(Names::driftMax, "", "Find Drift: Maximum offset to search (Pico Seconds)")
             .Bind();
     definedArguments.AddOption(Names::driftStep, "", "Find Drift: offset between each offset to try(Picoseconds)")
@@ -84,100 +82,6 @@ struct RunData {
     size_t highestIndex = 0;
 };
 
-void QKDPostProc::FindDrift(const DetectionTimes& detections)
-{
-    uint64_t maxDrift {  40000};
-    uint32_t driftStep {   100};
-    uint32_t numBins   {   100};
-    uint64_t pulseWidth { 1000};
-    uint64_t slotWidth {100000};
-
-    definedArguments.GetProp(Names::driftMax, maxDrift);
-    definedArguments.GetProp(Names::driftStep, driftStep);
-    definedArguments.GetProp(Names::bins, numBins);
-    definedArguments.GetProp(Names::pulseWidth, pulseWidth);
-    definedArguments.GetProp(Names::slotWidth, slotWidth);
-
-    const uint maxThreads { std::max(1u, std::thread::hardware_concurrency()) };
-
-    align::Filter filter;
-    DetectionTimes::const_iterator start;
-    DetectionTimes::const_iterator end;
-    filter.Isolate(detections, start, end);
-    LOGINFO("Start: " + std::to_string(std::distance(detections.begin(), start)) + " End: " + std::to_string(std::distance(detections.begin(), end)));
-
-    ////////////////////////////////////////
-    /*
-    std::vector<PicoSeconds> diffs;
-    diffs.resize(detections.size());
-    const uint itemsPerThread = std::max(1u, static_cast<uint>(detections.size() / maxThreads));
-
-    std::vector<std::future<void>> diffFutures;
-    for(uint threadId = 0; threadId < maxThreads; threadId++)
-    {
-        diffFutures.push_back(std::async(std::launch::async, [&](){
-            const auto startPoint = threadId * itemsPerThread;
-            for(uint index = startPoint; (index < startPoint + itemsPerThread) && index < detections.size() - 1; index++)
-            {
-                diffs[index] = detections[index + 1].time - detections[index].time;
-            }
-        }));
-    }
-
-    for(auto& fut : diffFutures)
-    {
-        fut.wait();
-    }
-    diffFutures.clear();
-
-
-    using myFutures = std::future<RunData>;
-    std::vector<myFutures> futures;
-    std::condition_variable threadLimit;
-
-    RunData winner;
-
-
-    for(auto offset = PicoSecondOffset(-1l * static_cast<int64_t>(maxDrift)) ;
-        offset <= PicoSecondOffset(maxDrift);
-        offset += PicoSecondOffset(driftStep))
-    {
-
-        while(futures.size() >= maxThreads) {
-
-            for(auto future = futures.begin() ; future != futures.end(); future++)
-            {
-                if(future->valid() && future->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
-                {
-                    auto result = future->get();
-                    if(result.highestValue > winner.highestValue)
-                    {
-                        winner = result;
-                    }
-                    futures.erase(future);
-                    break;
-                }
-            }
-
-        }
-
-        //futures.push_back(std::async(std::launch::async, DoDrift, offset,
-        //                             std::ref(detections), numBins, PicoSeconds(slotWidth), PicoSeconds(pulseWidth)));
-    }
-
-    for(auto& future : futures)
-    {
-        auto result = future.get();
-        if(result.highestValue > winner.highestValue)
-        {
-            winner = result;
-        }
-    }
-
-    LOGINFO("The winner is: Offset " + std::to_string(winner.offset.count()) + " Highest value = " + std::to_string(winner.highestValue) + " @ " + std::to_string(winner.highestIndex));
-    */
-}
-
 int QKDPostProc::Main(const std::vector<std::string>& args)
 {
     using namespace cqp;
@@ -187,20 +91,30 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
     if(!stopExecution)
     {
         std::string detectionsFile = "BobDetections.bin";
-        DetectionReports detections;
+        DetectionReportList detections;
         definedArguments.GetProp(Names::noxData, detectionsFile);
 
         if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
         {
             LOGERROR("Failed to open file: " + detectionsFile);
+        }else {
+            align::Filter filter;
+            align::Gating gating;
+            DetectionReportList::const_iterator start;
+            DetectionReportList::const_iterator end;
+            filter.Isolate(detections, start, end);
+            LOGINFO("Detections: " + std::to_string(detections.size()) +
+                    " Start: " + std::to_string(distance(detections.cbegin(), start)) +
+                    " End: " + std::to_string(distance(detections.cbegin(), end)));
+
+            QubitList results;
+            align::Gating::QubitsBySlot markers;
+            gating.ExtractQubits(start, end, markers, results);
+
+            LOGINFO("Found " + std::to_string(results.size()) + " Qubits");
+            fs::DataFile::WriteQubits(results, "BobQubits.bin");
         }
 
-        bool findDrift = true;
-        definedArguments.GetProp(Names::findDrift, findDrift);
-        if(detections.times.size() > 0 &&  findDrift)
-        {
-            FindDrift(detections.times);
-        }
     }
 
     return exitCode;

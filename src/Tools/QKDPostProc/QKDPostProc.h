@@ -48,7 +48,6 @@ public:
         cqp::DefaultLogger().DecOutputLevel();
     }
 
-    void FindDrift(const cqp::DetectionTimes& detections);
 protected:
     /**
      * @brief Main
