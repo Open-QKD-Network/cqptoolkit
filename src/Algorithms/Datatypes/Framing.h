@@ -12,6 +12,7 @@
 #pragma once
 #include "Algorithms/Datatypes/UUID.h"
 #include "Algorithms/Datatypes/Chrono.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {
@@ -25,7 +26,7 @@ namespace cqp
      */
     struct ALGORITHMS_EXPORT SystemParameters {
         /// The duration for a frame
-        PicoSeconds frameWidth {0};
+        //PicoSeconds frameWidth {0};
         /// The duration for one slot within a frame
         PicoSeconds slotWidth {0};
         /// The width of a single pulse in a slot

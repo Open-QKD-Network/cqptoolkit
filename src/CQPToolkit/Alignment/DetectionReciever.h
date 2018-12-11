@@ -11,10 +11,13 @@
 */
 #pragma once
 #include "CQPToolkit/Alignment/Alignment.h"
-#include "CQPToolkit/Alignment/DetectionGating.h"
 #include "Algorithms/Random/RandomNumber.h"
 #include "CQPToolkit/Interfaces/IDetectionEventPublisher.h"
 #include "CQPToolkit/cqptoolkit_export.h"
+#include <Algorithms/Util/WorkerThread.h>
+#include "Algorithms/Alignment/Filter.h"
+#include "Algorithms/Alignment/Gating.h"
+#include <grpc++/channel.h>
 
 namespace cqp {
     struct SystemParameters;
@@ -31,8 +34,12 @@ namespace align {
             protected WorkerThread
     {
     public:
+        static constexpr SystemParameters DefaultSystemParameters = {
+            Gating::DefaultSlotWidth,
+            Gating::DefaultPulseWidth
+        };
         /// constructor
-        DetectionReciever();
+        DetectionReciever(const SystemParameters &parameters = DefaultSystemParameters);
 
         /// destructor
         virtual ~DetectionReciever() override = default;
@@ -57,13 +64,6 @@ namespace align {
         /// @}
 
         /**
-         * @brief SetSystemParameters
-         * @param parameters Values to set
-         * @return true on success
-         */
-        bool SetSystemParameters(const SystemParameters& parameters);
-
-        /**
          * @brief Connect Connect to the other side to exchange alignment detail
          * @param channel
          */
@@ -86,14 +86,14 @@ namespace align {
          */
         void DoWork() override;
 
-        DetectionGating& GetGatingHandler() { return gatingHandler; }
     protected:
         /// storage for incoming data
         ProtocolDetectionReportList receivedData;
         /// Source of randomness
         RandomNumber rng;
-        DetectionGating gatingHandler;
         std::shared_ptr<grpc::Channel> transmitter;
+        align::Filter filter;
+        align::Gating gating;
     };
 
 } // namespace align

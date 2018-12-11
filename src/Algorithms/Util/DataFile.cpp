@@ -100,7 +100,7 @@ namespace cqp
 
         const std::vector<Qubit> DataFile::DefautlCahnnelMappings = { 0, 1, 2, 3 };
 
-        bool DataFile::ReadNOXDetections(const std::string& inFileName, DetectionReports& output,
+        bool DataFile::ReadNOXDetections(const std::string& inFileName, DetectionReportList& output,
                                          const  std::vector<Qubit>& channelMappings, bool waitForConfig, uint64_t maxCourseTime)
         {
 
@@ -120,8 +120,7 @@ namespace cqp
                 {
                     uint64_t droppedDetections = 0;
                     inFile.seekg(0, std::ios::beg);
-                    output.times.reserve(numRecords);
-                    output.values.reserve(numRecords);
+                    output.reserve(numRecords);
                     bool gotConfig = !waitForConfig;
                     bool keepReading = true;
 
@@ -156,8 +155,10 @@ namespace cqp
 
                                     if(noxReport.detection.channel < channelMappings.size())
                                     {
-                                        output.values.push_back(channelMappings[noxReport.detection.channel]);
-                                        output.times.push_back(noxReport.GetTime());
+                                        output.push_back({
+                                                             noxReport.GetTime(),
+                                                             channelMappings[noxReport.detection.channel]
+                                                         });
                                     }
                                     else
                                     {
@@ -176,7 +177,7 @@ namespace cqp
                     }
                     while(!inFile.eof() && keepReading);
                     inFile.close();
-                    LOGINFO("Read " + std::to_string(output.times.size()) + " detections. Dropped " + std::to_string(droppedDetections) + " detections");
+                    LOGINFO("Read " + std::to_string(output.size()) + " detections. Dropped " + std::to_string(droppedDetections) + " detections");
                 }
             }
             else
@@ -188,7 +189,7 @@ namespace cqp
             return result;
         }
 
-        bool DataFile::ReadDetectionReportList(const std::string& inFileName, DetectionReports& output)
+        bool DataFile::ReadDetectionReportList(const std::string& inFileName, DetectionReportList& output)
         {
             bool result = false;
             std::ifstream inFile(inFileName, std::ios::in | std::ios::binary);
@@ -196,8 +197,7 @@ namespace cqp
             {
                 inFile.seekg(0, std::ios::end);
                 const uint64_t numRecords = static_cast<uint64_t>(inFile.tellg()) / (sizeof(uint64_t) + sizeof(Qubit));
-                output.times.reserve(numRecords);
-                output.values.reserve(numRecords);
+                output.reserve(numRecords);
                 inFile.seekg(0, std::ios::beg);
 
                 do
@@ -208,8 +208,9 @@ namespace cqp
                     inFile.read(reinterpret_cast<char*>(&value), sizeof (value));
                     if(!inFile.eof())
                     {
-                        output.times.push_back(PicoSeconds(be64toh(time)));
-                        output.values.push_back(value);
+                        output.push_back({
+                                             PicoSeconds(be64toh(time)), value
+                                         });
                     }
                 }
                 while(!inFile.eof());
@@ -225,25 +226,21 @@ namespace cqp
             return result;
         }
 
-        bool DataFile::WriteDetectionReportList(const DetectionReports& source, const std::string& outFileName)
+        bool DataFile::WriteDetectionReportList(const DetectionReportList& source, const std::string& outFileName)
         {
             bool result = false;
             std::ofstream outFile(outFileName, std::ios::out | std::ios::binary);
             if (outFile)
             {
-                if(source.times.size() == source.values.size())
+                for(size_t index = 0; index < source.size(); index++)
                 {
-                    for(size_t index = 0; index < source.times.size(); index++)
-                    {
-                        const uint64_t time = htobe64(source.times[index].count());
-                        outFile.write(reinterpret_cast<const char*>(&time), sizeof(time));
-                        outFile.write(reinterpret_cast<const char*>(&source.values[index]), sizeof (source.values[index]));
-                    }
-                    outFile.close();
-                    result = true;
-                } else {
-                    LOGERROR("Invalid data, list lengths don't match");
+                    const uint64_t time = htobe64(source[index].time.count());
+                    outFile.write(reinterpret_cast<const char*>(&time), sizeof(time));
+                    outFile.write(reinterpret_cast<const char*>(&source[index].value), sizeof (source[index].value));
                 }
+                outFile.close();
+                result = true;
+
             }
             else
             {

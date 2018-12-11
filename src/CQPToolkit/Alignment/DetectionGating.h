@@ -180,7 +180,7 @@ namespace cqp
              * @return The final processed data.
              */
             std::unique_ptr<QubitList> BuildHistogram(
-                    const DetectionReports& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel);
+                    const DetectionReportList& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel);
 
             /// Identifier type for slots
             using SlotID = uint64_t;
@@ -198,7 +198,7 @@ namespace cqp
 
 
             /// Upper and lower bounds for detections
-            using DetectionBounds = std::pair<DetectionTimes::const_iterator, DetectionTimes::const_iterator>;
+            using DetectionBounds = std::pair<DetectionReportList::const_iterator, DetectionReportList::const_iterator>;
 
             /// The histogram storage type
             using CountsByBin = std::vector<uint64_t>;

@@ -10,13 +10,17 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "DetectionReciever.h"
-#include "Algorithms/Datatypes/Framing.h"
+#include "QKDInterfaces/IAlignment.grpc.pb.h"
+#include "CQPToolkit/Util/GrpcLogger.h"
 
 namespace cqp {
 namespace align {
 
-    DetectionReciever::DetectionReciever() :
-        gatingHandler(rng)
+    // storage unit for the constexpr defined in the header
+    constexpr SystemParameters DetectionReciever::DefaultSystemParameters;
+
+    DetectionReciever::DetectionReciever(const SystemParameters &parameters) :
+        gating{parameters.slotWidth, parameters.pulseWidth}
     {
 
     }
@@ -31,11 +35,6 @@ namespace align {
             receivedData.push(move(report));
         }
         receivedDataCv.notify_one();
-    }
-
-    bool DetectionReciever::SetSystemParameters(const SystemParameters &parameters)
-    {
-        return gatingHandler.SetSystemParameters(parameters.frameWidth, parameters.slotWidth, parameters.pulseWidth);
     }
 
     void DetectionReciever::DoWork()
@@ -58,18 +57,39 @@ namespace align {
                 }
             } /*lock scope*/
 
-            if(report && !report->detections.times.empty())
+            if(report && !report->detections.empty())
             {
                 using namespace std::chrono;
                 using std::chrono::high_resolution_clock;
                 high_resolution_clock::time_point timerStart = high_resolution_clock::now();
 
-                unique_ptr<QubitList> results = gatingHandler.BuildHistogram(report->detections, report->frame, transmitter);
-                const uint64_t qubitsProcessed = results->size();
+                // isolate the transmission
+                DetectionReportList::const_iterator start;
+                DetectionReportList::const_iterator end;
+                filter.Isolate(report->detections, start, end);
+                // get the markers from Alice
+                auto otherSide = remote::IAlignment::NewStub(transmitter);
+                grpc::ClientContext ctx;
+                remote::FrameId request;
+                request.set_id(report->frame);
 
-                // TODO
-                //Emit(&IAlignmentCallback::OnAligned, seq++, move(results));
-                if(listener && results)
+                remote::QubitByIndex markers;
+                LogStatus(otherSide->GetAlignmentMarks(&ctx, request, &markers));
+
+                // convert the markers to local form
+                align::Gating::QubitsBySlot markersConverted;
+                for(const auto& marker : markers.qubits())
+                {
+                    markersConverted[marker.first] = static_cast<Qubit>(marker.second);
+                }
+
+                // extract the qubits
+                std::unique_ptr<QubitList> results{new QubitList()};
+                gating.ExtractQubits(start, end, markersConverted, *results);
+
+                const auto qubitsProcessed = results->size();
+
+                if(listener)
                 {
                     listener->OnAligned(seq++, move(results));
                 }

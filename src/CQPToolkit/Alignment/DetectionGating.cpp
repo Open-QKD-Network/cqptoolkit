@@ -78,15 +78,15 @@ namespace cqp
             // for each detection
             //   calculate it's slot and bin ids and store a reference to the original data
             //   count the bin ids
-            for(DetectionTimes::const_iterator detection = dataBounds.first; detection != dataBounds.second; ++detection)
+            for(DetectionReportList::const_iterator detection = dataBounds.first; detection != dataBounds.second; ++detection)
             {
                 using namespace std::chrono;
                 // calculate the offset in whole picoseconds (signed)
                 const PicoSecondOffset offset(static_cast<int64_t>(
-                            ceil((static_cast<double>(drift.count()) * static_cast<double>(detection->count())) / 1000000000.0)
+                            ceil((static_cast<double>(drift.count()) * static_cast<double>(detection->time.count())) / 1000000000.0)
                             ));
                 // offset the time without the original value being converted to a float
-                const PicoSeconds adjustedTime = *detection + offset;
+                const PicoSeconds adjustedTime = detection->time + offset;
                 // C++ truncates on integer division
                 const SlotID slot = adjustedTime / slotWidth;
                 const BinID bin = (adjustedTime % slotWidth) / pulseWidth;
@@ -302,13 +302,12 @@ namespace cqp
 
         } // CalculateDrift
 
-        std::unique_ptr<QubitList> DetectionGating::BuildHistogram(const DetectionReports& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel)
+        std::unique_ptr<QubitList> DetectionGating::BuildHistogram(const DetectionReportList& source, SequenceNumber frameId, std::shared_ptr<grpc::Channel> channel)
         {
             using namespace std;
             using std::vector;
             std::unique_ptr<QubitList> results(new QubitList);
 
-            /*
             CountsByBin counts(numBins);
 
             // each thread will have at least one item to process
@@ -436,7 +435,7 @@ namespace cqp
             // pass the known slots to the other side so we can shorten the lists
             grpc::Status txResult = SendValidDetections(channel, frameId, detectedSlots, highestScore.slotIdOffset);
             allResults.clear();
-            */
+
             return results;
 
         } // BuildHistogram

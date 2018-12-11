@@ -26,11 +26,9 @@ namespace cqp
     /// @remarks This should probably be a UUID.
     using DetectorId = unsigned int;
 
-    using DetectionTimes = std::vector<PicoSeconds>;
-
     /// The data produced by a Time tagger/Time digitiser once a detector has
     /// been triggered.
-    struct ALGORITHMS_EXPORT DetectionReports
+    struct ALGORITHMS_EXPORT DetectionReport
     {
     public:
         /// The moment at which the event was detected.
@@ -38,27 +36,25 @@ namespace cqp
         /// This is different to the value sent by some hardware
         /// Often this will be converted from a course free running clock + tick offset.
         /// investigations need to be performed to decide whether it is worth processing between the two forms.
-        DetectionTimes times;
+        PicoSeconds time {0};
         /// Some identifier for the detector
-        QubitList values;
+        Qubit value {0};
 
-        void Reserve(size_t size)
-        {
-            times.reserve(size);
-            values.reserve(size);
-        }
-
-        size_t Size()
-        {
-            return times.size();
-        }
-
-        void Clear()
-        {
-            times.clear();
-            values.clear();
-        }
     };
+
+    /**
+     * @brief operator ==
+     * Compare detection reports
+     * @param left
+     * @param right
+     * @return true if the time and value are additional     */
+    inline bool operator==(const DetectionReport& left, const DetectionReport& right)
+    {
+        return left.value == right.value && left.time == right.time;
+    }
+
+    /// A list of detection reports
+    using DetectionReportList = std::vector<DetectionReport>;
 
     /// Stores the data report with the additional information about which frame it arrived in.
     struct ALGORITHMS_EXPORT ProtocolDetectionReport
@@ -68,7 +64,7 @@ namespace cqp
         /// The detections time stamp os relative to this point in time.
         std::chrono::high_resolution_clock::time_point epoc;
         /// The detection report
-        DetectionReports detections;
+        DetectionReportList detections;
     };
 
     /// Stores the data report with the additional information about which frame it arrived in.

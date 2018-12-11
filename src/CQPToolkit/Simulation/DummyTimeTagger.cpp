@@ -30,23 +30,24 @@ namespace cqp
         {
             using namespace std::chrono;
             grpc::Status result(grpc::Status::OK);
-            DetectionReports detections;
-            detections.Reserve(request->values().qubits().size());
+            DetectionReportList detections;
+            detections.reserve(request->values().qubits().size());
             uint count = 0;
 
             for(auto qubit : request->values().qubits())
             {
-                detections.times.push_back(PicoSeconds(request->periodpicoseconds()) * count);
-                detections.values.push_back(static_cast<uint8_t>(qubit));
+                DetectionReport report;
+                report.time = PicoSeconds(request->periodpicoseconds()) * count;
+                report.value = static_cast<uint8_t>(qubit);
+                detections.push_back(report);
                 count++;
             }
 
             // TODO: Randomly pick bases and simulate errors
-            LOGTRACE("Received " + std::to_string(detections.Size()) + " photons");
+            LOGTRACE("Received " + std::to_string(detections.size()) + " photons");
 
             std::lock_guard<std::mutex> lock(collectedPhotonsMutex);
-            collectedPhotons.times.assign(detections.times.begin(), detections.times.end());
-            collectedPhotons.values.assign(detections.values.begin(), detections.values.end());
+            collectedPhotons.assign(detections.begin(), detections.end());
             return result;
         } // OnPhoton
 
@@ -72,10 +73,10 @@ namespace cqp
                 report->detections = collectedPhotons;
                 report->epoc = epoc;
                 report->frame = frame;
-                collectedPhotons.Clear();
+                collectedPhotons.clear();
             } // lock scope
 
-            stats.qubitsReceived.Update(report->detections.Size());
+            stats.qubitsReceived.Update(report->detections.size());
             if(listener)
             {
                 listener->OnPhotonReport(move(report));

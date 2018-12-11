@@ -58,8 +58,9 @@ namespace cqp {
              * @param maxCourseTime If none-zero, stop reading records when the course time reaches this value.
              * @return true on success
              */
-            static bool ReadNOXDetections(const std::string& inFileName, DetectionReports& output,
-                                          const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings, bool waitForConfig = true, uint64_t maxCourseTime = 0);
+            static bool ReadNOXDetections(const std::string& inFileName, DetectionReportList& output,
+                                          const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings,
+                                          bool waitForConfig = true, uint64_t maxCourseTime = 0);
 
             /**
              * @brief ReadDetectionReportList
@@ -70,7 +71,7 @@ namespace cqp {
              * @param output destination for report
              * @return true on success
              */
-            static bool ReadDetectionReportList(const std::string& inFileName, DetectionReports& output);
+            static bool ReadDetectionReportList(const std::string& inFileName, DetectionReportList& output);
 
             /**
              * @brief WriteDetectionReportList
@@ -80,7 +81,7 @@ namespace cqp {
              * @param outFileName Filename for output
              * @return true on success
              */
-            static bool WriteDetectionReportList(const DetectionReports& source, const std::string& outFileName);
+            static bool WriteDetectionReportList(const DetectionReportList& source, const std::string& outFileName);
 
             /**
              * Defines the messages sent by the NOX box

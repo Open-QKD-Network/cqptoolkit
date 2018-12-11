@@ -15,26 +15,6 @@
 #include "Algorithms/Util/Provider.h"                        // for Event, Even...
 #include "CQPToolkit/cqptoolkit_export.h"
 
-namespace google
-{
-    namespace protobuf
-    {
-        class Empty;
-    }
-}
-namespace grpc
-{
-    class ServerContext;
-    class ChannelInterface;
-}
-
-namespace cl
-{
-    class Context;
-    class Kernel;
-    class Buffer;
-} // namespace cl
-
 namespace cqp
 {
     namespace remote

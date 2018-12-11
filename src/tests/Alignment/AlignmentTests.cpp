@@ -42,7 +42,7 @@ namespace cqp
             QubitList emissions;
             PicoSeconds emissionPeriod {100000};
             PicoSeconds emissionDelay  {1000};
-            DetectionReports detections;
+            DetectionReportList detections;
         };
 
         AlignmentTests::AlignmentTests()
@@ -229,13 +229,12 @@ namespace cqp
                 //} else {
                 //    report.value = rng.RandQubit();
                 //}
-                    testData.detections.times.push_back(time);
-                    testData.detections.values.push_back(qubit);
+                    testData.detections.push_back({time, qubit});
                 }
                 time+= PicoSeconds(10001);
             }
 
-            LOGDEBUG("There are " + std::to_string(testData.emissions.size()) + " emissions and " + std::to_string(testData.detections.times.size()) + " detections.");
+            LOGDEBUG("There are " + std::to_string(testData.emissions.size()) + " emissions and " + std::to_string(testData.detections.size()) + " detections.");
 
             const PicoSeconds pulseWidth   {100};
             const PicoSeconds slotWidth  {10000};
@@ -252,7 +251,7 @@ namespace cqp
                         Invoke([&](grpc::ServerContext *, const remote::FrameId* request, remote::QubitByIndex *response) -> grpc::Status{
                 LOGINFO("Markers requested");
 
-               while(response->mutable_qubits()->size() < (testData.detections.times.size() / 2))
+               while(response->mutable_qubits()->size() < (testData.detections.size() / 2))
                {
                     auto index = rng.RandULong() % testData.emissions.size();
                     markerIds.insert(index);
@@ -382,7 +381,7 @@ namespace cqp
             SystemParameters params;
             params.slotWidth = nanoseconds(100);
             params.pulseWidth = nanoseconds(1);
-            params.frameWidth = emissions->emissions.size() * params.slotWidth;
+            //params.frameWidth = emissions->emissions.size() * params.slotWidth;
 
             emissions->epoc = high_resolution_clock::now();
             detectionReport->epoc = emissions->epoc;
@@ -392,7 +391,7 @@ namespace cqp
 
             emissions->period = params.slotWidth;
 
-            align::DetectionReciever detection;
+            align::DetectionReciever detection(params);
             align::TransmissionHandler txHandler;
 
             // setup classes
@@ -412,7 +411,6 @@ namespace cqp
             MockAlignmentCallback rxCallback;
             detection.Attach(&rxCallback);
             txHandler.Attach(&txCallback);
-            detection.SetSystemParameters(params);
             detection.Connect(clientChannel);
 
 
