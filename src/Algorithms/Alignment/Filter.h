@@ -39,7 +39,7 @@ namespace cqp {
              * @param[out] start The start of detections
              * @param[out] end The end of detections
              */
-            void Isolate(const DetectionReportList& timeTags,
+            bool Isolate(const DetectionReportList& timeTags,
                          DetectionReportList::const_iterator& start,
                          DetectionReportList::const_iterator& end);
 
@@ -122,31 +122,34 @@ namespace cqp {
              * @param inEnd The element past the last data element
              * @param filterBegin The first element of the filter
              * @param filterEnd The element pas the last filter element
-             * @param result The storage for the result. It will be resized to fit.
+             * @param convolved The storage for the result. It will be resized to fit.
              */
             template<typename T, typename DataIter, typename FilterIter>
-            static void ConvolveValid(
+            static bool ConvolveValid(
                     const DataIter& inBegin, const DataIter& inEnd,
                     const FilterIter& filterBegin, const FilterIter& filterEnd,
-                    T& result)
+                    T& convolved)
             {
+                bool result = false;
                 const auto dataSize = std::distance(inBegin, inEnd);
                 const auto filterSize = std::distance(filterBegin, filterEnd);
                 if(dataSize >= filterSize)
                 {
-                    result.resize(1ul + static_cast<size_t>(dataSize - filterSize));
+                    convolved.resize(1ul + static_cast<size_t>(dataSize - filterSize));
 
-                    for(size_t index = 0; index < result.size(); index++)
+                    for(size_t index = 0; index < convolved.size(); index++)
                     {
                         for(ssize_t filterIndex = 0; filterIndex < filterSize; filterIndex++)
                         {
                             // offset the start iterator and using it's value, multiply by the filter value
                             const auto& dataValue = *(inBegin + index + filterIndex);
                             const auto& filterValue = *(filterBegin + filterIndex);
-                            result[index] += dataValue * filterValue;
+                            convolved[index] += dataValue * filterValue;
                         }
                     }
+                    result = true;
                 }
+                return result;
             }
 
             /**
