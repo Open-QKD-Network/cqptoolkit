@@ -12,8 +12,8 @@ namespace cqp {
         class ALGORITHMS_EXPORT Gating
         {
         public:
-            static constexpr PicoSeconds DefaultPulseWidth {100};
-            static constexpr PicoSeconds DefaultSlotWidth  {10000};
+            static constexpr PicoSeconds DefaultPulseWidth {std::chrono::nanoseconds(1)};
+            static constexpr PicoSeconds DefaultSlotWidth  {std::chrono::nanoseconds(100)};
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.5;
 
@@ -41,8 +41,7 @@ namespace cqp {
             void CountDetections(const DetectionReportList::const_iterator& start,
                                  const DetectionReportList::const_iterator& end,
                                  CountsByBin& counts,
-                                 ResultsByBinBySlot& slotResults,
-                                 const PicoSecondOffset& drift = PicoSecondOffset(0)) const;
+                                 ResultsByBinBySlot& slotResults) const;
 
             /**
              * @brief CalculateDrift
@@ -64,7 +63,7 @@ namespace cqp {
             const PicoSeconds pulseWidth;
             const uint64_t numBins;
             double acceptanceRatio;
-            PicoSecondOffset drift {0};
+            PicoSecondOffset drift {0}; //{34794};
         };
 
     } // namespace align
