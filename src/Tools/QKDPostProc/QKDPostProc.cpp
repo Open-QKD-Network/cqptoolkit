@@ -94,7 +94,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         DetectionReportList detections;
         definedArguments.GetProp(Names::noxData, detectionsFile);
 
-        if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
+        if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections, fs::DataFile::DefautlCahnnelMappings, true, 300000000))
         {
             LOGERROR("Failed to open file: " + detectionsFile);
         }else {

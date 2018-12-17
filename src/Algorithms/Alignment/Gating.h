@@ -12,13 +12,14 @@ namespace cqp {
         class ALGORITHMS_EXPORT Gating
         {
         public:
-            static constexpr PicoSeconds DefaultPulseWidth {std::chrono::nanoseconds(1)};
+            static constexpr PicoSeconds DefaultPulseWidth {PicoSeconds(500)};
             static constexpr PicoSeconds DefaultSlotWidth  {std::chrono::nanoseconds(100)};
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.5;
 
             Gating(const PicoSeconds& slotWidth = DefaultSlotWidth,
                   const PicoSeconds& pulseWidth = DefaultPulseWidth,
+                   uint64_t slotsPerDriftSample = 1000,
                    double acceptanceRatio = DefaultAcceptanceRatio);
 
             /// Identifier type for slots
@@ -38,16 +39,24 @@ namespace cqp {
             /// The histogram storage type
             using CountsByBin = std::vector<uint64_t>;
 
+            static DetectionReportList::const_iterator FindPointInTime(const DetectionReportList::const_iterator& start,
+                                                                const DetectionReportList::const_iterator& end,
+                                                                const PicoSeconds& point);
+
+            void Histogram(const DetectionReportList::const_iterator& start,
+                           const DetectionReportList::const_iterator& end,
+                           Gating::CountsByBin& counts) const;
+
+            PicoSeconds FindPeak(DetectionReportList::const_iterator sampleStart,
+                                  DetectionReportList::const_iterator sampleEnd) const;
+
+            PicoSecondOffset CalculateDrift(const DetectionReportList::const_iterator& start,
+                                            const DetectionReportList::const_iterator& end);
+
             void CountDetections(const DetectionReportList::const_iterator& start,
                                  const DetectionReportList::const_iterator& end,
                                  CountsByBin& counts,
                                  ResultsByBinBySlot& slotResults) const;
-
-            /**
-             * @brief CalculateDrift
-             */
-            PicoSecondOffset CalculateDrift(const Gating::CountsByBin& counts,
-                                BinID& targetBinId, BinID& minBinId, BinID& maxBinId) const;
 
             using QubitsBySlot = std::map<SlotID, Qubit>;
 
@@ -61,6 +70,7 @@ namespace cqp {
         protected:
             const PicoSeconds slotWidth;
             const PicoSeconds pulseWidth;
+            const uint64_t slotsPerDriftSample;
             const uint64_t numBins;
             double acceptanceRatio;
             PicoSecondOffset drift {0}; //{34794};
