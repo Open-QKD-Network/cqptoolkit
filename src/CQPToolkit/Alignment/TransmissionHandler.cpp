@@ -10,6 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "TransmissionHandler.h"
+#include "Algorithms/Alignment/Gating.h"
 
 namespace cqp {
 namespace align {
@@ -103,26 +104,15 @@ namespace align {
             if(dataReady)
             {
                 if(emissions){
-                    unique_ptr<QubitList> output(new QubitList);
-
-                    output->clear();
-                    output->reserve(static_cast<size_t>(request->slotids().size()));
-
-                    for(auto validSlot : request->slotids())
+                    if(!align::Gating::FilterDetections(request->slotids().begin(), request->slotids().end(), emissions->emissions))
                     {
-                        if(validSlot < emissions->emissions.size())
-                        {
-                            output->push_back(emissions->emissions[validSlot]);
-                        } else {
-                            LOGERROR("Detected transmissions longer than sent transmissions");
-                            result = grpc::Status(grpc::StatusCode::OUT_OF_RANGE, "Slot id greater than last value sent");
-                            break; // for
-                        }
+                        LOGERROR("Valid transmissions list is invalid");
                     }
 
-                    // TODO pass this off onto another thread
                     if(listener)
                     {
+                        unique_ptr<QubitList> output{new QubitList(emissions->emissions.size())};
+                        copy(emissions->emissions.cbegin(), emissions->emissions.cend(), output->begin());
                         listener->OnAligned(seq++, move(output));
                     }
                 } else {

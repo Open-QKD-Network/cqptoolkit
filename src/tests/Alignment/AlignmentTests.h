@@ -80,7 +80,7 @@ namespace cqp
             MockTxCallback txCallback;
             std::unique_ptr<grpc::Server> server;
             std::shared_ptr<grpc::Channel> clientChannel;
-            RandomNumber rng;
+            std::shared_ptr<RandomNumber> rng;
         };
 
     } // namespace test

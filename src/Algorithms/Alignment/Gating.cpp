@@ -14,10 +14,10 @@ namespace cqp {
         constexpr PicoSeconds Gating::DefaultSlotWidth;
 
         Gating::Gating(std::shared_ptr<IRandom> rng,
-                       const PicoSeconds& slotWidth, const PicoSeconds& pulseWidth, uint64_t slotsPerDriftSample, double acceptanceRatio):
+                       const PicoSeconds& slotWidth, const PicoSeconds& pulseWidth, uint64_t samplesPerFrame, double acceptanceRatio):
             rng(rng),
             slotWidth{slotWidth}, pulseWidth{pulseWidth},
-            slotsPerDriftSample{slotsPerDriftSample}, numBins{slotWidth / pulseWidth},
+            samplesPerFrame{samplesPerFrame}, numBins{slotWidth / pulseWidth},
             acceptanceRatio{acceptanceRatio}
         {
 
@@ -74,77 +74,46 @@ namespace cqp {
         {
             using namespace std;
             // find the peak from the counts
-            const auto peak = max(counts.cbegin(), counts.cend());
-            const auto minValue = *min(counts.cbegin(), counts.cend());
-            const auto cutoff = (*peak - minValue) * acceptanceRatio;
-            auto upper = peak;
-            auto lower = peak;
+            const size_t peakIndex = distance(counts.cbegin(), max_element(counts.cbegin(), counts.cend()));
+            const auto minValue = *min_element(counts.cbegin(), counts.cend());
+            const auto cutoff = static_cast<size_t>(minValue + (counts[peakIndex] - minValue) * acceptanceRatio);
+            auto upper = peakIndex;
+            auto lower = peakIndex;
 
-            for(auto it = peak; it != counts.cend(); it++)
+            while(counts[lower] > cutoff && lower != (peakIndex + 1) % numBins)
             {
-                if(*it < cutoff)
-                {
-                    upper = it;
-                }
-            }
-            if(upper == counts.cend())
-            {
-                // the edge has wrapped to the other side of the graph
-                // keep looking from the start
-                for(auto it = counts.begin(); it != peak; it++)
-                {
-                    if(*it < cutoff)
-                    {
-                        upper = it;
-                    }
-                }
+                lower = (numBins + lower - 1) % numBins;
             }
 
-            for(auto it = make_reverse_iterator(peak); it != counts.crend(); it++)
+            while(counts[upper] > cutoff && upper != (peakIndex - 1) % numBins)
             {
-                if(*it < cutoff)
-                {
-                    lower = it.base();
-                }
+                upper = (upper + 1) % numBins;
             }
-
-            if(upper == counts.cbegin())
-            {
-                // the edge has wrapped to the other side of the graph
-                // keep looking from the end
-                for(auto it = counts.crend(); it != make_reverse_iterator(peak); it++)
-                {
-                    if(*it < cutoff)
-                    {
-                        lower = it.base();
-                    }
-                }
-            }
-
-            // for each usable bin, extract the values to pass to the next stage
-            const BinID lowerBin = distance(counts.cbegin(), lower);
-            const BinID upperBin = distance(counts.cbegin(), upper);
 
             map<SlotID, QubitList> qubitsBySlot;
             // walk through each bin, wrapping around to the start if the upper bin < lower bin
-            const auto lastBin = (upperBin + 1) % numBins;
 
-            for(auto binId = lowerBin; binId != lastBin ; binId = (binId + 1) % numBins)
+            double peakWidth = 0;
+
+            for(auto binId = (lower + 1) % numBins; binId != upper ; binId = (binId + 1) % numBins)
             {
+                peakWidth++;
                 const auto& slotsForBin = slotResults.at(binId);
                 for(auto slot : slotsForBin)
                 {
-                    // record that we have a value for this slot
-                    validSlots.insert(slot.first);
                     // add the qubits to the list for this slot, one will be chosen at random later
                     qubitsBySlot[slot.first].assign(slot.second.cbegin(), slot.second.cend());
                 }
             }
+            peakWidth = (peakWidth / static_cast<double>(numBins));
+            LOGDEBUG("Peak width: " + to_string(peakWidth * 100.0) + "%");
 
             // as the list is ordered, the qubits will come out in the correct order
             // just append them to the result list
             for(auto list : qubitsBySlot)
             {
+                // record that we have a value for this slot
+                validSlots.push_back(list.first);
                 if(list.second.size() == 1)
                 {
                     results.push_back(list.second[0]);
@@ -155,6 +124,7 @@ namespace cqp {
                 }
             }
 
+            sort(validSlots.begin(), validSlots.end());
             // results now contains a contiguous list of qubits
             // validSlots tells the caller which slots were used to create that list.
         } // CountDetections
@@ -191,7 +161,10 @@ namespace cqp {
              * Adjust the peak to keep it centred
              */
 
-            const auto driftSampleTime = slotWidth * slotsPerDriftSample;
+            // split the input in a number of samples
+            // the data will be split to the nearest slotwidth
+            const PicoSeconds sampleTime {((end - 1)->time - start->time).count() / samplesPerFrame};
+            const PicoSeconds driftSampleTime { sampleTime - (sampleTime % slotWidth)};
             auto sampleStart = start;
             auto sampleEnd = end;
             size_t sampleIndex = 1;
@@ -265,7 +238,7 @@ namespace cqp {
             CountDetections(start, end, counts, resultsBySlot);
             GateResults(counts, resultsBySlot, validSlots, results);
 
-        } // ScoreOffsets
+        }
 
     } // namespace align
 } // namespace cqp

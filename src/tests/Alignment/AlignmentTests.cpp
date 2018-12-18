@@ -19,7 +19,7 @@
 #include <grpc++/create_channel.h>
 #include <grpc++/client_context.h>
 #include <grpc++/security/credentials.h>
-#include "CQPToolkit/Alignment/DetectionGating.h"
+#include "Algorithms/Alignment/Gating.h"
 #include "CQPToolkit/Simulation/DummyTransmitter.h"
 #include "CQPToolkit/Simulation/DummyTimeTagger.h"
 #include "CQPToolkit/Alignment/TransmissionHandler.h"
@@ -45,7 +45,8 @@ namespace cqp
             DetectionReportList detections;
         };
 
-        AlignmentTests::AlignmentTests()
+        AlignmentTests::AlignmentTests() :
+            rng{new RandomNumber()}
         {
             using namespace std;
             ConsoleLogger::Enable();
@@ -230,13 +231,16 @@ namespace cqp
 
         TEST_F(AlignmentTests, Gating)
         {
+            const PicoSeconds pulseWidth   {100};
+            const PicoSeconds slotWidth  {10000};
+            const auto slotsForDrift = 20;
             AlignmentTestData testData;
 
-            testData.emissions = rng.RandQubitList(100);
+            testData.emissions = rng->RandQubitList(100);
             PicoSeconds time{1};
             for(auto qubit : testData.emissions)
             {
-                if(rng.SRandInt() % 2)
+                if(rng->SRandInt() % 2)
                 {
                     // randomly detect the correct value
 
@@ -245,63 +249,31 @@ namespace cqp
                 //}
                     testData.detections.push_back({time, qubit});
                 }
-                time+= PicoSeconds(10001);
+                time+= slotWidth + PicoSeconds(4);
             }
 
             LOGDEBUG("There are " + std::to_string(testData.emissions.size()) + " emissions and " + std::to_string(testData.detections.size()) + " detections.");
 
-            const PicoSeconds pulseWidth   {100};
-            const PicoSeconds slotWidth  {10000};
-            const PicoSeconds frameWidth{testData.emissions.size() * slotWidth.count()};
+            align::Gating gating(rng, slotWidth, pulseWidth);
+            QubitList alignedDetections;
+            align::Gating::ValidSlots validSlots;
 
-            align::DetectionGating gating(rng);
-            gating.SetSystemParameters(frameWidth, slotWidth, pulseWidth, 5, 0.01);
-            gating.SetNumberThreads(1);
-            gating.ResetDrift(PicoSecondOffset(-100000));
-            QubitList fixedEmissions;
-            std::set<uint64_t> markerIds;
-
-            EXPECT_CALL(txCallback, GetAlignmentMarks(_, _, _)).WillRepeatedly(
-                        Invoke([&](grpc::ServerContext *, const remote::FrameId* request, remote::QubitByIndex *response) -> grpc::Status{
-                LOGINFO("Markers requested");
-
-               while(response->mutable_qubits()->size() < (testData.detections.size() / 2))
-               {
-                    auto index = rng.RandULong() % testData.emissions.size();
-                    markerIds.insert(index);
-                    (*response->mutable_qubits())[index] = remote::BB84::Type(testData.emissions[index]);
-               }
-                            LOGDEBUG("Markers: " + std::to_string(markerIds.size()));
-                return grpc::Status();
-            }));
-
-            EXPECT_CALL(txCallback, DiscardTransmissions(_, _, _)).WillRepeatedly(
-                        Invoke([&](grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) -> grpc::Status{
-                LOGINFO("Told to keep " + std::to_string(request->slotids().size()) + " slots");
-
-                            for(auto validSlot : request->slotids())
-                            {
-                                // drop markers
-                                if(markerIds.find(validSlot) == markerIds.end())
-                                {
-                                    if(validSlot < testData.emissions.size())
-                                    {
-                                        fixedEmissions.push_back(testData.emissions[validSlot]);
-                                    }
-                                }
-                            }
-                            return grpc::Status();
-            }));
-            
             const auto startTime = std::chrono::high_resolution_clock::now();
-            auto results = gating.BuildHistogram(testData.detections, 1, clientChannel);
+            gating.ExtractQubits(testData.detections.cbegin(), testData.detections.cend(), validSlots, alignedDetections);
+
             const auto timeTaken = std::chrono::high_resolution_clock::now() - startTime;
             std::stringstream timeString;
             timeString << "Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(timeTaken).count() << "ms";
+
+            // do Alice's bit
+            ASSERT_TRUE(align::Gating::FilterDetections(validSlots.cbegin(), validSlots.cend(), testData.emissions));
+
             LOGDEBUG(timeString.str());
-            ASSERT_GT(results->size(), 0u);
-            ASSERT_EQ(results->size(), fixedEmissions.size());
-            ASSERT_EQ(*results, fixedEmissions);
+            // have the emissions been shunk to match the detection list
+            ASSERT_EQ(testData.emissions.size(), testData.detections.size());
+            // does the final aligned detections match the emissions
+            ASSERT_EQ(testData.emissions.size(), alignedDetections.size());
+            ASSERT_EQ(testData.emissions, alignedDetections);
         }
 
         TEST_F(AlignmentTests, SimlatedSource)

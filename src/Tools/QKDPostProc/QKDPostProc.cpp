@@ -90,7 +90,6 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
 
     if(!stopExecution)
     {
-
         std::string detectionsFile = "BobDetections.bin";
         DetectionReportList detections;
         definedArguments.GetProp(Names::noxData, detectionsFile);
