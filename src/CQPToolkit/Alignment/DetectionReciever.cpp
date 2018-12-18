@@ -20,7 +20,8 @@ namespace align {
     constexpr SystemParameters DetectionReciever::DefaultSystemParameters;
 
     DetectionReciever::DetectionReciever(const SystemParameters &parameters) :
-        gating{parameters.slotWidth, parameters.pulseWidth}
+        rng{new RandomNumber()},
+        gating{rng, parameters.slotWidth, parameters.pulseWidth}
     {
 
     }
@@ -67,25 +68,29 @@ namespace align {
                 DetectionReportList::const_iterator start;
                 DetectionReportList::const_iterator end;
                 filter.Isolate(report->detections, start, end);
-                // get the markers from Alice
-                auto otherSide = remote::IAlignment::NewStub(transmitter);
-                grpc::ClientContext ctx;
-                remote::FrameId request;
-                request.set_id(report->frame);
-
-                remote::QubitByIndex markers;
-                LogStatus(otherSide->GetAlignmentMarks(&ctx, request, &markers));
-
-                // convert the markers to local form
-                align::Gating::QubitsBySlot markersConverted;
-                for(const auto& marker : markers.qubits())
-                {
-                    markersConverted[marker.first] = static_cast<Qubit>(marker.second);
-                }
 
                 // extract the qubits
                 std::unique_ptr<QubitList> results{new QubitList()};
-                gating.ExtractQubits(start, end, markersConverted, *results);
+                Gating::ValidSlots validSlots;
+                gating.ExtractQubits(start, end, validSlots, *results);
+
+                {
+                    // tell Alice which slots are valid
+                    auto otherSide = remote::IAlignment::NewStub(transmitter);
+                    grpc::ClientContext ctx;
+
+                    remote::ValidDetections request;
+                    google::protobuf::Empty response;
+
+                    // copy the slots over
+                    request.mutable_slotids()->Resize(validSlots.size(), 0);
+                    std::copy(validSlots.cbegin(), validSlots.cend(), request.mutable_slotids()->begin());
+                    /*for(const auto& slot : validSlots)
+                    {
+                        request.mutable_slotids()->Add(slot);
+                    }*/
+                    LogStatus(otherSide->DiscardTransmissions(&ctx, request, &response));
+                }
 
                 const auto qubitsProcessed = results->size();
 

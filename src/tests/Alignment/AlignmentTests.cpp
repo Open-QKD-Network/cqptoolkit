@@ -62,6 +62,20 @@ namespace cqp
 
         }
 
+        TEST_F(AlignmentTests, EdgeDetect)
+        {
+            const std::vector<uint64_t> graph {
+                6, 6, 6, 45, 46, 56, 90, 89, 43, 5, 7
+            };
+
+            const uint64_t cutoff = 43;
+            std::vector<uint64_t>::const_iterator edge;
+            ASSERT_TRUE(align::Filter::FindEdge(graph.begin(), graph.end(), cutoff, edge));
+            ASSERT_EQ(*edge, 5);
+            ASSERT_TRUE(align::Filter::FindEdge<uint64_t>(graph.begin(), graph.end(), cutoff, edge, std::greater<uint64_t>()));
+            ASSERT_EQ(*edge, 45);
+        }
+
         TEST_F(AlignmentTests, Filter)
         {
             const std::vector<double> sourceData = {

@@ -15,7 +15,7 @@
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Alignment/Gating.h"
-
+#include "Algorithms/Random/RandomNumber.h"
 #include "QKDPostProc.h"
 
 #include <thread>
@@ -90,16 +90,17 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
 
     if(!stopExecution)
     {
+
         std::string detectionsFile = "BobDetections.bin";
         DetectionReportList detections;
         definedArguments.GetProp(Names::noxData, detectionsFile);
-
-        if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections, fs::DataFile::DefautlCahnnelMappings, true, 300000000))
+        std::shared_ptr<RandomNumber> rng{new RandomNumber()};
+        if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
         {
             LOGERROR("Failed to open file: " + detectionsFile);
         }else {
             align::Filter filter;
-            align::Gating gating;
+            align::Gating gating(rng);
             DetectionReportList::const_iterator start;
             DetectionReportList::const_iterator end;
             filter.Isolate(detections, start, end);
@@ -108,10 +109,10 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                     " End: " + std::to_string(distance(detections.cbegin(), end)));
 
             QubitList results;
-            align::Gating::QubitsBySlot markers;
-            gating.ExtractQubits(start, end, markers, results);
+            align::Gating::ValidSlots validSlots;
+            gating.ExtractQubits(start, end, validSlots, results);
 
-            LOGINFO("Found " + std::to_string(results.size()) + " Qubits");
+            LOGINFO("Found " + std::to_string(results.size()) + " Qubits over " + to_string(validSlots.size()) + " slots.");
             fs::DataFile::WriteQubits(results, "BobQubits.bin");
         }
 

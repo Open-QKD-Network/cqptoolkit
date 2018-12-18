@@ -90,7 +90,7 @@ namespace align {
         /// storage for incoming data
         ProtocolDetectionReportList receivedData;
         /// Source of randomness
-        RandomNumber rng;
+        std::shared_ptr<RandomNumber> rng;
         std::shared_ptr<grpc::Channel> transmitter;
         align::Filter filter;
         align::Gating gating;

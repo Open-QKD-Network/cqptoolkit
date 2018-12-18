@@ -13,7 +13,9 @@ namespace cqp {
         constexpr PicoSeconds Gating::DefaultPulseWidth;
         constexpr PicoSeconds Gating::DefaultSlotWidth;
 
-        Gating::Gating(const PicoSeconds& slotWidth, const PicoSeconds& pulseWidth, uint64_t slotsPerDriftSample, double acceptanceRatio):
+        Gating::Gating(std::shared_ptr<IRandom> rng,
+                       const PicoSeconds& slotWidth, const PicoSeconds& pulseWidth, uint64_t slotsPerDriftSample, double acceptanceRatio):
+            rng(rng),
             slotWidth{slotWidth}, pulseWidth{pulseWidth},
             slotsPerDriftSample{slotsPerDriftSample}, numBins{slotWidth / pulseWidth},
             acceptanceRatio{acceptanceRatio}
@@ -65,6 +67,96 @@ namespace cqp {
                 counts[bin]++;
             }
 
+        }
+
+        void Gating::GateResults(const Gating::CountsByBin& counts, const Gating::ResultsByBinBySlot& slotResults,
+                                 ValidSlots& validSlots, QubitList& results)
+        {
+            using namespace std;
+            // find the peak from the counts
+            const auto peak = max(counts.cbegin(), counts.cend());
+            const auto minValue = *min(counts.cbegin(), counts.cend());
+            const auto cutoff = (*peak - minValue) * acceptanceRatio;
+            auto upper = peak;
+            auto lower = peak;
+
+            for(auto it = peak; it != counts.cend(); it++)
+            {
+                if(*it < cutoff)
+                {
+                    upper = it;
+                }
+            }
+            if(upper == counts.cend())
+            {
+                // the edge has wrapped to the other side of the graph
+                // keep looking from the start
+                for(auto it = counts.begin(); it != peak; it++)
+                {
+                    if(*it < cutoff)
+                    {
+                        upper = it;
+                    }
+                }
+            }
+
+            for(auto it = make_reverse_iterator(peak); it != counts.crend(); it++)
+            {
+                if(*it < cutoff)
+                {
+                    lower = it.base();
+                }
+            }
+
+            if(upper == counts.cbegin())
+            {
+                // the edge has wrapped to the other side of the graph
+                // keep looking from the end
+                for(auto it = counts.crend(); it != make_reverse_iterator(peak); it++)
+                {
+                    if(*it < cutoff)
+                    {
+                        lower = it.base();
+                    }
+                }
+            }
+
+            // for each usable bin, extract the values to pass to the next stage
+            const BinID lowerBin = distance(counts.cbegin(), lower);
+            const BinID upperBin = distance(counts.cbegin(), upper);
+
+            map<SlotID, QubitList> qubitsBySlot;
+            // walk through each bin, wrapping around to the start if the upper bin < lower bin
+            const auto lastBin = (upperBin + 1) % numBins;
+
+            for(auto binId = lowerBin; binId != lastBin ; binId = (binId + 1) % numBins)
+            {
+                const auto& slotsForBin = slotResults.at(binId);
+                for(auto slot : slotsForBin)
+                {
+                    // record that we have a value for this slot
+                    validSlots.insert(slot.first);
+                    // add the qubits to the list for this slot, one will be chosen at random later
+                    qubitsBySlot[slot.first].assign(slot.second.cbegin(), slot.second.cend());
+                }
+            }
+
+            // as the list is ordered, the qubits will come out in the correct order
+            // just append them to the result list
+            for(auto list : qubitsBySlot)
+            {
+                if(list.second.size() == 1)
+                {
+                    results.push_back(list.second[0]);
+                } else {
+                    // pic a qubit at random
+                    const auto index = rng->RandULong() % list.second.size();
+                    results.push_back(list.second[index]);
+                }
+            }
+
+            // results now contains a contiguous list of qubits
+            // validSlots tells the caller which slots were used to create that list.
         } // CountDetections
 
         PicoSeconds Gating::FindPeak(DetectionReportList::const_iterator sampleStart,
@@ -76,49 +168,11 @@ namespace cqp {
             Histogram(sampleStart, sampleEnd, histogram);
 
             // get the extents of the graphs to find the centre of the transmission.
-            auto findMin = std::async(std::launch::async, [&](){
-                return *std::min_element(histogram.cbegin(), histogram.cend());
-            });
+            const auto maxIt = std::max_element(histogram.cbegin(), histogram.cend());
 
-            uint64_t maxValue = 0;
-            CountsByBin::const_iterator maxIndex = histogram.begin();
-            // find the value and index of the maxima
-            for(auto it = histogram.cbegin(); it != histogram.cend(); it++)
-            {
-                if(*it > maxValue)
-                {
-                    maxValue = *it;
-                    maxIndex = it;
-                }
-            }
 
-            // the cutoff limit for our peak.
-            const uint64_t halfPower = maxValue - findMin.get();
-
-            // DANGER: This may fail due to local minima,
-            // might need to smooth the values or at at least remove the local minima before/while finding the edges.
-            auto findLeft = std::async(std::launch::async, [& histogram, halfPower](){
-                auto leftEdge = histogram.begin();
-                Filter::FindEdge<uint64_t>(histogram.begin(), histogram.end(), halfPower, leftEdge);
-                return *leftEdge;
-            });
-
-            auto findRight = std::async(std::launch::async, [& histogram, halfPower](){
-                auto rightEdge = histogram.end();
-                Filter::FindEdge<uint64_t>(histogram.begin(), histogram.end(), halfPower, rightEdge, std::greater<uint64_t>());
-                return *rightEdge;
-            });
-
-            // using the centre of the edges should avoid finding spurious spikes in the counts.
-            // The left edge may be > than the right if the peak is shifted to the edge of the histogram
-            const uint64_t leftEdge = findLeft.get();
-            const uint64_t peakWidth = static_cast<uint64_t>(
-                        abs(static_cast<int64_t>(findRight.get() - leftEdge))
-            );
-            const size_t peak = ((peakWidth / 2) + leftEdge) % numBins;
             // values are in "bins" so will need to be translated to time
-            LOGDEBUG("Peak = " + to_string(peak));
-            return peak * pulseWidth;
+            return distance(histogram.cbegin(), maxIt) * pulseWidth;
         }
 
         PicoSecondOffset Gating::CalculateDrift(const DetectionReportList::const_iterator& start,
@@ -146,27 +200,50 @@ namespace cqp {
 
             do{
                 DetectionReport cutoff;
-                cutoff.time = driftSampleTime * sampleIndex;
+                cutoff.time = start->time + driftSampleTime * sampleIndex;
                 // use the binary search to find the point in the data where the time is past our sample time limit
                 if(!Filter::FindEdge<DetectionReport>(sampleStart, sampleEnd, cutoff, sampleEnd, [](const auto& left, const auto&right){
-                   return left.time < right.time;
+                   return left.time > right.time;
                 }))
                 {
-                    LOGERROR("Failed to find the time slice, useing the last element");
+                    LOGERROR("Failed to find the time slice, using the last element");
                 }
+                LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
 
-                peakFutures.push_back(async(launch::async, &Gating::FindPeak, this, sampleStart, sampleEnd));
+                auto findStart = sampleStart;
+                auto findEnd = sampleEnd;
+                peakFutures.push_back(async(launch::async, &Gating::FindPeak, this, findStart, findEnd));
+
                 // set the start of the next sample
                 sampleStart = sampleEnd;
-            } while(sampleEnd != end);
+                sampleEnd = end;
+                sampleIndex++;
+            } while(sampleStart != end);
+
 
             PicoSecondOffset result{0};
-
             // average the seperation between the peaks
             // TODO: weighted average?
-            for(auto it = peakFutures.begin(); it != peakFutures.end(); it++)
+            if(peakFutures.size() > 1)
             {
-                result += (result + it->get()) / 2;
+                // get the value for the first peak
+                PicoSeconds previousPeak {peakFutures.begin()->get()};
+                // go through each peak and find the offset
+                for(auto it = peakFutures.begin() + 1; it != peakFutures.end(); it++)
+                {
+                    auto thisPeak = it->get();
+                    // average the value
+                    PicoSecondOffset drift = previousPeak - thisPeak;
+                    if(drift.count() < 0)
+                    {
+                        drift *= -1;
+                    }
+                    result = (result + drift) / 2;
+                }
+                //result = result / peakFutures.size();
+                LOGDEBUG("calculated drift: " + to_string(result.count()));
+            } else {
+                LOGERROR("No enough data to calculate drift");
             }
 
             return result;
@@ -174,11 +251,19 @@ namespace cqp {
 
         void Gating::ExtractQubits(const DetectionReportList::const_iterator& start,
                                    const DetectionReportList::const_iterator& end,
-                                   const QubitsBySlot& markers,
-                                   QubitList& results)
+                                   ValidSlots& validSlots,
+                                   QubitList& results,
+                                   bool calculateDrift)
         {
-            drift = CalculateDrift(start, end);
-            LOGDEBUG("Drift = " + std::to_string(drift.count()));
+            if(calculateDrift)
+            {
+                drift = CalculateDrift(start, end);
+                LOGDEBUG("Drift = " + std::to_string(drift.count()));
+            }
+            CountsByBin counts;
+            ResultsByBinBySlot resultsBySlot;
+            CountDetections(start, end, counts, resultsBySlot);
+            GateResults(counts, resultsBySlot, validSlots, results);
 
         } // ScoreOffsets
 

@@ -5,6 +5,8 @@
 #include "Algorithms/Datatypes/Qubits.h"
 #include "Algorithms/Datatypes/DetectionReport.h"
 #include "Algorithms/algorithms_export.h"
+#include <unordered_set>
+#include "Algorithms/Random/IRandom.h"
 
 namespace cqp {
     namespace align {
@@ -17,9 +19,9 @@ namespace cqp {
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.5;
 
-            Gating(const PicoSeconds& slotWidth = DefaultSlotWidth,
+            Gating(std::shared_ptr<IRandom> rng, const PicoSeconds& slotWidth = DefaultSlotWidth,
                   const PicoSeconds& pulseWidth = DefaultPulseWidth,
-                   uint64_t slotsPerDriftSample = 1000,
+                   uint64_t slotsPerDriftSample = 1000000,
                    double acceptanceRatio = DefaultAcceptanceRatio);
 
             /// Identifier type for slots
@@ -58,16 +60,23 @@ namespace cqp {
                                  CountsByBin& counts,
                                  ResultsByBinBySlot& slotResults) const;
 
-            using QubitsBySlot = std::map<SlotID, Qubit>;
+            using ValidSlots = std::unordered_set<SlotID>;
+
+            void GateResults(const CountsByBin& counts,
+                             const ResultsByBinBySlot& slotResults,
+                             ValidSlots& validSlots,
+                             QubitList& results);
 
             /**
              * Perform detection counting, drift calculation, scoring, etc to produce a list of qubits from raw detections.
              */
             void ExtractQubits(const DetectionReportList::const_iterator& start,
                                const DetectionReportList::const_iterator& end,
-                               const QubitsBySlot& markers,
-                               QubitList& results);
+                               ValidSlots& validSlots,
+                               QubitList& results,
+                               bool calculateDrift = true);
         protected:
+            std::shared_ptr<IRandom> rng;
             const PicoSeconds slotWidth;
             const PicoSeconds pulseWidth;
             const uint64_t slotsPerDriftSample;
