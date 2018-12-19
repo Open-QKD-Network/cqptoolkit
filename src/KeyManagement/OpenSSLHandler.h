@@ -38,6 +38,7 @@ KEYMANAGEMENT_EXPORT unsigned int OpenSSLHandler_ServerCallback(SSL *ssl, const 
  * ``SSL_CTX_set_psk_client_callback`` or ``SSL_set_psk_client_callback``
  * @see https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_set_psk_client_callback.html
  * @param ssl
+ * @param hint
  * @param identity
  * @param psk
  * @param max_psk_len

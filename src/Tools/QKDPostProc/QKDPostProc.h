@@ -14,6 +14,7 @@
 #include "Algorithms/Util/CommandArgs.h"
 #include "Algorithms/Logging/Logger.h"
 #include "Algorithms/Datatypes/DetectionReport.h"
+#include "Algorithms/Random/RandomNumber.h"
 
 /**
  * @brief The SiteAgentRunner class
@@ -59,4 +60,7 @@ protected:
     /// exit codes for this program
     enum ExitCodes { Ok = 0, ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99 };
 
+protected: // members
+
+    std::shared_ptr<cqp::RandomNumber> rng{new cqp::RandomNumber()};
 };

@@ -15,7 +15,6 @@
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Alignment/Gating.h"
-#include "Algorithms/Random/RandomNumber.h"
 #include "QKDPostProc.h"
 
 #include <thread>
@@ -30,9 +29,6 @@ struct Names
 {
     static CONSTSTRING noxData= "noxdata";
     static CONSTSTRING packedQubits= "packed";
-    static CONSTSTRING driftMax = "drift-max";
-    static CONSTSTRING driftStep = "drift-step";
-    static CONSTSTRING bins = "bins";
     static CONSTSTRING slotWidth = "slotWidth";
     static CONSTSTRING pulseWidth = "pulseWidth";
 };
@@ -56,12 +52,6 @@ QKDPostProc::QKDPostProc()
     definedArguments.AddOption(Names::noxData, "n", "Read NoxBox Detections from file")
             .Bind();
     definedArguments.AddOption(Names::packedQubits, "p", "Read transmissions from packed Qubits file")
-            .Bind();
-    definedArguments.AddOption(Names::driftMax, "", "Find Drift: Maximum offset to search (Pico Seconds)")
-            .Bind();
-    definedArguments.AddOption(Names::driftStep, "", "Find Drift: offset between each offset to try(Picoseconds)")
-            .Bind();
-    definedArguments.AddOption(Names::bins, "", "Number of bins to split the detections into")
             .Bind();
     definedArguments.AddOption(Names::slotWidth, "", "Slot width of transmissions (Picoseconds)")
             .Bind();
@@ -90,30 +80,65 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
 
     if(!stopExecution)
     {
+
         std::string detectionsFile = "BobDetections.bin";
         DetectionReportList detections;
         definedArguments.GetProp(Names::noxData, detectionsFile);
-        std::shared_ptr<RandomNumber> rng{new RandomNumber()};
+
         if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
         {
             LOGERROR("Failed to open file: " + detectionsFile);
         }else {
+            // to isolate the transmission
             align::Filter filter;
+            // to find the qubits
             align::Gating gating(rng);
+            // bobs qubits
+            QubitList RecverResults;
             DetectionReportList::const_iterator start;
             DetectionReportList::const_iterator end;
+
             filter.Isolate(detections, start, end);
             LOGINFO("Detections: " + std::to_string(detections.size()) +
                     " Start: " + std::to_string(distance(detections.cbegin(), start)) +
                     " End: " + std::to_string(distance(detections.cbegin(), end)));
 
-            QubitList results;
             align::Gating::ValidSlots validSlots;
-            gating.ExtractQubits(start, end, validSlots, results);
+            gating.ExtractQubits(start, end, validSlots, RecverResults);
 
-            LOGINFO("Found " + std::to_string(results.size()) + " Qubits over " + to_string(validSlots.size()) + " slots.");
-            fs::DataFile::WriteQubits(results, "BobQubits.bin");
+            LOGINFO("Found " + std::to_string(RecverResults.size()) + " Qubits over " + to_string(validSlots.size()) + " slots.");
+            fs::DataFile::WriteQubits(RecverResults, "BobQubits.bin");
+
+            ////////////// Load Alice data to compare with Bobs
+            std::string packedFile = "AliceRandom.bin";
+            definedArguments.GetProp(Names::packedQubits, packedFile);
+
+            QubitList aliceQubits;
+            LOGDEBUG("Loading Alice data file");
+            if(!fs::DataFile::ReadPackedQubits(packedFile, aliceQubits))
+            {
+                LOGERROR("Failed to open transmisser file: " + packedFile);
+            } else {
+                if(gating.FilterDetections(validSlots.cbegin(), validSlots.cend(), aliceQubits) && RecverResults.size() == aliceQubits.size())
+                {
+                    size_t validCount = 0;
+                    LOGINFO("Comparing " + std::to_string(aliceQubits.size()) + " qubits...");
+                    for(auto index = 0u; index < RecverResults.size(); index++)
+                    {
+                        if(RecverResults[index] == aliceQubits[index])
+                        {
+                            validCount++;
+                        }
+                    }
+                    const double errorRate = 1.0 - static_cast<double>(validCount) / RecverResults.size();
+                    LOGINFO("Valid qubits: " + std::to_string(validCount) + " out of " + std::to_string(aliceQubits.size()) +
+                            ". Error rate: " + std::to_string(errorRate * 100) + "%");
+                } else {
+                    LOGERROR("Failed to filter alice detections");
+                }
+            }
         }
+
 
     }
 

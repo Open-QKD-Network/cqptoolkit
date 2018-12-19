@@ -162,8 +162,10 @@ namespace cqp {
 
     /// Lookup table to go from a hex character to it's number
     struct CharToIntTable {
+        /// storage for the table
         char tab[256] {0};
 
+        /// constructor
       constexpr CharToIntTable() : tab {} {
         tab[0u + '1'] = 1;
         tab[0u + '2'] = 2;
@@ -187,6 +189,8 @@ namespace cqp {
         tab[0u + 'f'] = 15;
         tab[0u + 'F'] = 15;
       }
+      /// acessor for looking up a value
+      /// Usage: @code escaped = charToIntTable[achar];@endcode
       constexpr char operator[](char const idx) const { return tab[static_cast<size_t>(idx)]; }
 
     } constexpr charToIntTable;

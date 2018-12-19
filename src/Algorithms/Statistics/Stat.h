@@ -43,7 +43,8 @@ namespace cqp
             /// logarithmic ratio
             Decibels,
             /// Frequency
-            Hz
+            Hz,
+            PicoSecondsPerSecond
         };
 
         class ProcessingWorker;
@@ -61,7 +62,7 @@ namespace cqp
              * @param pathin name of the statistic
              * @param k The units
              */
-            StatBase(std::vector<std::string> const & pathin, Units k = Units::Complex);
+            StatBase(std::vector<std::string> const & pathin, Units k = Units::Complex, const std::string& description = "");
 
             /// Destructor
             virtual ~StatBase() = default;
@@ -117,6 +118,8 @@ namespace cqp
             const std::vector<std::string> path;
             /// The type of data shown
             const Units units;
+            /// The description of the stat
+            const std::string description;
             /// id for this stat
             const size_t uniqueId;
             /// true if any value has been processed by DoWork
@@ -229,8 +232,8 @@ namespace cqp
              * @param pathin Name of the stat
              * @param k Kind of units
              */
-            Stat(std::vector<std::string> const & pathin, Units k = Units::Complex) :
-                StatBase(pathin, k)
+            Stat(std::vector<std::string> const & pathin, Units k = Units::Complex, const std::string& description = "") :
+                StatBase(pathin, k, description)
             {
             }
 

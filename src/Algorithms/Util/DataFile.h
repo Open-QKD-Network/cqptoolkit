@@ -54,6 +54,7 @@ namespace cqp {
              * | 52 - 63    | 12        | Fine count            |
              * @param inFileName
              * @param output
+             * @param channelMappings Defines how the values in the file relate to the qubit values returned
              * @param waitForConfig If true, drop records before the first config record
              * @param maxCourseTime If none-zero, stop reading records when the course time reaches this value.
              * @return true on success
@@ -111,6 +112,7 @@ namespace cqp {
                     uint8_t channel {0};
                 };
 
+                /// storage type for buffering output
                 using Buffer = std::array<uint8_t, 8>;
 
             public: // members
@@ -128,6 +130,9 @@ namespace cqp {
 
             };
 
+            /**
+             *
+             */
             template<class Iter>
             static bool WriteCSV(const std::string& filename, const Iter& begin, const Iter& end,
                                  const std::string& seperator = ", ")

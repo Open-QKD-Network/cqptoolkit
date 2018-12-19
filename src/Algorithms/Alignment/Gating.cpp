@@ -70,11 +70,11 @@ namespace cqp {
         }
 
         void Gating::GateResults(const Gating::CountsByBin& counts, const Gating::ResultsByBinBySlot& slotResults,
-                                 ValidSlots& validSlots, QubitList& results)
+                                 ValidSlots& validSlots, QubitList& results, double* peakWidth) const
         {
             using namespace std;
             // find the peak from the counts
-            const size_t peakIndex = distance(counts.cbegin(), max_element(counts.cbegin(), counts.cend()));
+            const size_t peakIndex = static_cast<size_t>(distance(counts.cbegin(), max_element(counts.cbegin(), counts.cend())));
             const auto minValue = *min_element(counts.cbegin(), counts.cend());
             const auto cutoff = static_cast<size_t>(minValue + (counts[peakIndex] - minValue) * acceptanceRatio);
             auto upper = peakIndex;
@@ -93,11 +93,11 @@ namespace cqp {
             map<SlotID, QubitList> qubitsBySlot;
             // walk through each bin, wrapping around to the start if the upper bin < lower bin
 
-            double peakWidth = 0;
+            size_t binCount = 0;
 
             for(auto binId = (lower + 1) % numBins; binId != upper ; binId = (binId + 1) % numBins)
             {
-                peakWidth++;
+                binCount++;
                 const auto& slotsForBin = slotResults.at(binId);
                 for(auto slot : slotsForBin)
                 {
@@ -105,8 +105,11 @@ namespace cqp {
                     qubitsBySlot[slot.first].assign(slot.second.cbegin(), slot.second.cend());
                 }
             }
-            peakWidth = (peakWidth / static_cast<double>(numBins));
-            LOGDEBUG("Peak width: " + to_string(peakWidth * 100.0) + "%");
+
+            if(peakWidth)
+            {
+                *peakWidth = (binCount / static_cast<double>(numBins));
+            }
 
             // as the list is ordered, the qubits will come out in the correct order
             // just append them to the result list
@@ -146,7 +149,7 @@ namespace cqp {
         }
 
         PicoSecondOffset Gating::CalculateDrift(const DetectionReportList::const_iterator& start,
-                                        const DetectionReportList::const_iterator& end)
+                                        const DetectionReportList::const_iterator& end) const
         {
             using namespace std;
             /*
@@ -231,12 +234,18 @@ namespace cqp {
             if(calculateDrift)
             {
                 drift = CalculateDrift(start, end);
-                LOGDEBUG("Drift = " + std::to_string(drift.count()));
             }
             CountsByBin counts;
             ResultsByBinBySlot resultsBySlot;
             CountDetections(start, end, counts, resultsBySlot);
-            GateResults(counts, resultsBySlot, validSlots, results);
+            double peakWidth;
+            GateResults(counts, resultsBySlot, validSlots, results, &peakWidth);
+
+            stats.PeakWidth.Update(peakWidth);
+            stats.Drift.Update(drift.count());
+
+            LOGDEBUG("Drift = " + std::to_string(drift.count()));
+            LOGDEBUG("Peak width: " + std::to_string(peakWidth * 100.0) + "%");
 
         }
 

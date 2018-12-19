@@ -217,6 +217,9 @@ namespace cqp
             case stats::Units::Percentage:
                 report.set_unit(SiteAgentReport::Units::SiteAgentReport_Units_Percentage);
                 break;
+            case stats::Units::PicoSecondsPerSecond:
+                report.set_unit(SiteAgentReport::Units::SiteAgentReport_Units_PicoSecondsPerSecond);
+                break;
             } // switch units
 
             QueueReport(report);

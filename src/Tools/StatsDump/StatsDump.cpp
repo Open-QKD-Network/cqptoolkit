@@ -194,6 +194,9 @@ void StatsDump::ReadStats(std::string from, std::unique_ptr<remote::IReporting::
         case SiteAgentReport::Units::SiteAgentReport_Units_Percentage:
             output << "Percentage";
             break;
+        case SiteAgentReport::Units::SiteAgentReport_Units_PicoSecondsPerSecond:
+            output << "PicosSecondsPerSecond";
+            break;
         case SiteAgentReport::Units::SiteAgentReport_Units_SiteAgentReport_Units_INT_MAX_SENTINEL_DO_NOT_USE_:
         case SiteAgentReport::Units::SiteAgentReport_Units_SiteAgentReport_Units_INT_MIN_SENTINEL_DO_NOT_USE_:
             break;

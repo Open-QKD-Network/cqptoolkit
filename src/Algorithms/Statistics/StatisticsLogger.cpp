@@ -60,7 +60,9 @@ namespace cqp
             case stats::Units::Hz:
                 result += "Hz";
                 break;
-
+            case stats::Units::PicoSecondsPerSecond:
+                result += "pS/S";
+                    break;
             }
             result += "\"";
 

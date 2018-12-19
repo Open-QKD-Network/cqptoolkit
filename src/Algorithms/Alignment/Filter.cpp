@@ -13,7 +13,7 @@ namespace cqp {
 
         bool Filter::Isolate(const DetectionReportList& timeTags,
                              DetectionReportList::const_iterator& start,
-                             DetectionReportList::const_iterator& end)
+                             DetectionReportList::const_iterator& end) const
         {
             bool result = false;
             using namespace std;

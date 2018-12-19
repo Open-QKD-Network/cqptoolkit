@@ -233,7 +233,6 @@ namespace cqp
         {
             const PicoSeconds pulseWidth   {100};
             const PicoSeconds slotWidth  {10000};
-            const auto slotsForDrift = 20;
             AlignmentTestData testData;
 
             testData.emissions = rng->RandQubitList(100);

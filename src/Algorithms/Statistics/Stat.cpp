@@ -18,8 +18,8 @@ namespace cqp
         const std::chrono::milliseconds ProcessingWorker::timeout {500};
         std::weak_ptr<ProcessingWorker> ProcessingWorker::me;
 
-        StatBase::StatBase(const std::vector<std::string>& pathin, Units k) :
-            path(pathin), units(k), uniqueId(Counter())
+        StatBase::StatBase(const std::vector<std::string>& pathin, Units k, const std::string& description) :
+            path(pathin), units(k), description(description), uniqueId(Counter())
         {
             worker = ProcessingWorker::Instance();
         }

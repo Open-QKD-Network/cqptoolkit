@@ -18,9 +18,13 @@ namespace cqp {
         class ALGORITHMS_EXPORT Filter
         {
         public:
+            /// value for the Gaussian filter
             static constexpr double DefaultSigma = 5.0;
+            /// filter size
             static constexpr size_t DefaultFilterWidth = 21;
+            /// minimum percentage for passing the filter
             static constexpr double DefaultCutoff = 0.2;
+            /// Reduce the dataset by this factor
             static constexpr size_t DefaultStride = 25;
 
             /** Constructor
@@ -38,10 +42,11 @@ namespace cqp {
              * @param timeTags Raw times of detections
              * @param[out] start The start of detections
              * @param[out] end The end of detections
+             * @return true on success
              */
             bool Isolate(const DetectionReportList& timeTags,
                          DetectionReportList::const_iterator& start,
-                         DetectionReportList::const_iterator& end);
+                         DetectionReportList::const_iterator& end) const;
 
 
             /**
@@ -73,6 +78,7 @@ namespace cqp {
              * @param width The width of the output array
              * @param peak The value of the centre point of the graph.
              *  The values will be scaled to this
+             * @return Array of values following a gausian distrobution
              */
             template<typename T>
             static std::vector<T> GaussianWindow1D(T sigma, size_t width, T peak = 1.0)
@@ -123,6 +129,7 @@ namespace cqp {
              * @param filterBegin The first element of the filter
              * @param filterEnd The element pas the last filter element
              * @param convolved The storage for the result. It will be resized to fit.
+             * @return true ib success
              */
             template<typename T, typename DataIter, typename FilterIter>
             static bool ConvolveValid(

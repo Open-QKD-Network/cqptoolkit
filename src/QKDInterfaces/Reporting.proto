@@ -93,6 +93,7 @@ message SiteAgentReport {
         Decibels = 4;
         /// Frequency
         Hz = 5;
+        PicoSecondsPerSecond = 6;
     };
 
     /// The tree of scope

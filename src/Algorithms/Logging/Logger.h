@@ -75,6 +75,7 @@ namespace cqp
         LOGERROR(e.what()); \
     }
 #else
+/// catch exception and log as an error
 #define CATCHLOGERROR
 #endif
 

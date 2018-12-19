@@ -34,6 +34,7 @@ namespace cqp
 
     namespace keygen
     {
+        /// Possible login types
         enum class UserType : unsigned long { SecurityOfficer = 0, User = 1, ContextSpecific = 3 };
 
         /**
