@@ -29,8 +29,11 @@ struct Names
 {
     static CONSTSTRING noxData= "noxdata";
     static CONSTSTRING packedQubits= "packed";
-    static CONSTSTRING slotWidth = "slotWidth";
-    static CONSTSTRING pulseWidth = "pulseWidth";
+    static CONSTSTRING slotsPerFrame = "slots-per-frame";
+    static CONSTSTRING slotWidth = "slot-width";
+    static CONSTSTRING pulseWidth = "pulse-width";
+    static CONSTSTRING samplesPerFrame = "samples";
+    static CONSTSTRING acceptanceRatio = "acceptance";
 };
 
 QKDPostProc::QKDPostProc()
@@ -53,9 +56,15 @@ QKDPostProc::QKDPostProc()
             .Bind();
     definedArguments.AddOption(Names::packedQubits, "p", "Read transmissions from packed Qubits file")
             .Bind();
+    definedArguments.AddOption(Names::slotsPerFrame, "", "Length of transmission in number of slots")
+            .Bind();
     definedArguments.AddOption(Names::slotWidth, "", "Slot width of transmissions (Picoseconds)")
             .Bind();
     definedArguments.AddOption(Names::pulseWidth, "", "Pulse width of photon (Picoseconds)")
+            .Bind();
+    definedArguments.AddOption(Names::samplesPerFrame, "", "Split the data into this many samples to calculate drift")
+            .Bind();
+    definedArguments.AddOption(Names::acceptanceRatio, "", "Value between 0 and 1 for the gating filter")
             .Bind();
 }
 
@@ -85,6 +94,21 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         DetectionReportList detections;
         definedArguments.GetProp(Names::noxData, detectionsFile);
 
+        auto slotsPerFrame = align::Gating::DefaultSlotsPerFrame;
+        definedArguments.GetProp(Names::slotsPerFrame, slotsPerFrame);
+
+        auto slotWidth = align::Gating::DefaultSlotWidth;
+        definedArguments.GetProp(Names::slotWidth, slotWidth);
+
+        auto pulseWidth = align::Gating::DefaultPulseWidth;
+        definedArguments.GetProp(Names::pulseWidth, pulseWidth);
+
+        auto samplesPerFrame = align::Gating::DefaultSamplesPerFrame;
+        definedArguments.GetProp(Names::samplesPerFrame, samplesPerFrame);
+
+        auto acceptanceRatio = align::Gating::DefaultAcceptanceRatio;
+        definedArguments.GetProp(Names::acceptanceRatio, acceptanceRatio);
+
         if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
         {
             LOGERROR("Failed to open file: " + detectionsFile);
@@ -92,9 +116,9 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
             // to isolate the transmission
             align::Filter filter;
             // to find the qubits
-            align::Gating gating(rng);
+            align::Gating gating(rng, slotsPerFrame, slotWidth, pulseWidth, samplesPerFrame, acceptanceRatio);
             // bobs qubits
-            QubitList RecverResults;
+            QubitList receiverResults;
             DetectionReportList::const_iterator start;
             DetectionReportList::const_iterator end;
 
@@ -104,10 +128,13 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                     " End: " + std::to_string(distance(detections.cbegin(), end)));
 
             align::Gating::ValidSlots validSlots;
-            gating.ExtractQubits(start, end, validSlots, RecverResults);
+            const auto startTime = std::chrono::high_resolution_clock::now();
+            gating.ExtractQubits(start, end, validSlots, receiverResults);
+            const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
 
-            LOGINFO("Found " + std::to_string(RecverResults.size()) + " Qubits over " + to_string(validSlots.size()) + " slots.");
-            fs::DataFile::WriteQubits(RecverResults, "BobQubits.bin");
+            LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits over " + to_string(validSlots.size()) + " slots. In " +
+                    to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
+            fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
 
             ////////////// Load Alice data to compare with Bobs
             std::string packedFile = "AliceRandom.bin";
@@ -119,20 +146,31 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
             {
                 LOGERROR("Failed to open transmisser file: " + packedFile);
             } else {
-                if(gating.FilterDetections(validSlots.cbegin(), validSlots.cend(), aliceQubits) && RecverResults.size() == aliceQubits.size())
+
+                const auto numQubitsSent = aliceQubits.size();
+                if(gating.FilterDetections(validSlots.cbegin(), validSlots.cend(), aliceQubits) && receiverResults.size() == aliceQubits.size())
                 {
                     size_t validCount = 0;
                     LOGINFO("Comparing " + std::to_string(aliceQubits.size()) + " qubits...");
-                    for(auto index = 0u; index < RecverResults.size(); index++)
+                    for(auto index = 0u; index < receiverResults.size(); index++)
                     {
-                        if(RecverResults[index] == aliceQubits[index])
+                        if(receiverResults[index] == aliceQubits[index])
                         {
                             validCount++;
                         }
                     }
-                    const double errorRate = 1.0 - static_cast<double>(validCount) / RecverResults.size();
+                    const double errorRate = 1.0 - static_cast<double>(validCount) / receiverResults.size();
+                    const double detectionRate = static_cast<double>(validCount) / numQubitsSent;
+
                     LOGINFO("Valid qubits: " + std::to_string(validCount) + " out of " + std::to_string(aliceQubits.size()) +
                             ". Error rate: " + std::to_string(errorRate * 100) + "%");
+
+                    cout << "Step, Slot Width, Pulse Width, Samples Per Frame, "
+                         << "Acceptance Ratio, Qubits sent, Qubits detected, Valid Qubits, "
+                         << "Detection Rate, Error rate, Time (us)" << endl;
+                    cout << "Gating, " << slotWidth.count() << ", " << pulseWidth.count() << ", " << samplesPerFrame << ", "
+                         << acceptanceRatio << ", " << numQubitsSent << ", " << aliceQubits.size() << ", " << validCount << ", "
+                         << detectionRate << ", " << errorRate << ", " << chrono::duration_cast<chrono::microseconds>(extractTime).count() << endl;
                 } else {
                     LOGERROR("Failed to filter alice detections");
                 }

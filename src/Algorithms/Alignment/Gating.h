@@ -16,12 +16,14 @@ namespace cqp {
         class ALGORITHMS_EXPORT Gating
         {
         public: // types
+            /// The length of a frame in number of slot widths
+            static constexpr uint64_t DefaultSlotsPerFrame { 40000000 };
             /// The detection window for a qubit.
             static constexpr PicoSeconds DefaultPulseWidth {PicoSeconds(500)};
             /// Picoseconds of time in which one qubit can be detected.
             static constexpr PicoSeconds DefaultSlotWidth  {std::chrono::nanoseconds(100)};
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
-            static constexpr double DefaultAcceptanceRatio = 0.5;
+            static constexpr double DefaultAcceptanceRatio = 0.2;
             /// The number of slots used to calculate drift
             static constexpr uint64_t DefaultSamplesPerFrame = 40;
 
@@ -37,7 +39,7 @@ namespace cqp {
             /// Identifier type bins
             using BinID = uint64_t;
             /// A list of results with each bin is a list of slots for the data
-            using ResultsByBinBySlot = std::unordered_map<BinID, ValuesBySlot>;
+            using ResultsByBinBySlot = std::vector</*BinID,*/ ValuesBySlot>;
 
             /// The histogram storage type
             using CountsByBin = std::vector<uint64_t>;
@@ -56,6 +58,7 @@ namespace cqp {
              * A higher ratio mean less of the peak detections is accepted and less noise.
              */
             Gating(std::shared_ptr<IRandom> rng,
+                   uint64_t slotsPerFrame = DefaultSlotsPerFrame,
                    const PicoSeconds& slotWidth = DefaultSlotWidth,
                    const PicoSeconds& pulseWidth = DefaultPulseWidth,
                    uint64_t samplesPerFrame = DefaultSamplesPerFrame,
@@ -118,7 +121,8 @@ namespace cqp {
              * @param[out] counts The histogram of the data
              * @param[out] slotResults The qubits arranged by bin and slot
              */
-            void CountDetections(const DetectionReportList::const_iterator& start,
+            void CountDetections(const PicoSeconds& frameStart,
+                                 const DetectionReportList::const_iterator& start,
                                  const DetectionReportList::const_iterator& end,
                                  CountsByBin& counts,
                                  ResultsByBinBySlot& slotResults) const;
@@ -163,9 +167,15 @@ namespace cqp {
                     uint64_t index = 0;
                     for(auto validSlot = validSlotsBegin; validSlot != validSlotsEnd; validSlot++)
                     {
-                        qubits[index] = qubits[*validSlot];
-                        index++;
+                        if(*validSlot < qubits.size())
+                        {
+                            qubits[index] = qubits[*validSlot];
+                            index++;
+                        } else {
+                            LOGERROR("Invalid SlotID");
+                        }
                     }
+
                     // through away the bits on the end
                     qubits.resize(validSlotsSize);
                     result = true;
@@ -228,6 +238,8 @@ namespace cqp {
         protected: // members
             /// radom number generator for choosing from multiple qubits
             std::shared_ptr<IRandom> rng;
+            /// The length of a frame in number of slotWidths
+            const uint64_t slotsPerFrame;
             /// Picoseconds of time in which one qubit can be detected. slot width = frame width / number transmissions per frame
             const PicoSeconds slotWidth;
             /// The detection window for a qubit.

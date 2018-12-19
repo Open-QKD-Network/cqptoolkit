@@ -455,6 +455,24 @@ namespace cqp
         return result;
     }
 
+    bool CommandArgs::GetProp(const std::string& key, PicoSeconds& out) const
+    {
+        bool result = false;
+        auto it = properties.find(key);
+        if(it != properties.end())
+        {
+            try
+            {
+                out = PicoSeconds(std::stoul(it->second));
+                result = true;
+            }
+            catch (const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
+        }
+        return result;
+    }
     std::string CommandArgs::GetStringProp(const std::string& key) const
     {
         std::string result;

@@ -29,19 +29,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     #gRPC::grpc++
     #protobuf::libprotobuf
     )
-
-#if(TARGET PkgConfig::avahi-client)
-#    target_link_libraries(${PROJECT_NAME} PRIVATE
-#        PkgConfig::avahi-client)
-#endif()
-
-if(TARGET OpenCL::OpenCL)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenCL::OpenCL)
-endif()
-
-# add the interface files for installation
-#INSTALL(FILES
-#    "${CMAKE_SOURCE_DIR}/src/QKDInterfaces/Reporting.proto"
-#    "${CMAKE_SOURCE_DIR}/src/QKDInterfaces/IReporting.proto"
-#    DESTINATION "include/QKDInterfaces"
-#    COMPONENT "${CQP_INSTALL_COMPONENT}")

@@ -21,7 +21,7 @@ namespace align {
 
     DetectionReciever::DetectionReciever(const SystemParameters &parameters) :
         rng{new RandomNumber()},
-        gating{rng, parameters.slotWidth, parameters.pulseWidth}
+        gating{rng, parameters.slotsPerFrame, parameters.slotWidth, parameters.pulseWidth}
     {
 
     }

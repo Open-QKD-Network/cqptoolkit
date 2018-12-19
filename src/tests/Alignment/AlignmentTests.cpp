@@ -253,7 +253,7 @@ namespace cqp
 
             LOGDEBUG("There are " + std::to_string(testData.emissions.size()) + " emissions and " + std::to_string(testData.detections.size()) + " detections.");
 
-            align::Gating gating(rng, slotWidth, pulseWidth);
+            align::Gating gating(rng, 100, slotWidth, pulseWidth);
             QubitList alignedDetections;
             align::Gating::ValidSlots validSlots;
 

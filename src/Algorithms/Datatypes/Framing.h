@@ -26,7 +26,7 @@ namespace cqp
      */
     struct ALGORITHMS_EXPORT SystemParameters {
         /// The duration for a frame
-        //PicoSeconds frameWidth {0};
+        uint64_t slotsPerFrame {0};
         /// The duration for one slot within a frame
         PicoSeconds slotWidth {0};
         /// The width of a single pulse in a slot

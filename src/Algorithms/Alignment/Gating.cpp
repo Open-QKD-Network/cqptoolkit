@@ -14,8 +14,10 @@ namespace cqp {
         constexpr PicoSeconds Gating::DefaultSlotWidth;
 
         Gating::Gating(std::shared_ptr<IRandom> rng,
+                       uint64_t slotsPerFrame,
                        const PicoSeconds& slotWidth, const PicoSeconds& pulseWidth, uint64_t samplesPerFrame, double acceptanceRatio):
             rng(rng),
+            slotsPerFrame{slotsPerFrame},
             slotWidth{slotWidth}, pulseWidth{pulseWidth},
             samplesPerFrame{samplesPerFrame}, numBins{slotWidth / pulseWidth},
             acceptanceRatio{acceptanceRatio}
@@ -27,7 +29,7 @@ namespace cqp {
                        const DetectionReportList::const_iterator& end,
                        Gating::CountsByBin& counts) const
         {
-            counts.resize(numBins);
+            counts.resize(numBins, 0);
             // for each detection
             //   count the bin ids
             for(auto detection = start; detection < end; ++detection)
@@ -39,13 +41,15 @@ namespace cqp {
 
         }
 
-        void Gating::CountDetections(const DetectionReportList::const_iterator& start,
-                                    const DetectionReportList::const_iterator& end,
-                                    Gating::CountsByBin& counts,
-                                    ResultsByBinBySlot& slotResults) const
+        void Gating::CountDetections(const PicoSeconds& frameStart,
+                                     const DetectionReportList::const_iterator& start,
+                                     const DetectionReportList::const_iterator& end,
+                                     Gating::CountsByBin& counts,
+                                     ResultsByBinBySlot& slotResults) const
         {
             using namespace std;
-            counts.resize(numBins);
+            counts.resize(numBins, 0);
+            slotResults.resize(numBins);
 
             // for each detection
             //   calculate it's slot and bin ids and store a reference to the original data
@@ -58,13 +62,17 @@ namespace cqp {
                         drift.count() * static_cast<double>(detection->time.count()) / static_cast<double>(PicoSeconds::period::den)
                 )};
                 // offset the time without the original value being converted to a float
-                const PicoSeconds adjustedTime = detection->time + offset;
+                const PicoSeconds adjustedTime = (detection->time + offset) - frameStart;
                 // C++ truncates on integer division
                 const SlotID slot = adjustedTime / slotWidth;
-                const BinID bin = (adjustedTime % slotWidth) / pulseWidth;
-                // store the value as a bin for later access
-                slotResults[bin][slot].push_back(detection->value);
-                counts[bin]++;
+                // through away anything past the end of transmission
+                if(slot < slotsPerFrame)
+                {
+                    const BinID bin = (adjustedTime % slotWidth) / pulseWidth;
+                    // store the value as a bin for later access
+                    slotResults[bin][slot].push_back(detection->value);
+                    counts[bin]++;
+                }
             }
 
         }
@@ -90,6 +98,7 @@ namespace cqp {
                 upper = (upper + 1) % numBins;
             }
 
+            LOGDEBUG("Peak=" + to_string(peakIndex) + " upper=" + to_string(upper) + " lower=" + to_string(lower));
             map<SlotID, QubitList> qubitsBySlot;
             // walk through each bin, wrapping around to the start if the upper bin < lower bin
 
@@ -98,11 +107,10 @@ namespace cqp {
             for(auto binId = (lower + 1) % numBins; binId != upper ; binId = (binId + 1) % numBins)
             {
                 binCount++;
-                const auto& slotsForBin = slotResults.at(binId);
-                for(auto slot : slotsForBin)
+                for(auto slot : slotResults[binId])
                 {
                     // add the qubits to the list for this slot, one will be chosen at random later
-                    qubitsBySlot[slot.first].assign(slot.second.cbegin(), slot.second.cend());
+                    qubitsBySlot[slot.first].insert(qubitsBySlot[slot.first].end(), slot.second.cbegin(), slot.second.cend());
                 }
             }
 
@@ -115,15 +123,21 @@ namespace cqp {
             // just append them to the result list
             for(auto list : qubitsBySlot)
             {
-                // record that we have a value for this slot
-                validSlots.push_back(list.first);
-                if(list.second.size() == 1)
+                if(!list.second.empty())
                 {
-                    results.push_back(list.second[0]);
-                } else {
-                    // pic a qubit at random
-                    const auto index = rng->RandULong() % list.second.size();
-                    results.push_back(list.second[index]);
+                    // record that we have a value for this slot
+                    validSlots.push_back(list.first);
+                    if(list.second.size() == 1)
+                    {
+                        results.push_back(list.second[0]);
+                    }
+                    else {
+                        LOGDEBUG("Multiple qubits for slot");
+                        // pic a qubit at random
+                        //const auto index = rng->RandULong() % list.second.size();
+                        //results.push_back(list.second[index]);
+                        results.push_back(list.second[0]);
+                    }
                 }
             }
 
@@ -237,8 +251,9 @@ namespace cqp {
             }
             CountsByBin counts;
             ResultsByBinBySlot resultsBySlot;
-            CountDetections(start, end, counts, resultsBySlot);
-            double peakWidth;
+            CountDetections(start->time, start, end, counts, resultsBySlot);
+
+            double peakWidth = 0.0;
             GateResults(counts, resultsBySlot, validSlots, results, &peakWidth);
 
             stats.PeakWidth.Update(peakWidth);

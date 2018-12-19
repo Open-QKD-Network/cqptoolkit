@@ -35,6 +35,7 @@ namespace align {
     {
     public:
         static constexpr SystemParameters DefaultSystemParameters = {
+            Gating::DefaultSlotsPerFrame,
             Gating::DefaultSlotWidth,
             Gating::DefaultPulseWidth
         };

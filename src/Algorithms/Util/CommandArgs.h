@@ -16,6 +16,7 @@
 #include <map>
 #include <unordered_map>
 #include "Algorithms/algorithms_export.h"
+#include "Algorithms/Datatypes/Chrono.h"
 
 namespace cqp
 {
@@ -202,6 +203,8 @@ namespace cqp
         bool GetProp(const std::string& key, uint32_t& out) const;
         /// @copydoc GetProp
         bool GetProp(const std::string& key, std::string& out) const;
+        /// @copydoc GetProp
+        bool GetProp(const std::string& key, PicoSeconds& out) const;
 
         /**
          * @brief GetStringProp

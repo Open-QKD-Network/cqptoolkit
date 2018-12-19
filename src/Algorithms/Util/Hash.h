@@ -27,15 +27,40 @@ namespace cqp {
      * @param value string to hash
      * @return hash value
      */
-    static inline uint64_t FNV1aHash(const std::string& value)
+    template<class T>
+    static inline uint64_t FNV1aHash(const T& value)
     {
 
         uint64_t hash = FNVOffset;
         for(auto byte : value)
         {
             // XOR the hash with the byte
-            hash = hash ^ static_cast<unsigned char>(byte);
+            hash = hash ^ byte;
             hash = hash * FNVPrime;
+        }
+
+        return hash;
+    }
+
+    /**
+     * @brief FNV1aHash
+     * Perform a fast hash on the value. This is not suitable for security,
+     * it is intended for fast string to collision resistant hashes for lookups.
+     * @param start Start iterator of the list
+     * @param end End iterator of the list
+     * @return hash value
+     */
+    template<class Iter>
+    static inline uint64_t FNV1aHash(Iter start, Iter end)
+    {
+
+        uint64_t hash = FNVOffset;
+        while(start != end)
+        {
+            // XOR the hash with the byte
+            hash = hash ^ *start;
+            hash = hash * FNVPrime;
+            start++;
         }
 
         return hash;
