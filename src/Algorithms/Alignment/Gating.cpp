@@ -132,11 +132,10 @@ namespace cqp {
                         results.push_back(list.second[0]);
                     }
                     else {
-                        LOGDEBUG("Multiple qubits for slot");
+                        //LOGDEBUG("Multiple qubits for slot");
                         // pic a qubit at random
-                        //const auto index = rng->RandULong() % list.second.size();
-                        //results.push_back(list.second[index]);
-                        results.push_back(list.second[0]);
+                        const auto index = rng->RandULong() % list.second.size();
+                        results.push_back(list.second[index]);
                     }
                 }
             }
