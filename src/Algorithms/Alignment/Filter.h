@@ -23,7 +23,7 @@ namespace cqp {
             /// filter size
             static constexpr size_t DefaultFilterWidth = 21;
             /// minimum percentage for passing the filter
-            static constexpr double DefaultCutoff = 0.2;
+            static constexpr double DefaultCutoff = 0.1;
             /// Reduce the dataset by this factor
             static constexpr size_t DefaultStride = 25;
 

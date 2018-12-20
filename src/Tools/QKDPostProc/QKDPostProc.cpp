@@ -34,6 +34,10 @@ struct Names
     static CONSTSTRING pulseWidth = "pulse-width";
     static CONSTSTRING samplesPerFrame = "samples";
     static CONSTSTRING acceptanceRatio = "acceptance";
+    static CONSTSTRING filterSigma = "filter-sigma";
+    static CONSTSTRING filterWidth = "filter-width";
+    static CONSTSTRING filterCutoff = "filter-cutoff";
+    static CONSTSTRING filterStride = "filter-stride";
 };
 
 QKDPostProc::QKDPostProc()
@@ -65,6 +69,14 @@ QKDPostProc::QKDPostProc()
     definedArguments.AddOption(Names::samplesPerFrame, "", "Split the data into this many samples to calculate drift")
             .Bind();
     definedArguments.AddOption(Names::acceptanceRatio, "", "Value between 0 and 1 for the gating filter")
+            .Bind();
+    definedArguments.AddOption(Names::filterSigma, "", "Sigma value for the gaussian filter")
+            .Bind();
+    definedArguments.AddOption(Names::filterWidth, "", "Integer width in gaussian filter")
+            .Bind();
+    definedArguments.AddOption(Names::filterCutoff, "", "Percentage for filter acceptance")
+            .Bind();
+    definedArguments.AddOption(Names::filterStride, "", "Data items to skip when filtering")
             .Bind();
 }
 
@@ -109,12 +121,24 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         auto acceptanceRatio = align::Gating::DefaultAcceptanceRatio;
         definedArguments.GetProp(Names::acceptanceRatio, acceptanceRatio);
 
+        auto filterSigma = align::Filter::DefaultSigma;
+        definedArguments.GetProp(Names::filterSigma, filterSigma);
+
+        auto filterWidth = align::Filter::DefaultFilterWidth;
+        definedArguments.GetProp(Names::filterWidth, filterWidth);
+
+        auto filterCutoff = align::Filter::DefaultCutoff;
+        definedArguments.GetProp(Names::filterCutoff, filterCutoff);
+
+        auto filterStride = align::Filter::DefaultStride;
+        definedArguments.GetProp(Names::filterStride, filterStride);
+
         if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
         {
             LOGERROR("Failed to open file: " + detectionsFile);
         }else {
             // to isolate the transmission
-            align::Filter filter;
+            align::Filter filter(filterSigma, filterWidth, filterCutoff, filterStride);
             // to find the qubits
             align::Gating gating(rng, slotsPerFrame, slotWidth, pulseWidth, samplesPerFrame, acceptanceRatio);
             // bobs qubits
@@ -123,12 +147,16 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
             DetectionReportList::const_iterator end;
 
             filter.Isolate(detections, start, end);
-            LOGINFO("Detections: " + std::to_string(detections.size()) +
-                    " Start: " + std::to_string(distance(detections.cbegin(), start)) +
-                    " End: " + std::to_string(distance(detections.cbegin(), end)));
+            const auto window = (end - 1)->time - start->time;
+
+            LOGINFO("Detections: " + std::to_string(detections.size()) + "\n" +
+                    " Start: " + std::to_string(distance(detections.cbegin(), start)) + "\n" +
+                    " End: " + std::to_string(distance(detections.cbegin(), end)) + "\n" +
+                    " Duration: " + std::to_string(chrono::duration_cast<SecondsDouble>(window).count()) + "s");
 
             align::Gating::ValidSlots validSlots;
             const auto startTime = std::chrono::high_resolution_clock::now();
+            //gating.SetDrift(PicoSeconds(34795));
             gating.ExtractQubits(start, end, validSlots, receiverResults);
             const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
 
@@ -163,7 +191,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                     const double detectionRate = static_cast<double>(validCount) / numQubitsSent;
 
                     LOGINFO("Valid qubits: " + std::to_string(validCount) + " out of " + std::to_string(aliceQubits.size()) +
-                            ". Error rate: " + std::to_string(errorRate * 100) + "%");
+                            ".\n Error rate: " + std::to_string(errorRate * 100) + "%");
 
                     cout << "Step, Slot Width, Pulse Width, Samples Per Frame, "
                          << "Acceptance Ratio, Qubits sent, Qubits detected, Valid Qubits, "

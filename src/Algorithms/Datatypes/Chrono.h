@@ -21,4 +21,6 @@ namespace cqp
     /// signed duration value to allow time to go in both directions
     using PicoSecondOffset = std::chrono::duration<int64_t, PicoSeconds::period>;
 
+    /// floating point number of seconds
+    using SecondsDouble = std::chrono::duration<double, std::chrono::seconds::period>;
 } // namespace cqp

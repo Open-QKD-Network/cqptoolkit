@@ -92,6 +92,16 @@ namespace cqp {
                                bool calculateDrift = true);
 
             /**
+             * @brief SetDrift
+             * Change the drift value used for ExtractQubits when calculateDrift is set to false
+             * @param newDrift The new drift value
+             */
+            void SetDrift(const PicoSecondOffset& newDrift)
+            {
+                drift = newDrift;
+            }
+
+            /**
              * @brief Histogram
              * Create a histogram of the data by counting the occorences
              * @param[in] start The start of the data
