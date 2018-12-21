@@ -23,7 +23,7 @@ namespace cqp {
             /// filter size
             static constexpr size_t DefaultFilterWidth = 21;
             /// minimum percentage for passing the filter
-            static constexpr double DefaultCutoff = 0.1;
+            static constexpr double DefaultCutoff = 0.2;
             /// Reduce the dataset by this factor
             static constexpr size_t DefaultStride = 25;
 
@@ -80,8 +80,8 @@ namespace cqp {
              *  The values will be scaled to this
              * @return Array of values following a gausian distrobution
              */
-            template<typename T>
-            static std::vector<T> GaussianWindow1D(T sigma, size_t width, T peak = 1.0)
+            template<typename T = double>
+            static std::vector<T> GaussianWindow1D(double sigma, size_t width, T peak = 1.0)
             {
                 using namespace std;
                 // this is 1 if the width is odd
@@ -110,6 +110,33 @@ namespace cqp {
 
                 return result;
             } // GaussianWindow1D
+
+            template<typename T>
+            static std::vector<T> MovingAverage(const std::vector<T>& values, size_t window)
+            {
+                using namespace std;
+                std::vector<T> result;
+
+                // make sure the data is wider than the window and that the window is odd
+                if(values.size() > window)
+                {
+                    result.resize(values.size());
+                    copy(values.cbegin(), values.cbegin() + window, result.begin());
+                    copy(values.crbegin(), values.crbegin() + window, result.rbegin());
+
+                    for(auto current = values.cbegin() + window; current + window < values.cend(); current++)
+                    {
+                        auto average = *current;
+                        for(auto offset = 1u; offset <= window; offset++)
+                        {
+                            average += *(current + offset);
+                            average += *(current - offset);
+                        }
+                        result[distance(values.cbegin(), current)] = average / (2 * window + 1);
+                    }
+                }
+                return result;
+            }
 
             /**
              * @brief

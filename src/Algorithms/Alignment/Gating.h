@@ -96,7 +96,7 @@ namespace cqp {
              * Change the drift value used for ExtractQubits when calculateDrift is set to false
              * @param newDrift The new drift value
              */
-            void SetDrift(const PicoSecondOffset& newDrift)
+            void SetDrift(SecondsDouble newDrift)
             {
                 drift = newDrift;
             }
@@ -106,11 +106,15 @@ namespace cqp {
              * Create a histogram of the data by counting the occorences
              * @param[in] start The start of the data
              * @param[in] end The end of the data
+             * @param[in] numBins The number of columns in the histogram
+             * @param[in] windowWidth The width in time of the histogram window
              * @param[out] counts The result of counting the times based on the pulse width setting
              */
-            void Histogram(const DetectionReportList::const_iterator& start,
+            static void Histogram(const DetectionReportList::const_iterator& start,
                            const DetectionReportList::const_iterator& end,
-                           Gating::CountsByBin& counts) const;
+                           uint64_t numBins,
+                           PicoSeconds windowWidth,
+                           Gating::CountsByBin& counts);
 
             /**
              * @brief CalculateDrift
@@ -119,7 +123,7 @@ namespace cqp {
              * @param end End of data to sample
              * @return Picoseconds drift
              */
-            PicoSecondOffset CalculateDrift(const DetectionReportList::const_iterator& start,
+            SecondsDouble CalculateDrift(const DetectionReportList::const_iterator& start,
                                             const DetectionReportList::const_iterator& end) const;
 
             /**
@@ -207,7 +211,7 @@ namespace cqp {
                 stats::Stat<double> PeakWidth {{parent, "PeakWidth"}, stats::Units::Percentage, "A measurement of the accuracy of detections and drift"};
 
                 /// The time took to transmit the qubits
-                stats::Stat<long> Drift {{parent, "Drift"}, stats::Units::PicoSecondsPerSecond, "The clock drift between the transmitter and detector"};
+                stats::Stat<double> Drift {{parent, "Drift"}, stats::Units::PicoSecondsPerSecond, "The clock drift between the transmitter and detector"};
 
                 /// @copydoc stats::StatCollection::Add
                 void Add(stats::IAllStatsCallback* statsCb) override
@@ -262,7 +266,7 @@ namespace cqp {
             /// A higher ratio mean less of the peak detections is accepted and less noise.
             double acceptanceRatio;
             /// clock drift between tx and rx
-            PicoSecondOffset drift {0};
+            SecondsDouble drift {0};
         };
 
     } // namespace align
