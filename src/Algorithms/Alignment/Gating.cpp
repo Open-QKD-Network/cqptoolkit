@@ -221,15 +221,16 @@ namespace cqp {
                 sampleIndex++;
             } while(sampleStart != end);
 
-            // store the values for the peaks so we can discover the shift/wraparound
-            // the sequential values may wrap around the slot width:
-            // |   /|        |   |\
-            // |  / |        |   | \
-            // | /  |        |   |  \
-            // |    |  /  or |\  |   \
-            // |    | /      | \ |
-            // |    |/       |  \|
-            // |_________    |_________
+            /* store the values for the peaks so we can discover the shift/wraparound
+             the sequential values may wrap around the slot width:
+             |   /|        |   |\
+             |  / |        |   | \
+             | /  |        |   |  \
+             |    |  /  or |\  |   \
+             |    | /      | \ |
+             |    |/       |  \|
+             |_________    |_________
+            */
             std::vector<PicoSecondOffset> peaks(peakFutures.size());
 
             auto maxPeakIt = peaks.cbegin();
