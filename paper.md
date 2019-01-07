@@ -14,15 +14,15 @@ authors:
     orcid: 0000-0002-5747-0586
     affiliation: 1
 affiliations:
- - name: University of Bristol
-   index: 1
+  - name: University of Bristol
+    index: 1
 date: 11 October 2018
 bibliography: paper.bib
 nocite: |
   @
 ---
 
-# Introduction
+# Summary
 
 The purpose of this software is to provide a set of interfaces, algorithms and tools to produce a full QKD system. The aim is to reduce the barrier to entry into QKD systems by developing a strong architecture with well defined interfaces. The separation of responsibility into components will allow researchers to concentrate on a specific component, the rest of the system being provided by existing algorithms or simulators.
 
@@ -64,7 +64,7 @@ Each collection of key stores constitute trusted nodes of the network, Site agen
 
 # Acknowledgements
 This project has been funded by [EPSRC](https://epsrc.ukri.org/) under the [Quantum communications hub](https://www.quantumcommshub.net/).
-We acknowlege contributions from Dr Djeylan Aktas, Dr David Lowndes, Prof. John Rarity, Dr Chris Erven at the University of Bristol.
+We acknowledge contributions from Dr Djeylan Aktas, Dr David Lowndes, Prof. John Rarity, Dr Chris Erven at the University of Bristol.
 
 # References
 

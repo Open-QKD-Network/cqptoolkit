@@ -3,9 +3,9 @@ CQP Tool kit {#mainpage}
 
 This file is written in [markdown](https://en.wikipedia.org/wiki/Markdown), it can be viewed with the Markdown Viewer chrome extension. The generated documentation can be found [on gitlab](https://qcomms.gitlab.io/cqptoolkit/).
 
-Binary packages can be installed on Ubuntu 18.04 from [here](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb).
+Binary packages can be installed on Ubuntu 18.04+ from [here](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb).
 
-The system provides various components for integrating QKD into a security system.
+The system provides various components for integrating [QKD](https://en.wikipedia.org/wiki/Quantum_key_distribution) into a security system.
 
 - Fully documented code using Doxygen
 - Written in modern ISO standardised C++11
@@ -30,25 +30,25 @@ The system provides various components for integrating QKD into a security syste
     + Configuration through config file, command line arguments or network interface.
     + Automatic Site Agent and Tunnel Controller discovery using [Zeroconf][]
 
-## Overview
 
-This project is intended to be used for both scientific research work and to form part of completed projects. As such it incorporates some approaches which are intended to maintain a production quality level of code and design.
+This project is intended to be used for both scientific research work and to form part of completed projects. As such it incorporates some approaches which are intended to maintain a production quality level of code and design. More details on the project can be found in [this paper](paper.md).
 The build system is based on [CMake][], it is used to produce many different build files from one set of definitions. In order to build the code, one of the build systems, such as gcc, is setup by calling the command `cmake` first. See the build folder for ready made scripts for common environments.
 See the [walk through](Walkthrough.md) for details of how the system operates. The [TLS](TLS.md) document details how this system can be used with standard internet communications.
 
+To contribute to this project please see the [Contribution](Contribution.md) file.
 ## Installation
 
-Requires Artful 17.10 or newer
-Run the setup file with  ``sh setup/setupBuild.sh -r``.
-If you want to use dynamic discovery install avahi with ``sudo apt install avahi-daemon``.
-Install the tools with ``sudo dpkg -i CQP-<version>-Linux-{CQPToolkit,QKDInterfaces,Tools}.deb``.
-To install the GUI programs run ``sudo dpkg -i CQP-<version>-Linux-UI.deb``.
+### Ubuntu 18.04+
+
+Download the packages from [Gitlab](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb). Extract the zip file and install the tools with ``sudo dpkg -i setup/*.deb build/gcc/CQP-*-Linux-{Algorithms,Networking,CQPToolkit,KeyManagement,QKDInterfaces,CQPUI,Simulate,Tools,UI}.deb``. This will complain about missing dependencies but don't worry, run `sudo apt update && sudo apt install -fy` to install the dependencies and finish the setup.
+
+To install the development files (headers and static libraries) run ``sudo dpkg -i build/gcc/CQP-*-Linux-*-dev.deb``.
 
 For instructions on running the demos see [Demos](DemoHowto.md)
 
 ## Exploring the Library
 
-The in-source documentation has details and examples to help developers, ether build the `doc` target (see below) of visit the [CQPToolkit Documentation][].
+The in-source documentation has details and examples to help developers, ether build the `doc` target (see below) of visit the [CQPToolkit Documentation](https://qcomms.gitlab.io/cqptoolkit/).
 
 The focal point, in terms of QKD, is the `cqp::IKeyPublisher` interface. This provides an outward facing callback called `cqp::IKeyCallback` which can be implemented by any class which wants to receive ready to use key bytes. This is common to both sides of the connection. These interfaces form part of a standard communication mechanism, implemented by the `cqp::SessionController` classes which can be specialised to provide new features.
 
@@ -79,11 +79,9 @@ More details on specific implementations can be found in:
 
 ## Building
 These instructions assume using a 64bit OS to build for 64bit OSs, alternate libraries will need to be installed for 32bit builds.
-If you only need to make use of the library rather than change it, use the runtime installer CQPToolkit-version-arch.msi
+If you only need to make use of the library rather than change it, it is advised that you use the pre-built binaries from [Gitlab](https://gitlab.com/QComms/cqptoolkit).
 
-For linux distributions, run the setup file  ``setup/setupBuild.sh``, this will install all the necessary libraries for your system to build the toolkit.
-
-The build uses [CMake][] to produce makefiles/solutions/etc for many different platforms and is invoked from an empty build folder which will contain all the out files.
+The build uses [CMake][] to produce makefiles/solutions/etc for many different platforms and is invoked from an empty build folder which will contain all the output files. Debug builds with produce packages postfixed with a "D".
 The build can be controlled by passing options to cmake, eg `-DBUILD_TESTING=OFF`. Run cmake with the `-LH` options to list available switches.
 
 The build structure:
@@ -95,6 +93,39 @@ The build structure:
     + CMakeLists.txt        - Google Test Project for unit test.
         + Interfaces
             + CMakeLists.txt     - Tests of interfaces.
+
+### Linux
+
+#### Docker build environment
+
+Run:
+
+```bash
+setup/buildWithDocker.sh
+```
+
+The built files will be placed in `build/gcc`.
+This uses a docker file from the [gitlab registry](registry.gitlab.com/qcomms/cqptoolkit/buildenv) which can be built manually by running `setup/makeDocker.sh`.
+
+#### Manually
+
+If you don't want to use the ubuntu docker image - or if your building for a system other than Ubuntu 18.04+ or Arch Linux, install the dependencies with:
+```bash
+./setup/setupBuild.sh
+```
+
+Start the debug build from the `build/gcc` or any empty folder by running:
+```bash
+cmake ../.. && make -j package
+```
+For a release build, set the `CMAKE_BUILD_TYPE` variable  to ether `Debug`, `Release` or `RELWITHDEBINFO` when calling cmake:
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release ../.. && make -j package
+```
+
+> **Note about protobuf + QT on unbuntu**
+> The library `qt5-gtk-platformtheme` is linked against an old version of protobuf which will prevent our QT programs from running.
+> This optional dependency can be removed with `apt-get remove qt5-gtk-platformtheme`
 
 ### Windows
 
@@ -147,27 +178,9 @@ If your project file has deep folder structure (this is a bug), it can be improv
 #### To create a release
 - [.Net 3.5][] and [Wix Toolkit][]
 
-### Linux
-There is a [docker file][] under [setup](./setup/Dockerfile), run [makeDocker.h](./setup/makeDocker.sh) to create the correct build environment.
+### IDE
 
-The recommended IDE for Linux is QT Creator. Open the CMakeLists.txt at the root of the source tree. use the project options to configure what is built.
-It can be built from the command line with:
-
-```
-cd build/gcc
-cmake ../..
-make -s -j
-```
-
-#### Ubuntu
-Requires Artful 17.10 or newer
-Run the set file with  ``sh setup/setupBuild.sh``
-
-> **Note about protobuf + QT on unbuntu**
-> The library `qt5-gtk-platformtheme` is linked against an old version of protobuf which will prevent our QT programs from running.
-> This optional dependency can be removed with `apt-get remove qt5-gtk-platformtheme`
-
-##### IDE
+The recommended IDE for Linux is QT Creator. Open the CMakeLists.txt at the root of the source tree. Use the project options to configure what is built.
 
 Install from the [app centre](apt://qtcreator) or
 ```
@@ -202,7 +215,7 @@ The official release is made with MSBuild as above. Starting with a clean checko
 
 ## Linux
 
-Build the `package` target
+Build the `package` target. Releases are built automatically by gitlab based on commands defined in the `.gitlab-ci.yml` file.
 
 ## Citing this software
 

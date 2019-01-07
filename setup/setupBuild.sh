@@ -6,7 +6,7 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 
-COMMON_PACKAGES="gcc cmake pkg-config subversion"
+COMMON_PACKAGES="gcc cmake pkg-config subversion ghostscript"
 UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev texlive-font-utils"
 ARCH_PACKAGES="base-devel libusb crypto++ libcap protobuf git sqlite"
 

@@ -189,8 +189,8 @@ namespace cqp {
         tab[0u + 'f'] = 15;
         tab[0u + 'F'] = 15;
       }
-      /// acessor for looking up a value
-      /// Usage: @code escaped = charToIntTable[achar];@endcode
+      /// accessor for looking up a value
+      /// Usage: `escaped = charToIntTable[achar];`
       constexpr char operator[](char const idx) const { return tab[static_cast<size_t>(idx)]; }
 
     } constexpr charToIntTable;

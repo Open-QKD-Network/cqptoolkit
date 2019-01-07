@@ -4,6 +4,19 @@
 ## Style
 Coding style is an emotive topic in the software community. Built into the build is the ```astyle``` pretty printer, building the ```style``` target will format the code to conform with the [Google C++ Style Guide][] with minor changes which are declared in the ```astyle.options```. End of discussion.
 
+## Library separation
+
+The project has grown to cover many different facets of QKD and has been organised into libraries to limit dependencies and bloat. Below is an overview of the different areas which the cmake projects cover:
+
+| Library       | Purpose |
+|---------------|---------|
+| Algorithms    | Only minimal system dependencies. Mainly standalone code and discrete algorithms which can be used in isolation. |
+| KeyManagement | Code for handling generated keys, not necessarily QKD specific. |
+| QKDInterfaces | The external interface definitions. |
+| CQPToolkit    | LUses Algorithms library and interfaces to create useful complete systems which can be wrapped up into tools. |
+| CQPUI         | Common graphical elements such as dialogues. |
+| Networking    | For handling data and keys, such as encrypted tunnels, etc. |
+
 ## Interfaces
 
 ```cpp
@@ -40,6 +53,7 @@ The **Override** keyword should be used when overriding any inherited function, 
 When using multiple threads, care must be taken when accessing variables. C++ provides the basics to handle most situations.
 
 ### Multiple threads accessing a member/static variable
+
 ```cpp
 #include <mutex>
 
