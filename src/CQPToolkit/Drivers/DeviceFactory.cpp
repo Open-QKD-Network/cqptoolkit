@@ -210,6 +210,7 @@ namespace cqp
     std::vector<std::string> DeviceFactory::GetKnownDrivers()
     {
         std::vector<std::string> result;
+        result.resize(driverMapping.size());
         std::transform(driverMapping.begin(), driverMapping.end(), result.begin(), [](auto input){return input.first; });
         return result;
     }
