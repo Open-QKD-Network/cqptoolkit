@@ -21,7 +21,7 @@ namespace cqp
     }
     namespace align
     {
-        class DetectionReciever;
+        class NullAlignment;
     }
     namespace sift
     {
@@ -96,7 +96,7 @@ namespace cqp
             /// detects photons
             std::shared_ptr<sim::DummyTimeTagger> timeTagger = nullptr;
             /// aligns detections
-            std::shared_ptr<align::DetectionReciever> alignment = nullptr;
+            std::shared_ptr<align::NullAlignment> alignment = nullptr;
             /// sifts alignments
             std::shared_ptr<sift::Receiver> sifter = nullptr;
             /// error corrects sifted data

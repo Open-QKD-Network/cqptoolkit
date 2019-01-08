@@ -23,7 +23,7 @@ namespace cqp
     }
     namespace align
     {
-        class TransmissionHandler;
+        class NullAlignment;
     }
     namespace sift
     {
@@ -125,7 +125,7 @@ namespace cqp
             /// remote connection to the detector
             std::unique_ptr<remote::IDetector::Stub> detector;
             /// aligns detections
-            std::shared_ptr<align::TransmissionHandler> alignment = nullptr;
+            std::shared_ptr<align::NullAlignment> alignment = nullptr;
             /// sifts alignments
             std::shared_ptr<sift::Transmitter> sifter = nullptr;
             /// error corrects sifted data

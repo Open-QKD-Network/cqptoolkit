@@ -181,7 +181,7 @@ The system as many facets but a good starting point is `QKDSim` which will perfo
 The simulator runs as a client and server, start one instance then connect the second to the first. 
 
 ```bash
-QKDSim -p 8000
+QKDSim -p 8000 -v
 ```
 
 Shows:
@@ -195,7 +195,7 @@ INFO: SiteAgent My address is: mypc:8000
 This shows that two simulated devices were created by default (one alice and one bob). Now run the second, connecting it to the first:
 
 ```bash
-QKDSim -r localhost:8000
+QKDSim -r localhost:8000 -v
 ```
 
 This shows:
@@ -209,6 +209,9 @@ INFO: StartServer Listening on mypc:39365
 INFO: Connect Waiting for connection from mypc:42245...
 INFO: Connect Connected.
 INFO: StartNode Node setup complete
+DEBUG: OnAligned Received aligned qubits
+DEBUG: OnKeyGeneration Received 1 fragments
+
 ```
 
 And the two start to create key, which is made available through the `cqp::IKey` gRPC interface. The `KeyViewer` tool can be used to request keys from this interface.

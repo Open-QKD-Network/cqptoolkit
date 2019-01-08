@@ -11,7 +11,7 @@
 */
 #include "DummyBobController.h"
 #include "CQPToolkit/Simulation/DummyTimeTagger.h"
-#include "CQPToolkit/Alignment/DetectionReciever.h"
+#include "CQPToolkit/Alignment/NullAlignment.h"
 #include "CQPToolkit/Sift/Receiver.h"
 #include "CQPToolkit/ErrorCorrection/ErrorCorrection.h"
 #include "CQPToolkit/PrivacyAmp/PrivacyAmplify.h"
@@ -30,7 +30,7 @@ namespace cqp
         {
             timeTagger.reset(new sim::DummyTimeTagger(rng));
             // TODO: Fix these values
-            alignment.reset(new align::DetectionReciever());
+            alignment.reset(new align::NullAlignment());
             sifter.reset(new sift::Receiver());
             ec.reset(new ec::ErrorCorrection());
             privacy.reset(new privacy::PrivacyAmplify());

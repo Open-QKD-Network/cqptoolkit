@@ -15,7 +15,7 @@
 #include "CQPToolkit/Interfaces/IPhotonGenerator.h"
 #include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Alignment/TransmissionHandler.h"
+#include "CQPToolkit/Alignment/NullAlignment.h"
 #include "CQPToolkit/Sift/Transmitter.h"
 #include "CQPToolkit/PrivacyAmp/PrivacyAmplify.h"
 #include "CQPToolkit/ErrorCorrection/ErrorCorrection.h"
@@ -34,7 +34,7 @@ namespace cqp
             SessionController(creds)
         {
             photonGen.reset(new sim::DummyTransmitter(rng));
-            alignment.reset(new align::TransmissionHandler());
+            alignment.reset(new align::NullAlignment());
             sifter.reset(new sift::Transmitter());
             ec.reset(new ec::ErrorCorrection());
             privacy.reset(new privacy::PrivacyAmplify());
@@ -105,6 +105,7 @@ namespace cqp
             // connect each stage to it's remote partner
             detector = remote::IDetector::NewStub(twoWayComm->GetClient());
             photonGen->Connect(twoWayComm->GetClient());
+            alignment->Connect(twoWayComm->GetClient());
             sifter->Connect(twoWayComm->GetClient());
 
         } // ConnectRemoteChain
@@ -178,7 +179,7 @@ namespace cqp
         {
             builder.RegisterService(ec.get());
             builder.RegisterService(privacy.get());
-            builder.RegisterService(alignment.get());
+            //builder.RegisterService(alignment.get());
             // ^^^ Add new services here ^^^ //
         } // RegisterServices
 
