@@ -175,6 +175,44 @@ If your project file has deep folder structure (this is a bug), it can be improv
 - Unchecking "Display folders as on disk"
 - Checking "Hide Folder Name"
 
+## Running
+
+The system as many facets but a good starting point is `QKDSim` which will perform all the handshaking and session setup and exchange key by simulating the QKD processes. All tools should show a help message when `-h` is passed as an argument.
+The simulator runs as a client and server, start one instance then connect the second to the first. 
+
+```bash
+QKDSim -p 8000
+```
+
+Shows:
+```
+INFO: Main Basic application to simulate key exchange
+INFO: CreateDevice Device dummyqkd ready
+INFO: CreateDevice Device dummyqkd ready
+INFO: SiteAgent My address is: mypc:8000
+```
+
+This shows that two simulated devices were created by default (one alice and one bob). Now run the second, connecting it to the first:
+
+```bash
+QKDSim -r localhost:8000
+```
+
+This shows:
+
+```
+INFO: Main Basic application to simulate key exchange
+INFO: CreateDevice Device dummyqkd ready
+INFO: CreateDevice Device dummyqkd ready
+INFO: SiteAgent My address is: mypc:38689
+INFO: StartServer Listening on mypc:39365
+INFO: Connect Waiting for connection from mypc:42245...
+INFO: Connect Connected.
+INFO: StartNode Node setup complete
+```
+
+And the two start to create key, which is made available through the `cqp::IKey` gRPC interface. The `KeyViewer` tool can be used to request keys from this interface.
+
 #### To create a release
 - [.Net 3.5][] and [Wix Toolkit][]
 
