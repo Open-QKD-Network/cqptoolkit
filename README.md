@@ -214,7 +214,22 @@ DEBUG: OnKeyGeneration Received 1 fragments
 
 ```
 
-And the two start to create key, which is made available through the `cqp::IKey` gRPC interface. The `KeyViewer` tool can be used to request keys from this interface.
+And the two start to create key, which is made available through the `cqp::IKey` gRPC interface. The `KeyViewer` GUI or the `SiteAgentCtl` tool can be used to request keys from this interface:
+
+List the site is connected to:
+
+```bash
+SiteAgentCtl -c localhost:8000 -l
+```
+
+Use the address show to extract a key:
+
+```bash
+SiteAgentCtl -c localhost:8000 -k <address>:<port>
+```
+
+It should show the key with a PKCS url like this: `PKCS=pkcs11:type%3Dsecret-key;object%3D<ip>%253A<port>;id%3D0x02 Id=0x02 Value=15761AB6DA8261A599F41C6F746A5A20`, this url can be passed to another user so they can retrieve the key from their key store.
+
 
 #### To create a release
 - [.Net 3.5][] and [Wix Toolkit][]
