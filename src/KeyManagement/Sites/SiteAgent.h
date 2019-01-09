@@ -91,8 +91,31 @@ namespace cqp
         ///@{
         /// @name ISiteAgent interface
 
-        /// @copydoc remote::ISiteAgent::StartNode
-        /// @param context Connection details from the server
+        /** @copydoc remote::ISiteAgent::StartNode
+         * @param context Connection details from the server
+         * @details
+         * @startuml
+         * [-> SiteAgent : StartNode
+         * activate SiteAgent
+         *     alt loop for each hop
+         *         note over SiteAgent
+         *             A hop is a pair of addresses, A and B.
+         *             A multi-hop link would coontain [A, B], [B, C]
+         *         end note
+         *         alt If First address is this site
+         *             SiteAgent -> SiteAgent : StartLeftSide()
+         *         else If second address is this site
+         *             SiteAgent -> SiteAgent : StartRightSide()
+         *         end alt
+         *     end alt
+         *
+         *     alt If we're at eather end of the link
+         *         SiteAgent -> KeyStoreFactory : GetKeyStore()
+         *         SiteAgent -> KeyStore : SetPath()
+         *     end alt
+         * deactivate SiteAgent
+         * @enduml
+         */
         grpc::Status StartNode(grpc::ServerContext* context, const remote::PhysicalPath* request, google::protobuf::Empty*) override;
 
         /// @copydoc remote::ISiteAgent::EndKeyExchange
@@ -167,6 +190,22 @@ namespace cqp
          * @param path The entire path being started
          * @param hopPair the hop being started
          * @return Success
+         * @details
+         * @startuml
+         * participant SiteAgent
+         * boundary ISiteAgent
+         *
+         * [-> SiteAgent : StartLeftSide
+         * activate SiteAgent
+         *
+         *     alt if not connected
+         *         SiteAgent -> SiteAgent : PrepHop()
+         *     end alt
+         *
+         *     SiteAgent -> ISiteAgent : StartNode()
+         *
+         * deactivate SiteAgent
+         * @enduml
          */
         grpc::Status StartLeftSide(const remote::PhysicalPath* path, const remote::HopPair& hopPair);
         /**
@@ -176,6 +215,22 @@ namespace cqp
          * @param hopPair The hop being started
          * @param remoteSessionAddress The address of the other sides session controller service
          * @return Success
+         * @details
+         * @startuml
+         * participant SiteAgent
+         * control ISessionController as sc
+         *
+         * [-> SiteAgent : StartRightSide
+         * activate SiteAgent
+         *
+         *     alt if not connected
+         *         SiteAgent -> SiteAgent : PrepHop()
+         *         SiteAgent -> sc : StartServerAndConnect()
+         *         SiteAgent -> sc : StartSession()
+         *     end alt
+         *
+         * deactivate SiteAgent
+         * @enduml
          */
         grpc::Status StartRightSide(grpc::ServerContext* ctx, const remote::HopPair& hopPair, const std::string& remoteSessionAddress);
         /**

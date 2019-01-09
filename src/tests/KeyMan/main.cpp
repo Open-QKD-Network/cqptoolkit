@@ -11,11 +11,16 @@
 */
 #include "gtest/gtest.h"
 #include "Algorithms/Logging/ConsoleLogger.h"
-
+#include "KeyManagement/KeyStores/PKCS11Wrapper.h"
 int main(int argc, char **argv)
 {
     cqp::ConsoleLogger::Enable();
     cqp::DefaultLogger().SetOutputLevel(cqp::LogLevel::Debug);
+    if(!cqp::p11::Module::Create("libsofthsm2.so"))
+    {
+        LOGWARN("Disabling PKCS tests due to missing driver.");
+        testing::GTEST_FLAG(filter) = "-KeyMan.HSM*";
+    }
     ::testing::InitGoogleTest(&argc, argv);
     int ret = RUN_ALL_TESTS();
     return ret;

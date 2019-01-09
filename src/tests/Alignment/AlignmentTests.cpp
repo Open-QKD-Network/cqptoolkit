@@ -258,6 +258,8 @@ namespace cqp
             align::Gating::ValidSlots validSlots;
 
             const auto startTime = std::chrono::high_resolution_clock::now();
+            //const double drift = (-4.0e-12 / 0.00000001);
+            //gating.SetDrift(SecondsDouble(drift));
             gating.ExtractQubits(testData.detections.cbegin(), testData.detections.cend(), validSlots, alignedDetections);
 
             const auto timeTaken = std::chrono::high_resolution_clock::now() - startTime;

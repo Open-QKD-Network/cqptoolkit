@@ -43,7 +43,7 @@ namespace cqp
              * @param transmissionDelay Time between each qubit transmission
              */
             DummyTransmitter(IRandom* randomSource,
-                             PicoSeconds transmissionDelay = std::chrono::nanoseconds(10));
+                             PicoSeconds transmissionDelay = std::chrono::nanoseconds(100));
 
             ~DummyTransmitter() override;
 

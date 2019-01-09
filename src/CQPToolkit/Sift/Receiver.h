@@ -51,6 +51,8 @@ namespace cqp
 
             ///@}
         protected:
+            /// How long to wait for incomming data
+            std::chrono::milliseconds receiveTimeout {500};
 
         }; // SiftReceiver
 

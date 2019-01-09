@@ -306,13 +306,34 @@ namespace cqp
         using namespace std;
         using namespace grpc;
         LOGTRACE("");
+        bool alreadyConnected = false;
+        Status result;
+        /*lock scope*/
+        {
+            std::lock_guard<std::mutex> lock(statusCallbackMutex);
+            alreadyConnected = otherSites[hopPair.second().site()].state !=
+                               remote::LinkStatus_State::LinkStatus_State_Inactive;
+        }/*lock scope*/
 
         ISessionController* controller = nullptr;
 
-        string localDeviceId = hopPair.first().deviceid();
+        const string& localDeviceId = hopPair.first().deviceid();
 
-        // configure the device and set up the controller
-        Status result = PrepHop(localDeviceId, hopPair.second().site(), controller);
+        if(alreadyConnected)
+        {
+            result = Status(grpc::StatusCode::OK, "Already connected");
+            LOGINFO("Already connected to " + hopPair.second().site());
+            auto device = devicesInUse.find(localDeviceId);
+            // get the existing controller so we can find it's connection address
+            if(device != devicesInUse.end())
+            {
+                controller = device->second->GetSessionController();
+            }
+        } else
+        {
+            // configure the device and set up the controller
+            result = PrepHop(localDeviceId, hopPair.second().site(), controller);
+        }
 
         if(result.ok() && controller)
         {
@@ -339,9 +360,14 @@ namespace cqp
             {
                 result = LogStatus(Status(StatusCode::UNAVAILABLE, "Cannot contact next hop"));
             } // else stub
+        } else {
+            LOGERROR("Failed to prepare device and/or controller");
+            result = LogStatus(Status(StatusCode::INTERNAL, "Failed to prepare device and/or controller"));
         } // if result.ok() && controller
 
-        if(!result.ok())
+        // only take down the failed link if its a new link, don't destroy the working link because
+        // of a bad request to extend it with a multi-hop link
+        if(!alreadyConnected && !result.ok())
         {
             auto localDev = devicesInUse.find(hopPair.first().deviceid());
             if(localDev != devicesInUse.end())
@@ -368,43 +394,59 @@ namespace cqp
         using namespace std;
         using namespace grpc;
         LOGTRACE("");
-
-        ISessionController* controller = nullptr;
-        // configure the device and set up the controller
-        Status result = PrepHop(hopPair.second().deviceid(), hopPair.first().site(), controller);
-
-        otherSites[hopPair.first().site()].channel = nullptr;
-
-        if(result.ok() && controller)
+        bool alreadyConnected = false;
+        /*lock scope*/
         {
-            LOGTRACE("Start controller and connecting to peer");
-            // Connect the controller to the left side controller
-            result = LogStatus(
-                         controller->StartServerAndConnect(remoteSessionAddress));
-            if(result.ok())
-            {
-                LOGTRACE("Starting session");
-                // start exchanging keys
-                result = controller->StartSession(hopPair.params());
-            }
-        }
+            std::lock_guard<std::mutex> lock(statusCallbackMutex);
+            alreadyConnected = otherSites[hopPair.second().site()].state !=
+                               remote::LinkStatus_State::LinkStatus_State_Inactive;
+        }/*lock scope*/
 
-        if(!result.ok())
+        Status result;
+
+        if(alreadyConnected)
         {
-            auto localDev = devicesInUse.find(hopPair.second().deviceid());
-            if(localDev != devicesInUse.end())
+            result = Status(grpc::StatusCode::OK, "Already connected");
+            LOGINFO("Already connected to " + hopPair.second().site());
+        } else
+        {
+            ISessionController* controller = nullptr;
+            // configure the device and set up the controller
+            Status result = PrepHop(hopPair.second().deviceid(), hopPair.first().site(), controller);
+
+            otherSites[hopPair.first().site()].channel = nullptr;
+
+            if(result.ok() && controller)
             {
-                // something went wrong, return the device
-                deviceFactory->ReturnDevice(localDev->second);
-                devicesInUse.erase(localDev);
-            }
-            if(controller)
-            {
-                auto kp = controller->GetKeyPublisher();
-                if(kp)
+                LOGTRACE("Start controller and connecting to peer");
+                // Connect the controller to the left side controller
+                result = LogStatus(
+                             controller->StartServerAndConnect(remoteSessionAddress));
+                if(result.ok())
                 {
-                    // disconnect the key store from the publisher
-                    kp->Detatch();
+                    LOGTRACE("Starting session");
+                    // start exchanging keys
+                    result = controller->StartSession(hopPair.params());
+                }
+            }
+
+            if(!result.ok())
+            {
+                auto localDev = devicesInUse.find(hopPair.second().deviceid());
+                if(localDev != devicesInUse.end())
+                {
+                    // something went wrong, return the device
+                    deviceFactory->ReturnDevice(localDev->second);
+                    devicesInUse.erase(localDev);
+                }
+                if(controller)
+                {
+                    auto kp = controller->GetKeyPublisher();
+                    if(kp)
+                    {
+                        // disconnect the key store from the publisher
+                        kp->Detatch();
+                    }
                 }
             }
         }
@@ -435,66 +477,35 @@ namespace cqp
             // if we are the left side of a hop, ie a in [a, b]
             if(AddressIsThisSite(hopPair.first().site()))
             {
-                bool alreadyConnected = false;
-                /*lock scope*/
-                {
-                    std::lock_guard<std::mutex> lock(statusCallbackMutex);
-                    alreadyConnected = otherSites[hopPair.second().site()].state !=
-                                       remote::LinkStatus_State::LinkStatus_State_Inactive;
-                }/*lock scope*/
-
-                if(!alreadyConnected)
-                {
-                    result = StartLeftSide(path, hopPair);
-                }
-                else
-                {
-                    result = Status(grpc::StatusCode::OK, "Already connected");
-                    LOGINFO("Already connected to " + hopPair.second().site());
-                }
+                result = StartLeftSide(path, hopPair);
 
             } // if left
             else if(AddressIsThisSite(hopPair.second().site()))
             {
-                bool alreadyConnected = false;
-                /*lock scope*/
-                {
-                    std::lock_guard<std::mutex> lock(statusCallbackMutex);
-                    alreadyConnected = otherSites[hopPair.first().site()].state !=
-                                       remote::LinkStatus_State::LinkStatus_State_Inactive;
-                }/*lock scope*/
 
-                if(!alreadyConnected)
+                std::string remoteSessionAddress;
+                // connect the session controller to the previous hop which should already be setup
+                // this address currently comes from "AddMetadata" from the client
+                // TODO: should this be a real interface?
+                auto metaDataIt = ctx->client_metadata().find(sessionAddress);
+                if(metaDataIt != ctx->client_metadata().end())
                 {
-                    std::string remoteSessionAddress;
-                    // connect the session controller to the previous hop which should already be setup
-                    // this address currently comes from "AddMetadata" from the client
-                    // TODO: should this be a real interface?
-                    auto metaDataIt = ctx->client_metadata().find(sessionAddress);
-                    if(metaDataIt != ctx->client_metadata().end())
-                    {
-                        // BUG: value is not terminated, so using .data() results in extra data at the end.
-                        // Copy the string using the length defined in the string
-                        remoteSessionAddress.assign(metaDataIt->second.begin(), metaDataIt->second.end());
-                        // setup the second half of the chain
-                        result = StartRightSide(ctx, hopPair, remoteSessionAddress);
-                    }
-                    else
-                    {
-                        // assume that the caller is not a site agent and has got the hop direction backwards, i.e:
-                        // asking B to setup A->B
-                        LOGDEBUG("Reversing backwards hop");
-                        remote::HopPair reversedHop;
-                        *reversedHop.mutable_first() = hopPair.second();
-                        *reversedHop.mutable_second() = hopPair.first();
-                        // carry on with the hops reversed
-                        result = StartLeftSide(path, reversedHop);
-                    }
+                    // BUG: value is not terminated, so using .data() results in extra data at the end.
+                    // Copy the string using the length defined in the string
+                    remoteSessionAddress.assign(metaDataIt->second.begin(), metaDataIt->second.end());
+                    // setup the second half of the chain
+                    result = StartRightSide(ctx, hopPair, remoteSessionAddress);
                 }
                 else
                 {
-                    result = Status(grpc::StatusCode::OK, "Already connected");
-                    LOGINFO("Already connected to " + hopPair.first().site());
+                    // assume that the caller is not a site agent and has got the hop direction backwards, i.e:
+                    // asking B to setup A->B
+                    LOGDEBUG("Reversing backwards hop");
+                    remote::HopPair reversedHop;
+                    *reversedHop.mutable_first() = hopPair.second();
+                    *reversedHop.mutable_second() = hopPair.first();
+                    // carry on with the hops reversed
+                    result = StartLeftSide(path, reversedHop);
                 }
             } // if right
         } // for pairs

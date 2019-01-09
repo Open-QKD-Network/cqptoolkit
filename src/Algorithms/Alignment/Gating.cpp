@@ -168,7 +168,6 @@ namespace cqp {
                 result = distance(histogram.cbegin(), maxIt) * pulseWidth;
             }
 
-            LOGINFO("Peak: " + std::to_string(result.count()));
             // values are in "bins" so will need to be translated to time
             return result;
         }

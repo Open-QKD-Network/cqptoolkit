@@ -85,10 +85,8 @@ namespace align {
                     // copy the slots over
                     request.mutable_slotids()->Resize(validSlots.size(), 0);
                     std::copy(validSlots.cbegin(), validSlots.cend(), request.mutable_slotids()->begin());
-                    /*for(const auto& slot : validSlots)
-                    {
-                        request.mutable_slotids()->Add(slot);
-                    }*/
+                    request.set_frameid(report->frame);
+
                     LogStatus(otherSide->DiscardTransmissions(&ctx, request, &response));
                 }
 

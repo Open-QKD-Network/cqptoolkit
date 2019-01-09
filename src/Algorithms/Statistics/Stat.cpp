@@ -72,30 +72,36 @@ namespace cqp
         void ProcessingWorker::Worker()
         {
             using namespace std;
-            ObjectList processList;
-            while(!stopProcessing)
-            {
-                /*lock scope*/{
+            try{
+                ObjectList processList;
 
-                    unique_lock<mutex> lock(processMutex);
-                    bool dataWaiting = processCv.wait_for(lock, timeout, [&](){
-                        return !waitingObjects.empty();
-                    });
-
-                    if(dataWaiting)
-                    {
-                        processList = waitingObjects;
-                        waitingObjects.clear();
-                    }
-                }/*lock scope*/
-
-                if(!stopProcessing)
+                while(!stopProcessing)
                 {
-                    for(auto obj : processList) {
-                        obj->ProcessStats();
+                    /*lock scope*/{
+
+                        unique_lock<mutex> lock(processMutex);
+                        bool dataWaiting = processCv.wait_for(lock, timeout, [&](){
+                            return !waitingObjects.empty();
+                        });
+
+                        if(dataWaiting)
+                        {
+                            processList = waitingObjects;
+                            waitingObjects.clear();
+                        }
+                    }/*lock scope*/
+
+                    if(!stopProcessing)
+                    {
+                        for(auto obj : processList) {
+                            obj->ProcessStats();
+                        }
+                        processList.clear();
                     }
-                    processList.clear();
                 }
+            } catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
             }
         }
 

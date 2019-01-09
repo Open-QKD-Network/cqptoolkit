@@ -156,7 +156,7 @@ namespace cqp {
              * @param filterBegin The first element of the filter
              * @param filterEnd The element pas the last filter element
              * @param convolved The storage for the result. It will be resized to fit.
-             * @return true ib success
+             * @return true on success
              */
             template<typename T, typename DataIter, typename FilterIter>
             static bool ConvolveValid(
