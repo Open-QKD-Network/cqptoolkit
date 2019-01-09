@@ -149,18 +149,18 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
             filter.Isolate(detections, start, end);
             const auto window = (end - 1)->time - start->time;
 
-            LOGINFO("Detections: " + std::to_string(detections.size()) + "\n" +
+            LOGINFO("Detections: " + std::to_string(distance(start, end)) + "\n" +
                     " Start: " + std::to_string(distance(detections.cbegin(), start)) + "\n" +
                     " End: " + std::to_string(distance(detections.cbegin(), end)) + "\n" +
                     " Duration: " + std::to_string(chrono::duration_cast<SecondsDouble>(window).count()) + "s");
 
             align::Gating::ValidSlots validSlots;
             const auto startTime = std::chrono::high_resolution_clock::now();
-            //gating.SetDrift(PicoSeconds(34795));
+            //gating.SetDrift(PicoSecondOffset(34795));
             gating.ExtractQubits(start, end, validSlots, receiverResults);
             const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
 
-            LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits over " + to_string(validSlots.size()) + " slots. In " +
+            LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
                     to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
             fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
 
@@ -179,7 +179,9 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                 if(gating.FilterDetections(validSlots.cbegin(), validSlots.cend(), aliceQubits) && receiverResults.size() == aliceQubits.size())
                 {
                     size_t validCount = 0;
+
                     LOGINFO("Comparing " + std::to_string(aliceQubits.size()) + " qubits...");
+                    validCount = 0;
                     for(auto index = 0u; index < receiverResults.size(); index++)
                     {
                         if(receiverResults[index] == aliceQubits[index])
@@ -188,10 +190,11 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                         }
                     }
                     const double errorRate = 1.0 - static_cast<double>(validCount) / receiverResults.size();
-                    const double detectionRate = static_cast<double>(validCount) / numQubitsSent;
+                    const double detectionRate = static_cast<double>(receiverResults.size()) / numQubitsSent;
 
                     LOGINFO("Valid qubits: " + std::to_string(validCount) + " out of " + std::to_string(aliceQubits.size()) +
-                            ".\n Error rate: " + std::to_string(errorRate * 100) + "%");
+                            ".\n Detection rate: " + std::to_string(detectionRate * 100) + "%" +
+                            ".\n Detected error rate: " + std::to_string(errorRate * 100) + "%");
 
                     cout << "Step, Slot Width, Pulse Width, Samples Per Frame, "
                          << "Acceptance Ratio, Qubits sent, Qubits detected, Valid Qubits, "

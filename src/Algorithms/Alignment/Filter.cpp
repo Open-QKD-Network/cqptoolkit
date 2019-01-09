@@ -63,8 +63,8 @@ namespace cqp {
                             LOGINFO("Failed to find right edge");
                         }
 
-                        LOGINFO("Left edge: " + to_string(distance(convolved.cbegin(), leftEdge)) +
-                                " Right edge: " + to_string(distance(convolved.cbegin(), rightEdge)));
+                        LOGINFO("Left edge: " + to_string(distance(convolved.cbegin(), leftEdge) * static_cast<ssize_t>(stride)) +
+                                " Right edge: " + to_string(distance(convolved.cbegin(), rightEdge) * static_cast<ssize_t>(stride)));
 
                         // store the offsets we've calculated
                         // the convolution process reduces the width of the graph, losing the rightmost edge

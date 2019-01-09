@@ -66,7 +66,7 @@ namespace cqp {
                     (scaledDrift * duration_cast<SecondsDouble>(detection->time)).count())
                 };
                 // offset the time without the original value being converted to a float
-                const PicoSeconds adjustedTime = (detection->time + offset) - frameStart;
+                const PicoSeconds adjustedTime = (detection->time - offset) - frameStart;
                 // C++ truncates on integer division
                 const SlotID slot = adjustedTime / slotWidth;
                 // through away anything past the end of transmission
@@ -170,7 +170,7 @@ namespace cqp {
 
             // values are in "bins" so will need to be translated to time
             return result;
-        }
+        } // FindPeak
 
         SecondsDouble Gating::CalculateDrift(const DetectionReportList::const_iterator& start,
                                         const DetectionReportList::const_iterator& end) const
@@ -208,14 +208,14 @@ namespace cqp {
                 {
                     LOGERROR("Failed to find the time slice, using the last element");
                 }
-                LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
+                //LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
 
                 auto findStart = sampleStart;
                 auto findEnd = sampleEnd;
                 peakFutures.push_back(async(launch::async, &Gating::FindPeak, this, move(findStart), move(findEnd)));
 
                 // set the start of the next sample
-                sampleStart = sampleEnd;
+                sampleStart = sampleEnd + 1;
                 sampleEnd = end;
                 sampleIndex++;
             } while(sampleStart != end);
@@ -283,14 +283,15 @@ namespace cqp {
                 const auto previousPeak = (index - 1 + startShift) % peaks.size();
                 const auto thisPeak = (index + startShift) % peaks.size();
                 // calculate the change in time between the two peaks
-                average += chrono::duration_cast<SecondsDouble>(peaks[thisPeak] - peaks[previousPeak]) / sampleTimeSeconds.count();
+                const auto peakDifference = peaks[thisPeak] - peaks[previousPeak];
+                average += peakDifference / sampleTimeSeconds.count();
             }
 
             //const auto slotsPerSecond = chrono::duration_cast<PicoSeconds>(chrono::seconds(1)) / slotWidth;
             average = average  / peaks.size();
 
             return average;
-        }
+        } // CalculateDrift
 
         void Gating::ExtractQubits(const DetectionReportList::const_iterator& start,
                                    const DetectionReportList::const_iterator& end,

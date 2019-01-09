@@ -25,7 +25,7 @@ namespace cqp {
             /// minimum percentage for passing the filter
             static constexpr double DefaultCutoff = 0.2;
             /// Reduce the dataset by this factor
-            static constexpr size_t DefaultStride = 25;
+            static constexpr size_t DefaultStride = 5;
 
             /** Constructor
             * @param sigma value for the Gaussian filter

@@ -25,7 +25,7 @@ namespace cqp {
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.2;
             /// The number of slots used to calculate drift
-            static constexpr uint64_t DefaultSamplesPerFrame = 40;
+            static constexpr uint64_t DefaultSamplesPerFrame = 50;
 
             /// Identifier type for slots
             using SlotID = uint64_t;
@@ -161,7 +161,7 @@ namespace cqp {
             /**
              * @brief FilterDetections
              * Remove elements from qubits which do not have an index in validSlots
-             * validSlots: { 1, 3, 4 }
+             * validSlots: { 0, 2, 3 }
              * Qubits:     { 8, 9, 10, 11 }
              * Result:     { 8, 10, 11 }
              * @param[in] validSlotsBegin The start of a list of indexes to filter the qubits
@@ -170,7 +170,7 @@ namespace cqp {
              * @return true on success
              */
             template<typename Iter>
-            static bool FilterDetections(Iter validSlotsBegin, Iter validSlotsEnd, QubitList& qubits)
+            static bool FilterDetections(Iter validSlotsBegin, Iter validSlotsEnd, QubitList& qubits, ssize_t offset = 0)
             {
                 using namespace std;
                 bool result = false;
@@ -181,9 +181,10 @@ namespace cqp {
                     uint64_t index = 0;
                     for(auto validSlot = validSlotsBegin; validSlot != validSlotsEnd; validSlot++)
                     {
-                        if(*validSlot < qubits.size())
+                        const auto adjustedSlot = *validSlot + offset;
+                        if(adjustedSlot > 0 && adjustedSlot < qubits.size())
                         {
-                            qubits[index] = qubits[*validSlot];
+                            qubits[index] = qubits[adjustedSlot];
                             index++;
                         } else {
                             LOGERROR("Invalid SlotID");
