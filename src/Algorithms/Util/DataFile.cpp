@@ -15,7 +15,6 @@ namespace cqp
             std::ifstream inFile(inFileName, std::ios::in | std::ios::binary);
             if (inFile)
             {
-                uint64_t index = 0;
                 // qubits packed 4/byte
                 inFile.seekg(0, std::ios::end);
                 auto qubitsToGet = static_cast<size_t>(inFile.tellg() * 4);
@@ -24,17 +23,17 @@ namespace cqp
                     qubitsToGet = std::min(maxValues, qubitsToGet);
                 }
                 inFile.seekg(0, std::ios::beg);
-                output.resize(qubitsToGet);
+                output.reserve(qubitsToGet);
 
                 while(!inFile.eof() && output.size() < qubitsToGet)
                 {
                     char packedQubits;
                     inFile.read(&packedQubits, sizeof (packedQubits));
                     // shift each pair of bits to LSB and store in the output
-                    output[index++] = (packedQubits & 0b00000011);
-                    output[index++] = ((packedQubits & 0b00001100) >> 2);
-                    output[index++] = ((packedQubits & 0b00110000) >> 4);
-                    output[index++] = ((packedQubits & 0b11000000) >> 6);
+                    output.push_back((packedQubits & 0b11000000) >> 6);
+                    output.push_back((packedQubits & 0b00110000) >> 4);
+                    output.push_back((packedQubits & 0b00001100) >> 2);
+                    output.push_back(packedQubits & 0b00000011);
                 }
                 inFile.close();
                 LOGDEBUG("Loaded " + std::to_string(output.size()) + " Qubits.");
