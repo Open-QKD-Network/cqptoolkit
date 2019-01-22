@@ -16,6 +16,7 @@
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Alignment/Gating.h"
 #include "QKDPostProc.h"
+#include "Algorithms/Alignment/Offsetting.h"
 
 #include <thread>
 #include <algorithm>
@@ -32,7 +33,6 @@ struct Names
     static CONSTSTRING slotsPerFrame = "slots-per-frame";
     static CONSTSTRING slotWidth = "slot-width";
     static CONSTSTRING pulseWidth = "pulse-width";
-    static CONSTSTRING samplesPerFrame = "samples";
     static CONSTSTRING acceptanceRatio = "acceptance";
     static CONSTSTRING filterSigma = "filter-sigma";
     static CONSTSTRING filterWidth = "filter-width";
@@ -65,8 +65,6 @@ QKDPostProc::QKDPostProc()
     definedArguments.AddOption(Names::slotWidth, "", "Slot width of transmissions (Picoseconds)")
             .Bind();
     definedArguments.AddOption(Names::pulseWidth, "", "Pulse width of photon (Picoseconds)")
-            .Bind();
-    definedArguments.AddOption(Names::samplesPerFrame, "", "Split the data into this many samples to calculate drift")
             .Bind();
     definedArguments.AddOption(Names::acceptanceRatio, "", "Value between 0 and 1 for the gating filter")
             .Bind();
@@ -115,9 +113,6 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         auto pulseWidth = align::Gating::DefaultPulseWidth;
         definedArguments.GetProp(Names::pulseWidth, pulseWidth);
 
-        auto samplesPerFrame = align::Gating::DefaultSamplesPerFrame;
-        definedArguments.GetProp(Names::samplesPerFrame, samplesPerFrame);
-
         auto acceptanceRatio = align::Gating::DefaultAcceptanceRatio;
         definedArguments.GetProp(Names::acceptanceRatio, acceptanceRatio);
 
@@ -127,83 +122,202 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         auto filterWidth = align::Filter::DefaultFilterWidth;
         definedArguments.GetProp(Names::filterWidth, filterWidth);
 
-        auto filterCutoff = align::Filter::DefaultCutoff;
-        definedArguments.GetProp(Names::filterCutoff, filterCutoff);
-
         auto filterStride = align::Filter::DefaultStride;
         definedArguments.GetProp(Names::filterStride, filterStride);
 
-        if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
+        double highestMatch = 0.0;
+        ssize_t highestOffset = 0;
+        std::vector<Qubit> highestChannelMappings;
+
+        //const std::vector<Qubit> channelMappings = { 0, 1, 2, 3 }; // 75.569566%
+        //const std::vector<Qubit> channelMappings = { 1, 0, 2, 3 }; // 24.4%
+        //const std::vector<Qubit> channelMappings = { 2, 0, 1, 3 }; // 31.43%
+        //const std::vector<Qubit> channelMappings = { 0, 2, 1, 3 }; // 58.63%
+        //const std::vector<Qubit> channelMappings = { 1, 2, 0, 3 }; // 41.36%
+        //const std::vector<Qubit> channelMappings = { 2, 1, 0, 3 }; // 68.53%
+        //const std::vector<Qubit> channelMappings = { 2, 1, 3, 0 }; // 68.70%
+        //const std::vector<Qubit> channelMappings = { 1, 2, 3, 0 }; // 41.53%
+        //const std::vector<Qubit> channelMappings = { 3, 2, 1, 0 }; // 50.16%
+        //const std::vector<Qubit> channelMappings = { 2, 3, 1, 0 }; // 50.15%
+        //const std::vector<Qubit> channelMappings = { 1, 3, 2, 0 }; // 41.52%
+        //const std::vector<Qubit> channelMappings = { 3, 1, 2, 0 }; // 68.70%
+        //const std::vector<Qubit> channelMappings = { 3, 0, 2, 1 }; // 31.29%
+        //const std::vector<Qubit> channelMappings = { 0, 3, 2, 1 }; // 58.47%
+        //const std::vector<Qubit> channelMappings = { 2, 3, 0, 1 }; // 49.84%
+        //const std::vector<Qubit> channelMappings = { 3, 2, 0, 1 }; // 49.84%
+        //const std::vector<Qubit> channelMappings = { 0, 2, 3, 1 }; // 58.48%
+        //const std::vector<Qubit> channelMappings = { 2, 0, 3, 1 }; // 31.29%
+        //const std::vector<Qubit> channelMappings = { 1, 0, 3, 2 }; // 24.42%
+        //const std::vector<Qubit> channelMappings = { 0, 1, 3, 2 }; // 75.559871%
+        //const std::vector<Qubit> channelMappings = { 3, 1, 0, 2 }; // 68.57%
+        //const std::vector<Qubit> channelMappings = { 1, 3, 0, 2 }; // 41.37%
+        //const std::vector<Qubit> channelMappings = { 0, 3, 1, 2 }; // 58.61%
+        //const std::vector<Qubit> channelMappings = { 3, 0, 1, 2 }; // 31.43%
+        auto mapping = 0u;
+        for(std::vector<Qubit> channelMappings : std::vector<std::vector<Qubit>>({
+        /*{ 0, 1, 2, 3 },
+        { 1, 0, 2, 3 },
+        { 2, 0, 1, 3 },
+        { 0, 2, 1, 3 },
+        { 1, 2, 0, 3 },
+        { 2, 1, 0, 3 },
+        { 2, 1, 3, 0 },
+        { 1, 2, 3, 0 },
+        { 3, 2, 1, 0 },
+        { 2, 3, 1, 0 },
+        { 1, 3, 2, 0 },
+        { 3, 1, 2, 0 },
+        { 3, 0, 2, 1 },
+        { 0, 3, 2, 1 },
+        { 2, 3, 0, 1 },
+        { 3, 2, 0, 1 },
+        { 0, 2, 3, 1 },
+        { 2, 0, 3, 1 },
+        { 1, 0, 3, 2 },
+        { 0, 1, 3, 2 },
+        { 3, 1, 0, 2 },
+        { 1, 3, 0, 2 },*/
+        { 0, 3, 1, 2 }//,
+        //{ 3, 0, 1, 2 }
+    }))
         {
-            LOGERROR("Failed to open file: " + detectionsFile);
-        }else {
-            // to isolate the transmission
-            align::Filter filter(filterSigma, filterWidth, filterCutoff, filterStride);
-            // to find the qubits
-            align::Gating gating(rng, slotsPerFrame, slotWidth, pulseWidth, samplesPerFrame, acceptanceRatio);
-            // bobs qubits
-            QubitList receiverResults;
-            DetectionReportList::const_iterator start;
-            DetectionReportList::const_iterator end;
-
-            filter.Isolate(detections, start, end);
-            const auto window = (end - 1)->time - start->time;
-
-            LOGINFO("Detections: " + std::to_string(distance(start, end)) + "\n" +
-                    " Start: " + std::to_string(distance(detections.cbegin(), start)) + "\n" +
-                    " End: " + std::to_string(distance(detections.cbegin(), end)) + "\n" +
-                    " Duration: " + std::to_string(chrono::duration_cast<SecondsDouble>(window).count()) + "s");
-
-            align::Gating::ValidSlots validSlots;
-            const auto startTime = std::chrono::high_resolution_clock::now();
-            //gating.SetDrift(PicoSecondOffset(34795));
-            gating.ExtractQubits(start, end, validSlots, receiverResults);
-            const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
-
-            LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
-                    to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
-            fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
-
-            ////////////// Load Alice data to compare with Bobs
-            std::string packedFile = "AliceRandom.bin";
-            definedArguments.GetProp(Names::packedQubits, packedFile);
-
-            QubitList aliceQubits;
-            LOGDEBUG("Loading Alice data file");
-            if(!fs::DataFile::ReadPackedQubits(packedFile, aliceQubits))
+            detections.clear();
+            LOGDEBUG("Mapping: " + to_string(mapping++));
+            if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections, channelMappings))
             {
-                LOGERROR("Failed to open transmisser file: " + packedFile);
-            } else {
+                LOGERROR("Failed to open file: " + detectionsFile);
+            }else {
+                // to isolate the transmission
+                align::Filter filter(filterSigma, filterWidth, align::Filter::DefaultCourseTheshold, align::Filter::DefaultFineTheshold,
+                                     filterStride);
+                // to find the qubits
+                align::Gating gating(rng, slotsPerFrame, slotWidth, pulseWidth, align::Gating::DefaultDriftResolution, align::Gating::DefaultMaxDrift, acceptanceRatio);
+                // bobs qubits
+                QubitList receiverResults;
+                DetectionReportList::const_iterator start;
+                DetectionReportList::const_iterator end;
 
-                const auto numQubitsSent = aliceQubits.size();
-                if(gating.FilterDetections(validSlots.cbegin(), validSlots.cend(), aliceQubits) && receiverResults.size() == aliceQubits.size())
-                {
-                    size_t validCount = 0;
+                filter.Isolate(detections, start, end);
+                const auto window = (end - 1)->time - start->time;
 
-                    LOGINFO("Comparing " + std::to_string(aliceQubits.size()) + " qubits...");
-                    validCount = 0;
-                    for(auto index = 0u; index < receiverResults.size(); index++)
+                /*{
+                    std::ofstream datafile = ofstream("filtered.csv");
+                    for(auto filteredIt = start; filteredIt != end; filteredIt++)
                     {
-                        if(receiverResults[index] == aliceQubits[index])
-                        {
-                            validCount++;
-                        }
+                        datafile << to_string(filteredIt->time.count()) << ", " << to_string(filteredIt->value) << endl;
                     }
-                    const double errorRate = 1.0 - static_cast<double>(validCount) / receiverResults.size();
-                    const double detectionRate = static_cast<double>(receiverResults.size()) / numQubitsSent;
+                    datafile.close();
+                }*/
 
-                    LOGINFO("Valid qubits: " + std::to_string(validCount) + " out of " + std::to_string(aliceQubits.size()) +
-                            ".\n Detection rate: " + std::to_string(detectionRate * 100) + "%" +
-                            ".\n Detected error rate: " + std::to_string(errorRate * 100) + "%");
+                start = detections.cbegin() + 113143;
+                end = detections.cbegin() + 706150;
+                // start should be @ 2.0377699934326174
+                LOGINFO("Detections: " + std::to_string(distance(start, end)) + "\n" +
+                        " Start: " + std::to_string(distance(detections.cbegin(), start)) + " @ " + to_string(start->time.count()) + "pS\n" +
+                        " End: " + std::to_string(distance(detections.cbegin(), end)) + " @ " + to_string(end->time.count()) + "pS\n" +
+                        " Duration: " + std::to_string(chrono::duration_cast<SecondsDouble>(window).count()) + "s");
 
-                    cout << "Step, Slot Width, Pulse Width, Samples Per Frame, "
-                         << "Acceptance Ratio, Qubits sent, Qubits detected, Valid Qubits, "
-                         << "Detection Rate, Error rate, Time (us)" << endl;
-                    cout << "Gating, " << slotWidth.count() << ", " << pulseWidth.count() << ", " << samplesPerFrame << ", "
-                         << acceptanceRatio << ", " << numQubitsSent << ", " << aliceQubits.size() << ", " << validCount << ", "
-                         << detectionRate << ", " << errorRate << ", " << chrono::duration_cast<chrono::microseconds>(extractTime).count() << endl;
+                align::Gating::ValidSlots validSlots;
+                const auto startTime = std::chrono::high_resolution_clock::now();
+                //gating.SetDrift(PicoSecondOffset(34795));
+                gating.SetDrift(PicoSecondOffset(34610));
+                gating.ExtractQubits(start, end, validSlots, receiverResults, false);
+                const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
+
+                LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
+                        to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
+                fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
+
+                ////////////// Load Alice data to compare with Bobs
+                std::string packedFile = "AliceRandom.bin";
+                definedArguments.GetProp(Names::packedQubits, packedFile);
+
+
+                QubitList aliceQubits;
+                LOGDEBUG("Loading Alice data file");
+                if(!fs::DataFile::ReadPackedQubits(packedFile, aliceQubits))
+                {
+                    LOGERROR("Failed to open transmisser file: " + packedFile);
                 } else {
-                    LOGERROR("Failed to filter alice detections");
+
+                    align::Offsetting offsetting(10000, 0.6, 1.0, 2000);
+
+                    for(auto offset = 0; offset < 8000; offset++)
+                    {
+                        //LOGDEBUG("================== Offset: " + to_string(offset) + " =============");
+
+                        /*{
+                            std::ofstream datafile = ofstream("received.csv");
+                            for(auto index = 0u; index < receiverResults.size(); index++)
+                            {
+                                datafile << to_string(validSlots[index]) << ", " << to_string(receiverResults[index]) << endl;
+                            }
+                            datafile.close();
+                        }*/
+
+                        double confidence = 0.5;
+                        size_t basesMatched = 0;
+                        size_t validCount = 0;
+                        const auto step = 10;
+
+                        for(uint64_t index = 0; index < receiverResults.size(); index = index + step)
+                        {
+                            const auto adjusted = offset + static_cast<ssize_t>(validSlots[index]);
+                            if(adjusted >= 0 && adjusted < static_cast<ssize_t>(aliceQubits.size()) &&
+                               QubitHelper::Base(aliceQubits[static_cast<size_t>(adjusted)]) == QubitHelper::Base(receiverResults[index]))
+                            {
+                                basesMatched++;
+                                if(aliceQubits[static_cast<size_t>(adjusted)] == receiverResults[index])
+                                {
+                                    validCount++;
+                                }
+                            }
+                        }
+                        confidence = static_cast<double>(validCount) / basesMatched;
+
+                        //const auto confidence = offsetting.CompareValues(aliceFiltered, receiverResults, 0);
+                        //LOGDEBUG("Offset = " + to_string(offset) + ", confidence = " + to_string(confidence));
+
+                        if(confidence > highestMatch)
+                        {
+                            highestMatch = confidence;
+                            highestOffset = offset;
+                            highestChannelMappings = channelMappings;
+                        }
+                        /*
+                        QubitList aliceFiltered;
+                        aliceFiltered.reserve(aliceQubits.size());
+                        for(auto validSlot = validSlots.cbegin(); validSlot != validSlots.cend(); validSlot++)
+                        {
+                            const ssize_t index = *validSlot + offset;
+                            if(index > 0 && index < aliceQubits.size())
+                            {
+                                aliceFiltered.push_back(aliceQubits[index]);
+                            }
+                        }
+
+                        //const size_t numTestValues = aliceFiltered.size() / 100;
+                        align::Gating::SparseQubitList testValues;
+                        for(auto index = 0u; index < 1000; index++)
+                        {
+                            testValues[index] = aliceFiltered[index];
+                        }
+
+                        auto match = align::Gating::EstimateMatch(testValues, receiverResults);
+
+                        if(match > highestMatch)
+                        {
+                            highestMatch = match;
+                            highestOffset = offset;
+                        }
+                        */
+
+                    }
+                    LOGDEBUG("Highest match: " + to_string(highestMatch * 100) + "% at " + to_string(highestOffset) +
+                             " [ " + to_string(highestChannelMappings[0]) + ", " +
+                            to_string(highestChannelMappings[1]) + ", " +
+                            to_string(highestChannelMappings[2]) + ", " +
+                            to_string(highestChannelMappings[3]) + "]");
                 }
             }
         }

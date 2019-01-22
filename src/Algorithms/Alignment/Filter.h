@@ -21,11 +21,13 @@ namespace cqp {
             /// value for the Gaussian filter
             static constexpr double DefaultSigma = 5.0;
             /// filter size
-            static constexpr size_t DefaultFilterWidth = 21;
-            /// minimum percentage for passing the filter
-            static constexpr double DefaultCutoff = 0.2;
+            static constexpr size_t DefaultFilterWidth = 15;
+            /// minimum percentage for passing the filter on the first pass
+            static constexpr double DefaultCourseTheshold = 0.15;
+            /// minimum percentage for passing the filter on the final pass
+            static constexpr double DefaultFineTheshold = DefaultCourseTheshold;
             /// Reduce the dataset by this factor
-            static constexpr size_t DefaultStride = 5;
+            static constexpr size_t DefaultStride = 25;
 
             /** Constructor
             * @param sigma value for the Gaussian filter
@@ -34,8 +36,13 @@ namespace cqp {
             * @param stride How many elements to reduce the data set by when detecting the transmission
             */
             Filter(double sigma = DefaultSigma, size_t filterWidth = DefaultFilterWidth,
-                   double cutoff = DefaultCutoff, size_t stride = DefaultStride);
+                   double courseThreshold = DefaultCourseTheshold, double fineThreshold = DefaultFineTheshold,
+                   size_t initialStride = DefaultStride);
 
+            using IteratorPair = std::pair<DetectionReportList::const_iterator, DetectionReportList::const_iterator>;
+            static bool Isolate(const std::vector<double>& filter, size_t stride, double threshold, bool findStart,
+                         DetectionReportList::const_iterator begin, DetectionReportList::const_iterator end,
+                      IteratorPair& edgeRange);
             /**
              * @brief Isolate
              * Find the start and end of transmission by looking for an increase in detections
@@ -234,11 +241,17 @@ namespace cqp {
                         lowerBound = searchIndex;
                     }
                     // set the search point to half way between the two bounds
-                    searchIndex = lowerBound + (upperBound - lowerBound) / 2;
-                    if(lowerBound >= upperBound - 1)
+                    searchIndex = lowerBound + (upperBound - lowerBound + 1) / 2;
+                    if(lowerBound == upperBound - 1)
                     {
                         // the bounds have meet store the result
-                        edge = start + upperBound;
+                        if(comparator(*(start + upperBound), cutoff))
+                        {
+                            edge = start + upperBound;
+                        } else {
+                            edge = start + lowerBound;
+                        }
+
                         result = true;
                         break; // stop searching
                     } // if bounds meet
@@ -251,10 +264,12 @@ namespace cqp {
             /// The filter to apply
             const std::vector<double> filter;
             /// The signal level which signifies a valid transmission as a percentage (0 - 1)
-            double cutoff;
-            /// How many elements to reduce the data set by when detecting the transmission
-            size_t stride;
-        };
+            double courseThreshold;
+            /// The signal level which signifies a valid transmission as a percentage (0 - 1)
+            double fineThreshold;
+            /// The inial stride to locate the transmission window
+            size_t initialStride;
+        }; // class Filter
 
     } // namespace align
 } // namespace cqp

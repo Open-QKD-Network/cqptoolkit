@@ -229,13 +229,18 @@ namespace cqp
             ASSERT_THAT(convolved, Pointwise(FloatEq(), expected));
         }
 
+        TEST_F(AlignmentTests, Isolate)
+        {
+
+        }
+
         TEST_F(AlignmentTests, Gating)
         {
             const PicoSeconds pulseWidth   {100};
             const PicoSeconds slotWidth  {10000};
             AlignmentTestData testData;
 
-            testData.emissions = rng->RandQubitList(100);
+            testData.emissions = rng->RandQubitList(1000);
             PicoSeconds time{1};
             for(auto qubit : testData.emissions)
             {
@@ -253,14 +258,14 @@ namespace cqp
 
             LOGDEBUG("There are " + std::to_string(testData.emissions.size()) + " emissions and " + std::to_string(testData.detections.size()) + " detections.");
 
-            align::Gating gating(rng, 100, slotWidth, pulseWidth);
+            align::Gating gating(rng, 1000, slotWidth, pulseWidth);
             QubitList alignedDetections;
             align::Gating::ValidSlots validSlots;
 
             const auto startTime = std::chrono::high_resolution_clock::now();
             //const double drift = (-4.0e-12 / 0.00000001);
             //gating.SetDrift(SecondsDouble(drift));
-            gating.ExtractQubits(testData.detections.cbegin(), testData.detections.cend(), validSlots, alignedDetections);
+            gating.ExtractQubits(testData.detections.cbegin(), testData.detections.cend(), validSlots, alignedDetections, true);
 
             const auto timeTaken = std::chrono::high_resolution_clock::now() - startTime;
             std::stringstream timeString;
@@ -271,7 +276,7 @@ namespace cqp
 
             LOGDEBUG(timeString.str());
             // have the emissions been shunk to match the detection list
-            ASSERT_EQ(testData.emissions.size(), testData.detections.size());
+            ASSERT_EQ(testData.emissions.size(), alignedDetections.size());
             // does the final aligned detections match the emissions
             ASSERT_EQ(testData.emissions.size(), alignedDetections.size());
             ASSERT_EQ(testData.emissions, alignedDetections);

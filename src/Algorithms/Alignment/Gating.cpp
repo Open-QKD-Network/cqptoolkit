@@ -4,7 +4,7 @@
 #include <fstream>
 #include "Algorithms/Alignment/Filter.h"
 #include <future>
-
+#include <fstream>
 namespace cqp {
     namespace align {
 
@@ -12,17 +12,27 @@ namespace cqp {
         // this looks weird because the constant is defined in the header
         constexpr PicoSeconds Gating::DefaultPulseWidth;
         constexpr PicoSeconds Gating::DefaultSlotWidth;
+        constexpr PicoSeconds Gating::DefaultDriftResolution;
+        constexpr PicoSeconds Gating::DefaultMaxDrift;
 
         Gating::Gating(std::shared_ptr<IRandom> rng,
                        uint64_t slotsPerFrame,
-                       const PicoSeconds& slotWidth, const PicoSeconds& pulseWidth, uint64_t samplesPerFrame, double acceptanceRatio):
+                       const PicoSeconds& slotWidth, const PicoSeconds& pulseWidth,
+                       const PicoSeconds& driftResolution, const PicoSeconds& maxDrift,
+                       double acceptanceRatio):
             rng(rng),
             slotsPerFrame{slotsPerFrame},
             slotWidth{slotWidth}, pulseWidth{pulseWidth},
-            samplesPerFrame{samplesPerFrame}, numBins{slotWidth / pulseWidth},
+            driftResolution{driftResolution}, maxDrift{maxDrift},
+            numBins{slotWidth / pulseWidth},
             acceptanceRatio{acceptanceRatio}
         {
-
+            using namespace std::chrono;
+            const size_t slotsPerSecond = (seconds(1) / slotWidth);
+            const double maxDriftPerSlot = static_cast<double>(maxDrift.count()) / slotsPerSecond;
+            const size_t slotsPerSample = slotWidth.count() / maxDriftPerSlot;
+            driftSampleTime = slotWidth * slotsPerSample;
+            driftBins = slotWidth / driftResolution;
         }
 
         void Gating::Histogram(const DetectionReportList::const_iterator& start,
@@ -44,6 +54,15 @@ namespace cqp {
 
         }
 
+        template<typename T>
+        T div_to_nearest(T n, T d) {
+          if (n < T(0)) {
+            return (n - (d/2) + 1) / d;
+          } else {
+            return (n + d/2) / d;
+          }
+        }
+
         void Gating::CountDetections(const PicoSeconds& frameStart,
                                      const DetectionReportList::const_iterator& start,
                                      const DetectionReportList::const_iterator& end,
@@ -58,7 +77,7 @@ namespace cqp {
             // for each detection
             //   calculate it's slot and bin ids and store a reference to the original data
             //   count the bin ids
-            for(auto detection = start; detection < end; ++detection)
+            for(auto detection = start; detection != end; ++detection)
             {
                 using namespace std::chrono;
                 // calculate the offset in whole picoseconds (signed)
@@ -66,13 +85,14 @@ namespace cqp {
                     (scaledDrift * duration_cast<SecondsDouble>(detection->time)).count())
                 };
                 // offset the time without the original value being converted to a float
-                const PicoSeconds adjustedTime = (detection->time - offset) - frameStart;
+                const PicoSeconds adjustedTime = detection->time - frameStart - offset;
                 // C++ truncates on integer division
-                const SlotID slot = adjustedTime / slotWidth;
+                const SlotID slot = div_to_nearest(adjustedTime.count(), slotWidth.count());
                 // through away anything past the end of transmission
-                if(slot < slotsPerFrame)
+                //if(slot < slotsPerFrame)
                 {
-                    const BinID bin = ((adjustedTime % slotWidth) / pulseWidth) % numBins;
+                    const auto fromSlotStart = adjustedTime % slotWidth;
+                    const BinID bin = div_to_nearest(fromSlotStart.count(), pulseWidth.count()) % numBins;
                     // store the value as a bin for later access
                     slotResults[bin][slot].push_back(detection->value);
                     counts[bin]++;
@@ -108,20 +128,43 @@ namespace cqp {
 
             size_t binCount = 0;
 
+            std::ofstream datafile = std::ofstream("gated-binned.csv");
+            datafile << "SlotID, QubitValue, BinID, Ordinal" << std::endl;
             for(auto binId = (lower + 1) % numBins; binId != upper ; binId = (binId + 1) % numBins)
             {
+                SlotID slotOffset = 0;
+                // If the bin ID is less than the lower limit we're left of bin 0
+                if(upper < lower && binId > lower)
+                {
+                    // the peak wraps around, adjust the slot id for bins to the left
+                    slotOffset = 1;
+                }
                 binCount++;
                 for(auto slot : slotResults[binId])
                 {
+                    const auto mySlot = slot.first + slotOffset;
                     // add the qubits to the list for this slot, one will be chosen at random later
-                    qubitsBySlot[slot.first].insert(qubitsBySlot[slot.first].end(), slot.second.cbegin(), slot.second.cend());
-                }
-            }
+                    qubitsBySlot[mySlot].insert(qubitsBySlot[mySlot].end(), slot.second.cbegin(), slot.second.cend());
+                    int ordinal = 0;
+                    for(auto val : slot.second)
+                    {
+                        datafile << std::to_string(slot.first) << ", " <<
+                                    std::to_string(val) << ", "
+                                 << std::to_string(binId) << ", "
+                                 << std::to_string(ordinal) << std::endl;
+                        ordinal++;
+                    }
+                } // for each slot
+            } // for each bin
+
+            datafile.close();
 
             if(peakWidth)
             {
                 *peakWidth = (binCount / static_cast<double>(numBins));
             }
+
+            size_t multiSlots = 0;
 
             // as the list is ordered, the qubits will come out in the correct order
             // just append them to the result list
@@ -136,15 +179,17 @@ namespace cqp {
                         results.push_back(list.second[0]);
                     }
                     else {
+                        multiSlots++;
                         //LOGDEBUG("Multiple qubits for slot");
-                        // pic a qubit at random
+                        // pick a qubit at random
                         const auto index = rng->RandULong() % list.second.size();
                         results.push_back(list.second[index]);
                     }
                 }
             }
 
-            sort(validSlots.begin(), validSlots.end());
+            LOGDEBUG("Number of multi-qubit slots: " + to_string(multiSlots));
+
             // results now contains a contiguous list of qubits
             // validSlots tells the caller which slots were used to create that list.
         } // CountDetections
@@ -154,7 +199,11 @@ namespace cqp {
         {
             using namespace std;
             CountsByBin histogram;
-            histogram.resize(numBins, 0);
+            LOGDEBUG("Look from " + to_string(sampleStart->time.count()) + " to " +
+                     to_string(sampleEnd->time.count()) + " in " +
+                     to_string(distance(sampleStart, sampleEnd)) + " samples");
+
+            histogram.resize(driftBins, 0);
             // create a histogram of the sample
             Histogram(sampleStart, sampleEnd, numBins, slotWidth, histogram);
 
@@ -163,12 +212,13 @@ namespace cqp {
             const auto maxIt = std::max_element(histogram.cbegin(), histogram.cend());
 
             PicoSeconds result { 0 };
-            if(maxIt != histogram.end())
+            if(maxIt != histogram.end() && *maxIt > 0)
             {
-                result = distance(histogram.cbegin(), maxIt) * pulseWidth;
+                // values are in "bins" so will need to be translated to time
+                result = distance(histogram.cbegin(), maxIt) * driftResolution;
             }
 
-            // values are in "bins" so will need to be translated to time
+            LOGDEBUG("Peak: " + to_string(result.count()));
             return result;
         } // FindPeak
 
@@ -190,8 +240,7 @@ namespace cqp {
 
             // split the input in a number of samples
             // the data will be split to the nearest slotwidth
-            const PicoSeconds sampleTime {((end - 1)->time - start->time).count() / samplesPerFrame};
-            const PicoSeconds driftSampleTime { sampleTime - (sampleTime % slotWidth)};
+
             auto sampleStart = start;
             auto sampleEnd = end;
             size_t sampleIndex = 1;
@@ -215,10 +264,10 @@ namespace cqp {
                 peakFutures.push_back(async(launch::async, &Gating::FindPeak, this, move(findStart), move(findEnd)));
 
                 // set the start of the next sample
-                sampleStart = sampleEnd + 1;
+                sampleStart = sampleEnd;
                 sampleEnd = end;
                 sampleIndex++;
-            } while(sampleStart != end);
+            } while(distance(sampleStart, end) > 1);
 
             /* store the values for the peaks so we can discover the shift/wraparound
              the sequential values may wrap around the slot width:
@@ -230,31 +279,37 @@ namespace cqp {
              |    |/       |  \|
              |_________    |_________
             */
-            std::vector<PicoSecondOffset> peaks(peakFutures.size());
+            std::vector<PicoSecondOffset> peaks;
+            peaks.reserve(peakFutures.size());
 
-            auto maxPeakIt = peaks.cbegin();
+            auto maxPeakIndex = 0u;
             // copy the values from the other threads and find the highest peak
             for(auto peakFutIndex = 0u; peakFutIndex < peakFutures.size(); peakFutIndex++)
             {
-                peaks[peakFutIndex] = peakFutures[peakFutIndex].get();
-                if(peaks[peakFutIndex] >= *maxPeakIt)
+                const auto value = peakFutures[peakFutIndex].get();
+                if(value.count() > 0)
                 {
-                    // store the iterator to the last element
-                    maxPeakIt = peaks.cbegin() + peakFutIndex;
+                    peaks.push_back(value);
+                    if(value >= peaks[maxPeakIndex])
+                    {
+                        // store the iterator to the last element
+                        maxPeakIndex = peaks.size() - 1;
+                    }
+                    LOGDEBUG("Peak: " + to_string(value.count()));
                 }
+
             }
 
-            size_t startShift = 0;
             // TODO: a circular iterator would make this easier - would need to write one.
 
             // if the peak is at the end - there is no need to shift
-            if(maxPeakIt + 1 != peaks.cend())
+            if(maxPeakIndex < peaks.size())
             {
                 // look at the point before the max peak
                 std::vector<PicoSecondOffset>::const_iterator previousPeak;
-                if(maxPeakIt != peaks.cbegin())
+                if(maxPeakIndex != 0)
                 {
-                    previousPeak = maxPeakIt - 1;
+                    previousPeak = peaks.cbegin() + maxPeakIndex - 1;
                 } else
                 {
                     // the max peak is the first element, look at the last element
@@ -262,33 +317,37 @@ namespace cqp {
                 }
                 // look at the value before and after the peak,
                 // the smallest value tells us the direction of the slope
-                if(*(maxPeakIt + 1) < *previousPeak)
+                if(peaks[maxPeakIndex + 1] < *previousPeak)
                 {
                     // the value to the right is the smaller value
                     // the slope is positive, start to the right of the peak
-                    maxPeakIt += 1;
+                    maxPeakIndex += 1;
                 } else {
                     // the value to the left is the smaller value
                     // the slope is negative, start at the peak
                 }
 
-                startShift = static_cast<size_t>(distance(peaks.cbegin(), maxPeakIt));
             }
 
+            auto averageCount = 0u;
             SecondsDouble average{0};
             const SecondsDouble sampleTimeSeconds = chrono::duration_cast<SecondsDouble>(driftSampleTime);
             for(size_t index = 1; index < peaks.size(); index++)
             {
                 // get the indexes, wraping around the graph
-                const auto previousPeak = (index - 1 + startShift) % peaks.size();
-                const auto thisPeak = (index + startShift) % peaks.size();
+                const auto previousPeak = (index - 1 + maxPeakIndex) % peaks.size();
+                const auto thisPeak = (index + maxPeakIndex) % peaks.size();
                 // calculate the change in time between the two peaks
                 const auto peakDifference = peaks[thisPeak] - peaks[previousPeak];
-                average += peakDifference / sampleTimeSeconds.count();
+                if(peakDifference.count() > 0)
+                {
+                    averageCount++;
+                    average += peakDifference / sampleTimeSeconds.count();
+                }
             }
 
             //const auto slotsPerSecond = chrono::duration_cast<PicoSeconds>(chrono::seconds(1)) / slotWidth;
-            average = average  / peaks.size();
+            average = average  / averageCount;
 
             return average;
         } // CalculateDrift
@@ -315,6 +374,7 @@ namespace cqp {
 
             LOGDEBUG("Drift = " + std::to_string(drift.count() * 1.0e9 ) + "ns");
             LOGDEBUG("Peak width: " + std::to_string(peakWidth * 100.0) + "%");
+
 
         }
 

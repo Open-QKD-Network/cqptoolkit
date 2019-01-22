@@ -24,8 +24,9 @@ namespace cqp {
             static constexpr PicoSeconds DefaultSlotWidth  {std::chrono::nanoseconds(100)};
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.2;
-            /// The number of slots used to calculate drift
-            static constexpr uint64_t DefaultSamplesPerFrame = 50;
+
+            static constexpr PicoSeconds DefaultDriftResolution { PicoSeconds(100) };
+            static constexpr PicoSeconds DefaultMaxDrift { std::chrono::nanoseconds(100) };
 
             /// Identifier type for slots
             using SlotID = uint64_t;
@@ -61,9 +62,9 @@ namespace cqp {
                    uint64_t slotsPerFrame = DefaultSlotsPerFrame,
                    const PicoSeconds& slotWidth = DefaultSlotWidth,
                    const PicoSeconds& pulseWidth = DefaultPulseWidth,
-                   uint64_t samplesPerFrame = DefaultSamplesPerFrame,
+                   const PicoSeconds& driftResolution = DefaultDriftResolution,
+                   const PicoSeconds& maxDrift = DefaultMaxDrift,
                    double acceptanceRatio = DefaultAcceptanceRatio);
-
 
             /**
              * @brief ExtractQubits
@@ -158,6 +159,27 @@ namespace cqp {
                              QubitList& results,
                              double* peakWidth = nullptr) const;
 
+            using SparseQubitList = std::map<size_t, Qubit>;
+
+            static double EstimateMatch(SparseQubitList truthValues, QubitList imperfectValues)
+            {
+                size_t valid = 0;
+                size_t numResults = 0;
+                for(auto truthIt = truthValues.cbegin(); truthIt != truthValues.cend(); truthIt++)
+                {
+                    if(truthIt->first < imperfectValues.size() && QubitHelper::Base(truthIt->second) == QubitHelper::Base(imperfectValues[truthIt->first]))
+                    {
+                        numResults++;
+                        if(truthIt->second == imperfectValues[truthIt->first])
+                        {
+                            valid++;
+                        }
+                    }
+                }
+
+                return static_cast<double>(valid) / numResults;
+            }
+
             /**
              * @brief FilterDetections
              * Remove elements from qubits which do not have an index in validSlots
@@ -174,6 +196,7 @@ namespace cqp {
             {
                 using namespace std;
                 bool result = false;
+
                 const size_t validSlotsSize = distance(validSlotsBegin, validSlotsEnd);
 
                 if(validSlotsSize <= qubits.size())
@@ -182,7 +205,7 @@ namespace cqp {
                     for(auto validSlot = validSlotsBegin; validSlot != validSlotsEnd; validSlot++)
                     {
                         const auto adjustedSlot = *validSlot + offset;
-                        if(adjustedSlot > 0 && adjustedSlot < qubits.size())
+                        if(adjustedSlot >= 0 && adjustedSlot < qubits.size())
                         {
                             qubits[index] = qubits[adjustedSlot];
                             index++;
@@ -259,10 +282,12 @@ namespace cqp {
             const PicoSeconds slotWidth;
             /// The detection window for a qubit.
             const PicoSeconds pulseWidth;
-            /// The number of slots used to calculate drift
-            const uint64_t samplesPerFrame;
+            PicoSeconds driftResolution;
+            PicoSeconds maxDrift;
             /// slotWidth / pulseWidth
             const uint64_t numBins;
+            uint64_t driftBins;
+            PicoSeconds driftSampleTime;
             /// The percentage (0 to 1) of counts required for the slice on the histogram to be included in the counts.
             /// A higher ratio mean less of the peak detections is accepted and less noise.
             double acceptanceRatio;
