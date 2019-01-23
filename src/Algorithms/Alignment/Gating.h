@@ -13,19 +13,14 @@
 namespace cqp {
     namespace align {
 
+        /**
+         * @brief The Gating class extracts valid qubits from noise.
+         */
         class ALGORITHMS_EXPORT Gating
         {
         public: // types
-            /// The length of a frame in number of slot widths
-            static constexpr uint64_t DefaultSlotsPerFrame { 40000000 };
-            /// The detection window for a qubit.
-            static constexpr PicoSeconds DefaultTxJitter {PicoSeconds(1000)};
-            /// Picoseconds of time in which one qubit can be detected.
-            static constexpr PicoSeconds DefaultSlotWidth  {std::chrono::nanoseconds(100)};
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.2;
-            /// The mast drift per second which is acceptable
-            static constexpr PicoSeconds DefaultMaxDrift { std::chrono::nanoseconds(100) };
 
             /// Identifier type for slots
             using SlotID = uint64_t;
@@ -42,7 +37,7 @@ namespace cqp {
             using ResultsByBinBySlot = std::vector</*BinID,*/ ValuesBySlot>;
 
             /// The histogram storage type
-            using CountsByBin = std::vector<uint64_t>;
+            using CountsByBin = std::vector<BinID>;
             /// A list of slot ids
             using ValidSlots = std::vector<SlotID>;
 
@@ -52,16 +47,13 @@ namespace cqp {
              * @brief Gating Constructor
              * @param rng The random number generator used for choosing qubits for duplicate slots
              * @param slotWidth Picoseconds of time in which one qubit can be detected. slot width = frame width / number transmissions per frame
-             * @param pulseWidth The detection window for a qubit.
-             * @param samplesPerFrame The number of slots used to calculate drift
+             * @param txJitter The detection window for a qubit.
              * @param acceptanceRatio The percentage (0 to 1) of counts required for the slice on the histogram to be included in the counts.
              * A higher ratio mean less of the peak detections is accepted and less noise.
              */
             Gating(std::shared_ptr<IRandom> rng,
-                   uint64_t slotsPerFrame = DefaultSlotsPerFrame,
-                   const PicoSeconds& slotWidth = DefaultSlotWidth,
-                   const PicoSeconds& txJitter = DefaultTxJitter,
-                   const PicoSeconds& maxDrift = DefaultMaxDrift,
+                   const PicoSeconds& slotWidth,
+                   const PicoSeconds& txJitter,
                    double acceptanceRatio = DefaultAcceptanceRatio);
 
             /**
@@ -81,49 +73,21 @@ namespace cqp {
              * @param[in] end The end of the raw data
              * @param[out] validSlots A list of slot id which were successfully extracted
              * @param[out] results The qubit values for each slot id in validSlots
-             * @param[in] calculateDrift When true, a new drift value will be calculated before performing gating,
-             * otherwise the current value will be used.
              */
             void ExtractQubits(const DetectionReportList::const_iterator& start,
                                const DetectionReportList::const_iterator& end,
                                ValidSlots& validSlots,
-                               QubitList& results,
-                               bool calculateDrift = true);
+                               QubitList& results);
 
             /**
              * @brief SetDrift
              * Change the drift value used for ExtractQubits when calculateDrift is set to false
              * @param newDrift The new drift value
              */
-            void SetDrift(PicoSecondOffset newDrift)
+            void SetDrift(AttoSecondOffset newDrift)
             {
                 drift = newDrift;
             }
-
-            /**
-             * @brief Histogram
-             * Create a histogram of the data by counting the occorences
-             * @param[in] start The start of the data
-             * @param[in] end The end of the data
-             * @param[in] numBins The number of columns in the histogram
-             * @param[in] windowWidth The width in time of the histogram window
-             * @param[out] counts The result of counting the times based on the pulse width setting
-             */
-            static void Histogram(const DetectionReportList::const_iterator& start,
-                           const DetectionReportList::const_iterator& end,
-                           uint64_t numBins,
-                           PicoSeconds windowWidth,
-                           Gating::CountsByBin& counts);
-
-            /**
-             * @brief CalculateDrift
-             * successivly sample the data and measure the disance between peaks to detect clock drift
-             * @param start Start of data to sample
-             * @param end End of data to sample
-             * @return Picoseconds drift
-             */
-            AttoSecondOffset CalculateDrift(const DetectionReportList::const_iterator& start,
-                                            const DetectionReportList::const_iterator& end) const;
 
             /**
              * @brief CountDetections
@@ -156,27 +120,6 @@ namespace cqp {
                              ValidSlots& validSlots,
                              QubitList& results,
                              double* peakWidth = nullptr) const;
-
-            using SparseQubitList = std::map<size_t, Qubit>;
-
-            static double EstimateMatch(SparseQubitList truthValues, QubitList imperfectValues)
-            {
-                size_t valid = 0;
-                size_t numResults = 0;
-                for(auto truthIt = truthValues.cbegin(); truthIt != truthValues.cend(); truthIt++)
-                {
-                    if(truthIt->first < imperfectValues.size() && QubitHelper::Base(truthIt->second) == QubitHelper::Base(imperfectValues[truthIt->first]))
-                    {
-                        numResults++;
-                        if(truthIt->second == imperfectValues[truthIt->first])
-                        {
-                            valid++;
-                        }
-                    }
-                }
-
-                return static_cast<double>(valid) / numResults;
-            }
 
             /**
              * @brief FilterDetections
@@ -259,32 +202,15 @@ namespace cqp {
                 }
             } stats;
 
-        protected: // methods
-
-            /**
-             * @brief FindPeak
-             * Createa histogram of the data and find the highest count
-             * @param sampleStart start of data to read
-             * @param sampleEnd end of data to read
-             * @return The time in picoseconds from the start of the data
-             */
-            static double FindPeak(DetectionReportList::const_iterator sampleStart,
-                                  DetectionReportList::const_iterator sampleEnd, size_t bins, PicoSeconds window);
-
         protected: // members
             /// radom number generator for choosing from multiple qubits
             std::shared_ptr<IRandom> rng;
-            /// The length of a frame in number of slotWidths
-            const uint64_t slotsPerFrame;
             /// Picoseconds of time in which one qubit can be detected. slot width = frame width / number transmissions per frame
             const PicoSeconds slotWidth;
             /// The detection window for a qubit.
             const PicoSeconds txJitter;
-            AttoSeconds maxDrift;
             /// slotWidth / pulseWidth
             const uint64_t numBins;
-            uint64_t driftBins;
-            PicoSeconds driftSampleTime;
             /// The percentage (0 to 1) of counts required for the slice on the histogram to be included in the counts.
             /// A higher ratio mean less of the peak detections is accepted and less noise.
             double acceptanceRatio;

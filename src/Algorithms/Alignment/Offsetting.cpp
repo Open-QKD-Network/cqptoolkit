@@ -5,10 +5,8 @@ namespace cqp {
 
         Offsetting::Offsetting(size_t samples,
                                double rejectionThreshold,
-                               double acceptanceThreshold,
                                size_t minTests):
             rejectionThreshold(rejectionThreshold),
-            acceptanceThreshold(acceptanceThreshold),
             minTests(minTests),
             samples(samples)
         {
@@ -19,36 +17,34 @@ namespace cqp {
                                          const QubitList& irregular,
                                          ssize_t offset)
         {
-            using namespace std;
             double confidence = 0.5;
             size_t basesMatched = 0;
             size_t validCount = 0;
+            const auto step = irregular.size() / samples;
+            const auto numToCheck = irregular.size();
 
-            const auto smallestList = min(truth.size(), irregular.size());
-            const auto actualSamples = min(smallestList, samples);
-            const size_t step = smallestList / actualSamples;
-
-            const size_t indexEnd = static_cast<size_t>(
-                        max(0l, min(static_cast<ssize_t>(truth.size()), static_cast<ssize_t>(irregular.size()) - offset))
-                        );
-            const size_t indexStart = static_cast<size_t>(0 - min(0l, offset)); // offset the start if offset is negative
-
-            for(auto index = indexStart; index < indexEnd; index += step)
-            //for(auto slotId : validSlots)
+            for(uint64_t index = 0; index < numToCheck; index = index + step)
             {
-                const size_t irregIndex = index + offset;
-                if(QubitHelper::Base(truth[index]) == QubitHelper::Base(irregular[irregIndex]))
+                const auto adjusted = offset + static_cast<ssize_t>(validSlots[index]);
+                const auto& aliceQubit = truth[static_cast<size_t>(adjusted)];
+                const auto& bobQubit = irregular[index];
+
+                if(adjusted >= 0 && adjusted < static_cast<ssize_t>(truth.size()) &&
+                   QubitHelper::Base(aliceQubit) == QubitHelper::Base(bobQubit))
                 {
                     basesMatched++;
-                    if(truth[index] == irregular[irregIndex])
+                    if(aliceQubit == bobQubit)
                     {
-                        validCount++;
+                       validCount++;
                     }
+                }
 
+                if(basesMatched > minTests)
+                {
                     confidence = static_cast<double>(validCount) / basesMatched;
-                    if(basesMatched > minTests && (confidence < rejectionThreshold || confidence > acceptanceThreshold))
+                    if(confidence < rejectionThreshold)
                     {
-                        break; // for
+                        break;
                     }
                 }
             }

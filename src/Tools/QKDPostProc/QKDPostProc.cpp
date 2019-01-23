@@ -15,6 +15,7 @@
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Alignment/Gating.h"
+#include "Algorithms/Alignment/Drift.h"
 #include "QKDPostProc.h"
 #include "Algorithms/Alignment/Offsetting.h"
 
@@ -30,7 +31,6 @@ struct Names
 {
     static CONSTSTRING noxData= "noxdata";
     static CONSTSTRING packedQubits= "packed";
-    static CONSTSTRING slotsPerFrame = "slots-per-frame";
     static CONSTSTRING slotWidth = "slot-width";
     static CONSTSTRING pulseWidth = "pulse-width";
     static CONSTSTRING acceptanceRatio = "acceptance";
@@ -59,8 +59,6 @@ QKDPostProc::QKDPostProc()
     definedArguments.AddOption(Names::noxData, "n", "Read NoxBox Detections from file")
             .Bind();
     definedArguments.AddOption(Names::packedQubits, "p", "Read transmissions from packed Qubits file")
-            .Bind();
-    definedArguments.AddOption(Names::slotsPerFrame, "", "Length of transmission in number of slots")
             .Bind();
     definedArguments.AddOption(Names::slotWidth, "", "Slot width of transmissions (Picoseconds)")
             .Bind();
@@ -104,13 +102,10 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         DetectionReportList detections;
         definedArguments.GetProp(Names::noxData, detectionsFile);
 
-        auto slotsPerFrame = align::Gating::DefaultSlotsPerFrame;
-        definedArguments.GetProp(Names::slotsPerFrame, slotsPerFrame);
-
-        auto slotWidth = align::Gating::DefaultSlotWidth;
+        PicoSeconds slotWidth = std::chrono::nanoseconds(100);
         definedArguments.GetProp(Names::slotWidth, slotWidth);
 
-        auto pulseWidth = align::Gating::DefaultTxJitter;
+        PicoSeconds pulseWidth = std::chrono::nanoseconds(1);
         definedArguments.GetProp(Names::pulseWidth, pulseWidth);
 
         auto acceptanceRatio = align::Gating::DefaultAcceptanceRatio;
@@ -191,7 +186,8 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                 align::Filter filter(filterSigma, filterWidth, align::Filter::DefaultCourseTheshold, align::Filter::DefaultFineTheshold,
                                      filterStride);
                 // to find the qubits
-                align::Gating gating(rng, slotsPerFrame, slotWidth, pulseWidth, align::Gating::DefaultMaxDrift, acceptanceRatio);
+                align::Gating gating(rng, slotWidth, pulseWidth, acceptanceRatio);
+                align::Drift drift(slotWidth, pulseWidth);
                 // bobs qubits
                 QubitList receiverResults;
                 DetectionReportList::const_iterator start;
@@ -223,6 +219,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                 //gating.SetDrift(PicoSecondOffset(34610));
                 //gating.SetDrift(PicoSecondOffset(34470));
                 //gating.SetDrift(PicoSecondOffset(33870));
+                gating.SetDrift(drift.Calculate(start, end));
                 gating.ExtractQubits(start, end, validSlots, receiverResults);
                 const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
 
@@ -242,7 +239,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                     LOGERROR("Failed to open transmisser file: " + packedFile);
                 } else {
 
-                    align::Offsetting offsetting(10000, 0.6, 1.0, 2000);
+                    align::Offsetting offsetting(1000);
 
                     for(auto offset = 0; offset < 8000; offset++)
                     {
@@ -257,6 +254,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                             datafile.close();
                         }*/
 
+/*
                         double confidence = 0.5;
                         size_t basesMatched = 0;
                         size_t validCount = 0;
@@ -276,18 +274,12 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                                 if(aliceQubit == bobQubit)
                                 {
                                    validCount++;
-                                }/* else if(aliceQubits[static_cast<size_t>(adjusted) + 1] == receiverResults[index])
-                                {
-                                    validCount++;
-                                } else if(aliceQubits[static_cast<size_t>(adjusted) - 1] == receiverResults[index])
-                                {
-                                    validCount++;
-                                }*/
+                                }
                             }
                         }
                         confidence = static_cast<double>(validCount) / basesMatched;
-
-                        //const auto confidence = offsetting.CompareValues(aliceFiltered, receiverResults, 0);
+*/
+                        const auto confidence = offsetting.CompareValues(aliceQubits, validSlots, receiverResults, offset);
                         //LOGDEBUG("Offset = " + to_string(offset) + ", confidence = " + to_string(confidence));
 
                         if(confidence > highestMatch)
@@ -325,6 +317,9 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                         */
 
                     }
+
+                    // recalculate a more accurate confidence
+                    highestMatch = align::Offsetting(100000, 0.0, 1.0).CompareValues(aliceQubits, validSlots, receiverResults, highestOffset);
                     LOGDEBUG("Highest match: " + to_string(highestMatch * 100) + "% at " + to_string(highestOffset) +
                              " [ " + to_string(highestChannelMappings[0]) + ", " +
                             to_string(highestChannelMappings[1]) + ", " +

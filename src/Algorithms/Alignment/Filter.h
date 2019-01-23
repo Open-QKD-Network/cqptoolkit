@@ -32,17 +32,33 @@ namespace cqp {
             /** Constructor
             * @param sigma value for the Gaussian filter
             * @param filterWidth number of elements for the Gaussian filter
-            * @param cutoff The signal level which signifies a valid transmission as a percentage (0 - 1)
-            * @param stride How many elements to reduce the data set by when detecting the transmission
+            * @param courseThreshold The signal level which signifies a valid transmission as a percentage (0 - 1)
+            * @param fineThreshold The signal level which signifies a valid transmission as a percentage (0 - 1)
+            * @param initialStride How many elements to reduce the data set by when detecting the transmission
             */
             Filter(double sigma = DefaultSigma, size_t filterWidth = DefaultFilterWidth,
                    double courseThreshold = DefaultCourseTheshold, double fineThreshold = DefaultFineTheshold,
                    size_t initialStride = DefaultStride);
 
+            /// A pair of iterators to mark two points
             using IteratorPair = std::pair<DetectionReportList::const_iterator, DetectionReportList::const_iterator>;
+
+            /**
+             * @brief Isolate
+             * Static isolate method to calculate an acceptance edge
+             * @param filter The filter to apply to the data for smoothing
+             * @param stride How many elements to reduce the data set by when detecting the transmission
+             * @param threshold The signal level which signifies a valid transmission as a percentage (0 - 1)
+             * @param findStart true = look for the start of transmission, otherwise look for the end
+             * @param begin Start of data to search
+             * @param end End of data to search
+             * @param[out] edgeRange The range within which the edge has been found
+             * @return true on success
+             */
             static bool Isolate(const std::vector<double>& filter, size_t stride, double threshold, bool findStart,
                          DetectionReportList::const_iterator begin, DetectionReportList::const_iterator end,
                       IteratorPair& edgeRange);
+
             /**
              * @brief Isolate
              * Find the start and end of transmission by looking for an increase in detections
@@ -117,33 +133,6 @@ namespace cqp {
 
                 return result;
             } // GaussianWindow1D
-
-            template<typename T>
-            static std::vector<T> MovingAverage(const std::vector<T>& values, size_t window)
-            {
-                using namespace std;
-                std::vector<T> result;
-
-                // make sure the data is wider than the window and that the window is odd
-                if(values.size() > window)
-                {
-                    result.resize(values.size());
-                    copy(values.cbegin(), values.cbegin() + window, result.begin());
-                    copy(values.crbegin(), values.crbegin() + window, result.rbegin());
-
-                    for(auto current = values.cbegin() + window; current + window < values.cend(); current++)
-                    {
-                        auto average = *current;
-                        for(auto offset = 1u; offset <= window; offset++)
-                        {
-                            average += *(current + offset);
-                            average += *(current - offset);
-                        }
-                        result[distance(values.cbegin(), current)] = average / (2 * window + 1);
-                    }
-                }
-                return result;
-            }
 
             /**
              * @brief
