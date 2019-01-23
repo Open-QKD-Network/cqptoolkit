@@ -37,7 +37,7 @@ namespace align {
         static constexpr SystemParameters DefaultSystemParameters = {
             Gating::DefaultSlotsPerFrame,
             Gating::DefaultSlotWidth,
-            Gating::DefaultPulseWidth
+            Gating::DefaultTxJitter
         };
         /// constructor
         DetectionReciever(const SystemParameters &parameters = DefaultSystemParameters);

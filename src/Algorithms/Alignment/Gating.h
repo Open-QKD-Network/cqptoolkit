@@ -19,13 +19,12 @@ namespace cqp {
             /// The length of a frame in number of slot widths
             static constexpr uint64_t DefaultSlotsPerFrame { 40000000 };
             /// The detection window for a qubit.
-            static constexpr PicoSeconds DefaultPulseWidth {PicoSeconds(500)};
+            static constexpr PicoSeconds DefaultTxJitter {PicoSeconds(1000)};
             /// Picoseconds of time in which one qubit can be detected.
             static constexpr PicoSeconds DefaultSlotWidth  {std::chrono::nanoseconds(100)};
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.2;
-
-            static constexpr PicoSeconds DefaultDriftResolution { PicoSeconds(100) };
+            /// The mast drift per second which is acceptable
             static constexpr PicoSeconds DefaultMaxDrift { std::chrono::nanoseconds(100) };
 
             /// Identifier type for slots
@@ -61,8 +60,7 @@ namespace cqp {
             Gating(std::shared_ptr<IRandom> rng,
                    uint64_t slotsPerFrame = DefaultSlotsPerFrame,
                    const PicoSeconds& slotWidth = DefaultSlotWidth,
-                   const PicoSeconds& pulseWidth = DefaultPulseWidth,
-                   const PicoSeconds& driftResolution = DefaultDriftResolution,
+                   const PicoSeconds& txJitter = DefaultTxJitter,
                    const PicoSeconds& maxDrift = DefaultMaxDrift,
                    double acceptanceRatio = DefaultAcceptanceRatio);
 
@@ -97,7 +95,7 @@ namespace cqp {
              * Change the drift value used for ExtractQubits when calculateDrift is set to false
              * @param newDrift The new drift value
              */
-            void SetDrift(SecondsDouble newDrift)
+            void SetDrift(PicoSecondOffset newDrift)
             {
                 drift = newDrift;
             }
@@ -124,7 +122,7 @@ namespace cqp {
              * @param end End of data to sample
              * @return Picoseconds drift
              */
-            SecondsDouble CalculateDrift(const DetectionReportList::const_iterator& start,
+            AttoSecondOffset CalculateDrift(const DetectionReportList::const_iterator& start,
                                             const DetectionReportList::const_iterator& end) const;
 
             /**
@@ -270,8 +268,8 @@ namespace cqp {
              * @param sampleEnd end of data to read
              * @return The time in picoseconds from the start of the data
              */
-            PicoSeconds FindPeak(DetectionReportList::const_iterator sampleStart,
-                                  DetectionReportList::const_iterator sampleEnd) const;
+            static double FindPeak(DetectionReportList::const_iterator sampleStart,
+                                  DetectionReportList::const_iterator sampleEnd, size_t bins, PicoSeconds window);
 
         protected: // members
             /// radom number generator for choosing from multiple qubits
@@ -281,9 +279,8 @@ namespace cqp {
             /// Picoseconds of time in which one qubit can be detected. slot width = frame width / number transmissions per frame
             const PicoSeconds slotWidth;
             /// The detection window for a qubit.
-            const PicoSeconds pulseWidth;
-            PicoSeconds driftResolution;
-            PicoSeconds maxDrift;
+            const PicoSeconds txJitter;
+            AttoSeconds maxDrift;
             /// slotWidth / pulseWidth
             const uint64_t numBins;
             uint64_t driftBins;
@@ -292,7 +289,7 @@ namespace cqp {
             /// A higher ratio mean less of the peak detections is accepted and less noise.
             double acceptanceRatio;
             /// clock drift between tx and rx
-            SecondsDouble drift {0};
+            AttoSecondOffset drift {0};
         };
 
     } // namespace align

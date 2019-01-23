@@ -110,7 +110,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         auto slotWidth = align::Gating::DefaultSlotWidth;
         definedArguments.GetProp(Names::slotWidth, slotWidth);
 
-        auto pulseWidth = align::Gating::DefaultPulseWidth;
+        auto pulseWidth = align::Gating::DefaultTxJitter;
         definedArguments.GetProp(Names::pulseWidth, pulseWidth);
 
         auto acceptanceRatio = align::Gating::DefaultAcceptanceRatio;
@@ -174,11 +174,11 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         { 0, 2, 3, 1 },
         { 2, 0, 3, 1 },
         { 1, 0, 3, 2 },
-        { 0, 1, 3, 2 },
-        { 3, 1, 0, 2 },
-        { 1, 3, 0, 2 },*/
-        { 0, 3, 1, 2 }//,
-        //{ 3, 0, 1, 2 }
+        { 0, 1, 3, 2 },*/
+        { 3, 1, 0, 2 }//,
+        /*{ 1, 3, 0, 2 },
+        { 0, 3, 1, 2 },
+        { 3, 0, 1, 2 }*/
     }))
         {
             detections.clear();
@@ -191,7 +191,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                 align::Filter filter(filterSigma, filterWidth, align::Filter::DefaultCourseTheshold, align::Filter::DefaultFineTheshold,
                                      filterStride);
                 // to find the qubits
-                align::Gating gating(rng, slotsPerFrame, slotWidth, pulseWidth, align::Gating::DefaultDriftResolution, align::Gating::DefaultMaxDrift, acceptanceRatio);
+                align::Gating gating(rng, slotsPerFrame, slotWidth, pulseWidth, align::Gating::DefaultMaxDrift, acceptanceRatio);
                 // bobs qubits
                 QubitList receiverResults;
                 DetectionReportList::const_iterator start;
@@ -209,8 +209,8 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                     datafile.close();
                 }*/
 
-                start = detections.cbegin() + 113143;
-                end = detections.cbegin() + 706150;
+                //start = detections.cbegin() + 113141;
+                //end = detections.cbegin() + 706150;
                 // start should be @ 2.0377699934326174
                 LOGINFO("Detections: " + std::to_string(distance(start, end)) + "\n" +
                         " Start: " + std::to_string(distance(detections.cbegin(), start)) + " @ " + to_string(start->time.count()) + "pS\n" +
@@ -220,8 +220,10 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                 align::Gating::ValidSlots validSlots;
                 const auto startTime = std::chrono::high_resolution_clock::now();
                 //gating.SetDrift(PicoSecondOffset(34795));
-                gating.SetDrift(PicoSecondOffset(34610));
-                gating.ExtractQubits(start, end, validSlots, receiverResults, false);
+                //gating.SetDrift(PicoSecondOffset(34610));
+                //gating.SetDrift(PicoSecondOffset(34470));
+                //gating.SetDrift(PicoSecondOffset(33870));
+                gating.ExtractQubits(start, end, validSlots, receiverResults);
                 const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
 
                 LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
@@ -258,19 +260,29 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                         double confidence = 0.5;
                         size_t basesMatched = 0;
                         size_t validCount = 0;
-                        const auto step = 10;
+                        const auto step = receiverResults.size() / 5000;
+                        const auto numToCheck = receiverResults.size();
 
-                        for(uint64_t index = 0; index < receiverResults.size(); index = index + step)
+                        for(uint64_t index = 0; index < numToCheck; index = index + step)
                         {
                             const auto adjusted = offset + static_cast<ssize_t>(validSlots[index]);
+                            const auto& aliceQubit = aliceQubits[static_cast<size_t>(adjusted)];
+                            const auto& bobQubit = receiverResults[index];
+
                             if(adjusted >= 0 && adjusted < static_cast<ssize_t>(aliceQubits.size()) &&
-                               QubitHelper::Base(aliceQubits[static_cast<size_t>(adjusted)]) == QubitHelper::Base(receiverResults[index]))
+                               QubitHelper::Base(aliceQubit) == QubitHelper::Base(bobQubit))
                             {
                                 basesMatched++;
-                                if(aliceQubits[static_cast<size_t>(adjusted)] == receiverResults[index])
+                                if(aliceQubit == bobQubit)
+                                {
+                                   validCount++;
+                                }/* else if(aliceQubits[static_cast<size_t>(adjusted) + 1] == receiverResults[index])
                                 {
                                     validCount++;
-                                }
+                                } else if(aliceQubits[static_cast<size_t>(adjusted) - 1] == receiverResults[index])
+                                {
+                                    validCount++;
+                                }*/
                             }
                         }
                         confidence = static_cast<double>(validCount) / basesMatched;

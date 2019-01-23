@@ -108,7 +108,7 @@ namespace cqp {
             if(result)
             {
                 // Repeat the process with a fine grain approach within that window
-                result = Isolate(filter, 1, fineThreshold, true, startEdgeRange.first, startEdgeRange.second + 1000, startEdgeRange);
+                result = Isolate(filter, 1, fineThreshold, true, startEdgeRange.first, startEdgeRange.second, startEdgeRange);
                 start = startEdgeRange.first;
             }
 

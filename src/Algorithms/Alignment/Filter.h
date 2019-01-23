@@ -21,11 +21,11 @@ namespace cqp {
             /// value for the Gaussian filter
             static constexpr double DefaultSigma = 5.0;
             /// filter size
-            static constexpr size_t DefaultFilterWidth = 15;
+            static constexpr size_t DefaultFilterWidth = 5;
             /// minimum percentage for passing the filter on the first pass
-            static constexpr double DefaultCourseTheshold = 0.15;
+            static constexpr double DefaultCourseTheshold = 0.1;
             /// minimum percentage for passing the filter on the final pass
-            static constexpr double DefaultFineTheshold = DefaultCourseTheshold;
+            static constexpr double DefaultFineTheshold = 0.08;
             /// Reduce the dataset by this factor
             static constexpr size_t DefaultStride = 25;
 
