@@ -45,7 +45,7 @@ namespace cqp {
                 }
                 // convolve the data to find the start of transmission
                 vector<uint64_t> convolved;
-                //convolved = MovingAverage(diffs, 10);
+
                 if(ConvolveValid(diffs.begin(), diffs.end(), filter.begin(), filter.end(), convolved))
                 {
                     const auto minima = *min_element(convolved.begin(), convolved.end());
@@ -87,7 +87,7 @@ namespace cqp {
                 //    LOGERROR("Convolution failed");
                 //}
             } else {
-                LOGERROR("stride is wider than data");
+                LOGWARN("stride is wider than data");
             }
 
             return result;

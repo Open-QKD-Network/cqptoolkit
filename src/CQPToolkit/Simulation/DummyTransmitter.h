@@ -43,7 +43,8 @@ namespace cqp
              * @param transmissionDelay Time between each qubit transmission
              */
             DummyTransmitter(IRandom* randomSource,
-                             PicoSeconds transmissionDelay = std::chrono::nanoseconds(100));
+                             PicoSeconds transmissionDelay = std::chrono::nanoseconds(100),
+                             size_t photonsPerBurst = 100000);
 
             ~DummyTransmitter() override;
 
@@ -85,7 +86,7 @@ namespace cqp
             /// Source of randomness for generating qubits
             IRandom* randomness = nullptr;
             /// how many photons to send in one go
-            unsigned long photonsPerBurst = 1024;
+            unsigned long photonsPerBurst;
         }; // DummyTransmitter
 
     } // namespace sim

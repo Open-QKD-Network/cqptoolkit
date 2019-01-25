@@ -16,7 +16,12 @@ namespace cqp {
         class ALGORITHMS_EXPORT DataFile
         {
         public:
+
             DataFile() = default;
+
+            /// Specifies that channel 0 == BB84::Zero, channel 1 == BB84::One, etc
+            static const std::vector<Qubit> DefautlCahnnelMappings; // = { 0, 1, 2, 3 };
+
             /**
              * @brief ReadPackedQubits
              * Read a list of qubits from a packed binary file.
@@ -27,7 +32,8 @@ namespace cqp {
              * @param maxValues Maximum number of values to get. 0 = no limit
              * @return True on success
              */
-            static bool ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues = 0);
+            static bool ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues = 0,
+                                         const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings);
 
             /**
              * @brief WriteQubits
@@ -37,9 +43,6 @@ namespace cqp {
              * @return true on success
              */
             static bool WriteQubits(const QubitList& source, const std::string& outFileName);
-
-            /// Specifies that channel 0 == BB84::Zero, channel 1 == BB84::One, etc
-            static const std::vector<Qubit> DefautlCahnnelMappings; // = { 0, 1, 2, 3 };
 
             /**
              * @brief ReadNOXDetections

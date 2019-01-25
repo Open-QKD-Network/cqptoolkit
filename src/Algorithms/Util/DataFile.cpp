@@ -9,7 +9,8 @@ namespace cqp
     namespace fs
     {
 
-        bool DataFile::ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues)
+        bool DataFile::ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues,
+                                        const std::vector<Qubit>& channelMappings)
         {
             bool result = true;
             std::ifstream inFile(inFileName, std::ios::in | std::ios::binary);
@@ -30,10 +31,10 @@ namespace cqp
                     char packedQubits;
                     inFile.read(&packedQubits, sizeof (packedQubits));
                     // shift each pair of bits to LSB and store in the output
-                    output.push_back((packedQubits & 0b11000000) >> 6);
-                    output.push_back((packedQubits & 0b00110000) >> 4);
-                    output.push_back((packedQubits & 0b00001100) >> 2);
-                    output.push_back(packedQubits & 0b00000011);
+                    output.push_back(channelMappings[(packedQubits & 0b11000000) >> 6]);
+                    output.push_back(channelMappings[(packedQubits & 0b00110000) >> 4]);
+                    output.push_back(channelMappings[(packedQubits & 0b00001100) >> 2]);
+                    output.push_back(channelMappings[packedQubits & 0b00000011]);
                 }
                 inFile.close();
                 LOGDEBUG("Loaded " + std::to_string(output.size()) + " Qubits.");

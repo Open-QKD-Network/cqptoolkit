@@ -23,7 +23,7 @@ namespace cqp {
             /// filter size
             static constexpr size_t DefaultFilterWidth = 5;
             /// minimum percentage for passing the filter on the first pass
-            static constexpr double DefaultCourseTheshold = 0.1;
+            static constexpr double DefaultCourseTheshold = 0.2;
             /// minimum percentage for passing the filter on the final pass
             static constexpr double DefaultFineTheshold = 0.08;
             /// Reduce the dataset by this factor

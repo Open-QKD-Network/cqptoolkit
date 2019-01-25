@@ -149,92 +149,89 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         //const std::vector<Qubit> channelMappings = { 0, 3, 1, 2 }; // 58.61%
         //const std::vector<Qubit> channelMappings = { 3, 0, 1, 2 }; // 31.43%
         auto mapping = 0u;
-        for(std::vector<Qubit> channelMappings : std::vector<std::vector<Qubit>>({
-        /*{ 0, 1, 2, 3 },
-        { 1, 0, 2, 3 },
-        { 2, 0, 1, 3 },
-        { 0, 2, 1, 3 },
-        { 1, 2, 0, 3 },
-        { 2, 1, 0, 3 },
-        { 2, 1, 3, 0 },
-        { 1, 2, 3, 0 },
-        { 3, 2, 1, 0 },
-        { 2, 3, 1, 0 },
-        { 1, 3, 2, 0 },
-        { 3, 1, 2, 0 },
-        { 3, 0, 2, 1 },
-        { 0, 3, 2, 1 },
-        { 2, 3, 0, 1 },
-        { 3, 2, 0, 1 },
-        { 0, 2, 3, 1 },
-        { 2, 0, 3, 1 },
-        { 1, 0, 3, 2 },
-        { 0, 1, 3, 2 },*/
-        { 3, 1, 0, 2 }//,
-        /*{ 1, 3, 0, 2 },
-        { 0, 3, 1, 2 },
-        { 3, 0, 1, 2 }*/
-    }))
+        detections.clear();
+        LOGDEBUG("Mapping: " + to_string(mapping++));
+        if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
         {
-            detections.clear();
-            LOGDEBUG("Mapping: " + to_string(mapping++));
-            if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections, channelMappings))
-            {
-                LOGERROR("Failed to open file: " + detectionsFile);
-            }else {
-                // to isolate the transmission
-                align::Filter filter(filterSigma, filterWidth, align::Filter::DefaultCourseTheshold, align::Filter::DefaultFineTheshold,
-                                     filterStride);
-                // to find the qubits
-                align::Gating gating(rng, slotWidth, pulseWidth, acceptanceRatio);
-                align::Drift drift(slotWidth, pulseWidth);
-                // bobs qubits
-                QubitList receiverResults;
-                DetectionReportList::const_iterator start;
-                DetectionReportList::const_iterator end;
+            LOGERROR("Failed to open file: " + detectionsFile);
+        }else {
+            // to isolate the transmission
+            align::Filter filter(filterSigma, filterWidth, align::Filter::DefaultCourseTheshold, align::Filter::DefaultFineTheshold,
+                                 filterStride);
+            // to find the qubits
+            align::Gating gating(rng, slotWidth, pulseWidth, acceptanceRatio);
+            align::Drift drift(slotWidth, pulseWidth);
+            // bobs qubits
+            QubitList receiverResults;
+            DetectionReportList::const_iterator start;
+            DetectionReportList::const_iterator end;
 
-                filter.Isolate(detections, start, end);
-                const auto window = (end - 1)->time - start->time;
+            filter.Isolate(detections, start, end);
+            const auto window = (end - 1)->time - start->time;
 
-                /*{
-                    std::ofstream datafile = ofstream("filtered.csv");
-                    for(auto filteredIt = start; filteredIt != end; filteredIt++)
-                    {
-                        datafile << to_string(filteredIt->time.count()) << ", " << to_string(filteredIt->value) << endl;
-                    }
-                    datafile.close();
-                }*/
+            /*{
+                std::ofstream datafile = ofstream("filtered.csv");
+                for(auto filteredIt = start; filteredIt != end; filteredIt++)
+                {
+                    datafile << to_string(filteredIt->time.count()) << ", " << to_string(filteredIt->value) << endl;
+                }
+                datafile.close();
+            }*/
 
-                //start = detections.cbegin() + 113141;
-                //end = detections.cbegin() + 706150;
-                // start should be @ 2.0377699934326174
-                LOGINFO("Detections: " + std::to_string(distance(start, end)) + "\n" +
-                        " Start: " + std::to_string(distance(detections.cbegin(), start)) + " @ " + to_string(start->time.count()) + "pS\n" +
-                        " End: " + std::to_string(distance(detections.cbegin(), end)) + " @ " + to_string(end->time.count()) + "pS\n" +
-                        " Duration: " + std::to_string(chrono::duration_cast<SecondsDouble>(window).count()) + "s");
+            //start = detections.cbegin() + 113133;
+            //end = detections.cbegin() + 706187;
+            // start should be @ 2.0377699934326174
+            LOGINFO("Detections: " + std::to_string(distance(start, end)) + "\n" +
+                    " Start: " + std::to_string(distance(detections.cbegin(), start)) + " @ " + to_string(start->time.count()) + "pS\n" +
+                    " End: " + std::to_string(distance(detections.cbegin(), end)) + " @ " + to_string(end->time.count()) + "pS\n" +
+                    " Duration: " + std::to_string(chrono::duration_cast<SecondsDouble>(window).count()) + "s");
 
-                align::Gating::ValidSlots validSlots;
-                const auto startTime = std::chrono::high_resolution_clock::now();
-                //gating.SetDrift(PicoSecondOffset(34795));
-                //gating.SetDrift(PicoSecondOffset(34610));
-                //gating.SetDrift(PicoSecondOffset(34470));
-                //gating.SetDrift(PicoSecondOffset(33870));
-                gating.SetDrift(drift.Calculate(start, end));
-                gating.ExtractQubits(start, end, validSlots, receiverResults);
-                const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
+            align::Gating::ValidSlots validSlots;
+            const auto startTime = std::chrono::high_resolution_clock::now();
+            //gating.SetDrift(PicoSecondOffset(34596));
+            gating.SetDrift(drift.Calculate(start, end));
+            gating.ExtractQubits(start, end, validSlots, receiverResults);
+            const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
 
-                LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
-                        to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
-                fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
+            LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
+                    to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
+            fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
 
-                ////////////// Load Alice data to compare with Bobs
-                std::string packedFile = "AliceRandom.bin";
-                definedArguments.GetProp(Names::packedQubits, packedFile);
+            ////////////// Load Alice data to compare with Bobs
+            std::string packedFile = "AliceRandom.bin";
+            definedArguments.GetProp(Names::packedQubits, packedFile);
 
 
+                for(std::vector<Qubit> channelMappings : std::vector<std::vector<Qubit>>({
+                /*{ 0, 1, 2, 3 },
+                { 1, 0, 2, 3 },
+                { 2, 0, 1, 3 },
+                { 0, 2, 1, 3 },
+                { 1, 2, 0, 3 },
+                { 2, 1, 0, 3 },
+                { 2, 1, 3, 0 },
+                { 1, 2, 3, 0 },
+                { 3, 2, 1, 0 },
+                { 2, 3, 1, 0 },
+                { 1, 3, 2, 0 },
+                { 3, 1, 2, 0 },
+                { 3, 0, 2, 1 },
+                { 0, 3, 2, 1 },
+                { 2, 3, 0, 1 },
+                { 3, 2, 0, 1 },
+                { 0, 2, 3, 1 },
+                { 2, 0, 3, 1 },
+                { 1, 0, 3, 2 },
+                { 0, 1, 3, 2 },
+                { 3, 1, 0, 2 },
+                { 1, 3, 0, 2 },*/
+                { 0, 3, 1, 2 }//,
+                //{ 3, 0, 1, 2 }
+            }))
+                {
                 QubitList aliceQubits;
                 LOGDEBUG("Loading Alice data file");
-                if(!fs::DataFile::ReadPackedQubits(packedFile, aliceQubits))
+                if(!fs::DataFile::ReadPackedQubits(packedFile, aliceQubits, 0, channelMappings))
                 {
                     LOGERROR("Failed to open transmisser file: " + packedFile);
                 } else {

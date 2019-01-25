@@ -20,8 +20,9 @@ namespace cqp
     namespace sim
     {
         DummyTransmitter::DummyTransmitter(IRandom* randomSource,
-                                           PicoSeconds transmissionDelay) :
-            txDelay(transmissionDelay), randomness(randomSource)
+                                           PicoSeconds transmissionDelay,
+                                           size_t photonsPerBurst) :
+            txDelay(transmissionDelay), randomness(randomSource), photonsPerBurst(photonsPerBurst)
         {
         }
 

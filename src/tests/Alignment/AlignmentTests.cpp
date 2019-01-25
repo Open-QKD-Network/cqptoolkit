@@ -230,11 +230,6 @@ namespace cqp
             ASSERT_THAT(convolved, Pointwise(FloatEq(), expected));
         }
 
-        TEST_F(AlignmentTests, Isolate)
-        {
-
-        }
-
         TEST_F(AlignmentTests, Gating)
         {
             const PicoSeconds pulseWidth   {100};

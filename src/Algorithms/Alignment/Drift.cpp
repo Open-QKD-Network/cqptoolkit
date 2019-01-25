@@ -44,9 +44,10 @@ namespace cqp {
 
             const auto binsCentre = driftBins / 2;
             std::vector<uint64_t> histogram;
-            LOGDEBUG("Look from " + to_string(sampleStart->time.count()) + " to " +
+            /*LOGDEBUG("Look from " + to_string(sampleStart->time.count()) + " to " +
                      to_string(sampleEnd->time.count()) + " in " +
                      to_string(distance(sampleStart, sampleEnd)) + " samples");
+*/
 
             histogram.resize(driftBins, 0);
             // create a histogram of the sample
@@ -73,11 +74,6 @@ namespace cqp {
             average /= totalWeights;
             // fix the peak offset
             average = average + binsCentre - peakOffset;
-
-            //const auto binTime = duration_cast<AttoSeconds>(window) / bins;
-            // values are in "bins" so will need to be translated to time
-            //average = round(average * binTime.count());
-            //AttoSecondOffset result{static_cast<ssize_t>(average)};
 
             //LOGDEBUG("Peak: " + to_string(result.count()));
             return average;
@@ -123,8 +119,6 @@ namespace cqp {
                 auto findStart = sampleStart;
                 auto findEnd = sampleEnd;
                 peakFutures.push_back(async(launch::async, &Drift::FindPeak, this, move(findStart), move(findEnd)));
-                //FindPeak(findStart, findEnd, driftBins, slotWidth);
-
 
                 // set the start of the next sample
                 sampleStart = sampleEnd;
@@ -150,16 +144,14 @@ namespace cqp {
             for(auto peakFutIndex = 0u; peakFutIndex < peakFutures.size(); peakFutIndex++)
             {
                 const auto value = peakFutures[peakFutIndex].get();
-                //if(value > 0)
+
+                peaks.push_back(value);
+                if(value >= peaks[maxPeakIndex])
                 {
-                    peaks.push_back(value);
-                    if(value >= peaks[maxPeakIndex])
-                    {
-                        // store the iterator to the last element
-                        maxPeakIndex = peaks.size() - 1;
-                    }
-                    LOGDEBUG("Peak: " + to_string(value));
+                    // store the iterator to the last element
+                    maxPeakIndex = peaks.size() - 1;
                 }
+                //LOGDEBUG("Peak: " + to_string(value));
 
             }
 
@@ -202,11 +194,9 @@ namespace cqp {
                 const auto thisPeak = (index + maxPeakIndex) % peaks.size();
                 // calculate the change in time between the two peaks
                 const auto peakDifference = peaks[thisPeak] - peaks[previousPeak];
-                //if(peakDifference.count() > 0)
-                {
-                    averageCount++;
-                    average += peakDifference;
-                }
+
+                averageCount++;
+                average += peakDifference;
             }
 
             AttoSecondOffset result { static_cast<ssize_t>(

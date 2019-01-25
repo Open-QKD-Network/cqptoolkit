@@ -85,8 +85,6 @@ namespace cqp {
 
             size_t binCount = 0;
 
-            std::ofstream datafile = std::ofstream("gated-binned.csv");
-            datafile << "SlotID, QubitValue, BinID, Ordinal" << std::endl;
             for(auto binId = (lower + 1) % numBins; binId != upper; binId = (binId + 1) % numBins)
             {
                 SlotID slotOffset = 0;
@@ -102,19 +100,9 @@ namespace cqp {
                     const auto mySlot = slot.first + slotOffset;
                     // add the qubits to the list for this slot, one will be chosen at random later
                     qubitsBySlot[mySlot].insert(qubitsBySlot[mySlot].end(), slot.second.cbegin(), slot.second.cend());
-                    int ordinal = 0;
-                    for(auto val : slot.second)
-                    {
-                        datafile << std::to_string(slot.first) << ", " <<
-                                    std::to_string(val) << ", "
-                                 << std::to_string(binId) << ", "
-                                 << std::to_string(ordinal) << std::endl;
-                        ordinal++;
-                    }
+
                 } // for each slot
             } // for each bin
-
-            datafile.close();
 
             if(peakWidth)
             {
@@ -123,6 +111,8 @@ namespace cqp {
 
             size_t multiSlots = 0;
 
+            std::ofstream datafile = std::ofstream("gated-binned.csv");
+            datafile << "SlotID, QubitValue, Ordinal" << std::endl;
             // as the list is ordered, the qubits will come out in the correct order
             // just append them to the result list
             for(auto list : qubitsBySlot)
@@ -142,8 +132,19 @@ namespace cqp {
                         const auto index = rng->RandULong() % list.second.size();
                         results.push_back(list.second[index]);
                     }
+
+                    int ordinal = 0;
+                    for(auto val : list.second)
+                    {
+                        datafile << std::to_string(list.first) << ", " <<
+                                    std::to_string(val) << ", "
+                                 << std::to_string(ordinal) << std::endl;
+                        ordinal++;
+                    }
                 }
             }
+            datafile.close();
+
 
             LOGDEBUG("Number of multi-qubit slots: " + to_string(multiSlots));
 
