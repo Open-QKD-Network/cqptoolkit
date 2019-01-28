@@ -14,6 +14,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "Algorithms/algorithms_export.h"
+#include "Algorithms/Util/Threading.h"
 
 namespace cqp
 {
@@ -40,10 +41,6 @@ namespace cqp
         /// @details This will wait for the thread to complete
         virtual ~WorkerThread();
 
-        /// platform independent definitions of scheduling methods
-        /// these do not directly translate on every platform
-        enum class Scheduler { Idle, Batch, Normal, RoundRobin, FIFO, Deadline};
-
         /// Allow work to be done by the WorkerThread::DoWork() method
         /// @details This has no effect if the thread is already started.
         /// If the thread has been previously stopped, it will be restarted.
@@ -62,17 +59,6 @@ namespace cqp
         /// Check if the work thread is currently running
         /// @return true if the state is Started
         virtual bool IsRunning();
-
-        /**
-         * @brief SetPriority
-         * Change a threads priority
-         * @param theThread
-         * @param niceLevel Higher number == less chance it will run, more nice
-         * @param realtimePriority Higher number == more chance it will run
-         * @param policy The kind of scheduler to use
-         * @return true on success
-         */
-        static bool SetPriority(std::thread& theThread, int niceLevel, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
 
         /**
          * @brief SetPriority

@@ -18,6 +18,8 @@
 #include "Algorithms/Alignment/Drift.h"
 #include "QKDPostProc.h"
 #include "Algorithms/Alignment/Offsetting.h"
+#include "Algorithms/Util/ProcessingQueue.h"
+#include "Algorithms/Util/RangeProcessing.h"
 
 #include <thread>
 #include <algorithm>
@@ -120,34 +122,6 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         auto filterStride = align::Filter::DefaultStride;
         definedArguments.GetProp(Names::filterStride, filterStride);
 
-        double highestMatch = 0.0;
-        ssize_t highestOffset = 0;
-        std::vector<Qubit> highestChannelMappings;
-
-        //const std::vector<Qubit> channelMappings = { 0, 1, 2, 3 }; // 75.569566%
-        //const std::vector<Qubit> channelMappings = { 1, 0, 2, 3 }; // 24.4%
-        //const std::vector<Qubit> channelMappings = { 2, 0, 1, 3 }; // 31.43%
-        //const std::vector<Qubit> channelMappings = { 0, 2, 1, 3 }; // 58.63%
-        //const std::vector<Qubit> channelMappings = { 1, 2, 0, 3 }; // 41.36%
-        //const std::vector<Qubit> channelMappings = { 2, 1, 0, 3 }; // 68.53%
-        //const std::vector<Qubit> channelMappings = { 2, 1, 3, 0 }; // 68.70%
-        //const std::vector<Qubit> channelMappings = { 1, 2, 3, 0 }; // 41.53%
-        //const std::vector<Qubit> channelMappings = { 3, 2, 1, 0 }; // 50.16%
-        //const std::vector<Qubit> channelMappings = { 2, 3, 1, 0 }; // 50.15%
-        //const std::vector<Qubit> channelMappings = { 1, 3, 2, 0 }; // 41.52%
-        //const std::vector<Qubit> channelMappings = { 3, 1, 2, 0 }; // 68.70%
-        //const std::vector<Qubit> channelMappings = { 3, 0, 2, 1 }; // 31.29%
-        //const std::vector<Qubit> channelMappings = { 0, 3, 2, 1 }; // 58.47%
-        //const std::vector<Qubit> channelMappings = { 2, 3, 0, 1 }; // 49.84%
-        //const std::vector<Qubit> channelMappings = { 3, 2, 0, 1 }; // 49.84%
-        //const std::vector<Qubit> channelMappings = { 0, 2, 3, 1 }; // 58.48%
-        //const std::vector<Qubit> channelMappings = { 2, 0, 3, 1 }; // 31.29%
-        //const std::vector<Qubit> channelMappings = { 1, 0, 3, 2 }; // 24.42%
-        //const std::vector<Qubit> channelMappings = { 0, 1, 3, 2 }; // 75.559871%
-        //const std::vector<Qubit> channelMappings = { 3, 1, 0, 2 }; // 68.57%
-        //const std::vector<Qubit> channelMappings = { 1, 3, 0, 2 }; // 41.37%
-        //const std::vector<Qubit> channelMappings = { 0, 3, 1, 2 }; // 58.61%
-        //const std::vector<Qubit> channelMappings = { 3, 0, 1, 2 }; // 31.43%
         auto mapping = 0u;
         detections.clear();
         LOGDEBUG("Mapping: " + to_string(mapping++));
@@ -195,7 +169,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
 
             LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
                     to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
-            fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
+            //fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
 
             ////////////// Load Alice data to compare with Bobs
             std::string packedFile = "AliceRandom.bin";
@@ -236,92 +210,14 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                     LOGERROR("Failed to open transmisser file: " + packedFile);
                 } else {
 
-                    align::Offsetting offsetting(1000);
+                    align::Offsetting offsetting(10000, 0.0, 1.0);
+                    align::Offsetting::Confidence highest = offsetting.HighestValue(aliceQubits, validSlots, receiverResults, 0, 8000);
 
-                    for(auto offset = 0; offset < 8000; offset++)
-                    {
-                        //LOGDEBUG("================== Offset: " + to_string(offset) + " =============");
-
-                        /*{
-                            std::ofstream datafile = ofstream("received.csv");
-                            for(auto index = 0u; index < receiverResults.size(); index++)
-                            {
-                                datafile << to_string(validSlots[index]) << ", " << to_string(receiverResults[index]) << endl;
-                            }
-                            datafile.close();
-                        }*/
-
-/*
-                        double confidence = 0.5;
-                        size_t basesMatched = 0;
-                        size_t validCount = 0;
-                        const auto step = receiverResults.size() / 5000;
-                        const auto numToCheck = receiverResults.size();
-
-                        for(uint64_t index = 0; index < numToCheck; index = index + step)
-                        {
-                            const auto adjusted = offset + static_cast<ssize_t>(validSlots[index]);
-                            const auto& aliceQubit = aliceQubits[static_cast<size_t>(adjusted)];
-                            const auto& bobQubit = receiverResults[index];
-
-                            if(adjusted >= 0 && adjusted < static_cast<ssize_t>(aliceQubits.size()) &&
-                               QubitHelper::Base(aliceQubit) == QubitHelper::Base(bobQubit))
-                            {
-                                basesMatched++;
-                                if(aliceQubit == bobQubit)
-                                {
-                                   validCount++;
-                                }
-                            }
-                        }
-                        confidence = static_cast<double>(validCount) / basesMatched;
-*/
-                        const auto confidence = offsetting.CompareValues(aliceQubits, validSlots, receiverResults, offset);
-                        //LOGDEBUG("Offset = " + to_string(offset) + ", confidence = " + to_string(confidence));
-
-                        if(confidence > highestMatch)
-                        {
-                            highestMatch = confidence;
-                            highestOffset = offset;
-                            highestChannelMappings = channelMappings;
-                        }
-                        /*
-                        QubitList aliceFiltered;
-                        aliceFiltered.reserve(aliceQubits.size());
-                        for(auto validSlot = validSlots.cbegin(); validSlot != validSlots.cend(); validSlot++)
-                        {
-                            const ssize_t index = *validSlot + offset;
-                            if(index > 0 && index < aliceQubits.size())
-                            {
-                                aliceFiltered.push_back(aliceQubits[index]);
-                            }
-                        }
-
-                        //const size_t numTestValues = aliceFiltered.size() / 100;
-                        align::Gating::SparseQubitList testValues;
-                        for(auto index = 0u; index < 1000; index++)
-                        {
-                            testValues[index] = aliceFiltered[index];
-                        }
-
-                        auto match = align::Gating::EstimateMatch(testValues, receiverResults);
-
-                        if(match > highestMatch)
-                        {
-                            highestMatch = match;
-                            highestOffset = offset;
-                        }
-                        */
-
-                    }
-
-                    // recalculate a more accurate confidence
-                    highestMatch = align::Offsetting(100000, 0.0, 1.0).CompareValues(aliceQubits, validSlots, receiverResults, highestOffset);
-                    LOGDEBUG("Highest match: " + to_string(highestMatch * 100) + "% at " + to_string(highestOffset) +
-                             " [ " + to_string(highestChannelMappings[0]) + ", " +
-                            to_string(highestChannelMappings[1]) + ", " +
-                            to_string(highestChannelMappings[2]) + ", " +
-                            to_string(highestChannelMappings[3]) + "]");
+                    LOGDEBUG("Highest match: " + to_string(highest.value * 100) + "% at " + to_string(highest.offset) +
+                             " [ " + to_string(channelMappings[0]) + ", " +
+                            to_string(channelMappings[1]) + ", " +
+                            to_string(channelMappings[2]) + ", " +
+                            to_string(channelMappings[3]) + "]");
                 }
             }
         }

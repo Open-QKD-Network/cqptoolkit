@@ -1,5 +1,6 @@
 #pragma once
 #include "Algorithms/Datatypes/Qubits.h"
+#include "Algorithms/Util/RangeProcessing.h"
 
 namespace cqp {
     namespace align {
@@ -28,6 +29,14 @@ namespace cqp {
                        double rejectionThreshold = DefaultRejection,
                        size_t minTests = DefaultMinTests);
 
+            struct Confidence {
+                double value;
+                ssize_t offset;
+            };
+
+            Confidence HighestValue(const QubitList& truth,  const std::vector<uint64_t>& validSlots,
+                              const QubitList& irregular, ssize_t from, ssize_t to);
+
             /**
              * @brief CompareValues
              * @todo This needs to be able to take a sparse list of true values
@@ -46,6 +55,8 @@ namespace cqp {
             size_t minTests;
             /// The number of values to check in a data set
             size_t samples;
+            /// process the different offsets
+            RangeProcessing<ssize_t> rangeWorker;
         };
 
     } // namespace align
