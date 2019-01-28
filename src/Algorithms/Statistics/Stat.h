@@ -170,9 +170,6 @@ namespace cqp
              */
             void Worker();
 
-            /// Time before the DoWork thread stops waiting for new values
-            ///  and checks if the thread should quit
-            static const std::chrono::milliseconds timeout;
             std::thread processingThread;
             std::condition_variable processCv;
             std::mutex processMutex;

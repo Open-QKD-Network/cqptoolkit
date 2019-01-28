@@ -40,16 +40,16 @@ namespace align {
            const EmitterReport* emissions = nullptr;
            /*lock scope*/{
                unique_lock<mutex> lock(receivedDataMutex);
-               dataReady = receivedDataCv.wait_for(lock, threadTimeout, [&](){
-                   bool result = false;
+               dataReady = false;
+               receivedDataCv.wait(lock, [&](){
                    auto it = receivedData.find(request->id());
                    if(it != receivedData.end())
                    {
                        // look at the data but leave it on the queue
                        emissions = receivedData.find(request->id())->second.get();
-                       result = true;
+                       dataReady = true;
                    }
-                   return result;
+                   return dataReady;
                });
 
            } /*lock scope*/
@@ -86,17 +86,17 @@ namespace align {
             std::unique_ptr<EmitterReport> emissions;
             /*lock scope*/{
                 unique_lock<mutex> lock(receivedDataMutex);
-                dataReady = receivedDataCv.wait_for(lock, threadTimeout, [&](){
-                    bool result = false;
+                dataReady = false;
+                receivedDataCv.wait(lock, [&](){
                     auto it = receivedData.find(request->frameid());
                     if(it != receivedData.end())
                     {
                         // pull the data off the queue
                         emissions = move(it->second);
                         receivedData.erase(it);
-                        result = true;
+                        dataReady = true;
                     }
-                    return result;
+                    return dataReady;
                 });
 
             } /*lock scope*/

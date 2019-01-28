@@ -68,10 +68,11 @@ namespace cqp
             while(!ShouldStop())
             {
                 unique_lock<mutex> lock(receivedDataMutex);
-                bool dataReady = receivedDataCv.wait_for(lock, threadTimeout, [&]
+                bool dataReady = false;
+                receivedDataCv.wait(lock, [&]
                 {
                     // check if data is ready
-                    return false; // TODO
+                    return false || ShouldStop(); // TODO
                 });
 
                 if(dataReady)

@@ -47,9 +47,6 @@ namespace cqp
             /// used for waiting for new data to arrive
             std::condition_variable receivedDataCv;
 
-            /// How long to wait for new data before checking if the thread should be stopped
-            const std::chrono::seconds threadTimeout {1};
-
             /// our alignment sequence counter
             SequenceNumber seq = 0;
 

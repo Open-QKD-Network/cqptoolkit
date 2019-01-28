@@ -61,8 +61,10 @@ namespace cqp {
 
                 /*lock scope*/{
                     unique_lock<mutex> lock(receivedDataMutex);
-                    bool dataReady = receivedDataCv.wait_for(lock, threadTimeout, [&](){
-                        return !receivedData.empty();
+                    bool dataReady = false;
+                    receivedDataCv.wait(lock, [&](){
+                        dataReady = !receivedData.empty();
+                        return dataReady || ShouldStop();
                     });
 
                     if(dataReady)

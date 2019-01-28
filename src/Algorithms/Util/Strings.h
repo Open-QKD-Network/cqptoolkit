@@ -191,6 +191,8 @@ namespace cqp {
       }
       /// accessor for looking up a value
       /// Usage: `escaped = charToIntTable[achar];`
+      /// @param idx The value to look up
+      /// @return mapped value
       constexpr char operator[](char const idx) const { return tab[static_cast<size_t>(idx)]; }
 
     } constexpr charToIntTable;

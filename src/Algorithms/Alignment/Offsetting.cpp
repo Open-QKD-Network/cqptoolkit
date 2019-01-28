@@ -4,11 +4,7 @@
 namespace cqp {
     namespace align {
 
-        Offsetting::Offsetting(size_t samples,
-                               double rejectionThreshold,
-                               size_t minTests):
-            rejectionThreshold(rejectionThreshold),
-            minTests(minTests),
+        Offsetting::Offsetting(size_t samples):
             samples(samples),
             rangeWorker()
         {
@@ -94,15 +90,9 @@ namespace cqp {
                     }
                 }
 
-                if(basesMatched > minTests)
-                {
-                    confidence = static_cast<double>(validCount) / basesMatched;
-                    if(confidence < rejectionThreshold)
-                    {
-                        break;
-                    }
-                }
-            }
+            } // for each sample
+
+            confidence = static_cast<double>(validCount) / basesMatched;
 
             return confidence;
         }

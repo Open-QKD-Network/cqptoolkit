@@ -43,7 +43,9 @@ namespace align {
         DetectionReciever(const SystemParameters &parameters = DefaultSystemParameters);
 
         /// destructor
-        virtual ~DetectionReciever() override = default;
+        virtual ~DetectionReciever() override {
+            Disconnect();
+        }
 
         /// @{
         /// @name IDetectionEventCallback Interface
@@ -79,6 +81,7 @@ namespace align {
         void Disconnect()
         {
             Stop(true);
+            receivedDataCv.notify_all();
             transmitter.reset();
         }
 

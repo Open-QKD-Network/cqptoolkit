@@ -131,41 +131,9 @@ namespace cqp {
                  */
                 PicoSeconds GetTime() const;
 
-            };
+            }; // NoxReport
 
-            /**
-             *
-             */
-            template<class Iter>
-            static bool WriteCSV(const std::string& filename, const Iter& begin, const Iter& end,
-                                 const std::string& seperator = ", ")
-            {
-                bool result = false;
-                try {
-                    std::ofstream outFile(filename, std::ios::out | std::ios::binary);
-                    if (outFile)
-                    {
-                        for(auto it = begin; it != end; it++)
-                        {
-                            std::stringstream value;
-                            if(it != begin)
-                            {
-                                value << seperator;
-                            }
-                            value << *it;
-                            outFile.write(value.str().data(), value.str().size());
-                        }
-                        outFile.close();
-                        result = true;
-                    }
-
-                } catch (const std::exception& e) {
-                    LOGERROR(e.what());
-                }
-
-                return result;
-            }
-        };
+        }; // DataFile class
 
     } // namespace fs
 } // namespace cqp

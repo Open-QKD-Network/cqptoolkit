@@ -93,6 +93,7 @@ namespace cqp {
              * @brief CountDetections
              * Build a historgram of the data while applying drift.
              * Also returns the qubits seperated by slot
+             * @param[in] frameStart The estimated frame start time which will be used to offset all time values
              * @param[in] start Start of data to count
              * @param[in] end End of data to count
              * @param[out] counts The histogram of the data
@@ -130,6 +131,7 @@ namespace cqp {
              * @param[in] validSlotsBegin The start of a list of indexes to filter the qubits
              * @param[in] validSlotsEnd The end of a list of indexes to filter the qubits
              * @param[in,out] qubits A list of qubits which will be reduced to the size of validSlots
+             * @param[in] offset Shift the slot id
              * @return true on success
              */
             template<typename Iter>

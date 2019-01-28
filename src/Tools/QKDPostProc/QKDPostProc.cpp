@@ -210,7 +210,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                     LOGERROR("Failed to open transmisser file: " + packedFile);
                 } else {
 
-                    align::Offsetting offsetting(10000, 0.0, 1.0);
+                    align::Offsetting offsetting(10000);
                     align::Offsetting::Confidence highest = offsetting.HighestValue(aliceQubits, validSlots, receiverResults, 0, 8000);
 
                     LOGDEBUG("Highest match: " + to_string(highest.value * 100) + "% at " + to_string(highest.offset) +

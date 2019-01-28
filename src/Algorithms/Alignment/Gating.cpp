@@ -1,10 +1,8 @@
 #include "Gating.h"
 #include <cmath>
-#include "Algorithms/Logging/Logger.h"
-#include <fstream>
-#include "Algorithms/Alignment/Filter.h"
 #include <future>
-#include <fstream>
+#include "Algorithms/Logging/Logger.h"
+#include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Util/Maths.h"
 
 namespace cqp {
@@ -115,8 +113,6 @@ namespace cqp {
 
             size_t multiSlots = 0;
 
-            //std::ofstream datafile = std::ofstream("gated-binned.csv");
-            //datafile << "SlotID, QubitValue, Ordinal" << std::endl;
             // as the list is ordered, the qubits will come out in the correct order
             // just append them to the result list
             for(auto list : qubitsBySlot)
@@ -137,18 +133,8 @@ namespace cqp {
                         results.push_back(list.second[index]);
                     }
 
-                    /*int ordinal = 0;
-                    for(auto val : list.second)
-                    {
-                        datafile << std::to_string(list.first) << ", " <<
-                                    std::to_string(val) << ", "
-                                 << std::to_string(ordinal) << std::endl;
-                        ordinal++;
-                    }*/
                 }
-            }
-            //datafile.close();
-
+            } // for each qubitsBySlot
 
             LOGDEBUG("Number of multi-qubit slots: " + to_string(multiSlots));
 

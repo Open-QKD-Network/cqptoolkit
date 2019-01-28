@@ -15,7 +15,6 @@ namespace cqp
 {
     namespace stats
     {
-        const std::chrono::milliseconds ProcessingWorker::timeout {500};
         std::weak_ptr<ProcessingWorker> ProcessingWorker::me;
 
         StatBase::StatBase(const std::vector<std::string>& pathin, Units k, const std::string& description) :
@@ -80,8 +79,10 @@ namespace cqp
                     /*lock scope*/{
 
                         unique_lock<mutex> lock(processMutex);
-                        bool dataWaiting = processCv.wait_for(lock, timeout, [&](){
-                            return !waitingObjects.empty();
+                        bool dataWaiting = false;
+                        processCv.wait(lock, [&](){
+                            dataWaiting = !waitingObjects.empty();
+                            return dataWaiting || stopProcessing;
                         });
 
                         if(dataWaiting)
@@ -135,6 +136,7 @@ namespace cqp
         ProcessingWorker::~ProcessingWorker()
         {
             stopProcessing = true;
+            processCv.notify_all();
             if(processingThread.joinable())
             {
                 processingThread.join();

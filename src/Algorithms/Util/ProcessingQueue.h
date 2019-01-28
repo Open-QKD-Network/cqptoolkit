@@ -10,44 +10,34 @@
 namespace cqp
 {
 
+    /**
+     * @brief The ProcessingQueue class uses multiple threads to process a list of data
+     */
     class ALGORITHMS_EXPORT ProcessingQueue
     {
     public:
+        /// The function to perform on the data
         using Action = std::function<void()>;
 
-        ProcessingQueue(uint numThreads = std::thread::hardware_concurrency())
-        {
-            threads.reserve(numThreads);
-            for(auto index = 0u; index < numThreads; index++)
-            {
-                threads.emplace_back(std::thread(&ProcessingQueue::Processor, this));
-            }
-        }
+        /**
+         * @brief ProcessingQueue constructor
+         * @param numThreads The number of threads to process the queue with.
+         * Default: The number of physical cores
+         */
+        ProcessingQueue(uint numThreads = std::thread::hardware_concurrency());
 
-        ~ProcessingQueue()
-        {
-            stopProcessing = true;
-            pendingCv.notify_all();
+        /// Destructor
+        ~ProcessingQueue();
 
-            for(auto& worker : threads)
-            {
-                if(worker.joinable())
-                {
-                    worker.join();
-                }
-            }
-        }
-
-        bool SetPriority(int nice = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1)
-        {
-            bool result = true;
-            for(auto index = 0u; index < threads.size(); index++)
-            {
-                result &= cqp::SetPriority(threads[index], nice, policy, realtimePriority);
-            }
-
-            return result;
-        }
+        /**
+         * @brief SetPriority
+         * Change a threads priority
+         * @param niceLevel Higher number == less chance it will run, more nice
+         * @param realtimePriority Higher number == more chance it will run
+         * @param policy The kind of scheduler to use
+         * @return true on success
+         */
+        bool SetPriority(int niceLevel = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
 
         /**
          * @brief Enqueue
@@ -55,18 +45,7 @@ namespace cqp
          * @details Copy version
          * @param action
          */
-        void Enqueue(const Action& action)
-        {
-            using namespace std;
-
-            { /* lock scope*/
-                lock_guard<mutex> lock(pendingMutex);
-                pending.push(action);
-                totalEnqueued++;
-            }/*lock scope*/
-
-            pendingCv.notify_one();
-        }
+        void Enqueue(const Action& action);
 
         /**
          * @brief Enqueue
@@ -74,67 +53,25 @@ namespace cqp
          * @details Move version
          * @param action
          */
-        void Enqueue(Action&& action)
-        {
-            using namespace std;
-
-            { /* lock scope*/
-                lock_guard<mutex> lock(pendingMutex);
-                pending.push(action);
-                totalEnqueued++;
-            }/*lock scope*/
-
-            pendingCv.notify_one();
-        }
-
-        size_t GetTotalEnqueued() const
-        {
-            return totalEnqueued;
-        }
-
-        void ResetTotalEnqueued()
-        {
-            totalEnqueued = 0;
-        }
+        void Enqueue(Action&& action);
 
     protected: // methods
-        void Processor()
-        {
-            using namespace std;
-
-            Action action;
-
-            while(!stopProcessing)
-            {
-                { /* lock scope*/
-                    unique_lock<mutex> lock(pendingMutex);
-
-                    pendingCv.wait(lock, [this](){
-                        return !pending.empty() || stopProcessing;
-                    });
-
-                    if(!stopProcessing)
-                    {
-                        action = move(pending.front());
-                        pending.pop();
-                    }
-                }/*lock scope*/
-
-                if(!stopProcessing)
-                {
-                    action();
-                }
-            } // while keep processing
-        } // Processor
+        /**
+         * @brief Processor Entry point for the processing threads
+         */
+        void Processor(); // Processor
 
     protected: // members
-        size_t totalEnqueued = 0;
+        /// Actions yet to be performed
         std::queue<Action> pending;
 
+        ///protect access to the pending queue
         std::mutex pendingMutex;
+        ///protect access to the pending queue
         std::condition_variable pendingCv;
+        /// The processing threads
         std::vector<std::thread> threads;
-
+        /// controls when the threads exit
         bool stopProcessing = false;
     };
 

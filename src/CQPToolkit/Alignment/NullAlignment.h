@@ -32,6 +32,11 @@ namespace cqp {
         public:
             NullAlignment();
 
+            ~NullAlignment() override
+            {
+                Disconnect();
+            }
+
             /// @{
             /// @name IDetectionEventCallback Interface
 
@@ -62,6 +67,7 @@ namespace cqp {
             void Disconnect()
             {
                 Stop(true);
+                receivedDataCv.notify_all();
                 transmitter.reset();
             }
 

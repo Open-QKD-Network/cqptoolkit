@@ -61,6 +61,6 @@ protected:
     enum ExitCodes { Ok = 0, ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99 };
 
 protected: // members
-
+    /// The random number generator
     std::shared_ptr<cqp::RandomNumber> rng{new cqp::RandomNumber()};
 };

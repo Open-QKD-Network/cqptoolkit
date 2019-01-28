@@ -11,29 +11,36 @@ namespace cqp {
         class Offsetting
         {
         public:
-            /// Match rates below this will be rejected
-            static constexpr double DefaultRejection = 0.6;
-            /// Numer of tests before allowing an immediate accept/reject
-            static constexpr size_t DefaultMinTests = 100;
             /// The number of values to check in a data set
             static constexpr size_t DefaultSamples = 1000;
 
             /**
              * @brief Offsetting
              * @param samples The number of values to check in a data set
-             * @param rejectionThreshold Comparison consistentlently below this will be rejected
-             * @param acceptanceThreshold Match rates above this will be accepted
-             * @param minTests The minimum number of comparisons to make before rejecting/accepting
              */
-            Offsetting(size_t samples = DefaultSamples,
-                       double rejectionThreshold = DefaultRejection,
-                       size_t minTests = DefaultMinTests);
+            Offsetting(size_t samples = DefaultSamples);
 
+            /**
+             * @brief The Confidence struct
+             * Storage for the score and its offset
+             */
             struct Confidence {
+                /// The percentage of match between 0-1
                 double value;
+                /// The offset at which the confidence value was measured
                 ssize_t offset;
             };
 
+            /**
+             * @brief HighestValue
+             * Find the best match between the two datasets.
+             * @param truth Values which are known to be true
+             * @param validSlots The slots for The slot ids which the irregular values relate to
+             * @param irregular The values which have an unknown validity and start offset
+             * @param from The offset starting point
+             * @param to The offset end point
+             * @return The highest scoring offset and its confidence value
+             */
             Confidence HighestValue(const QubitList& truth,  const std::vector<uint64_t>& validSlots,
                               const QubitList& irregular, ssize_t from, ssize_t to);
 
@@ -49,10 +56,6 @@ namespace cqp {
             double CompareValues(const QubitList& truth,  const std::vector<uint64_t>& validSlots,
                                  const QubitList& irregular, ssize_t offset);
         protected:
-            /// Match rates below this will be rejected
-            double rejectionThreshold;
-            /// Numer of tests before allowing an immediate accept/reject
-            size_t minTests;
             /// The number of values to check in a data set
             size_t samples;
             /// process the different offsets

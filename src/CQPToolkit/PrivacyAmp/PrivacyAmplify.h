@@ -51,6 +51,10 @@ namespace cqp
              */
             void PublishPrivacyAmplify();
 
+            ~PrivacyAmplify() override {
+                Stop(true);
+                receivedDataCv.notify_all();
+            }
             /// the publisher for this instance
             Statistics stats;
 
@@ -67,9 +71,6 @@ namespace cqp
             void DoWork() override;
 
             /// @}
-
-            /// How long to wait for new data before checking if the thread should be stopped
-            const std::chrono::seconds threadTimeout {1};
 
             /// data received from error correction
             std::vector<std::unique_ptr<DataBlock>> incommingData;

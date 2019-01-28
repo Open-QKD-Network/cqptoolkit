@@ -47,7 +47,10 @@ namespace cqp
              * @brief ~ErrorCorrection
              * Destructor
              */
-            ~ErrorCorrection() override {}
+            ~ErrorCorrection() override {
+                Stop(true);
+                receivedDataCv.notify_all();
+            }
 
             /**
              * @brief PublishCorrected
@@ -98,9 +101,6 @@ namespace cqp
             std::mutex receivedDataMutex;
             /// used for waiting for new data to arrive
             std::condition_variable receivedDataCv;
-
-            /// How long to wait for new data before checking if the thread should be stopped
-            const std::chrono::seconds threadTimeout {1};
 
         }; // ErrorCorrection
     } // namespace ec
