@@ -457,13 +457,41 @@ namespace cqp
 
     bool CommandArgs::GetProp(const std::string& key, PicoSeconds& out) const
     {
+        using namespace std::chrono;
+
         bool result = false;
         auto it = properties.find(key);
         if(it != properties.end())
         {
             try
             {
-                out = PicoSeconds(std::stoul(it->second));
+                if(it->second.length() > 2)
+                {
+                    // theres enough room for a suffix
+                    const auto suffix = ToLower(it->second.substr(it->second.length() - 2, 2));
+                    const auto value = it->second.substr(0, it->second.length() - 2);
+                    if(suffix == "ms")
+                    {
+                        out = milliseconds(std::stoul(value));
+                    } else if(suffix == "ns")
+                    {
+                        out = nanoseconds(std::stoul(value));
+                    } else if(suffix == "ps")
+                    {
+                        out = PicoSeconds(std::stoul(value));
+                    } else {
+                        out = seconds(std::stoul(it->second));
+                    }
+
+                } else {
+                    if(it->second.back() == 's' || it->second.back() == 'S')
+                    {
+                        out = seconds(std::stoul(it->second.substr(0, it->second.length() - 1)));
+                    } else {
+                        out = PicoSeconds(std::stoul(it->second));
+                    }
+
+                }
                 result = true;
             }
             catch (const std::exception& e)
@@ -473,6 +501,107 @@ namespace cqp
         }
         return result;
     }
+
+    bool CommandArgs::GetProp(const std::string& key, PicoSecondOffset& out) const
+    {
+        using namespace std::chrono;
+
+        bool result = false;
+        auto it = properties.find(key);
+        if(it != properties.end())
+        {
+            try
+            {
+                if(it->second.length() > 2)
+                {
+                    // theres enough room for a suffix
+                    const auto suffix = ToLower(it->second.substr(it->second.length() - 2, 2));
+                    const auto value = it->second.substr(0, it->second.length() - 2);
+                    if(suffix == "ms")
+                    {
+                        out = milliseconds(std::stol(value));
+                    } else if(suffix == "ns")
+                    {
+                        out = nanoseconds(std::stol(value));
+                    } else if(suffix == "ps")
+                    {
+                        out = PicoSecondOffset(std::stol(value));
+                    } else {
+                        out = seconds(std::stol(it->second));
+                    }
+
+                } else {
+                    if(it->second.back() == 's' || it->second.back() == 'S')
+                    {
+                        out = seconds(std::stol(it->second.substr(0, it->second.length() - 1)));
+                    } else {
+                        out = PicoSecondOffset(std::stol(it->second));
+                    }
+
+                }
+                result = true;
+            }
+            catch (const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
+        }
+        return result;
+    }
+
+    bool CommandArgs::GetProp(const std::string& key, AttoSecondOffset& out) const
+    {
+        using namespace std::chrono;
+
+        bool result = false;
+        auto it = properties.find(key);
+        if(it != properties.end())
+        {
+            try
+            {
+                if(it->second.length() > 2)
+                {
+                    // theres enough room for a suffix
+                    const auto suffix = ToLower(it->second.substr(it->second.length() - 2, 2));
+                    const auto value = it->second.substr(0, it->second.length() - 2);
+                    if(suffix == "ms")
+                    {
+                        out = milliseconds(std::stol(value));
+                    } else if(suffix == "ns")
+                    {
+                        out = nanoseconds(std::stol(value));
+                    } else if(suffix == "ps")
+                    {
+                        out = PicoSecondOffset(std::stol(value));
+                    } else if(suffix == "fs")
+                    {
+                        out = FemtoSecondOffset(std::stol(value));
+                    } else if(suffix == "as")
+                    {
+                        out = AttoSecondOffset(std::stol(value));
+                    } else {
+                        out = seconds(std::stol(it->second));
+                    }
+
+                } else {
+                    if(it->second.back() == 's' || it->second.back() == 'S')
+                    {
+                        out = seconds(std::stol(it->second.substr(0, it->second.length() - 1)));
+                    } else {
+                        out = PicoSecondOffset(std::stol(it->second));
+                    }
+
+                }
+                result = true;
+            }
+            catch (const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
+        }
+        return result;
+    }
+
     std::string CommandArgs::GetStringProp(const std::string& key) const
     {
         std::string result;

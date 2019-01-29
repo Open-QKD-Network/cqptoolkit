@@ -31,15 +31,21 @@ using namespace cqp;
 
 struct Names
 {
-    static CONSTSTRING noxData= "noxdata";
-    static CONSTSTRING packedQubits= "packed";
+    static CONSTSTRING bobData= "bobdata";
+    static CONSTSTRING aliceQubits= "alice";
     static CONSTSTRING slotWidth = "slot-width";
     static CONSTSTRING pulseWidth = "pulse-width";
     static CONSTSTRING acceptanceRatio = "acceptance";
+    static CONSTSTRING windowStart = "window-start";
+    static CONSTSTRING windowEnd = "window-end";
+    static CONSTSTRING driftPreset = "drift";
+    static CONSTSTRING driftSamples = "drift-sample";
     static CONSTSTRING filterSigma = "filter-sigma";
     static CONSTSTRING filterWidth = "filter-width";
-    static CONSTSTRING filterCutoff = "filter-cutoff";
+    static CONSTSTRING filterCourseCutoff = "filter-course";
+    static CONSTSTRING filterFineCutoff = "filter-fine";
     static CONSTSTRING filterStride = "filter-stride";
+    static CONSTSTRING rawOut = "out";
 };
 
 QKDPostProc::QKDPostProc()
@@ -58,29 +64,42 @@ QKDPostProc::QKDPostProc()
     definedArguments.AddOption("", "v", "Increase output")
     .Callback(std::bind(&QKDPostProc::HandleVerbose, this, _1));
 
-    definedArguments.AddOption(Names::noxData, "n", "Read NoxBox Detections from file")
+    definedArguments.AddOption(Names::bobData, "b", "Read Bob Detections from file")
             .Bind();
-    definedArguments.AddOption(Names::packedQubits, "p", "Read transmissions from packed Qubits file")
+    definedArguments.AddOption(Names::aliceQubits, "a", "Read transmissions from packed Qubits file")
             .Bind();
-    definedArguments.AddOption(Names::slotWidth, "", "Slot width of transmissions (Picoseconds)")
+    definedArguments.AddOption(Names::slotWidth, "w", "Slot width of transmissions in time*")
             .Bind();
-    definedArguments.AddOption(Names::pulseWidth, "", "Pulse width of photon (Picoseconds)")
+    definedArguments.AddOption(Names::pulseWidth, "j", "Pulse width/Jitter of photon in time*")
             .Bind();
-    definedArguments.AddOption(Names::acceptanceRatio, "", "Value between 0 and 1 for the gating filter")
+    definedArguments.AddOption(Names::acceptanceRatio, "r", "Value between 0 and 1 for the gating filter")
             .Bind();
-    definedArguments.AddOption(Names::filterSigma, "", "Sigma value for the gaussian filter")
+    definedArguments.AddOption(Names::windowStart, "i", "Force isolation window start to this detection number")
             .Bind();
-    definedArguments.AddOption(Names::filterWidth, "", "Integer width in gaussian filter")
+    definedArguments.AddOption(Names::windowEnd, "I", "Force isolation window end to this detection number")
             .Bind();
-    definedArguments.AddOption(Names::filterCutoff, "", "Percentage for filter acceptance")
+    definedArguments.AddOption(Names::driftPreset, "d", "Force a value for drift in time*")
             .Bind();
-    definedArguments.AddOption(Names::filterStride, "", "Data items to skip when filtering")
+    definedArguments.AddOption(Names::driftSamples, "D", "Sample time for calculating drift*")
+            .Bind();
+    definedArguments.AddOption(Names::filterSigma, "s", "Sigma value for the gaussian filter")
+            .Bind();
+    definedArguments.AddOption(Names::filterWidth, "g", "Integer width in gaussian filter")
+            .Bind();
+    definedArguments.AddOption(Names::filterCourseCutoff, "c", "Percentage for first filter pass acceptance")
+            .Bind();
+    definedArguments.AddOption(Names::filterFineCutoff, "C", "Percentage for last filter pass acceptance")
+            .Bind();
+    definedArguments.AddOption(Names::filterStride, "S", "Data items to skip when filtering")
+            .Bind();
+    definedArguments.AddOption(Names::rawOut, "o", "Output final raw qubits to file")
             .Bind();
 }
 
 void QKDPostProc::DisplayHelp(const CommandArgs::Option&)
 {
-    definedArguments.PrintHelp(std::cout, "Processes QKD data using different parameters to produce key.");
+    definedArguments.PrintHelp(std::cout, "Processes QKD data using different parameters to produce key.",
+                               "Note: Time values are integers and can have s, ms, ns, ps, fs, as suffix. No suffix is assumed to be picoseconds");
     definedArguments.StopOptionsProcessing();
     stopExecution = true;
 }
@@ -102,7 +121,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
 
         std::string detectionsFile = "BobDetections.bin";
         DetectionReportList detections;
-        definedArguments.GetProp(Names::noxData, detectionsFile);
+        definedArguments.GetProp(Names::bobData, detectionsFile);
 
         PicoSeconds slotWidth = std::chrono::nanoseconds(100);
         definedArguments.GetProp(Names::slotWidth, slotWidth);
@@ -113,11 +132,20 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         auto acceptanceRatio = align::Gating::DefaultAcceptanceRatio;
         definedArguments.GetProp(Names::acceptanceRatio, acceptanceRatio);
 
+        auto driftSampleTime = align::Drift::DefaultDriftSampleTime;
+        definedArguments.GetProp(Names::driftSamples, driftSampleTime);
+
         auto filterSigma = align::Filter::DefaultSigma;
         definedArguments.GetProp(Names::filterSigma, filterSigma);
 
         auto filterWidth = align::Filter::DefaultFilterWidth;
         definedArguments.GetProp(Names::filterWidth, filterWidth);
+
+        auto filterCourseThresh = align::Filter::DefaultCourseTheshold;
+        definedArguments.GetProp(Names::filterCourseCutoff, filterCourseThresh);
+
+        auto filterFineThresh = align::Filter::DefaultFineTheshold;
+        definedArguments.GetProp(Names::filterFineCutoff, filterFineThresh);
 
         auto filterStride = align::Filter::DefaultStride;
         definedArguments.GetProp(Names::filterStride, filterStride);
@@ -130,53 +158,78 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
             LOGERROR("Failed to open file: " + detectionsFile);
         }else {
             // to isolate the transmission
-            align::Filter filter(filterSigma, filterWidth, align::Filter::DefaultCourseTheshold, align::Filter::DefaultFineTheshold,
-                                 filterStride);
+            align::Filter filter(filterSigma, filterWidth, filterCourseThresh, filterFineThresh, filterStride);
             // to find the qubits
             align::Gating gating(rng, slotWidth, pulseWidth, acceptanceRatio);
-            align::Drift drift(slotWidth, pulseWidth);
+            align::Drift drift(slotWidth, pulseWidth, driftSampleTime);
             // bobs qubits
             QubitList receiverResults;
             DetectionReportList::const_iterator start;
             DetectionReportList::const_iterator end;
 
-            filter.Isolate(detections, start, end);
+            if(!definedArguments.HasProp(Names::windowStart) || !definedArguments.HasProp(Names::windowEnd))
+            {
+                const auto startTime = std::chrono::high_resolution_clock::now();
+                filter.Isolate(detections, start, end);
+                cout << "Window Start = " << distance(detections.cbegin(), start) << "\n";
+                cout << "Window End = " << distance(detections.cbegin(), end) << "\n";
+                const auto windowTime = std::chrono::high_resolution_clock::now() - startTime;
+                cout << "Window Processing = " << std::to_string(chrono::duration_cast<SecondsDouble>(windowTime).count()) << "s" << "\n";
+            }
+
+            size_t startOffset = 0;
+            if(definedArguments.GetProp(Names::windowStart, startOffset))
+            {
+                LOGWARN("Forcing window start to " + to_string(startOffset));
+                start = detections.cbegin() + startOffset;
+            }
+
+            size_t endOffset = 0;
+            if(definedArguments.GetProp(Names::windowEnd, endOffset))
+            {
+                LOGWARN("Forcing window end to " + to_string(startOffset));
+                end = detections.cbegin() + endOffset;
+            }
+
+            cout << "Window Qubits = " << distance(start, end) << "\n";
             const auto window = (end - 1)->time - start->time;
-
-            /*{
-                std::ofstream datafile = ofstream("filtered.csv");
-                for(auto filteredIt = start; filteredIt != end; filteredIt++)
-                {
-                    datafile << to_string(filteredIt->time.count()) << ", " << to_string(filteredIt->value) << endl;
-                }
-                datafile.close();
-            }*/
-
-            //start = detections.cbegin() + 113133;
-            //end = detections.cbegin() + 706187;
-            // start should be @ 2.0377699934326174
             LOGINFO("Detections: " + std::to_string(distance(start, end)) + "\n" +
                     " Start: " + std::to_string(distance(detections.cbegin(), start)) + " @ " + to_string(start->time.count()) + "pS\n" +
                     " End: " + std::to_string(distance(detections.cbegin(), end)) + " @ " + to_string(end->time.count()) + "pS\n" +
                     " Duration: " + std::to_string(chrono::duration_cast<SecondsDouble>(window).count()) + "s");
 
             align::Gating::ValidSlots validSlots;
-            const auto startTime = std::chrono::high_resolution_clock::now();
-            //gating.SetDrift(PicoSecondOffset(34596));
-            gating.SetDrift(drift.Calculate(start, end));
-            gating.ExtractQubits(start, end, validSlots, receiverResults);
-            const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
 
-            LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
-                    to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
-            //fs::DataFile::WriteQubits(receiverResults, "BobQubits.bin");
+            AttoSecondOffset driftValue {0};
+            if(!definedArguments.GetProp(Names::driftPreset, driftValue))
+            {
+                const auto startTime = std::chrono::high_resolution_clock::now();
+                // drift was not specified, calculate it
+                driftValue = drift.Calculate(start, end);
+                const auto driftProcessing = std::chrono::high_resolution_clock::now() - startTime;
+                cout << "Drift Value = " << driftValue.count() << "as\n";
+                cout << "Drift Processing = " << std::to_string(chrono::duration_cast<SecondsDouble>(driftProcessing).count()) << "s" << "\n";
+            }
+            gating.SetDrift(driftValue);
+
+            {
+                const auto startTime = std::chrono::high_resolution_clock::now();
+                gating.ExtractQubits(start, end, validSlots, receiverResults);
+                const auto extractTime = std::chrono::high_resolution_clock::now() - startTime;
+                cout << "Extract Qubits = " << receiverResults.size() << "\n";
+                cout << "Extract Processing = " << std::to_string(chrono::duration_cast<SecondsDouble>(extractTime).count()) << "s" << "\n";
+
+                LOGINFO("Found " + to_string(receiverResults.size()) + " Qubits, last slot ID: " + to_string(*validSlots.rbegin()) + ". Took " +
+                        to_string(chrono::duration_cast<chrono::milliseconds>(extractTime).count()) + "ms");
+
+            }
 
             ////////////// Load Alice data to compare with Bobs
             std::string packedFile = "AliceRandom.bin";
-            definedArguments.GetProp(Names::packedQubits, packedFile);
+            definedArguments.GetProp(Names::aliceQubits, packedFile);
 
 
-                for(std::vector<Qubit> channelMappings : std::vector<std::vector<Qubit>>({
+            for(std::vector<Qubit> channelMappings : std::vector<std::vector<Qubit>>({
                 /*{ 0, 1, 2, 3 },
                 { 1, 0, 2, 3 },
                 { 2, 0, 1, 3 },
@@ -207,17 +260,42 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                 LOGDEBUG("Loading Alice data file");
                 if(!fs::DataFile::ReadPackedQubits(packedFile, aliceQubits, 0, channelMappings))
                 {
-                    LOGERROR("Failed to open transmisser file: " + packedFile);
+                    LOGERROR("Failed to open transmitter file: " + packedFile);
                 } else {
 
                     align::Offsetting offsetting(10000);
+
+                    const auto startTime = std::chrono::high_resolution_clock::now();
                     align::Offsetting::Confidence highest = offsetting.HighestValue(aliceQubits, validSlots, receiverResults, 0, 8000);
+
+                    const auto offsettingTime = std::chrono::high_resolution_clock::now() - startTime;
+                    cout << "Offsetting Offset = " << highest.offset << "\n";
+                    cout << "Offsetting Confidence = " << highest.value << "\n";
+                    cout << "Offsetting Processing = " << std::to_string(chrono::duration_cast<SecondsDouble>(offsettingTime).count()) << "s" << "\n";
 
                     LOGDEBUG("Highest match: " + to_string(highest.value * 100) + "% at " + to_string(highest.offset) +
                              " [ " + to_string(channelMappings[0]) + ", " +
                             to_string(channelMappings[1]) + ", " +
                             to_string(channelMappings[2]) + ", " +
                             to_string(channelMappings[3]) + "]");
+
+                    if(definedArguments.HasProp(Names::rawOut))
+                    {
+                        QubitList validBits;
+                        for(auto index = 0u; index < validSlots.size(); index++)
+                        {
+                            const auto aliceSlot = validSlots[index] + highest.offset;
+                            if(aliceSlot > 0 && aliceSlot < aliceQubits.size())
+                            {
+                                if(QubitHelper::Base(aliceQubits[aliceSlot]) == QubitHelper::Base(receiverResults[index]))
+                                {
+                                    validBits.push_back(receiverResults[index]);
+                                }
+                            }
+                        }
+                        fs::DataFile::WriteQubits(validBits, definedArguments.GetStringProp(Names::rawOut));
+                    }
+
                 }
             }
         }

@@ -205,6 +205,10 @@ namespace cqp
         bool GetProp(const std::string& key, std::string& out) const;
         /// @copydoc GetProp
         bool GetProp(const std::string& key, PicoSeconds& out) const;
+        /// @copydoc GetProp
+        bool GetProp(const std::string& key, PicoSecondOffset& out) const;
+        /// @copydoc GetProp
+        bool GetProp(const std::string& key, AttoSecondOffset& out) const;
 
         /**
          * @brief GetStringProp

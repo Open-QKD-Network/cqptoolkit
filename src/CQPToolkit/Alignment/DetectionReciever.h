@@ -17,6 +17,7 @@
 #include <Algorithms/Util/WorkerThread.h>
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Alignment/Gating.h"
+#include "Algorithms/Alignment/Drift.h"
 #include <grpc++/channel.h>
 
 namespace cqp {
@@ -98,6 +99,7 @@ namespace align {
         std::shared_ptr<grpc::Channel> transmitter;
         align::Filter filter;
         align::Gating gating;
+        align::Drift drift;
     };
 
 } // namespace align

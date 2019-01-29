@@ -21,7 +21,8 @@ namespace align {
 
     DetectionReciever::DetectionReciever(const SystemParameters &parameters) :
         rng{new RandomNumber()},
-        gating{rng, parameters.slotWidth, parameters.pulseWidth}
+        gating{rng, parameters.slotWidth, parameters.pulseWidth},
+        drift(parameters.slotWidth, parameters.pulseWidth)
     {
 
     }
@@ -74,6 +75,7 @@ namespace align {
                 // extract the qubits
                 std::unique_ptr<QubitList> results{new QubitList()};
                 Gating::ValidSlots validSlots;
+                gating.SetDrift(drift.Calculate(start, end));
                 gating.ExtractQubits(start, end, validSlots, *results);
 
                 {
