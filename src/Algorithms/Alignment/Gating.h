@@ -22,9 +22,6 @@ namespace cqp {
             /// what is the minimum histogram count that will be accepted as a detection - allow for spread/drift
             static constexpr double DefaultAcceptanceRatio = 0.2;
 
-            /// Identifier type for slots
-            using SlotID = uint64_t;
-
             /// Assumptions:
             /// the number of detections per slot per bin are sparse
             /// as the data set is small, the number of bins with detections is also sparse
@@ -82,9 +79,21 @@ namespace cqp {
             /**
              * @brief SetDrift
              * Change the drift value used for ExtractQubits when calculateDrift is set to false
+             * @tparam T The ratio type which scales the time
              * @param newDrift The new drift value
              */
-            void SetDrift(AttoSecondOffset newDrift)
+            template<typename T>
+            void SetDrift(std::chrono::duration<int64_t, T> newDrift)
+            {
+                drift = std::chrono::duration_cast<SecondsDouble>(newDrift).count();
+            }
+
+            /**
+             * @brief SetDrift
+             * Change the drift value used for ExtractQubits when calculateDrift is set to false
+             * @param newDrift The new drift value in seconds per second
+             */
+            void SetDrift(double newDrift)
             {
                 drift = newDrift;
             }
@@ -217,7 +226,7 @@ namespace cqp {
             /// A higher ratio mean less of the peak detections is accepted and less noise.
             double acceptanceRatio;
             /// clock drift between tx and rx
-            AttoSecondOffset drift {0};
+            double drift {0.0};
         };
 
     } // namespace align

@@ -200,14 +200,14 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
 
             align::Gating::ValidSlots validSlots;
 
-            AttoSecondOffset driftValue {0};
+            double driftValue {0};
             if(!definedArguments.GetProp(Names::driftPreset, driftValue))
             {
                 const auto startTime = std::chrono::high_resolution_clock::now();
                 // drift was not specified, calculate it
                 driftValue = drift.Calculate(start, end);
                 const auto driftProcessing = std::chrono::high_resolution_clock::now() - startTime;
-                cout << "Drift Value = " << driftValue.count() << "as\n";
+                cout << "Drift Value = " << driftValue << "s/s\n";
                 cout << "Drift Processing = " << std::to_string(chrono::duration_cast<SecondsDouble>(driftProcessing).count()) << "s" << "\n";
             }
             gating.SetDrift(driftValue);

@@ -232,8 +232,8 @@ namespace cqp
 
         TEST_F(AlignmentTests, Gating)
         {
-            const PicoSeconds pulseWidth   {100};
-            const PicoSeconds slotWidth  {10000};
+            const PicoSeconds pulseWidth            {100};
+            const std::chrono::nanoseconds slotWidth  {10};
             AlignmentTestData testData;
 
             testData.emissions = rng->RandQubitList(100000);
@@ -249,19 +249,21 @@ namespace cqp
                 //}
                     testData.detections.push_back({time, qubit});
                 }
-                time+= slotWidth + PicoSeconds(4);
+                time+= slotWidth + PicoSeconds(1);
             }
 
             LOGDEBUG("There are " + std::to_string(testData.emissions.size()) + " emissions and " + std::to_string(testData.detections.size()) + " detections.");
 
             align::Gating gating(rng, slotWidth, pulseWidth);
-            align::Drift drift(slotWidth, pulseWidth, slotWidth * 1000);
+            align::Drift drift(slotWidth, pulseWidth, slotWidth * 100);
             QubitList alignedDetections;
             align::Gating::ValidSlots validSlots;
 
             const auto startTime = std::chrono::high_resolution_clock::now();
-            //const double drift = (-4.0e-12 / 0.00000001);
-            gating.SetDrift(drift.Calculate(testData.detections.cbegin(), testData.detections.cend()));
+            const double calculatedDrift = drift.Calculate(testData.detections.cbegin(), testData.detections.cend());
+            ASSERT_FLOAT_EQ(calculatedDrift, 10.0e-5);
+            gating.SetDrift(calculatedDrift);
+
             gating.ExtractQubits(testData.detections.cbegin(), testData.detections.cend(), validSlots, alignedDetections);
 
             const auto timeTaken = std::chrono::high_resolution_clock::now() - startTime;

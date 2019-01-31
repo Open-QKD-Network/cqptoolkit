@@ -30,7 +30,7 @@ namespace cqp {
              * @param end End of data to sample
              * @return Picoseconds drift
              */
-            AttoSecondOffset Calculate(const DetectionReportList::const_iterator& start,
+            double Calculate(const DetectionReportList::const_iterator& start,
                                             const DetectionReportList::const_iterator& end) const;
 
         protected: // methods
@@ -55,7 +55,7 @@ namespace cqp {
              * Createa histogram of the data and find the highest count
              * @param sampleStart start of data to read
              * @param sampleEnd end of data to read
-             * @return The time in picoseconds from the start of the data
+             * @return The centre of the peak as a percentage of the histogram
              */
             double FindPeak(DetectionReportList::const_iterator sampleStart,
                                   DetectionReportList::const_iterator sampleEnd) const;

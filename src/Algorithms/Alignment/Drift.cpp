@@ -79,7 +79,7 @@ namespace cqp {
             return average;
         } // FindPeak
 
-        AttoSecondOffset Drift::Calculate(const DetectionReportList::const_iterator& start,
+        double Drift::Calculate(const DetectionReportList::const_iterator& start,
                                         const DetectionReportList::const_iterator& end) const
         {
             using namespace std;
@@ -102,9 +102,11 @@ namespace cqp {
             auto sampleEnd = end;
             size_t sampleIndex = 1;
 
+            // this will produce a sawtooth graph, the number of peaks depends on how often the drift pushes the peak past a slot edge
             vector<future<double>> peakFutures;
 
-            do{
+             while(distance(sampleStart, end) > 1)
+             {
                 DetectionReport cutoff;
                 cutoff.time = start->time + driftSampleTime * sampleIndex;
                 // use the binary search to find the point in the data where the time is past our sample time limit
@@ -124,7 +126,7 @@ namespace cqp {
                 sampleStart = sampleEnd;
                 sampleEnd = end;
                 sampleIndex++;
-            } while(distance(sampleStart, end) > 1);
+            }
 
             /* store the values for the peaks so we can discover the shift/wraparound
              the sequential values may wrap around the slot width:
@@ -139,70 +141,66 @@ namespace cqp {
             std::vector<double> peaks;
             peaks.reserve(peakFutures.size());
 
-            auto maxPeakIndex = 0ul;
             // copy the values from the other threads and find the highest peak
             for(auto peakFutIndex = 0u; peakFutIndex < peakFutures.size(); peakFutIndex++)
             {
                 const auto value = peakFutures[peakFutIndex].get();
 
                 peaks.push_back(value);
-                if(value >= peaks[maxPeakIndex])
-                {
-                    // store the iterator to the last element
-                    maxPeakIndex = peaks.size() - 1;
-                }
-                //LOGDEBUG("Peak: " + to_string(value));
 
             }
 
-            // TODO: a circular iterator would make this easier - would need to write one.
+            const auto binTime = (chrono::duration_cast<SecondsDouble>(slotWidth).count() / driftBins);
+            double minimum = peaks[0];
+            double maximum = peaks[0];
+            size_t slopeStart = 0;
+            double drift = 0.0;
+            uint numSlopes = 0;
 
-            // if the peak is at the end - there is no need to shift
-            if(maxPeakIndex < peaks.size())
+            for(auto index = 0u; index < peaks.size(); index++)
             {
-                // look at the point before the max peak
-                std::vector<double>::const_iterator previousPeak;
-                if(maxPeakIndex != 0)
+                if(peaks[index] < minimum)
                 {
-                    previousPeak = peaks.cbegin() + maxPeakIndex - 1;
-                } else
-                {
-                    // the max peak is the first element, look at the last element
-                    previousPeak = peaks.cend() - 1;
-                }
-                // look at the value before and after the peak,
-                // the smallest value tells us the direction of the slope
-                if(peaks[maxPeakIndex + 1] < *previousPeak)
-                {
-                    // the value to the right is the smaller value
-                    // the slope is positive, start to the right of the peak
-                    maxPeakIndex += 1;
-                } else {
-                    // the value to the left is the smaller value
-                    // the slope is negative, start at the peak
+                    // new low point
+                    minimum = peaks[index];
                 }
 
+                if(peaks[index] > maximum)
+                {
+                    // new high point
+                    maximum = peaks[index];
+                }
+                auto nextIndex = (index + 1) % peaks.size();
+                auto peakDiff = abs(peaks[index] - peaks[nextIndex]);
+                if(peakDiff - minimum > peaks[index])
+                {
+                    // we found an edge in the sawtooth,
+                    // from slope start to index repressents a slope (ether positive or negative)
+                    // The indices for the peaks are distanace from the slot start to the peak in 0 to the number of bins
+                    // a bin is (slotwith / bins) long in time
+                    double slopeTime = static_cast<double>(index - slopeStart + 1) * chrono::duration_cast<SecondsDouble>(driftSampleTime).count();
+                    // take the difference between the extremes and scale it by the time covered by the samples
+                    // the slope height represents the drift per sample
+                    double slopeHeight = (maximum - minimum) * binTime;
+                    if(peaks[slopeStart] < peaks[nextIndex])
+                    {
+                        // The slope is positive, make the drift negative
+                        drift *= -1.0;
+                    }
+                    // add it to the total which will be averaged later
+                    drift += slopeHeight / slopeTime;
+                    numSlopes++;
+
+                    // reset for the next slope
+                    minimum = peaks[nextIndex];
+                    maximum = peaks[nextIndex];
+                    slopeStart = nextIndex;
+                }
             }
 
-            auto averageCount = 0u;
-            double average{0};
+            drift /= numSlopes;
 
-            for(size_t index = 1; index < peaks.size(); index++)
-            {
-                // get the indexes, wraping around the graph
-                const auto previousPeak = (index - 1 + maxPeakIndex) % peaks.size();
-                const auto thisPeak = (index + maxPeakIndex) % peaks.size();
-                // calculate the change in time between the two peaks
-                const auto peakDifference = peaks[thisPeak] - peaks[previousPeak];
-
-                averageCount++;
-                average += peakDifference;
-            }
-
-            AttoSecondOffset result { static_cast<ssize_t>(
-                            round(average * driftSampleTime.count() / averageCount))};
-
-            return result;
+            return drift;
         } // CalculateDrift
 
     } // namespace align

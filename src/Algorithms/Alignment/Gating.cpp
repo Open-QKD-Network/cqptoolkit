@@ -38,17 +38,21 @@ namespace cqp {
                 using namespace std::chrono;
                 // calculate the offset in whole picoseconds (signed)
                 /// @todo TODO: Apply the drift more accuratly
-                const PicoSecondOffset offset { DivNearest(
-                                (detection->time * duration_cast<PicoSeconds>(drift).count()).count(),
-                                PicoSecondOffset::period::den) };
+
+                const PicoSecondOffset offset { static_cast<int64_t>(round(drift * detection->time.count())) };
                 // offset the time without the original value being converted to a float
-                const PicoSeconds  adjustedTime = detection->time - frameStart - duration_cast<PicoSecondOffset>(offset);
+                PicoSeconds  adjustedTime = detection->time - frameStart;
+                // if the offset is positive, don't wrap past 0
+                if(offset < AttoSeconds(0) || adjustedTime > offset)
+                {
+                    adjustedTime -= duration_cast<PicoSecondOffset>(offset);
+                }
                 // C++ truncates on integer division
                 const SlotID slot = DivNearest(adjustedTime.count(), slotWidth.count());
 
                 const auto fromSlotStart = adjustedTime % slotWidth;
                 //const BinID bin = div_to_nearest(fromSlotStart.count(), pulseWidth.count()) % numBins;
-                const BinID bin = (fromSlotStart.count()/ txJitter.count()) % numBins;
+                const BinID bin = (fromSlotStart.count() / txJitter.count()) % numBins;
                 // store the value as a bin for later access
                 slotResults[bin][slot].push_back(detection->value);
                 counts[bin]++;
@@ -149,7 +153,7 @@ namespace cqp {
         {
             using namespace std::chrono;
 
-            LOGDEBUG("Drift = " + std::to_string(duration_cast<PicoSecondOffset>(drift).count()) + "ps");
+            LOGDEBUG("Drift = " + std::to_string(drift) + "s/s");
             CountsByBin counts;
             ResultsByBinBySlot resultsBySlot;
             CountDetections(start->time, start, end, counts, resultsBySlot);
