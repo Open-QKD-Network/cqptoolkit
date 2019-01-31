@@ -96,6 +96,12 @@ The build structure:
 
 ### Linux
 
+These instructions are for producing a build to install and run. To make changes and develop the library it's recommended to install [QT Creator](http://doc.qt.io/qtcreator/) and open the project by [selecting the CMakeLists.txt file](https://codeyarns.com/2016/01/26/how-to-import-cmake-project-in-qt-creator/). It is advisable to use parallel builds by going to Projects->Build Steps-> Details and adding `-j<number>` to the tool parameters, see [so](https://stackoverflow.com/questions/8860712/setting-default-make-options-for-qt-creator). Once build the files by default are at the same level as the project folder called `build-<project name>-<platform>-<target>`.
+
+> **Note about protobuf + QT on unbuntu**
+> The library `qt5-gtk-platformtheme` is linked against an old version of protobuf which will prevent our QT programs from running.
+> This optional dependency can be removed with `apt-get remove qt5-gtk-platformtheme`
+
 #### Docker build environment
 
 Run:
@@ -123,12 +129,9 @@ For a release build, set the `CMAKE_BUILD_TYPE` variable  to ether `Debug`, `Rel
 cmake -DCMAKE_BUILD_TYPE=Release ../.. && make -j package
 ```
 
-> **Note about protobuf + QT on unbuntu**
-> The library `qt5-gtk-platformtheme` is linked against an old version of protobuf which will prevent our QT programs from running.
-> This optional dependency can be removed with `apt-get remove qt5-gtk-platformtheme`
-
 ### Windows
 
+This is work in progress.
 This setup has be tested on Window 10 and Windows Server 2016 with Visual studio 15 (2016).
 The following configurations are supported
 
