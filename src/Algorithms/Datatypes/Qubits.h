@@ -89,4 +89,9 @@ namespace cqp
     /// A dictionary of QubitLists indexed by SequenceNumber
     using QubitsByFrame = std::unordered_map<SequenceNumber, std::unique_ptr<QubitList>>;
 
+    /// Identifier type for slots
+    using SlotID = uint64_t;
+
+    using QubitsBySlot = std::unordered_map<SlotID, Qubit>;
+
 }

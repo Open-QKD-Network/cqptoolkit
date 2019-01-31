@@ -33,9 +33,9 @@ namespace cqp
         {
         public:
             /// dummy callback for reacting to test data
-            MOCK_METHOD2(OnAligned2, void(SequenceNumber seq, QubitList* rawQubits));
-            void OnAligned(SequenceNumber seq, std::unique_ptr<QubitList> rawQubits) override {
-                OnAligned2(seq, rawQubits.get());
+            MOCK_METHOD3(OnAligned2, void(SequenceNumber seq, double securityParameter, QubitList* rawQubits));
+            void OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits) override {
+                OnAligned2(seq, securityParameter, rawQubits.get());
             }
         };
 
@@ -48,7 +48,7 @@ namespace cqp
         public:
             // Service interface
         public:
-            MOCK_METHOD3(GetAlignmentMarks, grpc::Status(grpc::ServerContext *, const remote::FrameId* request, remote::QubitByIndex *response));
+            MOCK_METHOD3(GetAlignmentMarks, grpc::Status(grpc::ServerContext *, const remote::MarkersRequest* request, remote::MarkersResponse *response));
             MOCK_METHOD3(DiscardTransmissions, grpc::Status(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *));
         };
 

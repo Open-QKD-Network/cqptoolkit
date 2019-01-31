@@ -39,7 +39,7 @@ namespace cqp
             /// @name IAlignmentCallback Interface
 
             /// @copydoc IAlignmentCallback::OnAligned
-            void OnAligned(SequenceNumber seq, std::unique_ptr<QubitList> rawQubits) override;
+            void OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits) override;
 
             ///@}
 

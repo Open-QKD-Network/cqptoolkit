@@ -12,6 +12,7 @@
 #include "DetectionReciever.h"
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
+#include "Algorithms/Alignment/Offsetting.h"
 
 namespace cqp {
 namespace align {
@@ -65,6 +66,7 @@ namespace align {
             {
                 using namespace std::chrono;
                 using std::chrono::high_resolution_clock;
+                grpc::Status result;
                 high_resolution_clock::time_point timerStart = high_resolution_clock::now();
 
                 // isolate the transmission
@@ -78,11 +80,51 @@ namespace align {
                 gating.SetDrift(drift.Calculate(start, end));
                 gating.ExtractQubits(start, end, validSlots, *results);
 
+                auto otherSide = remote::IAlignment::NewStub(transmitter);
+
+                double securityParameter = 0.0;
+
                 {
-                    // tell Alice which slots are valid
-                    auto otherSide = remote::IAlignment::NewStub(transmitter);
                     grpc::ClientContext ctx;
 
+                    remote::MarkersRequest request;
+                    remote::MarkersResponse response;
+
+                    request.set_frameid(report->frame);
+                    request.set_sendallbasis(true);
+                    // this seems like it's not going to cope under different situations
+                    request.set_numofmarkers(validSlots.size() * 0.1);
+                    result = LogStatus(otherSide->GetAlignmentMarkers(&ctx, request, &response));
+
+                    if(result.ok())
+                    {
+                        align::Offsetting offsetting(0);
+                        QubitsBySlot markers;
+                        markers.reserve(response.markers().size());
+                        for(auto marker : response.markers())
+                        {
+                            markers.emplace(marker.first, marker.second);
+                        }
+                        auto highest = offsetting.HighestValue(markers, validSlots, *results, 0, 1000);
+
+                        if(highest.value > 0.8)
+                        {
+                            gating.FilterDetections(validSlots.cbegin(), validSlots.cend(), *results, highest.offset);
+
+                            // TODO: calculate security parameter
+
+                        } else {
+                            LOGERROR("Match of " + to_string(highest.value) + " is too low to generate key");
+                            result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Can't find match");
+                        }
+                    }
+                }
+
+                if(result.ok())
+                {
+                    // tell Alice which slots are valid
+
+                    grpc::ClientContext ctx;
                     remote::ValidDetections request;
                     google::protobuf::Empty response;
 
@@ -91,19 +133,23 @@ namespace align {
                     std::copy(validSlots.cbegin(), validSlots.cend(), request.mutable_slotids()->begin());
                     request.set_frameid(report->frame);
 
+
                     LogStatus(otherSide->DiscardTransmissions(&ctx, request, &response));
                 }
 
-                const auto qubitsProcessed = results->size();
-
-                if(listener)
+                if(result.ok())
                 {
-                    listener->OnAligned(seq++, move(results));
-                }
+                    const auto qubitsProcessed = results->size();
 
-                stats.timeTaken.Update(high_resolution_clock::now() - timerStart);
-                stats.overhead.Update(0.0L);
-                stats.qubitsProcessed.Update(qubitsProcessed);
+                    if(listener)
+                    {
+                        listener->OnAligned(seq++, securityParameter, move(results));
+                    }
+
+                    stats.timeTaken.Update(high_resolution_clock::now() - timerStart);
+                    stats.overhead.Update(0.0L);
+                    stats.qubitsProcessed.Update(qubitsProcessed);
+                }
             }
         } // while keepGoing
     }

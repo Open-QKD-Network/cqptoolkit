@@ -8,7 +8,7 @@ namespace cqp {
         /**
          * @brief The Offsetting class finds the alignment between two sets of loosly connected data
          */
-        class Offsetting
+        class ALGORITHMS_EXPORT Offsetting
         {
         public:
             /// The number of values to check in a data set
@@ -18,7 +18,7 @@ namespace cqp {
              * @brief Offsetting
              * @param samples The number of values to check in a data set
              */
-            Offsetting(size_t samples = DefaultSamples);
+            explicit Offsetting(size_t samples = DefaultSamples);
 
             /**
              * @brief The Confidence struct
@@ -41,8 +41,22 @@ namespace cqp {
              * @param to The offset end point
              * @return The highest scoring offset and its confidence value
              */
-            Confidence HighestValue(const QubitList& truth,  const std::vector<uint64_t>& validSlots,
+            Confidence HighestValue(const QubitList& truth,  const std::vector<SlotID>& validSlots,
                               const QubitList& irregular, ssize_t from, ssize_t to);
+
+            /**
+             * @brief HighestValue
+             * Find the best match between the two datasets.
+             * @param markers Values which are known to be true, indexed by slot id
+             * @param validSlots The slots for The slot ids which the irregular values relate to
+             * @param irregular The values which have an unknown validity and start offset
+             * @param from The offset starting point
+             * @param to The offset end point
+             * @return The highest scoring offset and its confidence value
+             */
+            Confidence HighestValue(const QubitsBySlot markers,
+                                    const std::vector<SlotID>& validSlots,
+                                    const QubitList& irregular, ssize_t from, ssize_t to);
 
             /**
              * @brief CompareValues
@@ -54,6 +68,18 @@ namespace cqp {
              * @return The match confidence
              */
             double CompareValues(const QubitList& truth,  const std::vector<uint64_t>& validSlots,
+                                 const QubitList& irregular, ssize_t offset);
+
+            /**
+             * @brief CompareValues
+             * @todo This needs to be able to take a sparse list of true values
+             * @param truth Values known to be correct
+             * @param validSlots The slot ids which the irregular values relate to
+             * @param irregular The values which have an unknown validity and start offset
+             * @param offset Shift the irregular comparison index.
+             * @return The match confidence
+             */
+            double CompareValues(const QubitsBySlot markers,  const std::vector<uint64_t>& validSlots,
                                  const QubitList& irregular, ssize_t offset);
         protected:
             /// The number of values to check in a data set

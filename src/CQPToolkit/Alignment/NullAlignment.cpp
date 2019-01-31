@@ -76,7 +76,7 @@ namespace cqp {
 
                 if(listener && report && !report->empty())
                 {
-                    listener->OnAligned(seq++, move(report));
+                    listener->OnAligned(seq++, 0.0, move(report));
                 }
             } // while keepGoing
         }

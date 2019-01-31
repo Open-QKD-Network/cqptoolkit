@@ -176,8 +176,8 @@ namespace cqp
             reciever.Attach(&aliceCallback);
             transitter.Attach(&bobCallback);
 
-            reciever.OnAligned(seq, std::unique_ptr<QubitList>(new QubitList(touched)));
-            transitter.OnAligned(seq, std::unique_ptr<QubitList>(new QubitList(data)));
+            reciever.OnAligned(seq, 0.0, std::unique_ptr<QubitList>(new QubitList(touched)));
+            transitter.OnAligned(seq, 0.0, std::unique_ptr<QubitList>(new QubitList(data)));
             seq++;
 
 

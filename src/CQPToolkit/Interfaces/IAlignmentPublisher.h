@@ -31,6 +31,7 @@ namespace cqp
          * @param seq
          */
         virtual void OnAligned(SequenceNumber seq,
+                               double securityParameter,
                                std::unique_ptr<QubitList> rawQubits) = 0;
 
         /// Virtual destructor

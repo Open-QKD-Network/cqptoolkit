@@ -16,7 +16,7 @@ namespace cqp
     namespace sift
     {
 
-        void SiftBase::OnAligned(SequenceNumber seq, std::unique_ptr<QubitList> rawQubits)
+        void SiftBase::OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits)
         {
             using namespace std;
             LOGDEBUG("Received aligned qubits");

@@ -18,8 +18,15 @@ package cqp.remote;
 /**
  * a message for the frame id
  */
-message FrameId {
-    uint64 Id = 1;
+message MarkersRequest {
+    uint64 frameId = 1;
+    uint64 numOfMarkers = 2;
+    bool sendAllBasis = 3;
+};
+
+message MarkersResponse {
+    map<uint64 /* SequenceNumber */, BB84.Type> markers = 1;
+    repeated Basis.Type basis = 2;
 };
 
 /**
@@ -28,6 +35,7 @@ message FrameId {
 message ValidDetections{
     uint64 frameId = 1;
     repeated uint64 slotIds = 2;
+    double securityParameter = 3;
 };
 
 /**
@@ -40,10 +48,10 @@ service IAlignment {
      * @brief GetAlignmentMarks
      * Requests markers for a frame to help align the received data.
      * @param request The frame to query
-     * @param response A sparse set of data to provide comparison points within the data
+     * @param response A sparse set of data to provide comparison points within the data and the bases for .
      * @return status
      */
-    rpc GetAlignmentMarks(FrameId) returns (QubitByIndex);
+    rpc GetAlignmentMarkers(MarkersRequest) returns (MarkersResponse);
 
     /**
      * @brief DiscardTransmissions

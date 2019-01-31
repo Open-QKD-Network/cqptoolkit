@@ -39,7 +39,7 @@ namespace align {
         /// @name IAlignment interface
 
         ///@copydoc remote::IAlignment::GetAlignmentMarks
-        grpc::Status GetAlignmentMarks(grpc::ServerContext *, const remote::FrameId* request, remote::QubitByIndex *response) override;
+        grpc::Status GetAlignmentMarkers(grpc::ServerContext *, const remote::MarkersRequest* request, remote::MarkersResponse *response) override;
 
         ///@copydoc remote::IAlignment::DiscardTransmissions
         grpc::Status DiscardTransmissions(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) override;

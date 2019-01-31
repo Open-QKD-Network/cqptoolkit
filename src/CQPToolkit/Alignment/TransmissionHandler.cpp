@@ -27,8 +27,8 @@ namespace align {
         receivedDataCv.notify_one();
     }
 
-    grpc::Status TransmissionHandler::GetAlignmentMarks(
-            grpc::ServerContext *, const remote::FrameId *request, remote::QubitByIndex *response)
+    grpc::Status TransmissionHandler::GetAlignmentMarkers(
+            grpc::ServerContext *, const remote::MarkersRequest *request, remote::MarkersResponse *response)
     {
         using namespace std;
        LOGTRACE("Markers requested");
@@ -42,11 +42,11 @@ namespace align {
                unique_lock<mutex> lock(receivedDataMutex);
                dataReady = false;
                receivedDataCv.wait(lock, [&](){
-                   auto it = receivedData.find(request->id());
+                   auto it = receivedData.find(request->frameid());
                    if(it != receivedData.end())
                    {
                        // look at the data but leave it on the queue
-                       emissions = receivedData.find(request->id())->second.get();
+                       emissions = receivedData.find(request->frameid())->second.get();
                        dataReady = true;
                    }
                    return dataReady;
@@ -59,12 +59,32 @@ namespace align {
                if(emissions && !emissions->emissions.empty())
                {
                    const auto markersToSend = emissions->emissions.size() / markerFractionToSend;
-                   while(response->mutable_qubits()->size() < markersToSend)
+                   while(response->mutable_markers()->size() < markersToSend)
                    {
                        auto index = rng.RandULong() % emissions->emissions.size();
-                       response->mutable_qubits()->insert({index, remote::BB84::Type(emissions->emissions[index])});
+                       response->mutable_markers()->insert({index, remote::BB84::Type(emissions->emissions[index])});
                    }
                    LOGDEBUG("Sent " + std::to_string(markersToSend) + " markers out of " + std::to_string(emissions->emissions.size()) + " emissions.");
+                   if(request->sendallbasis())
+                   {
+                       for(const auto& qubit : emissions->emissions)
+                       {
+                           switch (QubitHelper::Base(qubit)) {
+                               case Basis::Circular:
+                                   response->add_basis(remote::Basis_Type::Basis_Type_Circular);
+                                   break;
+                               case Basis::Diagonal:
+                                   response->add_basis(remote::Basis_Type::Basis_Type_Diagonal);
+                                   break;
+                               case Basis::Retiliniear:
+                                   response->add_basis(remote::Basis_Type::Basis_Type_Retiliniear);
+                                   break;
+                               case Basis::Invalid:
+                                   response->add_basis(remote::Basis_Type::Basis_Type_Basis_Invalid);
+                                   break;
+                           }
+                       }
+                   }
                } else {
                    result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Not prepared correctly");
                }
@@ -113,7 +133,7 @@ namespace align {
                     {
                         unique_ptr<QubitList> output{new QubitList(emissions->emissions.size())};
                         copy(emissions->emissions.cbegin(), emissions->emissions.cend(), output->begin());
-                        listener->OnAligned(seq++, move(output));
+                        listener->OnAligned(seq++, request->securityparameter(), move(output));
                     }
                 } else {
                     result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Not prepared correctly");
