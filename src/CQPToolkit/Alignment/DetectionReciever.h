@@ -35,12 +35,17 @@ namespace align {
             protected WorkerThread
     {
     public:
+        /// Default system parameters
         static constexpr SystemParameters DefaultSystemParameters = {
             40000000, // slots per frame
             std::chrono::nanoseconds(100), // slot width
             std::chrono::nanoseconds(1) // jitter
         };
-        /// constructor
+
+        /**
+         * @brief DetectionReciever constructor
+         * @param parameters
+         */
         DetectionReciever(const SystemParameters &parameters = DefaultSystemParameters);
 
         /// destructor
@@ -96,9 +101,13 @@ namespace align {
         ProtocolDetectionReportList receivedData;
         /// Source of randomness
         std::shared_ptr<RandomNumber> rng;
+        /// The other side of the conversation
         std::shared_ptr<grpc::Channel> transmitter;
+        /// for conditioning the signal
         align::Filter filter;
+        /// For extracting the real detections from the noise
         align::Gating gating;
+        /// for calculating drift
         align::Drift drift;
     };
 

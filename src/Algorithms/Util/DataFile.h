@@ -24,12 +24,14 @@ namespace cqp {
 
             /**
              * @brief ReadPackedQubits
-             * Read a list of qubits from a packed binary file.
+             * Read a list of qubits from a packed binary file. The file is assumed to be in network order
              * @details
              * 2 bits per qubit, 4 qubits per byte.
              * @param inFileName
              * @param output
              * @param maxValues Maximum number of values to get. 0 = no limit
+             * @param channelMappings defines a mapping between the read and the stored values.
+             * @code [1, 2, 3, 0] @endcode would map a read value to 0 to 1 and 3 to 0, etc.
              * @return True on success
              */
             static bool ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues = 0,

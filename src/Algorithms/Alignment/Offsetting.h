@@ -73,7 +73,7 @@ namespace cqp {
             /**
              * @brief CompareValues
              * @todo This needs to be able to take a sparse list of true values
-             * @param truth Values known to be correct
+             * @param markers Sparse list of values known to be correct
              * @param validSlots The slot ids which the irregular values relate to
              * @param irregular The values which have an unknown validity and start offset
              * @param offset Shift the irregular comparison index.

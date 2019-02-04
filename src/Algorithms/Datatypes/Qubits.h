@@ -92,6 +92,7 @@ namespace cqp
     /// Identifier type for slots
     using SlotID = uint64_t;
 
+    /// A list of qubits indexed by slot
     using QubitsBySlot = std::unordered_map<SlotID, Qubit>;
 
 }

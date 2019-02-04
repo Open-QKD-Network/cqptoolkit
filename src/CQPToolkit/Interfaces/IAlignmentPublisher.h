@@ -29,6 +29,7 @@ namespace cqp
          * @brief OnAligned
          * @param rawQubits
          * @param seq
+         * @param securityParameter
          */
         virtual void OnAligned(SequenceNumber seq,
                                double securityParameter,

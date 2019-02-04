@@ -1,23 +1,21 @@
 #pragma once
-#include <functional>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
 #include "Algorithms/algorithms_export.h"
 #include "Algorithms/Util/Threading.h"
+#include <functional>
+#include <queue>
+#include <future>
 
 namespace cqp
 {
-
     /**
      * @brief The ProcessingQueue class uses multiple threads to process a list of data
      */
-    class ALGORITHMS_EXPORT ProcessingQueue
+    template<typename Return = void>
+    class ALGORITHMS_EXPORT ProcessingQueue : public ThreadManager
     {
     public:
         /// The function to perform on the data
-        using Action = std::function<void()>;
+        using Action = std::function<Return ()>;
 
         /**
          * @brief ProcessingQueue constructor
@@ -26,53 +24,115 @@ namespace cqp
          */
         ProcessingQueue(uint numThreads = std::thread::hardware_concurrency());
 
-        /// Destructor
-        ~ProcessingQueue();
-
-        /**
-         * @brief SetPriority
-         * Change a threads priority
-         * @param niceLevel Higher number == less chance it will run, more nice
-         * @param realtimePriority Higher number == more chance it will run
-         * @param policy The kind of scheduler to use
-         * @return true on success
-         */
-        bool SetPriority(int niceLevel = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
-
         /**
          * @brief Enqueue
-         * Add a function to process to the queue
+         * Add a funciton to process to the queue.
+         * Can be called with a lambda:
+         * @code
+         * ProcessingQueue<int> worker;
+         * auto result = worker.Enqueue([&]() {
+         *      return 1+2;
+         * });
+         * std::cout << "1 + 2 = " << result.get() << std::end;
+         * @endcode
+         * @note get() in the future can only be called once.
          * @details Copy version
-         * @param action
+         * @param action The action to be performed. The function must take no arguments and return the type specified in the 'Return' template parameter
+         * @return A std::future object which will contain the result of the function once it's been called.
          */
-        void Enqueue(const Action& action);
+        std::future<Return> Enqueue(const Action& action);
 
         /**
-         * @brief Enqueue
-         * Add a funciton to process to the queue
+         * @copydoc Enqueue
          * @details Move version
-         * @param action
          */
-        void Enqueue(Action&& action);
+        std::future<Return> Enqueue(Action&& action);
 
     protected: // methods
         /**
          * @brief Processor Entry point for the processing threads
          */
-        void Processor(); // Processor
+        void Processor() override;
 
     protected: // members
-        /// Actions yet to be performed
-        std::queue<Action> pending;
+        /// The promise type for the given return type
+        using Promise = std::promise<Return>;
 
-        ///protect access to the pending queue
-        std::mutex pendingMutex;
-        ///protect access to the pending queue
-        std::condition_variable pendingCv;
-        /// The processing threads
-        std::vector<std::thread> threads;
-        /// controls when the threads exit
-        bool stopProcessing = false;
+        /// Storage tpye for the combination of the function and it's return promise
+        using TaskPair = std::pair<Action, Promise>;
+        /// Actions yet to be performed
+        std::queue<TaskPair> pending;
+
     };
 
+    template<typename Return>
+    ProcessingQueue<Return>::ProcessingQueue(uint numThreads)
+    {
+        ConstructThreads(numThreads);
+    }
+
+    template<typename Return>
+    std::future<Return> ProcessingQueue<Return>::Enqueue(const Action& action)
+    {
+        using namespace std;
+        std::future<Return> result;
+
+        { /* lock scope*/
+            lock_guard<mutex> lock(pendingMutex);
+            auto prom = std::promise<Return>();
+            result = prom.get_future();
+            pending.emplace(move(action), move(prom));
+        }/*lock scope*/
+
+        pendingCv.notify_one();
+        return std::move(result);
+    }
+
+    template<typename Return>
+    std::future<Return> ProcessingQueue<Return>::Enqueue(Action&& action)
+    {
+        using namespace std;
+        std::future<Return> result;
+
+        { /* lock scope*/
+            lock_guard<mutex> lock(pendingMutex);
+            auto prom = std::promise<Return>();
+            result = prom.get_future();
+            pending.emplace(move(action), move(prom));
+        }/*lock scope*/
+
+        pendingCv.notify_one();
+        return std::move(result);
+    }
+
+    template<typename Return>
+    void cqp::ProcessingQueue<Return>::Processor()
+    {
+        using namespace std;
+
+        TaskPair item;
+
+        while(!stopProcessing)
+        {
+            { /* lock scope*/
+                unique_lock<mutex> lock(pendingMutex);
+
+                pendingCv.wait(lock, [this](){
+                    return !pending.empty() || stopProcessing;
+                });
+
+                if(!stopProcessing)
+                {
+                    item = move(pending.front());
+
+                    pending.pop();
+                }
+            }/*lock scope*/
+
+            if(!stopProcessing)
+            {
+                item.second.set_value(item.first());
+            }
+        } // while keep processing
+    }
 } // namespace cqp

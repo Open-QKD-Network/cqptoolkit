@@ -11,6 +11,9 @@
 */
 #pragma once
 #include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <vector>
 #include "Algorithms/algorithms_export.h"
 
 namespace cqp
@@ -30,5 +33,77 @@ namespace cqp
      * @return true on success
      */
     ALGORITHMS_EXPORT bool SetPriority(std::thread& theThread, int niceLevel, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
+
+    /**
+     * @brief The ThreadManager class provides generatic threading functions
+     */
+    class ALGORITHMS_EXPORT ThreadManager
+    {
+    public:
+
+        /// Distructor
+        virtual ~ThreadManager()
+        {
+            stopProcessing = true;
+            pendingCv.notify_all();
+
+            for(auto& worker : threads)
+            {
+                if(worker.joinable())
+                {
+                    worker.join();
+                }
+            }
+        }
+
+        /**
+         * @brief SetPriority
+         * Change a threads priority
+         * @param niceLevel Higher number == less chance it will run, more nice
+         * @param realtimePriority Higher number == more chance it will run
+         * @param policy The kind of scheduler to use
+         * @return true on success
+         */
+        bool SetPriority(int niceLevel = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1)
+        {
+            bool result = true;
+            for(auto index = 0u; index < threads.size(); index++)
+            {
+                result &= cqp::SetPriority(threads[index], niceLevel, policy, realtimePriority);
+            }
+
+            return result;
+        }
+
+    protected: // methods
+        /**
+         * @brief Processor Entry point for the processing threads
+         */
+        virtual void Processor() = 0; // Processor
+
+        /**
+         * @brief ConstructThreads
+         * Create the threads, called by the calss which implements the Processor function on creation.
+         * @param numThreads The numnber of threads to create
+         */
+        void ConstructThreads(uint numThreads = std::thread::hardware_concurrency())
+        {
+            threads.reserve(numThreads);
+            for(auto index = 0u; index < numThreads; index++)
+            {
+                threads.emplace_back(std::thread(&ThreadManager::Processor, this));
+            }
+        }
+
+    protected: // members
+        /// The processing threads
+        std::vector<std::thread> threads;
+        ///protect access to the pending queue
+        std::mutex pendingMutex;
+        ///protect access to the pending queue
+        std::condition_variable pendingCv;
+        /// controls when the threads exit
+        bool stopProcessing = false;
+    };
 
 }
