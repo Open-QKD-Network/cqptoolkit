@@ -22,7 +22,7 @@ namespace cqp {
         Gating::Gating(std::shared_ptr<IRandom> rng,
                        const PicoSeconds& slotWidth, const PicoSeconds& txJitter,
                        double acceptanceRatio):
-            rng(rng),
+            rng(move(rng)),
             slotWidth{slotWidth}, txJitter{txJitter},
             numBins{slotWidth / txJitter},
             acceptanceRatio{acceptanceRatio}
@@ -82,19 +82,23 @@ namespace cqp {
             auto upper = peakIndex;
             auto lower = peakIndex;
 
-            auto findLower = std::async(std::launch::async, [&](){
-                while(counts[lower] > cutoff && lower != (peakIndex + 1) % numBins)
-                {
-                    lower = (numBins + lower - 1) % numBins;
-                }
-            });
-
-            while(counts[upper] > cutoff && upper != (peakIndex - 1) % numBins)
             {
-                upper = (upper + 1) % numBins;
-            }
+                auto findLower = std::async(std::launch::async, [&](){
+                    auto nextLower = lower;
+                    while(counts[nextLower] > cutoff && nextLower != (peakIndex + 1) % numBins)
+                    {
+                        lower = nextLower;
+                        nextLower = (numBins + nextLower - 1) % numBins;
+                    }
+                });
 
-            findLower.wait();
+                while(counts[upper] > cutoff && upper != (peakIndex - 1) % numBins)
+                {
+                    upper = (upper + 1) % numBins;
+                }
+
+                findLower.wait();
+            }
 
             LOGDEBUG(" lower=" + to_string(lower) + "Peak=" + to_string(peakIndex) + " upper=" + to_string(upper));
             map<SlotID, QubitList> qubitsBySlot;
@@ -102,7 +106,7 @@ namespace cqp {
 
             uint64_t binCount = 0;
 
-            for(auto binId = (lower + 1) % numBins; binId != upper; binId = (binId + 1) % numBins)
+            for(auto binId = lower; binId != upper; binId = (binId + 1) % numBins)
             {
                 SlotID slotOffset = 0;
                 // If the bin ID is less than the lower limit we're left of bin 0
