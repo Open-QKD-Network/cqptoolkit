@@ -98,6 +98,11 @@ namespace cqp {
                 drift = newDrift;
             }
 
+            void SetChannelCorrections(std::vector<double> newChannelCorrections)
+            {
+                channelCorrections = newChannelCorrections;
+            }
+
             /**
              * @brief CountDetections
              * Build a historgram of the data while applying drift.
@@ -227,6 +232,8 @@ namespace cqp {
             double acceptanceRatio;
             /// clock drift between tx and rx
             double drift {0.0};
+            /// Amount of time to offset each channel to bring them perfectly overlapped.
+            std::vector<double> channelCorrections;
         };
 
     } // namespace align

@@ -206,11 +206,16 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                 const auto startTime = std::chrono::high_resolution_clock::now();
                 // drift was not specified, calculate it
                 driftValue = drift.Calculate(start, end);
+
                 const auto driftProcessing = std::chrono::high_resolution_clock::now() - startTime;
                 cout << "Drift Value = " << driftValue << "s/s\n";
                 cout << "Drift Processing = " << std::to_string(chrono::duration_cast<SecondsDouble>(driftProcessing).count()) << "s" << "\n";
             }
             gating.SetDrift(driftValue);
+
+            std::vector<double> channelCorrections(4, 0);
+            channelCorrections = drift.ChannelFindPeak(start, end);
+            gating.SetChannelCorrections(channelCorrections);
 
             {
                 const auto startTime = std::chrono::high_resolution_clock::now();

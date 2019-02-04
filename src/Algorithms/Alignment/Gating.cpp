@@ -39,13 +39,18 @@ namespace cqp {
                 // calculate the offset in whole picoseconds (signed)
                 /// @todo TODO: Apply the drift more accuratly
 
+               //std::chrono::nanoseconds correction(static_cast<int>(channelCorrections[detection->value]));
+
+                PicoSecondOffset correction { static_cast<int>(channelCorrections[detection->value]) * 1000};
+
                 const PicoSecondOffset offset { static_cast<int64_t>(round(drift * detection->time.count())) };
                 // offset the time without the original value being converted to a float
                 PicoSeconds  adjustedTime = detection->time - frameStart;
                 // if the offset is positive, don't wrap past 0
                 if(offset < AttoSeconds(0) || adjustedTime > offset)
                 {
-                    adjustedTime -= duration_cast<PicoSecondOffset>(offset);
+                    adjustedTime += (duration_cast<PicoSecondOffset>(correction));
+                    adjustedTime -= (duration_cast<PicoSecondOffset>(offset));
                 }
                 // C++ truncates on integer division
                 const SlotID slot = DivNearest(adjustedTime.count(), slotWidth.count());

@@ -33,6 +33,10 @@ namespace cqp {
             double Calculate(const DetectionReportList::const_iterator& start,
                                             const DetectionReportList::const_iterator& end) const;
 
+            // Dave adds channel sync code here for now.
+            std::vector<double> ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
+                                  DetectionReportList::const_iterator sampleEnd) const;
+
         protected: // methods
 
             /**
@@ -49,6 +53,14 @@ namespace cqp {
                            uint64_t numBins,
                            PicoSeconds windowWidth,
                            std::vector<uint64_t>& counts);
+
+            // Dave says: How to comment overloaded functions? This plots a histogram for only a given channel's tags.
+            static void Histogram(const DetectionReportList::const_iterator& start,
+                           const DetectionReportList::const_iterator& end,
+                           uint64_t numBins,
+                           PicoSeconds windowWidth,
+                           std::vector<uint64_t>& counts,
+                           uint8_t channel);
 
             /**
              * @brief FindPeak
