@@ -1,3 +1,14 @@
+/*!
+* @file
+* @brief Gating
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 01/02/2019
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
 #include "Gating.h"
 #include <cmath>
 #include <future>
@@ -37,20 +48,15 @@ namespace cqp {
             {
                 using namespace std::chrono;
                 // calculate the offset in whole picoseconds (signed)
-                /// @todo TODO: Apply the drift more accuratly
-
-               //std::chrono::nanoseconds correction(static_cast<int>(channelCorrections[detection->value]));
-
-                PicoSecondOffset correction { static_cast<int>(channelCorrections[detection->value]) * 1000};
-
                 const PicoSecondOffset offset { static_cast<int64_t>(round(drift * detection->time.count())) };
+
                 // offset the time without the original value being converted to a float
                 PicoSeconds  adjustedTime = detection->time - frameStart;
                 // if the offset is positive, don't wrap past 0
                 if(offset < AttoSeconds(0) || adjustedTime > offset)
                 {
-                    adjustedTime += (duration_cast<PicoSecondOffset>(correction));
-                    adjustedTime -= (duration_cast<PicoSecondOffset>(offset));
+                    adjustedTime += channelCorrections[detection->value];
+                    adjustedTime -= offset;
                 }
                 // C++ truncates on integer division
                 const SlotID slot = DivNearest(adjustedTime.count(), slotWidth.count());
@@ -94,7 +100,7 @@ namespace cqp {
             map<SlotID, QubitList> qubitsBySlot;
             // walk through each bin, wrapping around to the start if the upper bin < lower bin
 
-            size_t binCount = 0;
+            uint64_t binCount = 0;
 
             for(auto binId = (lower + 1) % numBins; binId != upper; binId = (binId + 1) % numBins)
             {
@@ -120,7 +126,7 @@ namespace cqp {
                 *peakWidth = (binCount / static_cast<double>(numBins));
             }
 
-            size_t multiSlots = 0;
+            uint_fast16_t multiSlots = 0;
 
             // as the list is ordered, the qubits will come out in the correct order
             // just append them to the result list

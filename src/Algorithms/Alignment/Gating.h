@@ -1,3 +1,14 @@
+/*!
+* @file
+* @brief Gating
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 01/02/2019
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
 #pragma once
 #include "Algorithms/Datatypes/Chrono.h"
 #include <map>
@@ -9,6 +20,7 @@
 #include "Algorithms/Random/IRandom.h"
 #include "Algorithms/Statistics/Stat.h"
 #include "Algorithms/Statistics/StatCollection.h"
+#include "Algorithms/Alignment/AlignmentTypes.h"
 
 namespace cqp {
     namespace align {
@@ -28,8 +40,6 @@ namespace cqp {
             /// this needs to be ordered so that the list can be collapsed, dropping the slots we missed
             using ValuesBySlot = std::map<SlotID, std::vector<Qubit>>;
 
-            /// Identifier type bins
-            using BinID = uint64_t;
             /// A list of results with each bin is a list of slots for the data
             using ResultsByBinBySlot = std::vector</*BinID,*/ ValuesBySlot>;
 
@@ -98,7 +108,7 @@ namespace cqp {
                 drift = newDrift;
             }
 
-            void SetChannelCorrections(std::vector<double> newChannelCorrections)
+            void SetChannelCorrections(ChannelOffsets newChannelCorrections)
             {
                 channelCorrections = newChannelCorrections;
             }
@@ -149,7 +159,7 @@ namespace cqp {
              * @return true on success
              */
             template<typename Iter>
-            static bool FilterDetections(Iter validSlotsBegin, Iter validSlotsEnd, QubitList& qubits, ssize_t offset = 0)
+            static bool FilterDetections(Iter validSlotsBegin, Iter validSlotsEnd, QubitList& qubits, int_fast32_t offset = 0)
             {
                 using namespace std;
                 bool result = false;
@@ -158,7 +168,7 @@ namespace cqp {
 
                 if(validSlotsSize <= qubits.size())
                 {
-                    uint64_t index = 0;
+                    size_t index = 0;
                     for(auto validSlot = validSlotsBegin; validSlot != validSlotsEnd; validSlot++)
                     {
                         const auto adjustedSlot = *validSlot + offset;
@@ -226,14 +236,14 @@ namespace cqp {
             /// The detection window for a qubit.
             const PicoSeconds txJitter;
             /// slotWidth / pulseWidth
-            const uint64_t numBins;
+            const BinID numBins;
             /// The percentage (0 to 1) of counts required for the slice on the histogram to be included in the counts.
             /// A higher ratio mean less of the peak detections is accepted and less noise.
             double acceptanceRatio;
             /// clock drift between tx and rx
             double drift {0.0};
             /// Amount of time to offset each channel to bring them perfectly overlapped.
-            std::vector<double> channelCorrections;
+            ChannelOffsets channelCorrections;
         };
 
     } // namespace align

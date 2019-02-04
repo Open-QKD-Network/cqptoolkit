@@ -1,3 +1,14 @@
+/*!
+* @file
+* @brief Drift
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 9/11/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
 #include "Drift.h"
 #include <future>
 #include "Algorithms/Alignment/Filter.h"
@@ -19,7 +30,7 @@ namespace cqp {
 
         void Drift::Histogram(const DetectionReportList::const_iterator& start,
                        const DetectionReportList::const_iterator& end,
-                       uint64_t numBins,
+                       uint_fast16_t numBins,
                        PicoSeconds windowWidth,
                        std::vector<uint64_t>& counts)
         {
@@ -30,7 +41,7 @@ namespace cqp {
             for(auto detection = start; detection < end; ++detection)
             {
                 using namespace std::chrono;
-                const uint64_t bin = (DivNearest((detection->time % windowWidth).count(), binWidth.count())) % numBins;
+                const uint_fast16_t bin = (DivNearest((detection->time % windowWidth).count(), binWidth.count())) % numBins;
                 counts[bin]++;
             }
 
@@ -38,22 +49,22 @@ namespace cqp {
 
         void Drift::Histogram(const DetectionReportList::const_iterator& start,
                        const DetectionReportList::const_iterator& end,
-                       uint64_t numBins,
+                       uint_fast16_t numBins,
                        PicoSeconds windowWidth,
-                       std::vector<uint64_t>& counts,
-                       uint8_t channel)
+                       ChannelHistograms& counts)
         {
-            counts.resize(numBins, 0);
+            for(auto& hist : counts)
+            {
+                hist.resize(numBins, 0);
+            }
             const auto binWidth = windowWidth / numBins;
             // for each detection
             //   count the bin ids
             for(auto detection = start; detection < end; ++detection)
             {
-                if (detection->value == channel){
-                    using namespace std::chrono;
-                    const uint64_t bin = DivNearest((detection->time % windowWidth).count(), binWidth.count());
-                    counts[bin]++;
-                }
+                using namespace std::chrono;
+                const uint_fast16_t bin = DivNearest((detection->time % windowWidth).count(), binWidth.count());
+                counts[detection->value][bin]++;
             }
 
         }
@@ -64,7 +75,7 @@ namespace cqp {
             using namespace std;
             using namespace std::chrono;
 
-            const auto binsCentre = driftBins / 2;
+            const int_fast16_t binsCentre = driftBins / 2;
             std::vector<uint64_t> histogram;
             /*LOGDEBUG("Look from " + to_string(sampleStart->time.count()) + " to " +
                      to_string(sampleEnd->time.count()) + " in " +
@@ -78,16 +89,16 @@ namespace cqp {
             const auto maxIt = std::max_element(histogram.cbegin(), histogram.cend());
 
             double average = 0.0;
-            const size_t peakOffset = static_cast<size_t>(distance(histogram.cbegin(), maxIt));
+            const ssize_t peakOffset = distance(histogram.cbegin(), maxIt);
             size_t totalWeights = 0;
             // shift the index so the peak is in the middle
-            const ssize_t indexShift = binsCentre - peakOffset;
+            const int_fast16_t indexShift = binsCentre - peakOffset;
 
-            for(auto index = 0u; index < driftBins; index++)
+            for(uint_fast16_t index = 0u; index < driftBins; index++)
             {
                 // virtually roll the graph so that the peak is in the centre, add one so the first bin number is one,
                 // otherwise the fist bin wont count (*0)
-                const auto shiftedBin = ((driftBins + indexShift + index) % driftBins) + 1;
+                const auto shiftedBin = ((static_cast<int_fast16_t>(driftBins + index) + indexShift) % driftBins) + 1;
                 // weighted agverage based on the counts by multiplying the bin count (height of the peak) by
                 // the bin number (~time) to find the mean of the peak - we want a fractional number not
                 // just a bin.
@@ -95,56 +106,64 @@ namespace cqp {
                 average += shiftedBin * static_cast<double>(histogram[index]);
             }
 
-            average /= totalWeights;
-            // fix the peak offset
-            average = fmod(average + driftBins - indexShift - 1, driftBins) ;
+            if(totalWeights != 0)
+            {
+                average /= totalWeights;
+                // fix the peak offset
+                average = fmod(average + driftBins - indexShift - 1, driftBins);
+            }
 
             //LOGDEBUG("Peak: " + to_string(result.count()));
             return average;
         } // FindPeak
 
-        std::vector<double> Drift::ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
+        ChannelOffsets Drift::ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
                       DetectionReportList::const_iterator sampleEnd) const
         {
             using namespace std;
             using namespace std::chrono;
 
-            const auto binsCentre = driftBins / 2;
+            const int_fast16_t binsCentre = driftBins / 2;
 
-            std::vector< std::vector<uint64_t> > channelHistograms(4);
-            std::vector<double> channelCentres(4);
-            int channel = 0;
+            ChannelHistograms channelHistograms;
+            ChannelOffsets channelCentres;
+
+            Histogram(sampleStart, sampleEnd, driftBins, slotWidth, channelHistograms);
+
+            uint_fast8_t channelIndex = 0;
 
             for(auto hist : channelHistograms){
-                hist.resize(driftBins,0);
-                Histogram(sampleStart, sampleEnd, driftBins, slotWidth, hist, channel);
 
                 // get the extents of the graphs to find the centre of the transmission.
                 const auto maxIt = std::max_element(hist.cbegin(), hist.cend());
 
                 double average = 0.0;
-                const size_t peakOffset = static_cast<size_t>(distance(hist.cbegin(), maxIt));
-                size_t totalWeights = 0;
+                const int_fast16_t peakOffset = distance(hist.cbegin(), maxIt);
+                uint64_t totalWeights = 0;
 
                 for(auto index = 0u; index < driftBins; index++)
                 {
                     // virtually roll the graph so that the peak is in the centre
                     const auto shiftedBin = driftBins - ((driftBins + peakOffset + binsCentre - index) % driftBins);
                     // weighted agverage based on the counts by multiplying the bin count (height of the peak) by
-                    // the bin number (~time) to find the mean of the peak - we wan a fractional number not
+                    // the bin number (~time) to find the mean of the peak - we want a fractional number not
                     // just a bin.
                     totalWeights += hist[index];
-                    average += static_cast<double>(hist[index]) * shiftedBin;
+                    average += shiftedBin * static_cast<double>(hist[index]);
                 }
 
-                average /= totalWeights;
-                // fix the peak offset
-                average = average + binsCentre - peakOffset;
+                if(totalWeights != 0)
+                {
+                    average /= totalWeights;
+                    // fix the peak offset
+                    average = round((average + binsCentre - peakOffset) * 1000);
+                }
 
                 //LOGDEBUG("Peak: " + to_string(result.count()));
-                channelCentres[channel] = average;
-                channel++;
+                channelCentres[channelIndex] = PicoSecondOffset{static_cast<PicoSecondOffset::rep>(average)};
+                channelIndex++;
             }
+
             return channelCentres;
         } // FindPeak
 
@@ -171,7 +190,7 @@ namespace cqp {
 
             auto sampleStart = start;
             auto sampleEnd = end;
-            size_t sampleIndex = 1;
+            uint_fast16_t sampleIndex = 1;
 
             {
                 // this will produce a sawtooth graph, the number of peaks depends on how often the drift pushes the peak past a slot edge
@@ -259,7 +278,7 @@ namespace cqp {
                 // |____________
 
                 double slope = 0.0;
-                size_t slopeSamples = 0;
+                uint_fast16_t slopeSamples = 0;
 
                 for(auto index = 0u; index < peaks.size() - 1; index++)
                 {

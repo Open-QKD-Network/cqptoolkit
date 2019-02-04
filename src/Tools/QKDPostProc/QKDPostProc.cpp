@@ -213,8 +213,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
             }
             gating.SetDrift(driftValue);
 
-            std::vector<double> channelCorrections(4, 0);
-            channelCorrections = drift.ChannelFindPeak(start, end);
+            const auto channelCorrections = drift.ChannelFindPeak(start, end);
             gating.SetChannelCorrections(channelCorrections);
 
             {

@@ -1,6 +1,18 @@
+/*!
+* @file
+* @brief Drift
+*
+* @copyright Copyright (C) University of Bristol 2017
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 9/11/2018
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
 #pragma once
 #include "Algorithms/Datatypes/Chrono.h"
 #include "Algorithms/Datatypes/DetectionReport.h"
+#include "Algorithms/Alignment/AlignmentTypes.h"
 
 namespace cqp {
     namespace align {
@@ -34,10 +46,13 @@ namespace cqp {
                             const DetectionReportList::const_iterator& end) const;
 
             // Dave adds channel sync code here for now.
-            std::vector<double> ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
+            ChannelOffsets ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
                                   DetectionReportList::const_iterator sampleEnd) const;
 
         protected: // methods
+
+            /// A list of histograms, one for each channel
+            using ChannelHistograms = std::array<std::vector<uint64_t>, maxChannels>;
 
             /**
              * @brief Histogram
@@ -50,17 +65,19 @@ namespace cqp {
              */
             static void Histogram(const DetectionReportList::const_iterator& start,
                            const DetectionReportList::const_iterator& end,
-                           uint64_t numBins,
+                           uint_fast16_t numBins,
                            PicoSeconds windowWidth,
                            std::vector<uint64_t>& counts);
 
-            // Dave says: How to comment overloaded functions? This plots a histogram for only a given channel's tags.
+            /**
+             * @copydoc Histogram
+             * @details This plots a histogram for each channel's tags.
+             */
             static void Histogram(const DetectionReportList::const_iterator& start,
                            const DetectionReportList::const_iterator& end,
-                           uint64_t numBins,
+                           uint_fast16_t numBins,
                            PicoSeconds windowWidth,
-                           std::vector<uint64_t>& counts,
-                           uint8_t channel);
+                           ChannelHistograms& counts);
 
             /**
              * @brief FindPeak
@@ -85,7 +102,7 @@ namespace cqp {
                           std::vector<double>::const_iterator& maximum) const;
         protected:
             /// The number of histogram bins to use when calculating drift
-            uint64_t driftBins;
+            BinID driftBins;
             /// Picoseconds of time in which one qubit can be detected. slot width = frame width / number transmissions per frame
             const PicoSeconds slotWidth;
             /// The window used for calculating drift
