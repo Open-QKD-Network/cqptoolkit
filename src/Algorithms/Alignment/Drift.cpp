@@ -192,56 +192,54 @@ namespace cqp {
             auto sampleEnd = end;
             uint_fast16_t sampleIndex = 1;
 
+            // this will produce a sawtooth graph, the number of peaks depends on how often the drift pushes the peak past a slot edge
+            ProcessingQueue<double> workQueue
+        #if defined(_DEBUG)
+                        (1)
+        #endif
+            ;
+
+            std::vector<std::future<double>> peakFutures;
+
+            while(distance(sampleStart, end) > 1)
             {
-                // this will produce a sawtooth graph, the number of peaks depends on how often the drift pushes the peak past a slot edge
-                ProcessingQueue<double> workQueue
-            #if defined(_DEBUG)
-                            (1)
-            #endif
-                ;
+                DetectionReport cutoff;
+                cutoff.time = start->time + driftSampleTime * sampleIndex;
+                // use the binary search to find the point in the data where the time is past our sample time limit
+                Filter::FindThreshold<DetectionReport>(sampleStart, sampleEnd, cutoff, sampleEnd, [](const auto& left, const auto& right){
+                                                      return left.time > right.time;
+                });
 
-                std::vector<std::future<double>> peakFutures;
-
-                while(distance(sampleStart, end) > 1)
+                if(sampleEnd != (end - 1) || sampleEnd->time - sampleStart->time >= driftSampleTime)
                 {
-                    DetectionReport cutoff;
-                    cutoff.time = start->time + driftSampleTime * sampleIndex;
-                    // use the binary search to find the point in the data where the time is past our sample time limit
-                    Filter::FindThreshold<DetectionReport>(sampleStart, sampleEnd, cutoff, sampleEnd, [](const auto& left, const auto& right){
-                                                          return left.time > right.time;
-                    });
-
-                    if(sampleEnd != (end - 1) || sampleEnd->time - sampleStart->time >= driftSampleTime)
-                    {
-                        peakFutures.emplace_back(
-                                workQueue.Enqueue([&, sampleStart, sampleEnd]() {
-                                    return FindPeak(move(sampleStart), move(sampleEnd));
-                                })
-                        );
-                    }
-                    //LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
-                    // set the start of the next sample
-                    sampleStart = sampleEnd;
-                    sampleEnd = end;
-                    sampleIndex++;
+                    peakFutures.emplace_back(
+                            workQueue.Enqueue([&, sampleStart, sampleEnd]() {
+                                return FindPeak(sampleStart, sampleEnd);
+                            })
+                    );
                 }
+                //LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
+                // set the start of the next sample
+                sampleStart = sampleEnd;
+                sampleEnd = end;
+                sampleIndex++;
+            } // while samples left
 
-                // set the size now to the max iterator doesn't get invalidated
-                peaks.resize(peakFutures.size());
-                maximum = peaks.end();
-                auto index = 0u;
+            // set the size now to the max iterator doesn't get invalidated
+            peaks.resize(peakFutures.size());
+            maximum = peaks.end();
+            auto index = 0u;
 
-                for(auto& fut : peakFutures)
+            for(auto& fut : peakFutures)
+            {
+                peaks[index] = fut.get();
+                if(maximum == peaks.end() || peaks[index] > *maximum)
                 {
-                    peaks[index] = fut.get();
-                    if(maximum == peaks.end() || peaks[index] > *maximum)
-                    {
-                        // new high point
-                        maximum = peaks.begin() + index;
-                    }
-                    index++;
+                    // new high point
+                    maximum = peaks.begin() + index;
                 }
-            }
+                index++;
+            } // for peakFutures
 
             /* store the values for the peaks so we can discover the shift/wraparound
              the sequential values may wrap around the slot width:

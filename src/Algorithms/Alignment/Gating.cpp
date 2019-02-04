@@ -112,7 +112,7 @@ namespace cqp {
                     slotOffset = 1;
                 }
                 binCount++;
-                for(auto slot : slotResults[binId])
+                for(const auto& slot : slotResults[binId])
                 {
                     const auto mySlot = slot.first + slotOffset;
                     // add the qubits to the list for this slot, one will be chosen at random later
@@ -130,7 +130,7 @@ namespace cqp {
 
             // as the list is ordered, the qubits will come out in the correct order
             // just append them to the result list
-            for(auto list : qubitsBySlot)
+            for(const auto& list : qubitsBySlot)
             {
                 if(!list.second.empty())
                 {

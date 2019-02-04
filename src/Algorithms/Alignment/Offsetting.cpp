@@ -6,8 +6,7 @@ namespace cqp {
     namespace align {
 
         Offsetting::Offsetting(size_t samples):
-            samples(samples),
-            rangeWorker()
+            samples(samples)
         {
 
         }

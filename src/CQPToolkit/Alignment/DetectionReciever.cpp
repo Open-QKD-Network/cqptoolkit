@@ -109,7 +109,7 @@ namespace align {
 
                         if(highest.value > 0.8)
                         {
-                            gating.FilterDetections(validSlots.cbegin(), validSlots.cend(), *results, highest.offset);
+                            Gating::FilterDetections(validSlots.cbegin(), validSlots.cend(), *results, highest.offset);
 
                             // TODO: calculate security parameter
 

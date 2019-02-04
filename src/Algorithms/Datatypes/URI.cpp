@@ -12,7 +12,6 @@
 #include "URI.h"
 #include "Algorithms/Logging/Logger.h"
 #include "Algorithms/Util/Strings.h"
-#include <set>
 #include "Algorithms/Net/DNS.h"
 #include "Algorithms/Net/Sockets/Socket.h"
 
@@ -24,7 +23,7 @@ namespace cqp
     // compile the regular expression once
     // doing this at object creation is expensive
     // see https://stackoverflow.com/questions/5620235/cpp-regular-expression-to-validate-url
-    const std::regex urlRegExTemplate(R"foo(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)foo",
+    const std::regex URI::urlRegExTemplate(R"foo(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)foo",
                                       std::regex::extended
                                      );
 
@@ -455,7 +454,7 @@ namespace cqp
         }
     }
 
-    const std::set<char> Unresserved = {
+    const std::set<char> URI::Unresserved = {
         '0', '1', '2', '3', '4',
         '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e',

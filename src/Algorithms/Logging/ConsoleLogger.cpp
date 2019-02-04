@@ -21,9 +21,7 @@ namespace cqp
 {
     using namespace std;
     /// Holds the single instance of the console logger
-    ConsoleLogger* theConsoleLogger = nullptr;
-    /// Ansi escape sequence for the default console colour
-    static const std::string DefaultColour = "\x1b[39;49m";
+    ConsoleLogger* ConsoleLogger::theConsoleLogger = nullptr;
 
     ConsoleLogger::ConsoleLogger()
     {
@@ -40,6 +38,9 @@ namespace cqp
 
     void ConsoleLogger::Log(LogLevel level, const std::string& message)
     {
+        /// Ansi escape sequence for the default console colour
+        static const std::string DefaultColour = "\x1b[39;49m";
+
         if (level > LogLevel::Silent && level <= currentOutput)
         {
             lock_guard<mutex> lock(consoleLock);

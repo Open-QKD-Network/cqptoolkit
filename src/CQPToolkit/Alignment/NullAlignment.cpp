@@ -15,11 +15,6 @@
 namespace cqp {
     namespace align {
 
-        NullAlignment::NullAlignment()
-        {
-
-        }
-
         void NullAlignment::OnPhotonReport(std::unique_ptr<ProtocolDetectionReport> report)
         {
 

@@ -16,6 +16,7 @@
 #include <array>
 #include <sstream>
 #include <regex>
+#include <set>
 
 namespace cqp
 {
@@ -286,6 +287,10 @@ namespace cqp
 
         /// regular expression used to dissect the string
         std::regex urlRegEx;
+        /// Pre-built template for urlRegEx
+        static const std::regex urlRegExTemplate;
+        /// A lis of reserved characters
+        static const std::set<char> Unresserved;
     };
 
 } // namespace cqp

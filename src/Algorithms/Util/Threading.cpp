@@ -126,4 +126,38 @@ namespace cqp {
         return result;
     }
 
+    ThreadManager::~ThreadManager()
+    {
+        stopProcessing = true;
+        pendingCv.notify_all();
+
+        for(auto& worker : threads)
+        {
+            if(worker.joinable())
+            {
+                worker.join();
+            }
+        }
+    }
+
+    bool ThreadManager::SetPriority(int niceLevel, Scheduler policy, int realtimePriority)
+    {
+        bool result = true;
+        for(auto& thread : threads)
+        {
+            result &= cqp::SetPriority(thread, niceLevel, policy, realtimePriority);
+        }
+
+        return result;
+    }
+
+    void ThreadManager::ConstructThreads(uint numThreads)
+    {
+        threads.reserve(numThreads);
+        for(auto index = 0u; index < numThreads; index++)
+        {
+            threads.emplace_back(std::thread(&ThreadManager::Processor, this));
+        }
+    }
+
 }

@@ -30,7 +30,7 @@ namespace cqp {
                 protected WorkerThread
         {
         public:
-            NullAlignment();
+            NullAlignment() = default;
 
             ~NullAlignment() override
             {

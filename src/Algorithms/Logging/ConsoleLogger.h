@@ -75,6 +75,8 @@ namespace cqp
         std::mutex consoleLock;
         /// whether this system can print text in colour
         bool supportsColour = false;
+
+        static ConsoleLogger* theConsoleLogger;
     };
 
 }

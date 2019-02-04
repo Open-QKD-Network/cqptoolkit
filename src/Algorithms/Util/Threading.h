@@ -42,19 +42,7 @@ namespace cqp
     public:
 
         /// Distructor
-        virtual ~ThreadManager()
-        {
-            stopProcessing = true;
-            pendingCv.notify_all();
-
-            for(auto& worker : threads)
-            {
-                if(worker.joinable())
-                {
-                    worker.join();
-                }
-            }
-        }
+        virtual ~ThreadManager();
 
         /**
          * @brief SetPriority
@@ -64,16 +52,7 @@ namespace cqp
          * @param policy The kind of scheduler to use
          * @return true on success
          */
-        bool SetPriority(int niceLevel = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1)
-        {
-            bool result = true;
-            for(auto index = 0u; index < threads.size(); index++)
-            {
-                result &= cqp::SetPriority(threads[index], niceLevel, policy, realtimePriority);
-            }
-
-            return result;
-        }
+        bool SetPriority(int niceLevel = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
 
     protected: // methods
         /**
@@ -86,14 +65,7 @@ namespace cqp
          * Create the threads, called by the calss which implements the Processor function on creation.
          * @param numThreads The numnber of threads to create
          */
-        void ConstructThreads(uint numThreads = std::thread::hardware_concurrency())
-        {
-            threads.reserve(numThreads);
-            for(auto index = 0u; index < numThreads; index++)
-            {
-                threads.emplace_back(std::thread(&ThreadManager::Processor, this));
-            }
-        }
+        void ConstructThreads(uint numThreads = std::thread::hardware_concurrency());
 
     protected: // members
         /// The processing threads
