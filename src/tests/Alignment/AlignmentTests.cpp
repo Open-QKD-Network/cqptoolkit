@@ -72,9 +72,9 @@ namespace cqp
 
             const uint64_t cutoff = 43;
             std::vector<uint64_t>::const_iterator edge;
-            ASSERT_TRUE(align::Filter::FindEdge(graph.begin(), graph.end(), cutoff, edge));
+            ASSERT_TRUE(align::Filter::FindThreshold(graph.begin(), graph.end(), cutoff, edge));
             ASSERT_EQ(*edge, 5);
-            ASSERT_TRUE(align::Filter::FindEdge<uint64_t>(graph.begin(), graph.end(), cutoff, edge, std::greater<uint64_t>()));
+            ASSERT_TRUE(align::Filter::FindThreshold<uint64_t>(graph.begin(), graph.end(), cutoff, edge, std::greater<uint64_t>()));
             ASSERT_EQ(*edge, 45);
         }
 

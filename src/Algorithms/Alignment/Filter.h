@@ -209,7 +209,7 @@ namespace cqp {
              * @return true if the edge was found.
              */
             template<typename T, typename Iter>
-            static bool FindEdge(Iter start, Iter end, T cutoff,
+            static bool FindThreshold(Iter start, Iter end, T cutoff,
                           Iter& edge,
                           std::function<bool (const T&, const T&)> comparator = std::less<T>())
             {

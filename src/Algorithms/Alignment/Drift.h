@@ -31,7 +31,7 @@ namespace cqp {
              * @return Picoseconds drift
              */
             double Calculate(const DetectionReportList::const_iterator& start,
-                                            const DetectionReportList::const_iterator& end) const;
+                            const DetectionReportList::const_iterator& end) const;
 
             // Dave adds channel sync code here for now.
             std::vector<double> ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
@@ -72,6 +72,17 @@ namespace cqp {
             double FindPeak(DetectionReportList::const_iterator sampleStart,
                                   DetectionReportList::const_iterator sampleEnd) const;
 
+            /**
+             * @brief GetPeaks Runs FindPeak over a complete data set to produce a list of peaks
+             * @param start Start point for data
+             * @param end End point for data
+             * @param[out] peaks The position in bins of the peaks
+             * @param maximum The highest value found
+             */
+            void GetPeaks(const DetectionReportList::const_iterator& start,
+                          const DetectionReportList::const_iterator& end,
+                          std::vector<double>& peaks,
+                          std::vector<double>::const_iterator& maximum) const;
         protected:
             /// The number of histogram bins to use when calculating drift
             uint64_t driftBins;

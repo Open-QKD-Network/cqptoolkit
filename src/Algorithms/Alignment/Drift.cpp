@@ -3,6 +3,7 @@
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Logging/Logger.h"
 #include "Algorithms/Util/Maths.h"
+#include "Algorithms/Util/ProcessingQueue.h"
 
 namespace cqp {
     namespace align {
@@ -29,7 +30,7 @@ namespace cqp {
             for(auto detection = start; detection < end; ++detection)
             {
                 using namespace std::chrono;
-                const uint64_t bin = DivNearest((detection->time % windowWidth).count(), binWidth.count());
+                const uint64_t bin = (DivNearest((detection->time % windowWidth).count(), binWidth.count())) % numBins;
                 counts[bin]++;
             }
 
@@ -70,7 +71,6 @@ namespace cqp {
                      to_string(distance(sampleStart, sampleEnd)) + " samples");
 */
 
-            histogram.resize(driftBins, 0);
             // create a histogram of the sample
             Histogram(sampleStart, sampleEnd, driftBins, slotWidth, histogram);
 
@@ -80,21 +80,24 @@ namespace cqp {
             double average = 0.0;
             const size_t peakOffset = static_cast<size_t>(distance(histogram.cbegin(), maxIt));
             size_t totalWeights = 0;
+            // shift the index so the peak is in the middle
+            const ssize_t indexShift = binsCentre - peakOffset;
 
             for(auto index = 0u; index < driftBins; index++)
             {
-                // virtually roll the graph so that the peak is in the centre
-                const auto shiftedBin = driftBins - ((driftBins + peakOffset + binsCentre - index) % driftBins);
+                // virtually roll the graph so that the peak is in the centre, add one so the first bin number is one,
+                // otherwise the fist bin wont count (*0)
+                const auto shiftedBin = ((driftBins + indexShift + index) % driftBins) + 1;
                 // weighted agverage based on the counts by multiplying the bin count (height of the peak) by
-                // the bin number (~time) to find the mean of the peak - we wan a fractional number not
+                // the bin number (~time) to find the mean of the peak - we want a fractional number not
                 // just a bin.
                 totalWeights += histogram[index];
-                average += static_cast<double>(histogram[index]) * shiftedBin;
+                average += shiftedBin * static_cast<double>(histogram[index]);
             }
 
             average /= totalWeights;
             // fix the peak offset
-            average = average + binsCentre - peakOffset;
+            average = fmod(average + driftBins - indexShift - 1, driftBins) ;
 
             //LOGDEBUG("Peak: " + to_string(result.count()));
             return average;
@@ -145,8 +148,10 @@ namespace cqp {
             return channelCentres;
         } // FindPeak
 
-        double Drift::Calculate(const DetectionReportList::const_iterator& start,
-                                        const DetectionReportList::const_iterator& end) const
+        
+        void Drift::GetPeaks(const DetectionReportList::const_iterator& start,
+                      const DetectionReportList::const_iterator& end,
+                      std::vector<double>& peaks, std::vector<double>::const_iterator& maximum) const
         {
             using namespace std;
             /*
@@ -168,30 +173,55 @@ namespace cqp {
             auto sampleEnd = end;
             size_t sampleIndex = 1;
 
-            // this will produce a sawtooth graph, the number of peaks depends on how often the drift pushes the peak past a slot edge
-            vector<future<double>> peakFutures;
+            {
+                // this will produce a sawtooth graph, the number of peaks depends on how often the drift pushes the peak past a slot edge
+                ProcessingQueue<double> workQueue
+            #if defined(_DEBUG)
+                            (1)
+            #endif
+                ;
 
-             while(distance(sampleStart, end) > 1)
-             {
-                DetectionReport cutoff;
-                cutoff.time = start->time + driftSampleTime * sampleIndex;
-                // use the binary search to find the point in the data where the time is past our sample time limit
-                if(!Filter::FindEdge<DetectionReport>(sampleStart, sampleEnd, cutoff, sampleEnd, [](const auto& left, const auto&right){
-                   return left.time > right.time;
-                }))
+                std::vector<std::future<double>> peakFutures;
+
+                while(distance(sampleStart, end) > 1)
                 {
-                    LOGERROR("Failed to find the time slice, using the last element");
+                    DetectionReport cutoff;
+                    cutoff.time = start->time + driftSampleTime * sampleIndex;
+                    // use the binary search to find the point in the data where the time is past our sample time limit
+                    Filter::FindThreshold<DetectionReport>(sampleStart, sampleEnd, cutoff, sampleEnd, [](const auto& left, const auto& right){
+                                                          return left.time > right.time;
+                    });
+
+                    if(sampleEnd != (end - 1) || sampleEnd->time - sampleStart->time >= driftSampleTime)
+                    {
+                        peakFutures.emplace_back(
+                                workQueue.Enqueue([&, sampleStart, sampleEnd]() {
+                                    return FindPeak(move(sampleStart), move(sampleEnd));
+                                })
+                        );
+                    }
+                    //LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
+                    // set the start of the next sample
+                    sampleStart = sampleEnd;
+                    sampleEnd = end;
+                    sampleIndex++;
                 }
-                //LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
 
-                auto findStart = sampleStart;
-                auto findEnd = sampleEnd;
-                peakFutures.push_back(async(launch::deferred, &Drift::FindPeak, this, move(findStart), move(findEnd)));
+                // set the size now to the max iterator doesn't get invalidated
+                peaks.resize(peakFutures.size());
+                maximum = peaks.end();
+                auto index = 0u;
 
-                // set the start of the next sample
-                sampleStart = sampleEnd;
-                sampleEnd = end;
-                sampleIndex++;
+                for(auto& fut : peakFutures)
+                {
+                    peaks[index] = fut.get();
+                    if(maximum == peaks.end() || peaks[index] > *maximum)
+                    {
+                        // new high point
+                        maximum = peaks.begin() + index;
+                    }
+                    index++;
+                }
             }
 
             /* store the values for the peaks so we can discover the shift/wraparound
@@ -204,67 +234,50 @@ namespace cqp {
              |    |/       |  \|
              |_________    |_________
             */
+
+        } // GetPeaks
+
+        double Drift::Calculate(const DetectionReportList::const_iterator& start,
+                                        const DetectionReportList::const_iterator& end) const
+        {
+            using namespace std;
             std::vector<double> peaks;
-            peaks.reserve(peakFutures.size());
 
-            // copy the values from the other threads and find the highest peak
-            for(auto peakFutIndex = 0u; peakFutIndex < peakFutures.size(); peakFutIndex++)
-            {
-                const auto value = peakFutures[peakFutIndex].get();
+            std::vector<double>::const_iterator maximum = peaks.end();
 
-                peaks.push_back(value);
+            GetPeaks(start, end, peaks, maximum);
 
-            }
-
-            const auto binTime = (chrono::duration_cast<SecondsDouble>(slotWidth).count() / driftBins);
-            double minimum = peaks[0];
-            double maximum = peaks[0];
-            size_t slopeStart = 0;
             double drift = 0.0;
-            uint numSlopes = 0;
-
-            for(auto index = 0u; index < peaks.size(); index++)
+            if(!peaks.empty())
             {
-                if(peaks[index] < minimum)
-                {
-                    // new low point
-                    minimum = peaks[index];
-                }
+                const auto binTime = (chrono::duration_cast<SecondsDouble>(slotWidth).count() / driftBins);
+                // find a single slope
+                // the signal may have multiple slopes
+                // | /|  /|  /|
+                // |/ | / | / |
+                // |  |/  |/  |/
+                // |____________
 
-                if(peaks[index] > maximum)
+                double slope = 0.0;
+                size_t slopeSamples = 0;
+
+                for(auto index = 0u; index < peaks.size() - 1; index++)
                 {
-                    // new high point
-                    maximum = peaks[index];
-                }
-                auto nextIndex = (index + 1) % peaks.size();
-                auto peakDiff = abs(peaks[index] - peaks[nextIndex]);
-                if(peakDiff - minimum > peaks[index])
-                {
-                    // we found an edge in the sawtooth,
-                    // from slope start to index repressents a slope (ether positive or negative)
-                    // The indices for the peaks are distanace from the slot start to the peak in 0 to the number of bins
-                    // a bin is (slotwith / bins) long in time
-                    double slopeTime = static_cast<double>(index - slopeStart + 1) * chrono::duration_cast<SecondsDouble>(driftSampleTime).count();
-                    // take the difference between the extremes and scale it by the time covered by the samples
-                    // the slope height represents the drift per sample
-                    double slopeHeight = (maximum - minimum) * binTime;
-                    if(peaks[slopeStart] < peaks[nextIndex])
+
+                    auto nextIndex = index + 1;
+                    auto peakDiff = peaks[nextIndex] - peaks[index];
+
+                    if(abs(peakDiff) < *maximum / 2.0)
                     {
-                        // The slope is positive, make the drift negative
-                        drift *= -1.0;
+                        // we havn't hit an edge
+                        slope += peakDiff;
+                        slopeSamples++;
                     }
-                    // add it to the total which will be averaged later
-                    drift += slopeHeight / slopeTime;
-                    numSlopes++;
-
-                    // reset for the next slope
-                    minimum = peaks[nextIndex];
-                    maximum = peaks[nextIndex];
-                    slopeStart = nextIndex;
                 }
-            }
 
-            drift /= numSlopes;
+                // last element
+                drift = (slope * binTime) / (slopeSamples * chrono::duration_cast<SecondsDouble>(driftSampleTime).count());
+            }
 
             return drift;
         } // CalculateDrift
