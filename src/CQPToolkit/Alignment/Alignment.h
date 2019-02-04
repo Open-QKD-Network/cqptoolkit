@@ -42,11 +42,6 @@ namespace cqp
              */
             Alignment() {}
 
-            /// a mutex for use with receivedDataCv
-            std::mutex receivedDataMutex;
-            /// used for waiting for new data to arrive
-            std::condition_variable receivedDataCv;
-
             /// our alignment sequence counter
             SequenceNumber seq = 0;
 

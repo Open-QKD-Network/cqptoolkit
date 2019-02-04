@@ -53,17 +53,11 @@ namespace cqp
 
             ~PrivacyAmplify() override {
                 Stop(true);
-                receivedDataCv.notify_all();
             }
             /// the publisher for this instance
             Statistics stats;
 
         protected:
-            /// a mutex for use with receivedDataCv
-            std::mutex receivedDataMutex;
-            /// used for waiting for new data to arrive
-            std::condition_variable receivedDataCv;
-
             /// @{
             /// @name WorkerThread overrides
 

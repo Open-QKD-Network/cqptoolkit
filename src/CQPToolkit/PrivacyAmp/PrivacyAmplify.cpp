@@ -63,12 +63,12 @@ namespace cqp
             using namespace std;
             while(!ShouldStop())
             {
-                unique_lock<mutex> lock(receivedDataMutex);
+                unique_lock<mutex> lock(accessMutex);
                 bool dataReady = false;
-                receivedDataCv.wait(lock, [&]
+                threadConditional.wait(lock, [&]
                 {
                     // check if data is ready
-                    return false || ShouldStop(); // TODO
+                    return false || state == State::Stop; // TODO
                 });
 
                 if(dataReady)

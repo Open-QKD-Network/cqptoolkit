@@ -18,6 +18,12 @@ namespace cqp
     namespace sift
     {
 
+        Receiver::Receiver() :
+            SiftBase::SiftBase(statesMutex, statesCv)
+        {
+
+        }
+
         grpc::Status Receiver::VerifyBases(grpc::ServerContext*, const remote::BasisBySiftFrame* request, remote::AnswersByFrame* response)
         {
             using std::chrono::high_resolution_clock;
@@ -29,8 +35,8 @@ namespace cqp
 
             // wait for incoming data
             /*lock scope*/{
-                unique_lock<mutex> lock(collectedStatesMutex);
-                dataReady = collectedStatesCv.wait_for(lock, receiveTimeout, [&](){
+                unique_lock<mutex> lock(statesMutex);
+                dataReady = statesCv.wait_for(lock, receiveTimeout, [&](){
                     return collectedStates.find(request->basis().begin()->first) != collectedStates.end();
                 });
             }/*lock scope*/
@@ -41,7 +47,7 @@ namespace cqp
                 result = grpc::Status::OK;
                 try
                 {
-                    std::unique_lock<std::mutex>  lock(collectedStatesMutex);
+                    std::unique_lock<std::mutex>  lock(statesMutex);
 
                     LOGTRACE("First seq number:" + std::to_string(request->basis().begin()->first));
                     QubitsByFrame::iterator firstAnswer =

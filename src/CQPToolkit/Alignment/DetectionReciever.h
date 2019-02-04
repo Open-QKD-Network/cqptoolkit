@@ -87,7 +87,6 @@ namespace align {
         void Disconnect()
         {
             Stop(true);
-            receivedDataCv.notify_all();
             transmitter.reset();
         }
 

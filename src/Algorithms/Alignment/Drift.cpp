@@ -14,7 +14,6 @@
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Logging/Logger.h"
 #include "Algorithms/Util/Maths.h"
-#include "Algorithms/Util/ProcessingQueue.h"
 
 namespace cqp {
     namespace align {
@@ -170,7 +169,7 @@ namespace cqp {
         
         void Drift::GetPeaks(const DetectionReportList::const_iterator& start,
                       const DetectionReportList::const_iterator& end,
-                      std::vector<double>& peaks, std::vector<double>::const_iterator& maximum) const
+                      std::vector<double>& peaks, std::vector<double>::const_iterator& maximum)
         {
             using namespace std;
             /*
@@ -193,11 +192,6 @@ namespace cqp {
             uint_fast16_t sampleIndex = 1;
 
             // this will produce a sawtooth graph, the number of peaks depends on how often the drift pushes the peak past a slot edge
-            ProcessingQueue<double> workQueue
-        #if defined(_DEBUG)
-                        (1)
-        #endif
-            ;
 
             std::vector<std::future<double>> peakFutures;
 
@@ -255,7 +249,7 @@ namespace cqp {
         } // GetPeaks
 
         double Drift::Calculate(const DetectionReportList::const_iterator& start,
-                                        const DetectionReportList::const_iterator& end) const
+                                        const DetectionReportList::const_iterator& end)
         {
             using namespace std;
             std::vector<double> peaks;

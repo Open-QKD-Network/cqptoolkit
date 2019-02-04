@@ -13,6 +13,7 @@
 #include "Algorithms/Datatypes/Chrono.h"
 #include "Algorithms/Datatypes/DetectionReport.h"
 #include "Algorithms/Alignment/AlignmentTypes.h"
+#include "Algorithms/Util/ProcessingQueue.h"
 
 namespace cqp {
     namespace align {
@@ -43,7 +44,7 @@ namespace cqp {
              * @return Picoseconds drift
              */
             double Calculate(const DetectionReportList::const_iterator& start,
-                            const DetectionReportList::const_iterator& end) const;
+                            const DetectionReportList::const_iterator& end);
 
             // Dave adds channel sync code here for now.
             ChannelOffsets ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
@@ -99,7 +100,7 @@ namespace cqp {
             void GetPeaks(const DetectionReportList::const_iterator& start,
                           const DetectionReportList::const_iterator& end,
                           std::vector<double>& peaks,
-                          std::vector<double>::const_iterator& maximum) const;
+                          std::vector<double>::const_iterator& maximum);
         protected:
             /// The number of histogram bins to use when calculating drift
             BinID driftBins;
@@ -107,6 +108,7 @@ namespace cqp {
             const PicoSeconds slotWidth;
             /// The window used for calculating drift
             PicoSeconds driftSampleTime;
+            ProcessingQueue<double> workQueue;
         };
 
     } // namespace align

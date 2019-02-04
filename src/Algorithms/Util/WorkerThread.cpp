@@ -68,6 +68,8 @@ namespace cqp
             state = State::Stop;
         }
 
+        threadConditional.notify_all();
+
         if (wait )
         {
             WorkerThread::Join();

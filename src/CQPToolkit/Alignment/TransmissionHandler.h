@@ -51,6 +51,12 @@ namespace align {
         RandomNumber rng;
         /// What fraction of the data to send for markers
         uint64_t markerFractionToSend = 3;
+
+        /// a mutex for use with receivedDataCv
+        std::mutex receivedDataMutex;
+        /// used for waiting for new data to arrive
+        std::condition_variable receivedDataCv;
+
     };
 
 } // namespace align

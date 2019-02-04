@@ -33,7 +33,7 @@ namespace cqp
              * @brief SiftBase
              * Constructor
              */
-            SiftBase() = default;
+            SiftBase(std::mutex& mutex, std::condition_variable& conditional);
 
             ///@{
             /// @name IAlignmentCallback Interface
@@ -61,16 +61,17 @@ namespace cqp
              */
             void PublishStates(QubitsByFrame::iterator start, QubitsByFrame::iterator end, const remote::AnswersByFrame& answers);
 
-            /// a mutex for use with collectedStatesCv
-            std::mutex collectedStatesMutex;
-            /// used for waiting for new data to arrive
-            std::condition_variable collectedStatesCv;
             /// Data that has accumulated
             QubitsByFrame collectedStates;
             /// identifier for this instance
             std::string instance;
             /// Counter for the sequence number used with each publication of a block of qubits
             SequenceNumber siftedSequence = 0;
+        private:
+            /// a mutex for use with collectedStatesCv
+            std::mutex& statesMutex;
+            /// used for waiting for new data to arrive
+            std::condition_variable& statesCv;
         };
 
     } // namespace sift

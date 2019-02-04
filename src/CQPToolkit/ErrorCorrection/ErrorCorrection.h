@@ -49,7 +49,6 @@ namespace cqp
              */
             ~ErrorCorrection() override {
                 Stop(true);
-                receivedDataCv.notify_all();
             }
 
             /**
@@ -96,11 +95,6 @@ namespace cqp
 
             /// sequence id for the packet of data passed to the next stage
             SequenceNumber ecSeqId = 0;
-
-            /// a mutex for use with receivedDataCv
-            std::mutex receivedDataMutex;
-            /// used for waiting for new data to arrive
-            std::condition_variable receivedDataCv;
 
         }; // ErrorCorrection
     } // namespace ec

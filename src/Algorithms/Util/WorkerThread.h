@@ -96,6 +96,9 @@ namespace cqp
         std::mutex accessMutex;
         /// The thread on which the WorkerThread::ThreadExec() runs
         std::thread worker;
+        /// A conditional to control the thread execution
+        /// this will be triggered by events such as new data and commands to stop the thread
+        std::condition_variable threadConditional;
         /// Method for managing execution of the thread, this will call WorkerThread::DoWork() as necessary
         void ThreadExec();
     };

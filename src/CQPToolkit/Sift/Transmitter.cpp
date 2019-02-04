@@ -18,6 +18,8 @@ namespace cqp
     {
 
         Transmitter::Transmitter(unsigned int framesBeforeVerify) :
+            WorkerThread (),
+            SiftBase (accessMutex, threadConditional),
             minFramesBeforeVerify(framesBeforeVerify)
         {
         }
@@ -62,9 +64,9 @@ namespace cqp
 
                 /*lock scope*/
                 {
-                    std::unique_lock<std::mutex>  lock(collectedStatesMutex);
+                    std::unique_lock<std::mutex>  lock(accessMutex);
                     // Wait for data to be available
-                    result = collectedStatesCv.wait_for(lock, threadTimeout, bind(&Transmitter::ValidateIncomming, this, firstSeq));
+                    result = threadConditional.wait_for(lock, threadTimeout, bind(&Transmitter::ValidateIncomming, this, firstSeq));
 
                     if(result)
                     {
@@ -182,7 +184,7 @@ namespace cqp
                 result = collectedStates.size() >= minFramesBeforeVerify && collectedStates.begin()->first == firstSeq;
             } // else if
 
-            return result;
+            return result || state == State::Stop;
         } // ValidateIncomming
 
 

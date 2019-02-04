@@ -337,7 +337,7 @@ namespace cqp
             google::protobuf::Timestamp timeStamp;
             timeStamp.set_seconds(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 
-            const int itterations = 10;
+            const int itterations = 2;
             for(int i = 0; i < itterations; i++)
             {
                 photons.StartFrame();
@@ -349,8 +349,8 @@ namespace cqp
             }
 
             std::unique_lock<std::mutex> lock(waitMutex);
-            bool dataArrived = waitCv.wait_for(lock, std::chrono::seconds(60), [&](){
-                return alignedCalled == itterations * 2;
+            bool dataArrived = waitCv.wait_for(lock, std::chrono::seconds(600), [&](){
+                return alignedCalled == (itterations * 2);
             });
             detection.Disconnect();
 

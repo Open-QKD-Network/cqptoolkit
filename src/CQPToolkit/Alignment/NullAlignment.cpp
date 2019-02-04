@@ -22,7 +22,7 @@ namespace cqp {
             // collect incoming data, notify listeners of new data
             LOGTRACE("Receiving photon report");
             {
-                lock_guard<mutex> lock(receivedDataMutex);
+                lock_guard<mutex> lock(accessMutex);
                 std::unique_ptr<QubitList> results{new QubitList()};
                 for(const auto& detection : report->detections)
                 {
@@ -30,7 +30,7 @@ namespace cqp {
                 }
                 receivedData.push(move(results));
             }
-            receivedDataCv.notify_one();
+            threadConditional.notify_one();
         }
 
         void NullAlignment::OnEmitterReport(std::unique_ptr<EmitterReport> report)
@@ -39,12 +39,12 @@ namespace cqp {
             // collect incoming data, notify listeners of new data
             LOGTRACE("Receiving emitter report");
             {
-                lock_guard<mutex> lock(receivedDataMutex);
+                lock_guard<mutex> lock(accessMutex);
                 std::unique_ptr<QubitList> results{new QubitList()};
                 *results = report->emissions;
                 receivedData.push(move(results));
             }
-            receivedDataCv.notify_one();
+            threadConditional.notify_one();
         }
 
         void NullAlignment::DoWork()
@@ -55,11 +55,11 @@ namespace cqp {
                 std::unique_ptr<QubitList> report;
 
                 /*lock scope*/{
-                    unique_lock<mutex> lock(receivedDataMutex);
+                    unique_lock<mutex> lock(accessMutex);
                     bool dataReady = false;
-                    receivedDataCv.wait(lock, [&](){
+                    threadConditional.wait(lock, [&](){
                         dataReady = !receivedData.empty();
-                        return dataReady || ShouldStop();
+                        return dataReady || state == State::Stop;
                     });
 
                     if(dataReady)

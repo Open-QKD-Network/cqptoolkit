@@ -26,7 +26,7 @@ namespace cqp
              * @brief SiftReceiver
              * Constructor
              */
-            Receiver() = default;
+            Receiver();
 
             ///@{
             /// @name remote::ISift interface
@@ -54,6 +54,10 @@ namespace cqp
             /// How long to wait for incomming data
             std::chrono::milliseconds receiveTimeout {500};
 
+            /// a mutex for use with collectedStatesCv
+            std::mutex statesMutex;
+            /// used for waiting for new data to arrive
+            std::condition_variable statesCv;
         }; // SiftReceiver
 
     } // namespace Sift

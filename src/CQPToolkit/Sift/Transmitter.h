@@ -25,7 +25,7 @@ namespace cqp
          * Sends incoming qubits to the verifier
          * @details
          */
-        class CQPTOOLKIT_EXPORT Transmitter : public SiftBase, protected WorkerThread
+        class CQPTOOLKIT_EXPORT Transmitter : protected WorkerThread, public SiftBase
         {
         public:
             /**

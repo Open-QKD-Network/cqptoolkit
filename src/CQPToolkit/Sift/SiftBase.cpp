@@ -16,6 +16,12 @@ namespace cqp
     namespace sift
     {
 
+        SiftBase::SiftBase(std::mutex& mutex, std::condition_variable& conditional):
+            statesMutex{mutex}, statesCv{conditional}
+        {
+
+        }
+
         void SiftBase::OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits)
         {
             using namespace std;
@@ -23,7 +29,7 @@ namespace cqp
 
             // Lock scope
             {
-                std::lock_guard<std::mutex>  lock(collectedStatesMutex);
+                std::lock_guard<std::mutex>  lock(statesMutex);
 
                 if(collectedStates.find(seq) == collectedStates.end())
                 {
@@ -35,7 +41,7 @@ namespace cqp
                 } // if else
             } // Lock scope
 
-            collectedStatesCv.notify_one();
+            statesCv.notify_one();
         } //OnAligned
 
         void SiftBase::PublishStates(QubitsByFrame::iterator start, QubitsByFrame::iterator end, const remote::AnswersByFrame& answers)
