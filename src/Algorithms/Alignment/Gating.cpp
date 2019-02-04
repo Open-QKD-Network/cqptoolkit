@@ -48,7 +48,7 @@ namespace cqp {
             {
                 using namespace std::chrono;
                 // calculate the offset in whole picoseconds (signed)
-                const PicoSecondOffset offset { static_cast<int64_t>(round(drift * detection->time.count())) };
+                const PicoSecondOffset offset { static_cast<PicoSecondOffset::rep>(round(drift * detection->time.count())) };
 
                 // offset the time without the original value being converted to a float
                 PicoSeconds  adjustedTime = detection->time - frameStart;

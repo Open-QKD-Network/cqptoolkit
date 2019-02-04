@@ -243,7 +243,7 @@ namespace cqp {
             /// clock drift between tx and rx
             double drift {0.0};
             /// Amount of time to offset each channel to bring them perfectly overlapped.
-            ChannelOffsets channelCorrections;
+            ChannelOffsets channelCorrections {};
         };
 
     } // namespace align
