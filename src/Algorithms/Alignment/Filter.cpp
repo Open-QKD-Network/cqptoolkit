@@ -109,8 +109,8 @@ namespace cqp {
             {
                 // Repeat the process with a fine grain approach within that window
                 result = Isolate(filter, 1, fineThreshold, true, startEdgeRange.first, startEdgeRange.second, startEdgeRange);
-                start = startEdgeRange.first;
             }
+            start = startEdgeRange.first;
 
             IteratorPair endEdgeRange;
             // Look for the rough area where the window ends, starting from the send of the window start
@@ -119,8 +119,8 @@ namespace cqp {
             {
                 // Repeat the process with a fine grain approach within that window
                 result = Isolate(filter, 1, fineThreshold, false, endEdgeRange.first, endEdgeRange.second, endEdgeRange);
-                end = endEdgeRange.first;
             }
+            end = endEdgeRange.first;
             return result;
         }
 

@@ -292,8 +292,10 @@ namespace cqp {
                     }
                 }
 
-                // last element
-                drift = (slope * binTime) / (slopeSamples * chrono::duration_cast<SecondsDouble>(driftSampleTime).count());
+                if(slope != 0.0 && slopeSamples != 0)
+                {
+                    drift = (slope * binTime) / (slopeSamples * chrono::duration_cast<SecondsDouble>(driftSampleTime).count());
+                }
             }
 
             return drift;
