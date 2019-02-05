@@ -68,7 +68,7 @@ namespace cqp
                     // Wait for data to be available
                     result = threadConditional.wait_for(lock, threadTimeout, bind(&Transmitter::ValidateIncomming, this, firstSeq));
 
-                    if(result)
+                    if(result && !collectedStates.empty())
                     {
                         QubitsByFrame::iterator it = collectedStates.begin();
                         QubitsByFrame::iterator end;

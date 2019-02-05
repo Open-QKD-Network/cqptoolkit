@@ -33,13 +33,16 @@ namespace cqp
             bool dataReady = false;
             Status result = grpc::Status(grpc::StatusCode::ABORTED, "No data available");
 
-            // wait for incoming data
-            /*lock scope*/{
-                unique_lock<mutex> lock(statesMutex);
-                dataReady = statesCv.wait_for(lock, receiveTimeout, [&](){
-                    return collectedStates.find(request->basis().begin()->first) != collectedStates.end();
-                });
-            }/*lock scope*/
+            if(!request->basis().empty())
+            {
+                // wait for incoming data
+                /*lock scope*/{
+                    unique_lock<mutex> lock(statesMutex);
+                    dataReady = statesCv.wait_for(lock, receiveTimeout, [&](){
+                        return collectedStates.find(request->basis().begin()->first) != collectedStates.end();
+                    });
+                }/*lock scope*/
+            }
 
             if(dataReady)
             {

@@ -62,7 +62,7 @@ namespace cqp
 #if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000106)
             libusb_set_option(nullptr, LIBUSB_OPTION_LOG_LEVEL, UsbLevel::Lookup.at(DefaultLogger().GetOutputLevel()));
 #else
-            libusb_set_debug(nullptr, UsbLevelLookup.at(DefaultLogger().GetOutputLevel()));
+            libusb_set_debug(nullptr, UsbLevel::Lookup.at(DefaultLogger().GetOutputLevel()));
 #endif
         }
         else
