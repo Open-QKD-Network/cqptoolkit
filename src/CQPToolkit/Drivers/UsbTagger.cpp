@@ -22,7 +22,7 @@ namespace cqp
     class ISessionController;
     using namespace std;
 
-    const std::string DriverName = "TaggerMk1";
+    const std::string UsbTagger::DriverName = "TaggerMk1";
 
     UsbTagger::UsbTagger()
     {

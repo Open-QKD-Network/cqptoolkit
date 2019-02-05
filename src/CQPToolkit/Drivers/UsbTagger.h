@@ -75,7 +75,8 @@ namespace cqp
         /// Called by Usb::ReadCallback() when a read has completed
         /// @param transfer Details of the transfer
         void ReadCallback(libusb_transfer* transfer) override;
-
+        /// The name of the driver
+        static const std::string DriverName;
     };
 
 }

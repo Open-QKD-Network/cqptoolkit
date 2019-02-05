@@ -26,7 +26,7 @@ namespace cqp
 namespace cqp
 {
 
-    const std::string DriverName = "LEDAliceMk1";
+    const std::string LEDAliceMk1::DriverName = "LEDAliceMk1";
 
     std::string LEDAliceMk1::GetDriverName() const
     {

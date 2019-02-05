@@ -1,9 +1,7 @@
 #include "OpenSSLKeyUI.h"
 #include "ui_OpenSSLKeyUI.h"
-#include "KeyManagement/KeyStores/HSMStore.h"
 #include "KeyManagement/KeyStores/YubiHSM.h"
 #include "Algorithms/Logging/ConsoleLogger.h"
-#include "CQPUI/HSMPinDialog.h"
 #include "Algorithms/Util/Strings.h"
 #include <QInputDialog>
 #include <QPushButton>
@@ -19,7 +17,10 @@ using cqp::ui::HSMPinDialog;
 namespace cqp {
     namespace ui {
 
-        static std::vector<std::string> knownModules = {"libsofthsm2.so", "yubihsm_pkcs11.so"};
+        std::vector<std::string> OpenSSLKeyUI::knownModules = {"libsofthsm2.so", "yubihsm_pkcs11.so"};
+        std::shared_ptr<HSMPinDialog> OpenSSLKeyUI::pinDialog = nullptr;
+        std::shared_ptr<HSMStore> OpenSSLKeyUI::activeStore = nullptr;
+
 
         OpenSSLKeyUI::OpenSSLKeyUI(QWidget *parent) :
             QDialog(parent),
@@ -76,9 +77,6 @@ namespace cqp {
         {
             return ui->hsmUrl->text().toStdString();
         }
-
-        static std::shared_ptr<HSMPinDialog> pinDialog = nullptr;
-        static std::shared_ptr<HSMStore> activeStore = nullptr;
 
         void OpenSSLKeyUI::Register(SSL_CTX* ctx)
         {

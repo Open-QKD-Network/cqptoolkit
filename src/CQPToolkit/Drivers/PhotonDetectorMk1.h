@@ -89,6 +89,8 @@ namespace cqp
         /// OS Specific name for connecting to the port
         std::string serialPortName;
 
+        /// The name of the device
+        static const std::string Name;
         // IQKDDevice interface
     public:
         URI GetAddress() const override;

@@ -68,12 +68,13 @@ namespace cqp
 #endif
         }
 
-        /// The name of the browser used to open a link
-        static std::string browserUsedLast;
-
         bool OpenURL(const std::string& url)
         {
             using namespace std;
+
+            /// The name of the browser used to open a link
+            static std::string browserUsedLast;
+
             // Search for some environment variables which might tell us how to open a browser
             bool browserFound = false;
 #if defined(WIN32)

@@ -116,7 +116,8 @@ namespace cqp
 
         /// number of photons to send each frame
         unsigned long photonsPerBurst = 1024;
-
+        /// Wat this driver is called
+        static const std::string DriverName;
         // IPhotonGenerator interface
     public:
         void StartFrame() override;

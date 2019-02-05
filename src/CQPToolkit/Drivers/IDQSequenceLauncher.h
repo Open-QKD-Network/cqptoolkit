@@ -83,6 +83,8 @@ namespace cqp
         std::thread procHandler;
         /// ID of the child process
         Process proc;
+        /// The program name to launch
+        static const std::string ProgramName;
     };
 
 }

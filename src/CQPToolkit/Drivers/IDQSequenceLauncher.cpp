@@ -33,7 +33,7 @@
 namespace cqp
 {
     /// Name of the program to run which interacts with the Clavis2 devices
-    const std::string QKDSequence = "QKDSequence";
+    const std::string IDQSequenceLauncher::ProgramName = "QKDSequence";
 
     IDQSequenceLauncher::IDQSequenceLauncher(const DataBlock& initialPsk, const std::string& otherUnit, double lineAttenuation):
         alice(true)
@@ -203,8 +203,8 @@ namespace cqp
 
         try
         {
-            LOGDEBUG("Starting " + fs::GetCurrentPath() + "/id3100/" + QKDSequence + " " + Join(args, " "));
-            proc.Start(fs::GetCurrentPath() + "/id3100/" + QKDSequence, args, nullptr, &stdOut, nullptr);
+            LOGDEBUG("Starting " + fs::GetCurrentPath() + "/id3100/" + ProgramName + " " + Join(args, " "));
+            proc.Start(fs::GetCurrentPath() + "/id3100/" + ProgramName, args, nullptr, &stdOut, nullptr);
 
             try
             {
@@ -246,12 +246,12 @@ namespace cqp
                 LOGERROR(e.what());
             }
 
-            LOGDEBUG("Waiting for " + QKDSequence + " to exit...");
+            LOGDEBUG("Waiting for " + ProgramName + " to exit...");
             int result = proc.WaitForExit();
 
             if(result != 0)
             {
-                LOGERROR(QKDSequence + " [" + QKDSequence + "] exited with return code: " + to_string(result));
+                LOGERROR(ProgramName + " [" + ProgramName + "] exited with return code: " + to_string(result));
             }
             else
             {

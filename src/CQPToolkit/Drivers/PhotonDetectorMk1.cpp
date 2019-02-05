@@ -21,7 +21,7 @@ namespace cqp
     using namespace std;
 
     /// The name of the device
-    const std::string Name = "Mk1Tagger";
+    const std::string PhotonDetectorMk1::Name = "Mk1Tagger";
 
     /// Wait for the time it takes the device to reset
     static void DeviceRestDelay();

@@ -2,6 +2,8 @@
 #include <QDialog>
 #include <QTreeWidgetItem>
 #include "CQPUI/cqpui_export.h"
+#include "CQPUI/HSMPinDialog.h"
+#include "KeyManagement/KeyStores/HSMStore.h"
 
 #include "openssl/ssl.h"
 
@@ -40,6 +42,10 @@ namespace cqp {
              */
             static unsigned int ClientCallback(SSL *ssl, const char *hint,
                     char* identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
+
+            static std::vector<std::string> knownModules;
+            static std::shared_ptr<HSMPinDialog> pinDialog;
+            static std::shared_ptr<cqp::keygen::HSMStore> activeStore;
 
         private slots:
             void on_addModule_clicked();

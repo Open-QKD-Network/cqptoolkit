@@ -44,8 +44,13 @@ namespace cqp
         result[LogLevel::Warning] = libusb_log_level::LIBUSB_LOG_LEVEL_WARNING;
         return result;
     }
+
     /// Used for mapping log levels to libusb
-    const UsbLevelMap UsbLevelLookup = CreateUsbLevelMap();
+    struct UsbLevel {
+        static const UsbLevelMap Lookup;
+    };
+    // storage for data
+    const UsbLevelMap UsbLevel::Lookup = CreateUsbLevelMap();
 
 
     Usb::Usb()
@@ -55,7 +60,7 @@ namespace cqp
         if (LogUsb(libusb_init(nullptr)) == LIBUSB_SUCCESS)
         {
 #if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000106)
-            libusb_set_option(nullptr, LIBUSB_OPTION_LOG_LEVEL, UsbLevelLookup.at(DefaultLogger().GetOutputLevel()));
+            libusb_set_option(nullptr, LIBUSB_OPTION_LOG_LEVEL, UsbLevel::Lookup.at(DefaultLogger().GetOutputLevel()));
 #else
             libusb_set_debug(nullptr, UsbLevelLookup.at(DefaultLogger().GetOutputLevel()));
 #endif

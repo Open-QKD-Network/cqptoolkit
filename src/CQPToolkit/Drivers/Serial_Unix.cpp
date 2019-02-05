@@ -25,15 +25,23 @@ namespace cqp
 {
     using namespace std;
 
-    ///// Static values
-    const std::string Name = "Serial";
-    const char SysFolder[] = "/sys/class/tty";
-    const std::vector<std::string> deviceNames =
-    {
-        "/dev/ttyS*",
-        "/dev/ttyACM*",
-        "/dev/ttyUSB*"
+    /// Static values
+    struct SerialUnixConsts {
+        static constexpr char Name[] = "Serial";
+        static constexpr char SysFolder[] = "/sys/class/tty";
+        static constexpr const char* deviceNames[] =
+        {
+            "/dev/ttyS*",
+            "/dev/ttyACM*",
+            "/dev/ttyUSB*"
+        };
     };
+    /// storage for struct values
+    constexpr char SerialUnixConsts::Name[];
+    /// storage for struct values
+    constexpr char SerialUnixConsts::SysFolder[];
+    /// storage for struct values
+    constexpr const char* SerialUnixConsts::deviceNames[];
 
     Serial::Serial(const std::string& portName, BaudRate initialBaud):
         Serial()
@@ -142,10 +150,10 @@ namespace cqp
         //struct stat buffer = {0};
         //bool sysFolderExists = stat(SysFolder, &buffer) == 0;
 
-        if(fs::Exists(SysFolder) && fs::IsDirectory(SysFolder))
+        if(fs::Exists(SerialUnixConsts::SysFolder) && fs::IsDirectory(SerialUnixConsts::SysFolder))
         {
             LOGTRACE("Using /sys path");
-            vector<std::string> files = fs::ListChildren(SysFolder);
+            vector<std::string> files = fs::ListChildren(SerialUnixConsts::SysFolder);
 
             for(const auto& child : files)
             {
@@ -163,7 +171,7 @@ namespace cqp
         {
             LOGTRACE("Using /dev path");
             // fall back to name matching under proc
-            for(const string& name : deviceNames)
+            for(const string& name : SerialUnixConsts::deviceNames)
             {
 
                 LOGTRACE("Checking " + name);
