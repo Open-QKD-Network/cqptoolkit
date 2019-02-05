@@ -101,6 +101,7 @@ namespace cqp
              * ``pkcs11:module-path=/opt/AcmeCorp/pkcs11.so;serial=828882727?pin-source=/etc/secret.pin``
              * @param pkcsUrl a PKCS#11 url
              * @param callback Callback for providing the pin to login when needed
+             * @param moduleLoadOptions Optional driver specific values to pass on loading the driver
              */
             HSMStore(const URI& pkcsUrl, IPinCallback* callback = nullptr, const void* moduleLoadOptions = nullptr);
 
@@ -260,11 +261,13 @@ namespace cqp
             std::unique_ptr<p11::AttributeList> newObjDefaults;
             /// defaults for searching for objects
             std::unique_ptr<p11::AttributeList> findObjDefaults;
-
+            /// The HSMs definiton of 0 time
             const std::chrono::system_clock::time_point zeroStartDate = std::chrono::system_clock::from_time_t(0);
             /// The size of the keyID storage (device dependent)
             size_t bytesPerKeyID = sizeof(uint64_t);
+            /// Defines a session
             using SessionHandle = ulong;
+            /// Defines an event type
             using Notification = ulong;
 
         protected: // methods

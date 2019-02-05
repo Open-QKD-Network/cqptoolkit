@@ -33,11 +33,19 @@ namespace cqp
         class KEYMANAGEMENT_EXPORT YubiHSM : public HSMStore
         {
         public:
+            /// Load options to pass to the driver
             static CONSTSTRING DefaultLoadOptions = "connect=http://localhost:12345\ndebug\nlibdebug\ndinout";
 
+            /**
+             * @brief YubiHSM constructor
+             * @param pkcsUrl URL of the device
+             * @param callback Where to get a pin from if required
+             * @param loadOptions Options to pass to the driver
+             */
             YubiHSM(const std::string& pkcsUrl, IPinCallback* callback = nullptr,
                     const std::string& loadOptions = DefaultLoadOptions);
 
+            /// Distructor
             virtual ~YubiHSM() override = default;
 
             ///@{
@@ -52,6 +60,7 @@ namespace cqp
 
             /// @}
         protected: // members
+            /// Keys currently held for other requests
             std::map<std::string, std::vector<KeyID>> reservedKeys;
         }; //class YubiHSM
 

@@ -129,7 +129,6 @@ namespace cqp
         virtual bool Open();
 
         /// Creates a connection to the specified serial port index
-        /// @param[in] portName The name of the serial port to connect to.
         /// @return true if the operation was successful
         /// @param[in] portName The OS Specific name for the port
         /// @param[in] initialBaud Initialise the port with this rate

@@ -195,7 +195,9 @@ namespace cqp {
       /// @return mapped value
       constexpr char operator[](char const idx) const { return tab[static_cast<size_t>(idx)]; }
 
-    } constexpr charToIntTable;
+    }
+    /// Lookup table to go from a hex character to it's number
+    constexpr charToIntTable;
 
 
     /**

@@ -39,16 +39,28 @@ namespace cqp
         ///@{
         /// @name basic_streambuf interface
 
+        /** React to buffer underflow
+         * @return The last character retrieved
+         */
         int_type underflow() override;
+
+        /** React to buffer underflow
+         * @return The last character retrieved
+         */
         int_type overflow(int_type __c) override;
 
         /// @}
 
         ///@{
         /// @name internal
+
+        /// The open file handle
         int fileDescriptor = -1;
+        /// The size of underflowBuffer and overflowBuffer
         const size_t bufferSize;
+        /// storage when underflow is called
         CryptoPP::SecBlock<char> underflowBuffer;
+        /// storage when overflow is called
         CryptoPP::SecBlock<char> overflowBuffer;
         ///@}
     };

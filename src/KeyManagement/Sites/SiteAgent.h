@@ -131,6 +131,7 @@ namespace cqp
         ///@{
         /// @name ISiteDetails interface
 
+        /// @copydoc ISiteDetails::GetLinkStatus
         grpc::Status GetLinkStatus(grpc::ServerContext* context, const google::protobuf::Empty* request, ::grpc::ServerWriter<remote::LinkStatus>* writer) override;
         ///@}
 
@@ -149,7 +150,9 @@ namespace cqp
         /// Stores the state of the site
         struct SiteState
         {
+            /// The Channel for the site
             std::shared_ptr<grpc::Channel> channel;
+            /// The link status
             remote::LinkStatus_State state = remote::LinkStatus_State::LinkStatus_State_Inactive;
         };
 
@@ -172,9 +175,13 @@ namespace cqp
         /// configuration for this site
         remote::Site siteDetails;
 
+        /// callback type for status updates
         using StatusCallback = std::function<void (const cqp::remote::LinkStatus&)>;
+        /// all registered callbacks
         std::unordered_map<uint64_t, StatusCallback> statusCallbacks;
+        /// constrols access to the callback list
         std::mutex statusCallbackMutex;
+        /// counter for giving caller a unique id
         uint64_t statusCounter = 0;
     protected: // methods
         /**

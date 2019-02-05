@@ -61,12 +61,14 @@ namespace cqp
              * Constructor
              * @param pathin name of the statistic
              * @param k The units
+             * @param description User readable description
              */
             StatBase(std::vector<std::string> const & pathin, Units k = Units::Complex, const std::string& description = "");
 
             /// Destructor
             virtual ~StatBase() = default;
 
+            /// Method for handling the stats
             virtual void ProcessStats() = 0;
 
             /**
@@ -108,8 +110,6 @@ namespace cqp
              */
             std::unordered_map<std::string, std::string> parameters;
 
-            void StopProcessingThread();
-
         protected:
 
             /// control access to incoming
@@ -135,6 +135,7 @@ namespace cqp
              */
             static size_t Counter();
 
+            /// Processes the incomming stats
             std::shared_ptr<ProcessingWorker> worker;
         };
 
@@ -170,15 +171,20 @@ namespace cqp
              */
             void Worker();
 
+            /// The thread which handles queued stats
             std::thread processingThread;
+            /// thread execution control
             std::condition_variable processCv;
+            /// thread execution control
             std::mutex processMutex;
+            /// The objects which are processed
             using ObjectList = std::set<StatBase*>;
+            /// The objects which are processed
             ObjectList waitingObjects;
-            std::atomic_bool processorReady{ false };
+            /// Should the thread exit
             bool stopProcessing = false;
         private:
-
+            /// only instance
             static std::weak_ptr<ProcessingWorker> me;
         };
 
@@ -228,6 +234,7 @@ namespace cqp
              * Construct a stat
              * @param pathin Name of the stat
              * @param k Kind of units
+             * @param description User readable descrition
              */
             Stat(std::vector<std::string> const & pathin, Units k = Units::Complex, const std::string& description = "") :
                 StatBase(pathin, k, description)

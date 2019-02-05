@@ -25,6 +25,10 @@ namespace cqp {
     class SecureDeletor
     {
     public:
+        /**
+         * @brief operator ()
+         * @param ptr
+         */
         void operator()(T* ptr) {
             SecureErase(ptr, sizeof (*ptr));
         }

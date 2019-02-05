@@ -40,6 +40,7 @@ KEYMANAGEMENT_EXPORT unsigned int OpenSSLHandler_ServerCallback(SSL *ssl, const 
  * @param ssl
  * @param hint
  * @param identity
+ * @param max_identity_len
  * @param psk
  * @param max_psk_len
  * @return 0 on failure, otherwise the length of the PSK

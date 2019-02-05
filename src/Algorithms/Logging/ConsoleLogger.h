@@ -76,6 +76,7 @@ namespace cqp
         /// whether this system can print text in colour
         bool supportsColour = false;
 
+        /// One and only instance
         static ConsoleLogger* theConsoleLogger;
     };
 

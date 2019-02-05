@@ -46,7 +46,13 @@ namespace cqp {
             double Calculate(const DetectionReportList::const_iterator& start,
                             const DetectionReportList::const_iterator& end);
 
-            // Dave adds channel sync code here for now.
+            /**
+             * @brief ChannelFindPeak
+             * Find the offset between the channels
+             * @param sampleStart data to sample, start
+             * @param sampleEnd data to sample, end
+             * @return The relative offsets between the channels
+             */
             ChannelOffsets ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
                                   DetectionReportList::const_iterator sampleEnd) const;
 
@@ -108,6 +114,7 @@ namespace cqp {
             const PicoSeconds slotWidth;
             /// The window used for calculating drift
             PicoSeconds driftSampleTime;
+            /// processes items using available threads
             ProcessingQueue<double> workQueue;
         };
 

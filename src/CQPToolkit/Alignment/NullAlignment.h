@@ -79,6 +79,7 @@ namespace cqp {
 
             /// storage for incoming data
             std::queue<std::unique_ptr<QubitList>> receivedData;
+            /// connection to the other side
             std::shared_ptr<grpc::Channel> transmitter;
         };
 

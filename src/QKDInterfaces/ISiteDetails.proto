@@ -25,7 +25,7 @@ service ISiteDetails
     /**
     * Receive updates on the state of key generation between this site and site
     * specified in SiteList
-    * @param response Each state change on a link between sites will generate a message detailing the change.
+    * @param writer Each state change on a link between sites will generate a message detailing the change.
     * @return status
     */
     rpc GetLinkStatus(google.protobuf.Empty) returns (stream LinkStatus);

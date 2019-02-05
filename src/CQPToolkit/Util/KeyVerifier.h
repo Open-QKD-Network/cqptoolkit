@@ -86,6 +86,7 @@ namespace cqp
             /// key id counter
             KeyID nextId = 0;
         };
+        /// Receiver is a friend
         friend Receiver;
 
         /// The receiver for one side of the key pair

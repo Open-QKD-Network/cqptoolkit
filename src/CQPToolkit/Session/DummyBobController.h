@@ -84,7 +84,7 @@ namespace cqp
 
             /// @copydoc cqp::remote::ISession::SessionStarting
             /// @param context Connection details from the server
-            grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*response) override;
+            grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*) override;
 
             /// @copydoc cqp::remote::ISession::SessionEnding
             /// @param context Connection details from the server

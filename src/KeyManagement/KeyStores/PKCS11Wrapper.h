@@ -435,6 +435,7 @@ namespace cqp
             void Set(::CK_ATTRIBUTE_TYPE type, const std::string& value);
 
             /// @copydoc Set
+            /// @param value Value to set
             inline void Set(::CK_ATTRIBUTE_TYPE type, const char* value);
 
             /// @copydoc Set
@@ -442,6 +443,7 @@ namespace cqp
             void Set(::CK_ATTRIBUTE_TYPE type, std::chrono::system_clock::time_point time);
 
             /// @copydoc Set
+            /// @param value Value to set
             void Set(::CK_ATTRIBUTE_TYPE type, const PSK& value);
 
             /// @copydoc Set
@@ -600,6 +602,11 @@ namespace cqp
              */
             inline ::CK_OBJECT_HANDLE Handle() const;
 
+            /**
+             * @brief SetHandle
+             * Set the object handle
+             * @param handle
+             */
             inline void SetHandle(::CK_OBJECT_HANDLE handle);
         protected:
             /// The session for this object

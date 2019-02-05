@@ -41,6 +41,7 @@ namespace cqp
              * Constructor
              * @param randomSource The source of randomness for generating qubits
              * @param transmissionDelay Time between each qubit transmission
+             * @param photonsPerBurst How many photons to send each time Fire() is called
              */
             DummyTransmitter(IRandom* randomSource,
                              PicoSeconds transmissionDelay = std::chrono::nanoseconds(100),

@@ -32,6 +32,8 @@ namespace cqp
             /**
              * @brief SiftBase
              * Constructor
+             * @param mutex The thread control mutex
+             * @param conditional The thread control condition variable
              */
             SiftBase(std::mutex& mutex, std::condition_variable& conditional);
 

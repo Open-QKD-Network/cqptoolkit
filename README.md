@@ -11,25 +11,40 @@ The system provides various components for integrating [QKD](https://en.wikipedi
 - Written in modern ISO standardised C++11
 - The communication uses [GRPC][] which has built in support for [TLS][].
 - Generic statistic collection and reporting using the cqp::remote::IReporting interface
-- Compatibility drivers for IDQ Clavis 2
-- Site Agent
-    + Control QKD devices to exchange key
-    + Provide pre-shared key on a standard Interface: cqp::remote::IKey
-        * Keys can be restricted for use by specific users
-    + Creation of indirect key based on XOR'ing key from other sites
-    + Configuration through config file, command line arguments or network interface.
-    + Automatic Site Agent discovery using [Zeroconf][]
-- Network Manager
-    + Static/Dynamic control of site agents to create keys between sites based on rules
-- Tunnel Controller
-    + Uses the IKey interface to get shared keys.
-    + Setup of encryption tunnels using 
-        * TCP/UDP socket
-        * TUN/TAP device (aka VPN)
-        * Dedicated physical interface
-    + Configuration through config file, command line arguments or network interface.
-    + Automatic Site Agent and Tunnel Controller discovery using [Zeroconf][]
 
+Planed and completed features
+
+- [ ] Device Drivers
+    + [x] Compatibility drivers for IDQ Clavis 2
+        - [ ] Device feedback
+    + [ ] Compatibility drivers for IDQ Clavis 3
+    + [ ] University of Bristol handheld freespace device
+    + [ ] University of Bristol on chip device
+- [ ] Post processing
+    + [x] Alignment for asyncronous systems
+    + [x] Sifting for syncronous systems
+    + [ ] Error correction
+    + [ ] Privacy amplification
+- [x] Multi-site key management (SiteAgennts)
+    + [x] Control QKD devices to exchange key
+    + [x] Provide pre-shared key on a standard Interface: cqp::remote::IKey
+        - [x] Keys can be restricted for use by specific users
+    + [x] Creation of indirect key based on XOR'ing key from other sites
+    + [x] Configuration through config file, command line arguments or network interface.
+    + [x] Automatic Site Agent discovery using [Zeroconf][]
+- [ ] Network Management of site agents
+    + [ ] Static/Dynamic control of site agents to create keys between sites based on rules
+- [x] Encrypted tunnel controller (like stunnel)
+    + [x] Uses the IKey interface to get shared keys.
+    + [x] Setup of encryption tunnels using
+        - [x] TCP/UDP socket
+        - [x] TUN/TAP device (aka VPN)
+        - [x] Dedicated physical interface
+    + [x] Configuration through config file, command line arguments or network interface.
+    + [x] Automatic Site Agent and Tunnel Controller discovery using [Zeroconf][]
+- [ ] Multiple Platforms
+    + [x] Linux
+    + [ ] Windows (see issue #2)
 
 This project is intended to be used for both scientific research work and to form part of completed projects. As such it incorporates some approaches which are intended to maintain a production quality level of code and design. More details on the project can be found in [this paper](paper.md).
 The build system is based on [CMake][], it is used to produce many different build files from one set of definitions. In order to build the code, one of the build systems, such as gcc, is setup by calling the command `cmake` first. See the build folder for ready made scripts for common environments.

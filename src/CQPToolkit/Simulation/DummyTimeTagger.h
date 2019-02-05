@@ -53,10 +53,10 @@ namespace cqp
 
             /// @copydoc remote::IDetector::StartDetecting
             /// @param context Connection details from the server
-            grpc::Status StartDetecting(grpc::ServerContext* context, const google::protobuf::Timestamp*, google::protobuf::Empty*) override;
+            grpc::Status StartDetecting(grpc::ServerContext* context, const google::protobuf::Timestamp* request, google::protobuf::Empty*) override;
             /// @copydoc remote::IDetector::StopDetecting
             /// @param context Connection details from the server
-            grpc::Status StopDetecting(grpc::ServerContext* context, const google::protobuf::Timestamp*, google::protobuf::Empty*) override;
+            grpc::Status StopDetecting(grpc::ServerContext* context, const google::protobuf::Timestamp* request, google::protobuf::Empty*) override;
             ///@}
 
             /// Statistics produced by this class

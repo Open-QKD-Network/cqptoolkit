@@ -34,8 +34,6 @@ namespace cqp
             /**
              * @copydoc remote::ISift::VerifyBases
              * @param context Connection details from the server
-             * @param[in] request The data to compare
-             * @param[out] response The result of the comparison
              * @return true on success
              * @details
              * @startuml VerifyBasesBehaviour

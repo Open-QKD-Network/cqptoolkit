@@ -56,11 +56,6 @@ namespace cqp
             rate = {};
         }
 
-        void StatBase::StopProcessingThread()
-        {
-
-        }
-
         size_t StatBase::Counter()
         {
             // the static variable maintains its state for the life of the program

@@ -24,6 +24,7 @@ service IDetector {
     /**
     * @brief StartDetecting
     * Instructs the detector to expect photons
+    * @param request The timestamp for the start of the session
     * @return status
     */
     rpc StartDetecting(google.protobuf.Timestamp) returns (google.protobuf.Empty);
@@ -31,6 +32,7 @@ service IDetector {
     /**
     * @brief StopDetecting
     * Instructs the detector that no more photons will be sent
+    * @param request The timestamp for the end of the session
     * @return status
     */
     rpc StopDetecting(google.protobuf.Timestamp) returns (google.protobuf.Empty);

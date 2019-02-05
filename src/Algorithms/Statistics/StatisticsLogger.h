@@ -57,8 +57,8 @@ namespace cqp
 
             ///@{
             /// @name IStatCallback interface
-            /// @copydoc stats::IStatCallback<T>::StatUpdated
 
+            /// @copydoc stats::IStatCallback<T>::StatUpdated
             template<typename T>
             void TStatUpdated(const stats::Stat<T>* stat)
             {
