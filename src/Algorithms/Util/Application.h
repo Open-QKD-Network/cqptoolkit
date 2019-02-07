@@ -14,6 +14,7 @@
 #include <string>
 #include "Algorithms/Util/CommandArgs.h"
 #include "Algorithms/algorithms_export.h"
+#include <csignal>
 
 namespace cqp
 {
@@ -57,6 +58,17 @@ namespace cqp
          * @param option
          */
         void HandleVersion(const CommandArgs::Option& option);
+
+        /// The function signiture for a signal
+        using SignalFunction = std::function<void(int)>;
+
+        /**
+         * @brief AddSignalHandler registers a function to be called when the signal occours
+         * @param signum The signal to react to
+         * @param func The funciton to call
+         * @return True on success
+         */
+        bool AddSignalHandler(int signum, SignalFunction func);
     protected:
         /// command line switches
         CommandArgs definedArguments;
@@ -66,6 +78,11 @@ namespace cqp
         int exitCode = 0;
         /// Indication that the Main method should return to allow the program to exit.
         bool stopExecution = false;
+        /// The static instance used for signal handling
+        /// it will be set by calling AddSignalHandler
+        static std::unordered_map<int, SignalFunction> signalHandlers;
+        /// callback from a signal which will map to a handler
+        static void SignalHandler(int signal);
     };
 
     /// Macro for creating a standard main entry into a program

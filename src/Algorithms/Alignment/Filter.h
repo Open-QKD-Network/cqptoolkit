@@ -13,7 +13,9 @@ namespace cqp {
     namespace align {
 
         /**
-         * @brief The Filter class
+         * @brief The Filter class finds the transmission window in noisy data.
+         * The algorithm has been adapted from the work of Dr David Lowndes <David.Lowndes@bristol.ac.uk> in
+         * @cite HandHeld
          */
         class ALGORITHMS_EXPORT Filter
         {
@@ -75,14 +77,15 @@ namespace cqp {
             /**
              * @brief Gaussian
              * Calculate a point on the Gaussian curve
+             * @details
+             \f$
+             G(x) = \frac{1}{ \sqrt{2 \pi \sigma ^2}} e^{- \frac{ x^2 }{ 2 \sigma ^ 2}}
+             \f$
              * @tparam T The type to use for calculations
              * @param sigma The standard deviation of the distribution
              * @param x The x axis
              * @return The y value of the point.
-             * @details
-             * \f$
-             * G(x) = \frac{1}{ \sqrt{2 \pi \sigma ^2}} e^{- \frac{ x^2 }{ 2 \sigma ^ 2}}
-             * \f$
+
              */
             template<typename T>
             static T Gaussian(T sigma, T x)
@@ -139,11 +142,13 @@ namespace cqp {
              * Perform a "valid" convolution to the data using the filter by multiplying the two
              * arrays.
              * Only elements which the filter can be applied to are returned
-             * Filter:        |****|
-             * Data:   |-----------|
-             * Result: |=======|
-             *                  ^^^ These elements cannot be completely convolved
-             * so are not returned in the result.
+             * @verbatim
+             Filter:        |****|
+             Data:   |-----------|
+             Result: |=======|
+                              ^^^ These elements cannot be completely convolved
+             so are not returned in the result.
+             * @endverbatim
              * @details
              * The data size must be >= filter size
              * @tparam T The type of the result
@@ -187,15 +192,15 @@ namespace cqp {
              * This will find a transison from high to low with the default less than comparitor
              * or a low to high edge with the greater than comaritor
              * @verbatim
-             * |        ##  #####
-             * |       #  ##
-             * |----- # --------- cutoff
-             * | ##  #
-             * |#  ##
-             * |_________________
-             *  ^     ^          ^
-             *  Start |          End
-             *        ` Edge detected
+             |        ##  #####
+             |       #  ##
+             |----- # --------- cutoff
+             | ##  #
+             |#  ##
+             |_________________
+              ^     ^          ^
+              Start |          End
+                    ` Edge detected
              * @endverbatim
              * @note The result is undefined if the data contains more than one edge in the search direction.
              * @tparam T The data storage and cutoff type

@@ -54,7 +54,7 @@ Processing of Qubits is split into 4 sections:
 - Error correction of detected bits.
 - Privacy amplification to obtain the final distilled key.
 
-Once the key is produced by the post processing it is passed to the key store.
+Once the key is produced by the post processing it is passed to the key store. Some of the algorithms have been adapted from David Lowndes paper [@HandHeld].
 
 ## Key Management
 There are some issues unique to shared secrets which the current public key systems do not provide for, the system tackles some of these issues by providing a standardised interface to the keys. The key store classes hold keys for specific links between two sites, while session management starts and stops the key generation.

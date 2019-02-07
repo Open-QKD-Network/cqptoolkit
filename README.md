@@ -32,7 +32,9 @@ Planed and completed features
     + [x] Creation of indirect key based on XOR'ing key from other sites
     + [x] Configuration through config file, command line arguments or network interface.
     + [x] Automatic Site Agent discovery using [Zeroconf][]
-- [ ] Network Management of site agents
+    + [ ] Resolve keys across links between trusted sites (issue #8)
+- [x] Network Management of site agents
+    + [x] Sites can be controlled through interfaces
     + [ ] Static/Dynamic control of site agents to create keys between sites based on rules
 - [x] Encrypted tunnel controller (like stunnel)
     + [x] Uses the IKey interface to get shared keys.

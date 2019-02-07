@@ -20,6 +20,8 @@ namespace cqp {
 
         /**
          * @brief The Drift class calculates drift based on detections
+         * The algorithm has been adapted from the work of Dr David Lowndes <David.Lowndes@bristol.ac.uk> in
+         * @cite HandHeld
          */
         class ALGORITHMS_EXPORT Drift
         {

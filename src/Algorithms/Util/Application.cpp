@@ -11,10 +11,13 @@
 */
 #include "Application.h"
 #include "Version.h"
+#include "Algorithms/Logging/Logger.h"
 #include <iostream>
 
 namespace cqp
 {
+
+    std::unordered_map<int, Application::SignalFunction> Application::signalHandlers;
 
     Application::Application() noexcept
     {
@@ -48,6 +51,27 @@ namespace cqp
                   << TOOLKIT_VERSION_PATCH << std::endl;
         definedArguments.StopOptionsProcessing();
         stopExecution = true;
+    }
+
+    bool Application::AddSignalHandler(int signum, SignalFunction func)
+    {
+        signalHandlers[signum] = func;
+        bool result = std::signal(signum, SignalHandler) != SIG_ERR;
+        return result;
+    }
+
+    void Application::SignalHandler(int signum)
+    {
+        auto handler = signalHandlers.find(signum);
+        if(handler != signalHandlers.end())
+        {
+            try{
+                handler->second(signum);
+            } catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
+        }
     }
 
 } // namespace cqp

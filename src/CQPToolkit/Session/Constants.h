@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-
+#include "Algorithms/Util/Strings.h"
 
 namespace cqp
 {
