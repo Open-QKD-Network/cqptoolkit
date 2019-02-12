@@ -12,7 +12,7 @@
 #pragma once
 #include "Algorithms/Datatypes/UUID.h"
 #include "Algorithms/Datatypes/Chrono.h"
-#include "CQPToolkit/cqptoolkit_export.h"
+#include "Algorithms/algorithms_export.h"
 
 namespace cqp
 {
