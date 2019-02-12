@@ -21,6 +21,7 @@
 #include "Algorithms/Datatypes/Base.h"                                // for SequenceNu...
 #include "QKDInterfaces/IErrorCorrect.grpc.pb.h"           // for IErrorCorrect
 
+
 namespace cqp
 {
     namespace ec
@@ -78,7 +79,7 @@ namespace cqp
              * deactivate ErrorCorrection
              * @enduml
              */
-            void OnSifted(const SequenceNumber id, std::unique_ptr<JaggedDataBlock> siftedData) override;
+            void OnSifted(const SequenceNumber id, double securityParmeter, std::unique_ptr<JaggedDataBlock> siftedData) override;
 
             /// @}
 

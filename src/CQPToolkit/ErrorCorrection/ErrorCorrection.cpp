@@ -44,7 +44,7 @@ namespace cqp
 
         } // PublishCorrected
 
-        void ErrorCorrection::OnSifted(const SequenceNumber id, std::unique_ptr<JaggedDataBlock> siftedData)
+        void ErrorCorrection::OnSifted(const SequenceNumber id, double securityParmeter, std::unique_ptr<JaggedDataBlock> siftedData)
         {
             LOGTRACE("Sifted data received");
             // collect incoming data, notify listeners of new data
