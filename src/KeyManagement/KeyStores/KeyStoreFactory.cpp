@@ -70,6 +70,7 @@ namespace cqp
                 const string thisSiteName = GetKeystoreName(siteAddress);
                 if(thisSiteName != keystoreName)
                 {
+                    LOGDEBUG("Creating keystore from " + siteAddress.ToString() + " to " + destination);
                     // No keystore exists, create one and return it
                     result.reset(new KeyStore(siteAddress, clientCreds, destination, this, backingStore));
                     for(auto reportCb : reportingCallbacks)

@@ -144,7 +144,7 @@ namespace cqp
             Statistics stats;
         protected:// members
             /// When trying to find a key, the operation will fail after this timeout
-            std::chrono::milliseconds waitTimeout = std::chrono::milliseconds(2000);
+            std::chrono::milliseconds waitTimeout = std::chrono::seconds(10);
             /// Stores both key value and authentication requirements
             struct AuthPSK
             {

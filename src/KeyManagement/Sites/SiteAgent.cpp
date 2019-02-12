@@ -228,7 +228,7 @@ namespace cqp
         using namespace std;
         using namespace grpc;
         Status result;
-        LOGTRACE("");
+        LOGTRACE("From " + GetConnectionAddress() + " to " + destination + " with device " + deviceId);
 
         // get the device we've been told to use
         std::shared_ptr<IQKDDevice> localDev = deviceFactory->UseDeviceById(deviceId);
@@ -257,12 +257,17 @@ namespace cqp
                     }
                     else
                     {
+                        LOGERROR("Invalid key publisher for " + GetConnectionAddress() + " to " + destination);
                         result = LogStatus(Status(StatusCode::INTERNAL, "Invalid key publisher"));
                     }
+                } else {
+                    LOGERROR("Failed to start session server");
+                    result = LogStatus(Status(StatusCode::INTERNAL, "Failed to start session controller"));
                 } // if StartServer == ok
             } // if controller
             else
             {
+                LOGERROR("Invalid session controller for " + GetConnectionAddress() + " to " + destination);
                 result = LogStatus(Status(StatusCode::INTERNAL, "Invalid session controller"));
             } // else controller
 
@@ -279,9 +284,11 @@ namespace cqp
         } // if localDev
         else
         {
+            LOGTRACE("No unused device available.");
             auto devIt = devicesInUse.find(deviceId);
             if(devIt != devicesInUse.end())
             {
+                LOGTRACE("Hop already active");
                 // this is not an error, we've just already started this connection
                 controller = devIt->second->GetSessionController();
             } // if(devIt
@@ -304,7 +311,7 @@ namespace cqp
     {
         using namespace std;
         using namespace grpc;
-        LOGTRACE("");
+        LOGTRACE(GetConnectionAddress());
         bool alreadyConnected = false;
         Status result;
         /*lock scope*/
@@ -390,7 +397,7 @@ namespace cqp
     {
         using namespace std;
         using namespace grpc;
-        LOGTRACE("");
+        LOGTRACE(GetConnectionAddress());
         bool alreadyConnected = false;
         /*lock scope*/
         {
@@ -467,7 +474,7 @@ namespace cqp
         // path example = [ [a, b], [b, c] ]
         for(const auto& hopPair : path->hops())
         {
-
+            LOGTRACE("Looking at hop from " + hopPair.first().site() + " to " + hopPair.second().site());
             // if we are the left side of a hop, ie a in [a, b]
             if(AddressIsThisSite(hopPair.first().site()))
             {

@@ -52,6 +52,7 @@ namespace cqp
             case remote::Side::Alice:
                 {
                     photonSource = make_shared<sim::DummyTransmitter>(rng);
+                    photonSource->Attach(alignment.get());
                     remotes.push_back(photonSource);
 
                     auto transmitter = std::make_shared<sift::Transmitter>();
@@ -65,6 +66,7 @@ namespace cqp
             case remote::Side::Bob:
                 {
                     timeTagger = make_shared<sim::DummyTimeTagger>(rng);
+                    timeTagger->Attach(alignment.get());
                     services.push_back(static_cast<remote::IDetector::Service*>(timeTagger.get()));
                     services.push_back(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
 
@@ -83,6 +85,7 @@ namespace cqp
             alignment->Attach(sifter.get());
             sifter->Attach(ec.get());
             ec->Attach(privacy.get());
+            privacy->Attach(keyConverter.get());
         }
         /// aligns detections
         std::shared_ptr<align::NullAlignment> alignment;

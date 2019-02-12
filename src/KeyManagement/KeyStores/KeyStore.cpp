@@ -393,7 +393,7 @@ namespace cqp
 
         void KeyStore::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
         {
-            LOGTRACE("Receiving " + std::to_string(keyData->size()) + " key(s)");
+            LOGTRACE(mySiteFrom + " to " + mySiteTo + " receiving " + std::to_string(keyData->size()) + " key(s)");
             IBackingStore::Keys backingStoreKeys;
 
             /*lock scope*/

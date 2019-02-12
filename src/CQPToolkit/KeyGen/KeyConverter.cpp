@@ -40,23 +40,29 @@ namespace cqp
                 availableBytes.insert(availableBytes.end(), incomming.begin(), incomming.end());
             }
 
-            PSK::iterator takeFrom = availableBytes.begin();
-
-            while(availableBytes.end() - takeFrom >= static_cast<long>(bytesInKey))
+            if(listener)
             {
-                PSK newKey;
-                newKey.assign(takeFrom, takeFrom + static_cast<long>(bytesInKey));
-                keyToEmit->push_back(newKey);
-                takeFrom += static_cast<long>(bytesInKey);
-            }
+                PSK::iterator takeFrom = availableBytes.begin();
 
-            availableBytes.erase(availableBytes.begin(), takeFrom);
-            // put the remainder back
-            carryOverBytes.assign(availableBytes.begin(), availableBytes.end());
+                while(availableBytes.end() - takeFrom >= static_cast<long>(bytesInKey))
+                {
+                    PSK newKey;
+                    newKey.assign(takeFrom, takeFrom + static_cast<long>(bytesInKey));
+                    keyToEmit->push_back(newKey);
+                    takeFrom += static_cast<long>(bytesInKey);
+                }
 
-            if(!keyToEmit->empty() && listener)
-            {
-                listener->OnKeyGeneration(std::move(keyToEmit));
+                availableBytes.erase(availableBytes.begin(), takeFrom);
+                // put the remainder back
+                carryOverBytes.assign(availableBytes.begin(), availableBytes.end());
+
+                if(!keyToEmit->empty())
+                {
+                    listener->OnKeyGeneration(std::move(keyToEmit));
+                }
+            } else {
+                carryOverBytes.assign(availableBytes.begin(), availableBytes.end());
+                LOGERROR("No listener for generated key");
             }
         }
 

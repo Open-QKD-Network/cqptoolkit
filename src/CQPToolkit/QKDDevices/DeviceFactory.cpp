@@ -87,17 +87,16 @@ namespace cqp
 
         if(CreateFunc)
         {
-            LOGTRACE("Calling create for device");
+            LOGTRACE("Calling create for " + addrUri.GetScheme());
             result = CreateFunc(url, clientCreds, bytesPerKey);
             if(result)
             {
-                LOGTRACE("Created device");
                 lock_guard<mutex> lock(changeMutex);
 
                 const std::string identifier = GetDeviceIdentifier(addrUri);
                 allDevices[identifier] = result;
                 unusedDevices[identifier] = result;
-                LOGTRACE("Collecting device statistics");
+                LOGTRACE("Device ready, collecting device statistics");
                 // link the reporting callbacks
                 for(auto* collection : result->GetStats())
                 {

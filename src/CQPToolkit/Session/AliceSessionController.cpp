@@ -47,7 +47,7 @@ namespace cqp {
         {
             // the local system is stopping the session
             // wait for the transmitter to stop
-            Stop(true);
+             Stop(true);
 
             SessionController::EndSession();
         }

@@ -92,11 +92,11 @@ namespace cqp
         IKeyPublisher* GetKeyPublisher() override;
         ///@}
     protected: // members
+        RandomNumber rng;
+
         class ProcessingChain;
 
         std::unique_ptr<ProcessingChain> processing;
-
-        RandomNumber rng;
 
         /// The address to use to contact this
         std::string myAddress;

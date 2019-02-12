@@ -68,7 +68,7 @@ namespace cqp
             } // if(clientChannel == nullptr)
             else
             {
-                LOGINFO("Already connected");
+                LOGINFO("Already connected from " + serverAddress + " to " + address);
             } // else
             return result;
         } // Connect

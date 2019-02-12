@@ -51,7 +51,7 @@ namespace cqp
             using namespace std;
             using namespace grpc;
 
-            DefaultLogger().SetOutputLevel(LogLevel::Debug);
+            DefaultLogger().SetOutputLevel(LogLevel::Trace);
 
             MyNetMan netman;
             int netmanPort = 0;
@@ -68,14 +68,17 @@ namespace cqp
             // devices for both directions
             config1.mutable_deviceurls()->Add("dummyqkd:///?side=alice&switchname=1234&switchport=1a");
             config1.mutable_deviceurls()->Add("dummyqkd:///?side=bob&switchname=1234&switchport=1b");
+            config1.set_listenport(8001);
 
             // copy the config to the other settings
             remote::SiteAgentConfig config2(config1);
             config2.set_name("Site2");
+            config2.set_listenport(8002);
 
             // copy the config to the other settings
             remote::SiteAgentConfig config3(config1);
             config3.set_name("Site3");
+            config3.set_listenport(8003);
 
             // create the site agents
             SiteAgent site1(config1);
@@ -155,10 +158,10 @@ namespace cqp
 
                 auto hop2 = request.mutable_hops()->Add();
                 // specify the hop from site 1 alice to site 2 bob
-                hop2->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config2.deviceurls(1)));
+                hop2->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config2.deviceurls(0)));
                 hop2->mutable_first()->set_site(site2.GetConnectionAddress());
 
-                hop2->mutable_second()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config3.deviceurls(0)));
+                hop2->mutable_second()->set_deviceid(DeviceFactory::GetDeviceIdentifier(config3.deviceurls(1)));
                 hop2->mutable_second()->set_site(site3.GetConnectionAddress());
 
                 LOGTRACE("Calling StartNode 1 - 2, 2 - 3");
@@ -184,9 +187,9 @@ namespace cqp
                 google::protobuf::Empty request;
                 remote::SiteList response;
                 LOGTRACE("Getting list of key stores from " + from);
-                ASSERT_TRUE(site1Stub->GetKeyStores(&ctx, request, &response).ok());
-                ASSERT_EQ(response.urls().size(), 2) << "Wrong number of key stores";
-                ASSERT_NE(response.urls(0), response.urls(1)) << "Same keystore twice";
+                ASSERT_TRUE(site1Stub->GetKeyStores(&ctx, request, &response).ok()) << "Failed to get keystores from " + from;
+                ASSERT_EQ(response.urls().size(), 2) << "Wrong number of key stores from " + from;
+                ASSERT_NE(response.urls(0), response.urls(1)) << "Same keystore twice from " + from;
 
                 // try and get a key from each destination
                 for(const auto& ksAddr : response.urls())
@@ -196,9 +199,10 @@ namespace cqp
                     remote::KeyRequest keyRequest;
                     remote::SharedKey keyResponse;
                     keyRequest.set_siteto(ksAddr);
-                    ASSERT_TRUE(site1Stub->GetSharedKey(&keyCtx, keyRequest, &keyResponse).ok());
-                    ASSERT_GT(keyResponse.keyid(), 0);
-                    ASSERT_GT(keyResponse.keyvalue().size(), 0);
+                    ASSERT_TRUE(site1Stub->GetSharedKey(&keyCtx, keyRequest, &keyResponse).ok()) << "Failed to get shared key from " + from + " to " + ksAddr;
+                    ASSERT_GT(keyResponse.keyid(), 0) << "Invalid key id from " + from + " to " + ksAddr;
+                    ASSERT_GT(keyResponse.keyvalue().size(), 0) << "Invalid key size from " + from + " to " + ksAddr;
+                    LOGINFO("Success from " + from + " to " + ksAddr);
                 }
             }
 

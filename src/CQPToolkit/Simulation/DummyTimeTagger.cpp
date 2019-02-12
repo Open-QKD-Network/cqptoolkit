@@ -48,6 +48,7 @@ namespace cqp
 
             std::lock_guard<std::mutex> lock(collectedPhotonsMutex);
             collectedPhotons.assign(detections.begin(), detections.end());
+
             return result;
         } // OnPhoton
 
