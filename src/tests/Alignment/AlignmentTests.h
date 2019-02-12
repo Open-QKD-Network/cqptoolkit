@@ -17,6 +17,7 @@
 #include <mutex>
 #include <condition_variable>
 #include "Algorithms/Util/DataFile.h"
+#include "CQPToolkit/Interfaces/ISiftedPublisher.h"
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "Algorithms/Random/RandomNumber.h"
 
@@ -29,13 +30,13 @@ namespace cqp
          * @brief The MockAlignmentCallback class
          * Mock method for receiving output from a publisher
          */
-        class MockAlignmentCallback: public IAlignmentCallback
+        class MockAlignmentCallback: public virtual ISiftedCallback
         {
         public:
             /// dummy callback for reacting to test data
-            MOCK_METHOD3(OnAligned2, void(SequenceNumber seq, double securityParameter, QubitList* rawQubits));
-            void OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits) override {
-                OnAligned2(seq, securityParameter, rawQubits.get());
+            MOCK_METHOD3(OnSifted2, void(SequenceNumber seq, double securityParameter, JaggedDataBlock* rawQubits));
+            void OnSifted(SequenceNumber seq, double securityParameter, std::unique_ptr<JaggedDataBlock> siftedData) override {
+                OnSifted2(seq, securityParameter, siftedData.get());
             }
         };
 

@@ -67,7 +67,7 @@ namespace cqp
             JaggedDataBlock bobResults;
 
             // how to handle callbacks
-            EXPECT_CALL(aliceCallback, OnSifted2(_, _)).WillRepeatedly(Invoke([this, &aliceResults](const SequenceNumber,
+            EXPECT_CALL(aliceCallback, OnSifted2(_, _, _)).WillRepeatedly(Invoke([this, &aliceResults](const SequenceNumber, double securityParameter,
                     const JaggedDataBlock* siftedData)
             {
                 {
@@ -77,7 +77,7 @@ namespace cqp
                 cv.notify_one();
             }));
 
-            EXPECT_CALL(bobCallback, OnSifted2(_, _)).WillRepeatedly(Invoke([this, &bobResults](const SequenceNumber,
+            EXPECT_CALL(bobCallback, OnSifted2(_, _, _)).WillRepeatedly(Invoke([this, &bobResults](const SequenceNumber, double securityParameter,
                     const JaggedDataBlock* siftedData)
             {
                 {

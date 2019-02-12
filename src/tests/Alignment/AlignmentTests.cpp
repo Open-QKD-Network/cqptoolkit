@@ -317,14 +317,14 @@ namespace cqp
             QubitList rxIncomming;
             SequenceNumber rxSeq = 0;
 
-            EXPECT_CALL(txCallback, OnAligned2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
+            EXPECT_CALL(txCallback, OnSifted2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
                 txSeq = seq;
                 txIncomming.insert(txIncomming.end(), rawQubits->begin(), rawQubits->end());
                 alignedCalled++;
                 waitCv.notify_one();
             }));
 
-            EXPECT_CALL(rxCallback, OnAligned2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
+            EXPECT_CALL(rxCallback, OnSifted2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
                 rxSeq = seq;
                 rxIncomming.insert(rxIncomming.end(), rawQubits->begin(), rawQubits->end());
                 alignedCalled++;
@@ -414,14 +414,14 @@ namespace cqp
             QubitList rxIncomming;
             SequenceNumber rxSeq = 0;
 
-            EXPECT_CALL(txCallback, OnAligned2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
+            EXPECT_CALL(txCallback, OnSifted2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
                 txSeq = seq;
                 txIncomming.insert(txIncomming.end(), rawQubits->begin(), rawQubits->end());
                 alignedCalled++;
                 waitCv.notify_one();
             }));
 
-            EXPECT_CALL(rxCallback, OnAligned2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
+            EXPECT_CALL(rxCallback, OnSifted2(_, _, _)).WillRepeatedly(Invoke([&](SequenceNumber seq, double securityParameter, QubitList* rawQubits){
                 rxSeq = seq;
                 rxIncomming.insert(rxIncomming.end(), rawQubits->begin(), rawQubits->end());
                 alignedCalled++;

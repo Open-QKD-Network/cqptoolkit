@@ -12,12 +12,12 @@
 #include "TestSites.h"
 #include "KeyManagement/SDN/NetworkManagerDummy.h"
 #include "KeyManagement/Sites/SiteAgent.h"
-#include "CQPToolkit/Drivers/DeviceFactory.h"
+#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include <grpc++/create_channel.h>
 #include <grpc++/client_context.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Drivers/DummyQKD.h"
+#include "CQPToolkit/QKDDevices/DummyQKD.h"
 #include <thread>
 
 namespace cqp
