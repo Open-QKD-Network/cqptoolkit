@@ -14,7 +14,7 @@
 #include "CQPToolkit/Interfaces/ISiftedPublisher.h"
 #include "Algorithms/Util/Provider.h"
 #include "CQPToolkit/Sift/Stats.h"
-#include "QKDInterfaces/ISift.grpc.pb.h"
+#include "QKDInterfaces/Qubits.pb.h"
 #include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
@@ -26,7 +26,8 @@ namespace cqp
          * @brief The SiftBase class
          * Common codew for sifting
          */
-        class CQPTOOLKIT_EXPORT SiftBase : public IAlignmentCallback, public Provider<ISiftedCallback>
+        class CQPTOOLKIT_EXPORT SiftBase : public virtual IAlignmentCallback,
+                public Provider<ISiftedCallback>
         {
         public:
             /**

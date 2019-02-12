@@ -119,4 +119,18 @@ namespace cqp {
         }
     }
 
+
+    std::string KeyToPKCS11(KeyID keyId, const std::string& destination)
+    {
+        URI pkcs11Url;
+        pkcs11Url.SetScheme("pkcs11");
+        std::vector<std::string> pathElements;
+        pathElements.push_back("type=secret-key");
+        // this = PKCS label, used for the destination - so that it can be searched
+        pathElements.push_back("object=" + URI::Encode(destination));
+        pathElements.push_back("id=0x" + ToHexString(keyId));
+        pkcs11Url.SetPath(pathElements, ";");
+
+        return pkcs11Url.ToString();
+    }
 } // namespace cqp

@@ -10,10 +10,54 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Alignment.h"
+#include <limits.h>
 
 namespace cqp
 {
     namespace align
     {
+
+        Alignment::Alignment() {}
+
+        void Alignment::SendResults(const QubitList& emissions, double securityParameter)
+        {
+            if(listener)
+            {
+                auto siftedData = std::make_unique<JaggedDataBlock>();
+                // calculate the number of bits in the current system.
+                constexpr uint8_t bitsPerValue = sizeof(DataBlock::value_type) * CHAR_BIT;
+                siftedData->reserve(emissions.size() / bitsPerValue);
+
+                JaggedDataBlock::value_type value = 0;
+                uint_least8_t offset = 0;
+
+                for(const auto& qubit : emissions)
+                {
+                    value |= QubitHelper::BitValue(qubit) << offset;
+                    // move to the next bit
+                    ++offset;
+
+                    if(offset == bitsPerValue)
+                    {
+                        // we have filled up a word, add it to the output and reset
+                        siftedData->push_back(value);
+                        siftedData->bitsInLastByte = bitsPerValue;
+                        value = 0;
+                        offset = 0;
+                    } // if
+                }
+
+                if(offset != 0)
+                {
+                    // There weren't enough bits to completely fill the last word,
+                    // Add the remaining, the mask will show which bits are valid
+                    siftedData->push_back(value);
+                    siftedData->bitsInLastByte = offset;
+                } // if(offset != 0)
+
+                listener->OnSifted(seq++, securityParameter, move(siftedData));
+            }
+        }
+
     } // namespace align
 } // namespace cqp

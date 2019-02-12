@@ -15,7 +15,8 @@
 #include "CQPToolkit/Interfaces/IPhotonGenerator.h"
 #include "CQPToolkit/Interfaces/IEmitterEventPublisher.h"
 #include "QKDInterfaces/IPhotonSim.grpc.pb.h"
-#include "CQPToolkit/Simulation/Stats.h"
+#include "CQPToolkit/Statistics/Frames.h"
+#include "CQPToolkit/Interfaces/IRemoteComms.h"
 
 namespace cqp
 {
@@ -29,12 +30,13 @@ namespace cqp
          *
          */
         class CQPTOOLKIT_EXPORT DummyTransmitter : public virtual IPhotonGenerator,
+                public virtual IRemoteComms,
         // publish the details of the photons generated
             public Provider<IEmitterEventCallback>
         {
         public:
             /// Statistics produced by this class
-            Statistics stats; // struct Statistics
+            stats::Frames stats; // struct Statistics
 
             /**
              * @brief DummyTransmitter
@@ -49,22 +51,27 @@ namespace cqp
 
             ~DummyTransmitter() override;
 
+            ///@{
+            /// @name IRemoteComms interface
+
             /**
              * @brief Connect
              * @param channel The IPhotonSim endpoint to send photons to
              */
-            void Connect(std::shared_ptr<grpc::ChannelInterface> channel);
+            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override;
 
             /**
              * @brief Disconnect
              */
-            void Disconnect();
+            void Disconnect() override;
+
+            ///@}
 
             ///@{
             /// @name IPhotonGenerator Interface
 
             /// @copydoc IPhotonGenerator::Fire
-            void Fire() override;
+            bool Fire() override;
 
             /// @copydoc IPhotonGenerator::StartFrame
             void StartFrame() override;

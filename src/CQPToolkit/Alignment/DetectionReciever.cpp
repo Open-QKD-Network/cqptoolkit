@@ -141,10 +141,7 @@ namespace align {
                 {
                     const auto qubitsProcessed = results->size();
 
-                    if(listener)
-                    {
-                        listener->OnAligned(seq++, securityParameter, move(results));
-                    }
+                    SendResults(*results, securityParameter);
 
                     stats.timeTaken.Update(high_resolution_clock::now() - timerStart);
                     stats.overhead.Update(0.0L);

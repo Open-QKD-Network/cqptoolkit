@@ -21,84 +21,86 @@
 
 namespace cqp
 {
-
-    /**
-     * @brief The ClavisController class
-     * Session controller for Clavis devices
-     */
-    class CQPTOOLKIT_EXPORT ClavisController :
-        public SessionController, public Provider<IKeyCallback>
+    namespace session
     {
-    public:
         /**
-         * @brief ClavisController
-         * @param address The uri of the wrapper
-         * @param creds credentials to use when connecting to the wrapper
+         * @brief The ClavisController class
+         * Session controller for Clavis devices
          */
-        ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds);
+        class CQPTOOLKIT_EXPORT ClavisController :
+                public SessionController, public Provider<IKeyCallback>
+        {
+        public:
+            /**
+             * @brief ClavisController
+             * @param address The uri of the wrapper
+             * @param creds credentials to use when connecting to the wrapper
+             */
+            ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds);
 
-        ///@{
-        /// @name ISessionController
+            /// distructor
+            ~ClavisController() override;
 
-        /// @copydoc cqp::ISessionController::StartSession
-        grpc::Status StartSession(const remote::OpticalParameters& params) override;
+            ///@{
+            /// @name ISessionController
 
-        /// @copydoc cqp::ISessionController::EndSession
-        void EndSession() override;
+            /// @copydoc cqp::ISessionController::StartSession
+            grpc::Status StartSession(const remote::OpticalParameters& params) override;
 
-        /// @copydoc cqp::ISessionController::GetKeyPublisher
-        IKeyPublisher* GetKeyPublisher() override;
+            /// @copydoc cqp::ISessionController::EndSession
+            void EndSession() override;
 
-        /// @copydoc cqp::ISessionController::GetStats
-        std::vector<stats::StatCollection*> GetStats() const override;
-        ///@}
+            ///@}
 
-        ///@{
-        /// @name ISession interface
+            ///@{
+            /// @name ISession interface
 
-        /// @copydoc cqp::remote::ISession::SessionStarting
-        /// @param context Connection details from the server
-        grpc::Status SessionStarting(grpc::ServerContext* context,
-                                     const remote::SessionDetails* request,
-                                     google::protobuf::Empty*) override;
+            /// @copydoc cqp::remote::ISession::SessionStarting
+            /// @param context Connection details from the server
+            grpc::Status SessionStarting(grpc::ServerContext* context,
+                                         const remote::SessionDetails* request,
+                                         google::protobuf::Empty*) override;
 
-        /// @copydoc cqp::remote::ISession::SessionEnding
-        /// @param context Connection details from the server
-        grpc::Status SessionEnding(
-            grpc::ServerContext* context,
-            const google::protobuf::Empty*,
-            google::protobuf::Empty*) override;
-        /// @}
+            /// @copydoc cqp::remote::ISession::SessionEnding
+            /// @param context Connection details from the server
+            grpc::Status SessionEnding(
+                    grpc::ServerContext* context,
+                    const google::protobuf::Empty*,
+                    google::protobuf::Empty*) override;
 
-        /// @copydoc SessionController::RegisterServices
-        void RegisterServices(grpc::ServerBuilder& builder) override;
+            /// @}
 
-        /**
-         * @brief GetSide
-         * @return Which type of device is it
-         */
-        remote::Side::Type GetSide();
-    protected:
+            /**
+             * @brief GetSide
+             * @return Which type of device is it
+             */
+            remote::Side::Type GetSide();
+        protected:
 
-        /**
-         * @brief ReadKey
-         * Pull key from the wrapper and pass it on to the keystore
-         * @param reader source of key from the wrapper
-         * @param wrapperCtx connection context
-         */
-        void ReadKey(std::unique_ptr<grpc::ClientReader<remote::SharedKey> > reader, std::unique_ptr<grpc::ClientContext> wrapperCtx);
+            /**
+             * @brief ReadKey
+             * Pull key from the wrapper and pass it on to the keystore
+             * @param reader source of key from the wrapper
+             * @param wrapperCtx connection context
+             */
+            void ReadKey(std::unique_ptr<grpc::ClientReader<remote::SharedKey> > reader, std::unique_ptr<grpc::ClientContext> wrapperCtx);
 
-        /// whether the threads should exit
-        bool keepGoing = true;
-        /// run the ReadKey call
-        std::thread readThread;
-        /// Setting provided by the wrapper
-        remote::WrapperDetails myWrapperDetails;
-        /// channel to wrapper
-        std::shared_ptr<grpc::Channel> channel;
-        /// wrapper stub
-        std::unique_ptr<remote::IIDQWrapper::Stub> wrapper;
-    };// ClavisController
+            /// whether the threads should exit
+            bool keepGoing = true;
+            /// run the ReadKey call
+            std::thread readThread;
+            /// Setting provided by the wrapper
+            remote::WrapperDetails myWrapperDetails;
+            /// channel to wrapper
+            std::shared_ptr<grpc::Channel> channel;
+            /// wrapper stub
+            std::unique_ptr<remote::IIDQWrapper::Stub> wrapper;
+            /// Exchange keys with other sites
+            PublicKeyService* pubKeyServ = nullptr;
+            /// Our authentication token for getting shared secrets
+            std::string keyToken;
+        };// ClavisController
+    }
 
 } // namespace cqp
 

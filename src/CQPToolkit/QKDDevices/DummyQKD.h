@@ -11,11 +11,11 @@
 */
 #pragma once
 #include <memory>                   // for shared_ptr
-#include <stddef.h>                            // for size_t
 #include <string>                              // for string
 #include "CQPToolkit/Interfaces/IQKDDevice.h"  // for IQKDDevice
 #include "QKDInterfaces/Site.pb.h"             // for Device, Side, Side::Type
 #include "Algorithms/Datatypes/URI.h"               // for URI
+#include "Algorithms/Random/RandomNumber.h"
 
 namespace grpc
 {
@@ -62,7 +62,7 @@ namespace cqp
          * @brief ~DummyQKD
          * destructor
          */
-        ~DummyQKD() override {}
+        ~DummyQKD() override;
 
 
         // IQKDDevice interface
@@ -79,18 +79,25 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::Initialise
         bool Initialise() override;
 
-        /// @copydoc cqp::IQKDDevice::GetDescription
-        std::string GetDescription() const override;
-
         /// @copydoc cqp::IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
 
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
         remote::Device GetDeviceDetails() override;
+
+        /// @copydoc cqp::ISessionController::GetStats
+        virtual std::vector<stats::StatCollection*> GetStats() override;
+
+        /// @copydoc cqp::ISessionController::GetKeyPublisher
+        IKeyPublisher* GetKeyPublisher() override;
         ///@}
-    protected:
-        /// The controller managing this device
-        SessionController* controller = nullptr;
+    protected: // members
+        class ProcessingChain;
+
+        std::unique_ptr<ProcessingChain> processing;
+
+        RandomNumber rng;
+
         /// The address to use to contact this
         std::string myAddress;
     };

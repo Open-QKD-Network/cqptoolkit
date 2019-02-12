@@ -22,7 +22,7 @@
 
 namespace cqp
 {
-    namespace test
+    namespace tests
     {
 
         /**
@@ -83,7 +83,7 @@ namespace cqp
             std::shared_ptr<RandomNumber> rng;
         };
 
-    } // namespace test
+    } // namespace tests
 } // namespace cqp
 
 

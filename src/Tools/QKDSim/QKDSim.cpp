@@ -15,8 +15,8 @@
 #include "Algorithms/Util/Application.h"
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include "KeyManagement/Sites/SiteAgent.h"
-#include "CQPToolkit/Drivers/DummyQKD.h"
-#include "CQPToolkit/Drivers/DeviceFactory.h"
+#include "CQPToolkit/QKDDevices/DummyQKD.h"
+#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "Algorithms/Util/FileIO.h"
 
@@ -33,24 +33,24 @@
 using namespace cqp;
 
 
-struct Names
-{
-    static CONSTSTRING configFile = "config-file";
-    static CONSTSTRING id = "id";
-    static CONSTSTRING port = "port";
-    static CONSTSTRING certFile = "cert";
-    static CONSTSTRING keyFile = "key";
-    static CONSTSTRING rootCaFile = "rootca";
-    static CONSTSTRING tls = "tls";
-    static CONSTSTRING connect = "connect";
-};
-
 /**
  * @brief The ExampleConsoleApp class
  * Simple GUI for driving the QKD software
  */
 class QKDSim : public Application
 {
+
+    struct Names
+    {
+        static CONSTSTRING configFile = "config-file";
+        static CONSTSTRING id = "id";
+        static CONSTSTRING port = "port";
+        static CONSTSTRING certFile = "cert";
+        static CONSTSTRING keyFile = "key";
+        static CONSTSTRING rootCaFile = "rootca";
+        static CONSTSTRING tls = "tls";
+        static CONSTSTRING connect = "connect";
+    };
 
 public:
     /// Constructor

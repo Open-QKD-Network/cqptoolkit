@@ -19,9 +19,10 @@
 #include "Algorithms/Alignment/Gating.h"
 #include "Algorithms/Alignment/Drift.h"
 #include <grpc++/channel.h>
+#include "CQPToolkit/Interfaces/IRemoteComms.h"
+#include "Algorithms/Datatypes/Framing.h"
 
 namespace cqp {
-    struct SystemParameters;
 
 namespace align {
 
@@ -31,7 +32,8 @@ namespace align {
      */
     class CQPTOOLKIT_EXPORT DetectionReciever : public Alignment,
     /* Interfaces */
-        virtual public IDetectionEventCallback,
+        public virtual IDetectionEventCallback,
+        public virtual IRemoteComms,
             protected WorkerThread
     {
     public:
@@ -72,11 +74,14 @@ namespace align {
 
         /// @}
 
+        ///@{
+        /// @name IRemoteComms interface
+
         /**
          * @brief Connect Connect to the other side to exchange alignment detail
          * @param channel
          */
-        void Connect(std::shared_ptr<grpc::Channel> channel) {
+        void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override {
             transmitter = channel;
             Start();
         }
@@ -84,11 +89,13 @@ namespace align {
         /**
          * @brief Disconnect
          */
-        void Disconnect()
+        void Disconnect() override
         {
             Stop(true);
             transmitter.reset();
         }
+
+        ///@}
 
         /**
          * @brief DoWork
@@ -101,13 +108,14 @@ namespace align {
         /// Source of randomness
         std::shared_ptr<RandomNumber> rng;
         /// The other side of the conversation
-        std::shared_ptr<grpc::Channel> transmitter;
+        std::shared_ptr<grpc::ChannelInterface> transmitter;
         /// for conditioning the signal
         align::Filter filter;
         /// For extracting the real detections from the noise
         align::Gating gating;
         /// for calculating drift
         align::Drift drift;
+
     };
 
 } // namespace align

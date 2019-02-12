@@ -159,7 +159,7 @@ namespace cqp
             {
                 if(fs::Exists(child + "/device"))
                 {
-                    results.push_back(new Serial(child + "/device"));
+                    results.emplace_back(std::make_unique<Serial>(child + "/device"));
                     if(firstOnly)
                     {
                         break; // for
@@ -180,7 +180,7 @@ namespace cqp
                 for(const string& foundDev : files)
                 {
                     LOGTRACE("Found " + foundDev);
-                    results.push_back(new Serial(foundDev));
+                    results.emplace_back(std::make_unique<Serial>(foundDev));
                     if(firstOnly)
                     {
                         break; // for

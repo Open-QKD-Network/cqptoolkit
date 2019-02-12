@@ -26,10 +26,12 @@ namespace cqp
          * @brief OnSifted
          * Called by the ISiftPublisher when sifted data is available
          * @param id The sifted frame id for the data
+         * @param securityParameter
          * @param siftedData The data which has been matched to the other side.
          */
         virtual void OnSifted(
             const SequenceNumber id,
+                double securityParameter,
             std::unique_ptr<JaggedDataBlock> siftedData) = 0;
 
         virtual ~ISiftedCallback() = default;

@@ -45,7 +45,7 @@ namespace cqp
 {
     class Serial;
     /// A list of Serial objects
-    using SerialList = std::vector<Serial*>;
+    using SerialList = std::vector<std::unique_ptr<Serial>>;
 
     /// Generic communication with RS232 devices
     class CQPTOOLKIT_EXPORT Serial

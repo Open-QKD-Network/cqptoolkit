@@ -13,7 +13,6 @@
 #include <memory>                                      // for allocator, __s...
 #include <utility>                                     // for move, pair
 #include "CQPToolkit/Interfaces/IQKDDevice.h"          // for IQKDDevice
-#include "CQPToolkit/Interfaces/ISessionController.h"  // for ISessionContro...
 #include "Algorithms/Statistics/StatCollection.h"      // for StatCollection
 #include "Algorithms/Logging/Logger.h"                    // for LOGERROR, LOGT...
 #include "Algorithms/Util/Strings.h"                      // for StrEqualI
@@ -23,8 +22,7 @@
 namespace cqp
 {
     // storage for the class member
-    std::unordered_map<std::string /*driver name*/, DeviceFactory::DeviceCreateFunc> DeviceFactory::driverMapping;
-
+    DeviceFactory::DriversBySide DeviceFactory::driverMapping;
 
     DeviceFactory::DeviceFactory(std::shared_ptr<grpc::ChannelCredentials> creds) :
         clientCreds(creds)
@@ -61,8 +59,29 @@ namespace cqp
         using namespace std;
         URI addrUri(url);
         std::shared_ptr<IQKDDevice> result;
+        remote::Side::Type side = remote::Side::Type::Side_Type_Any;
 
-        auto CreateFunc = driverMapping[addrUri.GetScheme()];
+        {
+            string sideString;
+            if(addrUri.GetFirstParameter(IQKDDevice::Parmeters::side, sideString))
+            {
+                sideString = ToLower(sideString);
+                if(sideString == "alice" || sideString == "0")
+                {
+                    side = remote::Side::Alice;
+                } else if(sideString == "bob" || sideString == "1")
+                {
+                    side = remote::Side::Bob;
+                } else if(sideString == "any" || sideString == "2")
+                {
+                    side = remote::Side::Any;
+                } else {
+                    LOGERROR("Unknown side: " + sideString);
+                }
+            }
+        }
+
+        auto CreateFunc = driverMapping[side][addrUri.GetScheme()];
         size_t bytesPerKey = DefaultBytesPerKey;
         addrUri.GetFirstParameter(IQKDDevice::Parmeters::keybytes, bytesPerKey);
 
@@ -78,26 +97,16 @@ namespace cqp
                 const std::string identifier = GetDeviceIdentifier(addrUri);
                 allDevices[identifier] = result;
                 unusedDevices[identifier] = result;
-
+                LOGTRACE("Collecting device statistics");
                 // link the reporting callbacks
-                auto controller = result->GetSessionController();
-                if(controller)
+                for(auto* collection : result->GetStats())
                 {
-                    LOGTRACE("Collecting device statistics");
-                    for(auto* collection : controller->GetStats())
+                    for(auto reportCb : reportingCallbacks)
                     {
-                        for(auto reportCb : reportingCallbacks)
-                        {
-                            collection->Add(reportCb);
-                        }
+                        collection->Add(reportCb);
                     }
-                    LOGINFO("Device " + addrUri.GetScheme() + " ready");
                 }
-                else
-                {
-                    LOGERROR("Invalid controller");
-                    result = nullptr;
-                }
+                LOGINFO("Device " + addrUri.GetScheme() + " ready");
             }
         }
         else
@@ -148,9 +157,9 @@ namespace cqp
         }
     }
 
-    void DeviceFactory::RegisterDriver(const std::string& name, const DeviceFactory::DeviceCreateFunc& createFunc)
+    void DeviceFactory::RegisterDriver(const std::string& name, remote::Side::Type side, const DeviceFactory::DeviceCreateFunc& createFunc)
     {
-        driverMapping[name] = createFunc;
+        driverMapping[side][name] = createFunc;
     }
 
     remote::Side::Type DeviceFactory::GetSide(const URI& uri)
@@ -180,7 +189,7 @@ namespace cqp
         reportingCallbacks.push_back(callback);
         for(const auto& dev : allDevices)
         {
-            for(auto* collection : dev.second->GetSessionController()->GetStats())
+            for(auto* collection : dev.second->GetStats())
             {
                 collection->Add(callback);
             }
@@ -200,7 +209,7 @@ namespace cqp
 
         for(const auto& dev : allDevices)
         {
-            for(auto* collection : dev.second->GetSessionController()->GetStats())
+            for(auto* collection : dev.second->GetStats())
             {
                 collection->Remove(callback);
             }

@@ -20,6 +20,7 @@
 #include "Algorithms/Logging/ILogger.h"      // for LogLevel, ILogger, LogLevel::Debug
            // for EnumClassHash
 #include "Algorithms/Datatypes/URI.h"                // for URI
+#include "libusb-1.0/libusb.h"
 
 namespace cqp
 {
@@ -52,8 +53,59 @@ namespace cqp
     // storage for data
     const UsbLevelMap UsbLevel::Lookup = CreateUsbLevelMap();
 
+    std::unique_ptr<Usb> Usb::Detect(uint16_t vendorId, uint16_t productId, const std::string& serial)
+    {
+        ::libusb_device **devs;
+        // Initialize the library.
+        if (libusb_init(nullptr) != LIBUSB_SUCCESS)
+        {
+            LOGERROR("Failed to initialise libUSB.");
+        }
+        // Find all connected devices.
+        ssize_t numDevices = libusb_get_device_list(nullptr, &devs);
+        LOGDEBUG("Found " + std::to_string(numDevices) + " usb devices.");
 
-    Usb::Usb()
+        // Create an object which will hopefully connect
+        std::unique_ptr<Usb> result;
+
+        for (int devIndex = 0; devIndex < numDevices; devIndex++)
+        {
+
+            /// The description of the connected device
+            struct ::libusb_device_descriptor desc = libusb_device_descriptor();
+
+            if (devs[devIndex] == nullptr || LogUsb(libusb_get_device_descriptor(devs[devIndex], &desc)) != LIBUSB_SUCCESS)
+            {
+                LOGERROR("failed to get device descriptor");
+            }
+            else
+            {
+                LOGTRACE("Device has " + std::to_string(desc.bNumConfigurations) + " Configurations.");
+                if(desc.idVendor == vendorId && desc.idProduct == productId)
+                {
+                    // opening the device will increase it's reference count, making it safe to delete the list
+                    result = make_unique<Usb>(devs[devIndex]);
+
+                    if(serial.empty() || result->GetSerialNumber() == serial)
+                    {
+                        // match is good
+                        break; // for
+                    } else {
+                        // false match, drop the device
+                        result.reset();
+                    }
+                } // if pid/vid match
+            } // if device is good
+        } // for each device
+
+        libusb_free_device_list(devs, 1);
+        libusb_exit(nullptr);
+
+        return result;
+    }
+
+    Usb::Usb(::libusb_device* const dev) :
+        myDev{dev}
     {
         // Initialize the library.
         // by passing null we are using the default context which is reference counted
@@ -69,119 +121,11 @@ namespace cqp
         {
             LOGERROR("Failed to initialise libUSB.");
         }
-
+        LogUsb(libusb_open(myDev, &myHandle));
     }
 
     Usb::~Usb()
     {
-        Usb::Close();
-    }
-
-    bool Usb::IsOpen() const
-    {
-        return (myDev != nullptr && myHandle != nullptr);
-    }
-
-    bool Usb::Open(uint16_t vendorId, uint16_t productId, int newConfigIndex, int newInterfaceIndex)
-    {
-        vendor = vendorId;
-        product = productId;
-        LOGTRACE("Getting device descriptor...");
-        configIndex = newConfigIndex;
-        interfaceIndex = newInterfaceIndex;
-        bool result = false;
-
-        myHandle = libusb_open_device_with_vid_pid(nullptr, vendorId, productId);
-        if(myHandle != nullptr)
-        {
-            myDev = libusb_get_device(myHandle);
-        }
-
-        /// The description of the connected device
-        struct libusb_device_descriptor desc = libusb_device_descriptor();
-
-        if (myDev == nullptr || LogUsb(libusb_get_device_descriptor(myDev, &desc)) != LIBUSB_SUCCESS)
-        {
-            LOGERROR("failed to get device descriptor");
-        }
-        else
-        {
-            LOGTRACE("Device has " + std::to_string(desc.bNumConfigurations) + " Configurations.");
-        }
-
-        result = (desc.idVendor == vendorId) &&
-                 (desc.idProduct == productId);
-
-        if (result)
-        {
-            LOGTRACE("Opening Device...");
-            // Now try to get a handle to the device
-            result = LogUsb(libusb_open(myDev, &myHandle)) == LIBUSB_SUCCESS;
-            Usb::Open();
-        }
-
-        return result;
-    }
-
-    void Usb::ReadCallback(libusb_transfer *)
-    {
-        LOGTRACE("ReadCallback called");
-    }
-
-    bool Usb::Open()
-    {
-        bool result = true;
-
-        if (myDev != nullptr && myHandle != nullptr)
-        {
-
-            if (libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER) &&
-                    libusb_kernel_driver_active(myHandle, interfaceIndex) != LIBUSB_SUCCESS)
-            {
-                // We need to remove the kernel driver to gain access to the device
-                LogUsb(libusb_detach_kernel_driver(myHandle, interfaceIndex));
-            }
-
-            int currentConfig = -1;
-
-            if (result && (LogUsb(libusb_get_configuration(myHandle, &currentConfig)) == LIBUSB_SUCCESS))
-            {
-                if (currentConfig != configIndex)
-                {
-                    LOGTRACE("Setting Configuration to " + std::to_string(configIndex));
-                    result &= LogUsb(libusb_set_configuration(myHandle, configIndex)) == LIBUSB_SUCCESS;
-                }
-            }
-            else
-            {
-                LOGERROR("Failed to open device");
-            }
-
-            LOGTRACE("Attempting to claim interface...");
-            result &= LogUsb(libusb_claim_interface(myHandle, interfaceIndex)) == LIBUSB_SUCCESS;
-
-            if (result)
-            {
-                libusb_ref_device(myDev);
-
-                if (!eventHandler.IsRunning())
-                {
-                    eventHandler.Start();
-                }
-            }
-        }
-        return result;
-    }
-
-    bool Usb::Open(libusb_device  *const dev)
-    {
-        myDev = dev;
-        return Open();
-    }
-
-    bool Usb::Close()
-    {
-
         eventHandler.Stop();
         if (myHandle != nullptr)
         {
@@ -192,27 +136,77 @@ namespace cqp
 
             libusb_close(myHandle);
         }
-
-        return true;
+        libusb_exit(nullptr);
     }
 
-    void Usb::StandardReadCallback(libusb_transfer *transfer)
+    bool Usb::Open(int configIndex, const std::vector<int>& interfaces, bool detachKernelDriver)
     {
-        using namespace std;
-        if (transfer != nullptr && transfer->user_data != nullptr)
+        bool result = true;
+
+        if (myDev != nullptr && myHandle != nullptr)
         {
-            Usb* child = static_cast<Usb*>(transfer->user_data);
-            child->ReadCallback(transfer);
-        }
+
+            if (libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER))
+            //        libusb_kernel_driver_active(myHandle, interfaceIndex) != LIBUSB_SUCCESS)
+            {
+                // We need to remove the kernel driver to gain access to the device
+                //LogUsb(libusb_detach_kernel_driver(myHandle, interfaceIndex));
+                LogUsb(libusb_set_auto_detach_kernel_driver(myHandle, detachKernelDriver));
+            }
+
+            int currentConfig = -1;
+
+            if (result && (LogUsb(libusb_get_configuration(myHandle, &currentConfig)) == LIBUSB_SUCCESS))
+            {
+                if (configIndex >= 0 && currentConfig != configIndex)
+                {
+                    LOGTRACE("Setting Configuration to " + std::to_string(configIndex));
+                    result &= LogUsb(libusb_set_configuration(myHandle, configIndex)) == LIBUSB_SUCCESS;
+                }
+            }
+            else
+            {
+                LOGERROR("Failed to open device");
+            }
+
+            claimedInterfaces = interfaces;
+
+            if(interfaces.empty())
+            {
+                // try and find the first interface
+                ::libusb_config_descriptor* config = nullptr;
+                if(LogUsb(libusb_get_active_config_descriptor(myDev, &config)) == LIBUSB_SUCCESS)
+                {
+                    if(config->bNumInterfaces > 0)
+                    {
+                        claimedInterfaces.push_back(config->interface[0].altsetting->bInterfaceNumber);
+                    }
+                } else {
+                    result = false;
+                }
+            } // if default interface needed
+
+            for(auto interface : claimedInterfaces)
+            {
+                LOGTRACE("Attempting to claim interface " + to_string(interface) + "...");
+                result &= LogUsb(libusb_claim_interface(myHandle, interface)) == LIBUSB_SUCCESS;
+            } // for interfaces
+
+            if (result && !eventHandler.IsRunning())
+            {
+                eventHandler.Start();
+            }
+        } // if device is ok
+        return result;
     }
 
-    void Usb::StartReadingBulk(uint8_t request)
+    void Usb::StartReadingBulk(ReadCallback callback, uint8_t request, void* userData)
     {
-        struct libusb_transfer *transfer = libusb_alloc_transfer(0);
+        struct ::libusb_transfer *transfer = libusb_alloc_transfer(0);
 
         libusb_fill_bulk_transfer(
             transfer, myHandle, request, readBuffer, sizeof(readBuffer),
-            Usb::StandardReadCallback, this, 0);
+            callback, userData, 0);
 
         if (LogUsb(libusb_submit_transfer(transfer)) != LIBUSB_SUCCESS)
         {
@@ -220,23 +214,12 @@ namespace cqp
         }
     }
 
-    bool Usb::WriteBulk(DataBlock data, size_t endpoint)
+    bool Usb::WriteBulk(DataBlock data, unsigned char endpoint)
     {
         int numSent = 0;
-        size_t result = LogUsb(libusb_bulk_transfer(myHandle, endpoint, data.data(), static_cast<int>(data.size()), &numSent, writeTimeout));
+        auto result = LogUsb(libusb_bulk_transfer(myHandle, endpoint, data.data(), static_cast<int>(data.size()), &numSent, writeTimeout));
 
         return result == libusb_error::LIBUSB_SUCCESS;
-    }
-
-    void Usb::Shutdown()
-    {
-        // This closes the default context which is reference counted
-        libusb_exit(nullptr);
-    }
-
-    libusb_error Usb::LogUsb(libusb_error result)
-    {
-        return static_cast<libusb_error>(LogUsb(static_cast<int>(result)));
     }
 
     int Usb::LogUsb(int result)
@@ -265,44 +248,6 @@ namespace cqp
         }
     }
 
-    void Usb::DetectFunc(UsbList& results, bool firstOnly)
-    {
-        libusb_device **devs;
-        // Initialize the library.
-        if (libusb_init(nullptr) != LIBUSB_SUCCESS)
-        {
-            LOGERROR("Failed to initialise libUSB.");
-        }
-        // Find all connected devices.
-        ssize_t numDevices = libusb_get_device_list(nullptr, &devs);
-        LOGDEBUG("Found " + std::to_string(numDevices) + " usb devices.");
-
-        // Create an object which will hopefully connect
-        Usb* newDevice = new Usb();
-        for (int devIndex = 0; devIndex < numDevices; devIndex++)
-        {
-            if (newDevice->Open(devs[devIndex]))
-            {
-                LOGDEBUG("Found matching vid/pid...");
-                // Success, store the new device and create a blank one to work with
-                results.push_back(newDevice);
-                // TODO: use shared/unique pointers
-                newDevice = new Usb();
-
-                if (firstOnly)
-                {
-                    // Only new one device, stop looking
-                    break; // for loop
-                }
-            }
-        }
-        // clean up any unused objects
-        delete(newDevice);
-
-        libusb_free_device_list(devs, 1);
-        libusb_exit(nullptr);
-    }
-
     URI Usb::GetAddress()
     {
         URI result;
@@ -311,11 +256,9 @@ namespace cqp
         if(myDev)
         {
             // get the device path
-            uint8_t portNumbers[8];
-            int numPortNumbers = libusb_get_port_numbers(myDev, portNumbers, sizeof (portNumbers));
-            for(int index = 0; index < numPortNumbers; index++)
+            for(auto port : GetPortNumbers())
             {
-                portPath += to_string(portNumbers[index]) + "/";
+                portPath += to_string(port) + "/";
             }
             result.SetPath(portPath);
         }
@@ -325,4 +268,50 @@ namespace cqp
         return result;
     }
 
-}
+    std::vector<uint8_t> Usb::GetPortNumbers()
+    {
+        std::vector<uint8_t> result(7); // because thats what the docs say
+        int numPortNumbers = libusb_get_port_numbers(myDev, &result[0], static_cast<int>(result.size()));
+        if(numPortNumbers != LIBUSB_ERROR_OVERFLOW)
+        {
+            result.resize(static_cast<size_t>(numPortNumbers));
+        } else {
+            result.clear();
+            LOGERROR("USB bus depth too big");
+        }
+
+        return result;
+    }
+
+    }
+
+    std::string cqp::Usb::GetSerialNumber()
+    {
+        std::string serial(255u, '\0'); // max size from spec
+
+        /// The description of the connected device
+        struct ::libusb_device_descriptor desc = libusb_device_descriptor();
+
+        if (myDev == nullptr || LogUsb(libusb_get_device_descriptor(myDev, &desc)) != LIBUSB_SUCCESS)
+        {
+            LOGERROR("failed to get device descriptor");
+        }
+        else
+        {
+            if(desc.iSerialNumber != 0)
+            {
+                auto descLength = libusb_get_string_descriptor_ascii(myHandle, desc.iSerialNumber,
+                                                                     reinterpret_cast<unsigned char*>(&serial[0]),
+                                                                     static_cast<int>(serial.length()));
+                if(descLength > 0)
+                {
+                    serial.resize(static_cast<size_t>(descLength));
+                } else{
+                    LogUsb(descLength);
+                    serial = "";
+                }
+            } // if has serial
+        } // device ok
+
+        return serial;
+    } // GetSerialNumber

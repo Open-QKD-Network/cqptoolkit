@@ -11,9 +11,8 @@
 */
 #include "SiteAgent.h"
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
-#include "CQPToolkit/Drivers/DeviceFactory.h"
+#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "Algorithms/Logging/Logger.h"
-#include "CQPToolkit/Drivers/DeviceFactory.h"
 #include "CQPToolkit/Session/SessionController.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Interfaces/IQKDDevice.h"
@@ -171,7 +170,7 @@ namespace cqp
             auto controller = dev.second->GetSessionController();
             if(controller)
             {
-                auto pub = controller->GetKeyPublisher();
+                auto pub = dev.second->GetKeyPublisher();
                 if(pub)
                 {
                     pub->Detatch();
@@ -248,7 +247,7 @@ namespace cqp
                     LOGTRACE("Attaching keystore");
                     // attach the device key publisher to the key store for this hop
                     shared_ptr<keygen::KeyStore> ks = keystoreFactory->GetKeyStore(destination);
-                    IKeyPublisher* pub = controller->GetKeyPublisher();
+                    IKeyPublisher* pub = localDev->GetKeyPublisher();
                     if(pub)
                     {
                         LOGTRACE("Adding keystore");
@@ -376,14 +375,12 @@ namespace cqp
                 deviceFactory->ReturnDevice(localDev->second);
                 devicesInUse.erase(localDev);
             }
-            if(controller)
+
+            auto kp = localDev->second->GetKeyPublisher();
+            if(kp)
             {
-                auto kp = controller->GetKeyPublisher();
-                if(kp)
-                {
-                    // disconnect the key store from the publisher
-                    kp->Detatch();
-                }
+                // disconnect the key store from the publisher
+                kp->Detatch();
             }
         }
         return result;
@@ -439,14 +436,11 @@ namespace cqp
                     deviceFactory->ReturnDevice(localDev->second);
                     devicesInUse.erase(localDev);
                 }
-                if(controller)
+                auto kp = localDev->second->GetKeyPublisher();
+                if(kp)
                 {
-                    auto kp = controller->GetKeyPublisher();
-                    if(kp)
-                    {
-                        // disconnect the key store from the publisher
-                        kp->Detatch();
-                    }
+                    // disconnect the key store from the publisher
+                    kp->Detatch();
                 }
             }
         }
@@ -580,7 +574,7 @@ namespace cqp
             auto controller = device->second->GetSessionController();
             if(controller)
             {
-                auto pub = controller->GetKeyPublisher();
+                auto pub = device->second->GetKeyPublisher();
                 if(pub)
                 {
                     // disconnect the device from the keystore

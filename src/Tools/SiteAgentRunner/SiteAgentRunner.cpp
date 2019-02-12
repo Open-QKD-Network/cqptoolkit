@@ -12,7 +12,7 @@
 
 #include "SiteAgentRunner.h"
 #include "Algorithms/Logging/ConsoleLogger.h"
-#include "CQPToolkit/Drivers/DeviceFactory.h"
+#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "Algorithms/Util/FileIO.h"
 
 #include <grpc++/create_channel.h>
@@ -31,8 +31,9 @@
 #include "QKDInterfaces/ISiteDetails.grpc.pb.h"
 
 // Site agent compatible drivers
-#include "CQPToolkit/Drivers/DummyQKD.h"
-#include "CQPToolkit/Drivers/ClavisProxy.h"
+#include "CQPToolkit/QKDDevices/DummyQKD.h"
+#include "CQPToolkit/QKDDevices/ClavisProxy.h"
+#include "CQPToolkit/QKDDevices/PhotonDetectorMk1.h"
 // ^^^^^^ Add new drivers here ^^^^^^^^^
 
 #include <future>
@@ -116,6 +117,7 @@ SiteAgentRunner::SiteAgentRunner()
     // Site agent drivers
     DummyQKD::RegisterWithFactory();
     ClavisProxy::RegisterWithFactory();
+    PhotonDetectorMk1::RegisterWithFactory();
     // ^^^^^^ Add new drivers here ^^^^^^^^^
 
 }

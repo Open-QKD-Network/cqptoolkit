@@ -31,7 +31,7 @@
 
 namespace cqp
 {
-    namespace test
+    namespace tests
     {
 
         using ::testing::_;
@@ -446,5 +446,5 @@ namespace cqp
             fs::DataFile::WriteQubits(rxIncomming, "AlignedBytesRx.bin");
             // TODO
         }
-    } // namespace test
+    } // namespace tests
 } // namespace cqp

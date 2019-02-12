@@ -140,18 +140,9 @@ namespace cqp
                     // store the data in the outgoing variable
                     response->set_keyid(keyId);
                     response->mutable_keyvalue()->assign(keyValue.begin(), keyValue.end());
-                    URI pkcs11Url;
-                    pkcs11Url.SetScheme("pkcs11");
-                    std::vector<std::string> pathElements;
-                    pathElements.push_back("type=secret-key");
-                    // this = PKCS label, used for the destination - so that it can be searched
-                    pathElements.push_back("object=" + URI::Encode(request->siteto()));
-                    pathElements.push_back("id=0x" + ToHexString(keyId));
-                    pkcs11Url.SetPath(pathElements, ";");
 
                     // store a url on how to access the key
-                    response->set_url(pkcs11Url.ToString());
-                    LOGTRACE("Key URL:" + pkcs11Url.ToString());
+                    response->set_url(KeyToPKCS11(keyId, request->siteto()));
                 }
             } // if keystore found
 

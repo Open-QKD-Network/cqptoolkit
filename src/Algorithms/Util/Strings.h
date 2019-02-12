@@ -6,6 +6,7 @@
 #include <map>
 #include <iomanip>
 #include "Algorithms/algorithms_export.h"
+#include "Algorithms/Datatypes/Keys.h"
 
 /// Support for "wide strings" has been removed with great prejudice
 /// see http://utf8everywhere.org/ for rational
@@ -223,6 +224,13 @@ namespace cqp {
         return result;
     }
 
+    /**
+     * @brief KeyToPKCS11
+     * @param keyId
+     * @param destination
+     * @return A key id formatted as a PKCS11 URI
+     */
+    ALGORITHMS_EXPORT std::string KeyToPKCS11(KeyID keyId, const std::string& destination);
 } // namespace cqp
 
 

@@ -129,12 +129,7 @@ namespace align {
                         LOGERROR("Valid transmissions list is invalid");
                     }
 
-                    if(listener)
-                    {
-                        unique_ptr<QubitList> output{new QubitList(emissions->emissions.size())};
-                        copy(emissions->emissions.cbegin(), emissions->emissions.cend(), output->begin());
-                        listener->OnAligned(seq++, request->securityparameter(), move(output));
-                    }
+                    SendResults(emissions->emissions, request->securityparameter());
                 } else {
                     result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Not prepared correctly");
                 }
@@ -146,3 +141,4 @@ namespace align {
 
 } // namespace align
 } // namespace cqp
+

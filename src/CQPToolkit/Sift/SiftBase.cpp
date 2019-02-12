@@ -116,7 +116,8 @@ namespace cqp
 
             if(listener)
             {
-                listener->OnSifted(siftedSequence, move(siftedData));
+                double securityParameter = 0.0; // TODO
+                listener->OnSifted(siftedSequence, securityParameter, move(siftedData));
             }
 
             siftedSequence++;

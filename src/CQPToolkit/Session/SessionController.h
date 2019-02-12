@@ -14,6 +14,7 @@
 #include "CQPToolkit/Interfaces/ISessionController.h"
 #include "Algorithms/Util/Provider.h"
 #include "CQPToolkit/cqptoolkit_export.h"
+#include "CQPToolkit/Interfaces/IRemoteComms.h"
 
 namespace cqp
 {
@@ -26,87 +27,97 @@ namespace cqp
         class TwoWayServerConnector;
     }
 
-    /**
-     * @brief The SessionController class
-     */
-    class CQPTOOLKIT_EXPORT SessionController :
-        public remote::ISession::Service,
-        public virtual ISessionController
-    {
-    public:
-        ///@{
-        /// @name ISessionController interface
+    namespace session {
 
-        /// @copydoc ISessionController::GetConnectionAddress
-        std::string GetConnectionAddress() const override
+        /**
+         * @brief The SessionController class
+         */
+        class CQPTOOLKIT_EXPORT SessionController :
+            public remote::ISession::Service,
+            public virtual ISessionController
         {
-            return myAddress + ":" + std::to_string(listenPort);
-        }
+        public:
+            /// A list of connectable objects
+            using RemoteCommsList = std::vector<std::shared_ptr<IRemoteComms>>;
+            /// A list of services to register with builder
+            using Services = std::vector<grpc::Service*>;
 
-        /// @copydoc ISessionController::StartSession
-        grpc::Status StartSession(const remote::OpticalParameters& params) override;
+            /**
+             * @brief SessionController
+             * Constructor
+             * @param creds credentials to use when contacting the peer controller
+             * @param services A list of services to register with builder
+             * @param remotes A list of objects which need to know when the sessions start/stop
+             */
+            SessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
+                              const Services& services,
+                                       const RemoteCommsList& remotes);
 
-        /// @copydoc ISessionController::EndSession
-        void EndSession() override;
+            /// Destructor
+            ~SessionController() override;
 
-        /// @copydoc ISessionController::StartServer
-        grpc::Status StartServer(const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
-        /// @copydoc ISessionController::StartServerAndConnect
-        grpc::Status StartServerAndConnect(URI otherController, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
-        ///@}
+            ///@{
+            /// @name ISessionController interface
 
-        ///@{
-        /// @name remote::ISession
+            /// @copydoc ISessionController::GetConnectionAddress
+            std::string GetConnectionAddress() const override
+            {
+                return myAddress + ":" + std::to_string(listenPort);
+            }
 
-        /// @copydoc remote::ISession::SessionStarting
-        /// @param context Connection details from the server
-        grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*) override;
-        /// @copydoc remote::ISession::SessionEnding
-        /// @param context Connection details from the server
-        grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
-        ///@}
+            /// @copydoc ISessionController::StartSession
+            grpc::Status StartSession(const remote::OpticalParameters& params) override;
 
-    protected: // members
+            /// @copydoc ISessionController::EndSession
+            void EndSession() override;
 
-        /// Our authentication token for getting shared secrets
-        std::string keyToken;
-        /// the address to connect to us
-        std::string myAddress;
-        /// our server, other interfaces will hang off of this
-        std::unique_ptr<grpc::Server> server;
-        /// Exchange keys with other sites
-        PublicKeyService* pubKeyServ = nullptr;
-        /// The address of the controller on the other side
-        std::string pairedControllerUri;
-        /// a random number generator
-        IRandom* rng = nullptr;
+            /// @copydoc ISessionController::StartServer
+            grpc::Status StartServer(const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
+            /// @copydoc ISessionController::StartServerAndConnect
+            grpc::Status StartServerAndConnect(URI otherController, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
 
-        /// The port used to connect
-        int listenPort = 0;
-        /// To setup two way connections
-        net::TwoWayServerConnector* twoWayComm = nullptr;
+            /// @copydoc cqp::remote::ISession::WaitForEndOfSession
+            void WaitForEndOfSession() override;
+            ///@}
 
-    protected: // methods
+            ///@{
+            /// @name remote::ISession
 
-        /**
-         * @brief SessionController
-         * Constructor
-         * @param creds credentials to use when contacting the peer controller
-         */
-        explicit SessionController(std::shared_ptr<grpc::ChannelCredentials> creds);
+            /// @copydoc remote::ISession::SessionStarting
+            /// @param context Connection details from the server
+            grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*) override;
+            /// @copydoc remote::ISession::SessionEnding
+            /// @param context Connection details from the server
+            grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
+            ///@}
 
-        /// Destructor
-        ~SessionController() override;
+        protected: // members
 
-        /**
-         * @brief RegisterServices
-         * register all the classes which provide a remote interface
-         * @param builder
-         */
-        virtual void RegisterServices(grpc::ServerBuilder& builder) = 0;
+            /// the address to connect to us
+            std::string myAddress;
+            /// our server, other interfaces will hang off of this
+            std::unique_ptr<grpc::Server> server;
+            /// The address of the controller on the other side
+            std::string pairedControllerUri;
 
-    }; // class SessionController
+            /// The port used to connect
+            int listenPort = 0;
+            /// To setup two way connections
+            net::TwoWayServerConnector* twoWayComm = nullptr;
+            /// A list of services to register with builder
+            Services services;
+            /// A list of objects which need to know when the sessions start/stop
+            RemoteCommsList remoteComms;
+            /// mutex for waiting for session end
+            std::mutex threadControlMutex;
+            /// cv for waiting for end of session
+            std::condition_variable threadControlCv;
+            /// track the session state
+            bool sessionEnded = true;
 
+        }; // class SessionController
+
+    } // namespace session
 } // namespace cqp
 
 

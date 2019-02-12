@@ -86,5 +86,7 @@ namespace cqp
             frame++;
             return result;
         } // StopDetecting
+
     } // namespace sim
 } // namespace cqp
+

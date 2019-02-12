@@ -11,9 +11,10 @@
 */
 #pragma once
 #include "CQPToolkit/Alignment/Stats.h"                   // for Statistics
-#include "CQPToolkit/Interfaces/IAlignmentPublisher.h"    // for IAlignmentC...
+#include "CQPToolkit/Interfaces/ISiftedPublisher.h"    // for IAlignmentC...
 #include "Algorithms/Util/Provider.h"                        // for Event, Even...
 #include "CQPToolkit/cqptoolkit_export.h"
+#include "Algorithms/Datatypes/Qubits.h"
 
 namespace cqp
 {
@@ -28,7 +29,7 @@ namespace cqp
          * @brief The Alignment class
          * A simple example of aligning time tags as they are received.
          */
-        class CQPTOOLKIT_EXPORT Alignment : public Provider<IAlignmentCallback>
+        class CQPTOOLKIT_EXPORT Alignment : public Provider<ISiftedCallback>
         {
         public:
 
@@ -40,7 +41,9 @@ namespace cqp
              * @brief Alignment
              * Constructor
              */
-            Alignment() {}
+            Alignment();
+
+            void SendResults(const QubitList& emissions, double securityParameter);
 
             /// our alignment sequence counter
             SequenceNumber seq = 0;

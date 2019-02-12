@@ -42,7 +42,7 @@ namespace cqp
             detector = nullptr;
         }
 
-        void DummyTransmitter::Fire()
+        bool DummyTransmitter::Fire()
         {
             using std::chrono::high_resolution_clock;
             high_resolution_clock::time_point timerStart = high_resolution_clock::now();
@@ -58,12 +58,10 @@ namespace cqp
 
             request.set_periodpicoseconds(txDelay.count());
 
-            for (unsigned int count = 0; count < photonsPerBurst; count++)
+            report->emissions = randomness->RandQubitList(photonsPerBurst);
+            for(auto qubit : report->emissions)
             {
-                const auto qubit = randomness->RandQubit();
                 request.mutable_values()->add_qubits(static_cast<remote::BB84::Type>(qubit));
-                report->emissions.push_back(qubit);
-
             }
 
             grpc::Status status = LogStatus(
@@ -78,6 +76,8 @@ namespace cqp
             }
             stats.timeTaken.Update(high_resolution_clock::now() - timerStart);
             stats.qubitsTransmitted.Update(qubitsTransmitted);
+
+            return status.ok();
         }
 
         void DummyTransmitter::StartFrame()

@@ -45,14 +45,25 @@ namespace cqp
         result = static_cast<Qubit>(qubitDistribution(generator));
         return result;
     }
-    QubitList RandomNumber::RandQubitList(size_t NumQubits)
+
+    QubitList RandomNumber::RandQubitList(size_t numQubits)
     {
         QubitList outputQubits;
-        outputQubits.reserve(NumQubits);
-        for(size_t i = 0; i < NumQubits; i++)
+        outputQubits.reserve(numQubits);
+        for(size_t i = 0; i < numQubits; i++)
         {
             outputQubits.push_back(RandQubit());
         }
         return outputQubits;
     }
+
+    void RandomNumber::RandomBytes(size_t numOfBytes, DataBlock& dest)
+    {
+        dest.reserve(numOfBytes);
+        for(size_t i = 0; i < numOfBytes; i++)
+        {
+            dest.push_back(qubitDistribution(generator));
+        }
+    }
 }
+

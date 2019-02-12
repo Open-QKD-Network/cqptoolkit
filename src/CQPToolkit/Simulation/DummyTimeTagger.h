@@ -15,7 +15,7 @@
 #include <chrono>
 #include "QKDInterfaces/IDetector.grpc.pb.h"
 #include "QKDInterfaces/IPhotonSim.grpc.pb.h"
-#include "CQPToolkit/Simulation/Stats.h"
+#include "CQPToolkit/Statistics/Frames.h"
 
 namespace cqp
 {
@@ -28,7 +28,8 @@ namespace cqp
          * Provide a fake time tagger which gets it's "qubits"
          * from the DummyTransmitter
          */
-        class CQPTOOLKIT_EXPORT DummyTimeTagger : public remote::IDetector::Service,
+        class CQPTOOLKIT_EXPORT DummyTimeTagger :
+                public remote::IDetector::Service,
             public remote::IPhotonSim::Service,
             public Provider<IDetectionEventCallback>
         {
@@ -60,7 +61,7 @@ namespace cqp
             ///@}
 
             /// Statistics produced by this class
-            Statistics stats;
+            stats::Frames stats;
         protected:
             /// Protection for collectedPhotons
             std::mutex collectedPhotonsMutex;
@@ -72,6 +73,7 @@ namespace cqp
             SequenceNumber frame = 1;
             /// random number source
             IRandom* rng = nullptr;
+
         }; // class DummyTimeTagger
     } // namespace sim
 } // namespace cqp

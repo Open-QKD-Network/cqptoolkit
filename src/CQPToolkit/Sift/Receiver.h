@@ -11,6 +11,7 @@
 */
 #pragma once
 #include "CQPToolkit/Sift/SiftBase.h"
+#include "QKDInterfaces/ISift.grpc.pb.h"
 
 namespace cqp
 {
@@ -18,7 +19,8 @@ namespace cqp
     {
 
         /// Accepts data from the alignment processor and stores it, notifying anything waiting for the data.
-        class CQPTOOLKIT_EXPORT Receiver : public SiftBase, public remote::ISift::Service
+        class CQPTOOLKIT_EXPORT Receiver :
+                public SiftBase, public remote::ISift::Service
         {
         public:
 
@@ -56,6 +58,7 @@ namespace cqp
             std::mutex statesMutex;
             /// used for waiting for new data to arrive
             std::condition_variable statesCv;
+
         }; // SiftReceiver
 
     } // namespace Sift

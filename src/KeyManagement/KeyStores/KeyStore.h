@@ -43,7 +43,7 @@ namespace cqp
             /// @param ksf The key store factory to get other key stores from
             /// @param bs how to archive keys, nullptr = disabled
             KeyStore(const std::string& thisSiteAddress, std::shared_ptr<grpc::ChannelCredentials> creds,
-                     const std::string& destination, KeyStoreFactory* ksf, std::shared_ptr<IBackingStore> bs);
+                     const std::string& destination, KeyStoreFactory* ksf = nullptr, std::shared_ptr<IBackingStore> bs = nullptr);
 
             /// Destructor
             ~KeyStore() override;

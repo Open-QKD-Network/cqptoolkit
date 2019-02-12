@@ -25,13 +25,22 @@ namespace cqp
         /// @return Random bits
         virtual unsigned long RandULong() =0;
 
-        /// Get a random Qubit
-        /// @return A random Qubit
-        virtual Qubit RandQubit() = 0;
+        /**
+         * @brief RandomBytes
+         * Generate a block of random bytes
+         * @param numOfBytes The number of byte to make
+         * @param dest The storage for the bytes
+         */
+        virtual void RandomBytes(size_t numOfBytes, DataBlock& dest) = 0;
+
+        /**
+         * @brief RandQubitList
+         * @param NumQubits The number of qubits to return
+         * @return A random selection of valid Qubits
+         */
+        virtual QubitList RandQubitList(size_t numQubits) = 0;
 
         /// pure virtual destructor
         virtual ~IRandom() = default;
-
-        // TODO: virtual void Fill(IntList& out, size_t count) = 0;
     };
 }

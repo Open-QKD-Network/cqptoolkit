@@ -14,6 +14,9 @@
 #include "SiftBase.h"
 #include <chrono>
 #include <grpc++/channel.h>
+#include "CQPToolkit/Interfaces/IRemoteComms.h"
+#include "CQPToolkit/Interfaces/IEmitterEventPublisher.h"
+#include "QKDInterfaces/ISift.grpc.pb.h"
 
 namespace cqp
 {
@@ -25,7 +28,9 @@ namespace cqp
          * Sends incoming qubits to the verifier
          * @details
          */
-        class CQPTOOLKIT_EXPORT Transmitter : protected WorkerThread, public SiftBase
+        class CQPTOOLKIT_EXPORT Transmitter :
+                protected WorkerThread, public SiftBase,
+                public virtual IRemoteComms
         {
         public:
             /**
@@ -35,16 +40,21 @@ namespace cqp
              */
             explicit Transmitter(unsigned int framesBeforeVerify = 1);
 
+            /// @{
+            /// @name IRemoteComms interface
+
             /**
              * @brief Connect
              * @param channel channel to the other sifter
              */
-            void Connect(std::shared_ptr<grpc::ChannelInterface> channel);
+            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override;
 
             /**
              * @brief Disconnect
              */
-            void Disconnect();
+            void Disconnect() override;
+
+            ///@}
 
             /**
              * @brief ~BB84Sifter

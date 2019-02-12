@@ -31,7 +31,8 @@ namespace cqp
     public:
         /// Cause the generator to output the specified Qubit
         /// @details This must block until the transmission has been completed
-        virtual void Fire() = 0;
+        /// @return true on success
+        virtual bool Fire() = 0;
 
         /// Notify the receiver that the frame has started
         virtual void StartFrame() = 0;

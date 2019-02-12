@@ -12,7 +12,7 @@
 #include "ClavisProxy.h"
 #include <grpcpp/impl/codegen/status_code_enum.h>  // for StatusCode
 #include <utility>                                 // for move
-#include "CQPToolkit/Drivers/DeviceFactory.h"      // for DeviceFactory
+#include "CQPToolkit/QKDDevices/DeviceFactory.h"      // for DeviceFactory
 #include "CQPToolkit/Session/ClavisController.h"   // for ClavisController
 #include "CQPToolkit/Interfaces/IQKDDevice.h"                 // for IQKDDevice, IQKDDe...
 #include "Algorithms/Logging/Logger.h"                           // for LOGTRACE
@@ -25,16 +25,19 @@ namespace cqp
         myAddress(address)
     {
         LOGTRACE("Creating controller");
-        controller.reset(new ClavisController(address, creds));
+        controller.reset(new session::ClavisController(address, creds));
     }
 
     void ClavisProxy::RegisterWithFactory()
     {
         // tell the factory how to create a DummyQKD by specifying a lambda function
-        DeviceFactory::RegisterDriver(DriverName, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
+        for(auto side : {remote::Side::Alice, remote::Side::Bob})
         {
-            return std::shared_ptr<IQKDDevice>(new ClavisProxy(address, creds, bytesPerKey));
-        });
+            DeviceFactory::RegisterDriver(DriverName, side, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
+            {
+                return std::shared_ptr<IQKDDevice>(new ClavisProxy(address, creds, bytesPerKey));
+            });
+        }
     }
 
     std::string ClavisProxy::GetDriverName() const
@@ -50,11 +53,6 @@ namespace cqp
     bool ClavisProxy::Initialise()
     {
         return true;
-    }
-
-    std::string ClavisProxy::GetDescription() const
-    {
-        return "Extract key using the IDQWrapper from a Clavis device";
     }
 
     ISessionController*ClavisProxy::GetSessionController()
@@ -76,4 +74,14 @@ namespace cqp
         return result;
     }
 
+    IKeyPublisher* ClavisProxy::GetKeyPublisher()
+    {
+        return controller.get();
+    }
+
+    std::vector<stats::StatCollection*> ClavisProxy::GetStats()
+    {
+        return {};
+    }
 } // namespace cqp
+

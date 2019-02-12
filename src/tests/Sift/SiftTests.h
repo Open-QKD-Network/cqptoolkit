@@ -31,12 +31,14 @@ namespace cqp
             /**
              * @brief MOCK_METHOD2
              */
-            MOCK_METHOD2(OnSifted2, void(
+            MOCK_METHOD3(OnSifted2, void(
                              const SequenceNumber id,
+                             double securityParameter,
                              const JaggedDataBlock* siftedData));
             void OnSifted(const SequenceNumber id,
+                          double securityParameter,
                           std::unique_ptr<JaggedDataBlock> siftedData) override {
-                OnSifted2(id, siftedData.get());
+                OnSifted2(id, 0.0, siftedData.get());
             }
         };
 

@@ -11,26 +11,15 @@
 */
 #include "CQPToolkit/Drivers/UsbTagger.h"
 #include <libusb-1.0/libusb.h>       // for libusb_exit, libusb_free_device_...
-#include <sys/types.h>               // for ssize_t
-#include <string>                    // for string, operator+, to_string
 #include "Algorithms/Logging/Logger.h"  // for LOGDEBUG, LOGERROR, LOGTRACE
-#include "Drivers/Usb.h"             // for Usb
-#include "QKDInterfaces/Site.pb.h"   // for Device, Side_Type, Side_Type_Bob
+#include "CQPToolkit/Drivers/Usb.h"
+#include "CQPToolkit/Drivers/Serial.h"
 
 namespace cqp
 {
-    class ISessionController;
     using namespace std;
 
-    const std::string UsbTagger::DriverName = "TaggerMk1";
-
-    UsbTagger::UsbTagger()
-    {
-        configIndex = 1;
-    }
-
-
-    void UsbTagger::ReadCallback(libusb_transfer * transfer)
+    void UsbTagger::ReadCallback(::libusb_transfer * transfer)
     {
         if (transfer != nullptr)
         {
@@ -38,87 +27,103 @@ namespace cqp
         }
     }
 
-    bool UsbTagger::Open()
+    UsbTagger::UsbTagger(const string& controlName, const string& usbSerialNumber)
     {
-        return Usb::Open(usbVid, usbPid, configIndex, interfaceIndex);
-    }
-
-    void UsbTagger::DetectFunc(UsbTaggerList& results, bool firstOnly)
-    {
-        libusb_device **devs;
-        // Initialize the library.
-        if (libusb_init(nullptr) != LIBUSB_SUCCESS)
+        if(controlName.empty())
         {
-            LOGERROR("Failed to initialise libUSB.");
-        }
-        // Find all connected devices.
-        ssize_t numDevices = libusb_get_device_list(nullptr, &devs);
-        LOGDEBUG("Found " + std::to_string(numDevices) + " usb devices.");
-
-        // Create an object which will hopefully connect
-        UsbTagger* newDevice = new UsbTagger();
-        for (int devIndex = 0; devIndex < numDevices; devIndex++)
-        {
-            if (newDevice->Open(devs[devIndex]))
+            SerialList devices;
+            Serial::Detect(devices, true);
+            if(devices.empty())
             {
-                LOGDEBUG("Found matching vid/pid...");
-                // Success, store the new device and create a blank one to work with
-                results.push_back(newDevice);
-                newDevice = new UsbTagger();
-
-                if (firstOnly)
-                {
-                    // Only new one device, stop looking
-                    break; // for loop
-                }
+                LOGERROR("No serail device found");
+            } else {
+                configPort = move(devices[0]);
             }
+        } else {
+            configPort = std::make_unique<Serial>(controlName, myBaudRate);
         }
-        // clean up any unused objects
-        delete(newDevice);
 
-        libusb_free_device_list(devs, 1);
-        libusb_exit(nullptr);
+        dataPort = Usb::Detect(usbVID, usbPID, usbSerialNumber);
+
     }
 
-    string UsbTagger::GetDriverName() const
+    UsbTagger::UsbTagger(std::unique_ptr<Serial> controlDev, std::unique_ptr<Usb> dataDev) :
+        configPort{move(controlDev)}, dataPort{move(dataDev)}
     {
-        return DriverName;
+
+    }
+
+    UsbTagger::~UsbTagger() = default;
+
+    grpc::Status UsbTagger::StartDetecting(grpc::ServerContext*, const google::protobuf::Timestamp* request, google::protobuf::Empty*)
+    {
+        grpc::Status result;
+        if(configPort)
+        {
+            configPort->Write('R');
+            // TODO: This need to be on a separate thread and presumably keep going until StopDetecting is called
+            dataPort->StartReadingBulk(&UsbTagger::ReadTags, BulkReadRequest, this);
+        } else {
+            result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid serial device");
+        }
+        return result;
+    }
+
+    grpc::Status UsbTagger::StopDetecting(grpc::ServerContext*, const google::protobuf::Timestamp* request, google::protobuf::Empty*)
+    {
+        grpc::Status result;
+        if(configPort)
+        {
+            configPort->Write('S');
+        } else {
+            result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid serial device");
+        }
+        return result;
     }
 
     bool UsbTagger::Initialise()
     {
-        bool result = false;
+        bool result = true;
 
-        if (IsOpen())
+        if (configPort != nullptr)
         {
-            StartReadingBulk(BulkReadRequest);
-            result = true;
+            const char InitSeq[] = { 'W', 'S' };
+            // predefined command sequence for initialisation
+            for (char cmd : InitSeq)
+            {
+                result &= configPort->Write(cmd);
+                this_thread::sleep_for(chrono::seconds(1));
+            }
         }
+
+        return result;
+    }
+
+    URI UsbTagger::GetAddress()
+    {
+        URI result;
+        std::string hostString = fs::BaseName(configPort->GetAddress().GetPath());
+        for(auto element : dataPort->GetPortNumbers())
+        {
+            hostString += "-" + std::to_string(element);
+        }
+        result.SetHost(hostString);
+        result.SetParameter(Parameters::serial, configPort->GetAddress().GetPath());
+        result.SetParameter(Parameters::usbserial, dataPort->GetSerialNumber());
+
         return result;
     }
 
-    cqp::URI UsbTagger::GetAddress() const
+    void UsbTagger::ReadTags(libusb_transfer* transfer)
     {
-        return "";
-    }
+        UsbTagger* self = reinterpret_cast<UsbTagger*>(transfer->user_data);
+        if(self)
+        {
+            // TODO
 
-    std::string UsbTagger::GetDescription() const
-    {
-        return "";
-    }
 
-    ISessionController* UsbTagger::GetSessionController()
-    {
-        return nullptr;
-    }
-
-    remote::Device UsbTagger::GetDeviceDetails()
-    {
-        remote::Device result;
-        // TODO
-        result.set_side(remote::Side_Type::Side_Type_Bob);
-
-        return result;
+            //self->myStats.qubitsReceived.Update(...)
+        }
     }
 
 }

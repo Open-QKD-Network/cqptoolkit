@@ -44,6 +44,7 @@ namespace align {
         ///@copydoc remote::IAlignment::DiscardTransmissions
         grpc::Status DiscardTransmissions(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) override;
         ///@}
+
     protected:
         /// The data to process
         EmitterReportList receivedData;
@@ -56,7 +57,6 @@ namespace align {
         std::mutex receivedDataMutex;
         /// used for waiting for new data to arrive
         std::condition_variable receivedDataCv;
-
     };
 
 } // namespace align

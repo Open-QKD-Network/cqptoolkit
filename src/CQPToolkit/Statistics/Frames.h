@@ -15,13 +15,13 @@
 
 namespace cqp
 {
-    namespace sim
+    namespace stats
     {
         /**
          * @brief The Statistics struct
          * The statistics reported by simulation
          */
-        struct Statistics : stats::StatCollection
+        struct Frames : stats::StatCollection
         {
             /// A group of values
             const char* parent = "TransmitterGroup";

@@ -37,26 +37,25 @@ namespace cqp
         /// @copydoc IRandom::RandULong
         ulong RandULong() override;
 
+        /// @copydoc IRandom::RandomBytes
+        void RandomBytes(size_t numOfBytes, DataBlock& dest) override;
+
         /// return a single random number
         /// @returns a random number
         static int SRandInt();
 
-        /// @copydoc IRandom::RandQubit
-        Qubit RandQubit() override;
+        Qubit RandQubit();
 
-        /**
-         * @brief RandQubitList
-         * @param NumQubits The number of qubits to return
-         * @return A random selection of valid Qubits
-         */
-        QubitList RandQubitList(size_t NumQubits);
+        /// @copydoc IRandom::RandQubitList
+        QubitList RandQubitList(size_t numQubits);
     protected:
         /// Distribution algorithms to ensure good distribution of numbers
         std::uniform_int_distribution<ulong> intDistribution;
         /// Distribution algorithms to ensure good distribution of numbers
-        std::uniform_int_distribution<int> qubitDistribution;
+        std::uniform_int_distribution<uint8_t> qubitDistribution;
         /// Random number generator
         std::default_random_engine generator;
+
     };
 }
 

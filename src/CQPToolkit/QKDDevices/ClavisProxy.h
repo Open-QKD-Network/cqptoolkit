@@ -24,7 +24,9 @@ namespace grpc
 
 namespace cqp
 {
-    class ClavisController;
+    namespace session {
+        class ClavisController;
+    }
     class ISessionController;
 
     /**
@@ -72,20 +74,26 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::Initialise
         bool Initialise() override;
 
-        /// @copydoc cqp::IQKDDevice::GetDescription
-        std::string GetDescription() const override;
-
         /// @copydoc cqp::IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
 
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
         remote::Device GetDeviceDetails() override;
+
+        /// @copydoc cqp::IQKDDevice::GetKeyPublisher
+        IKeyPublisher*GetKeyPublisher() override;
+
+        /// @copydoc cqp::IQKDDevice::GetStats
+        std::vector<stats::StatCollection*> GetStats() override;
         ///@}
     protected:
         /// controller which passes key from the wrapper
-        std::shared_ptr<ClavisController> controller;
+        std::shared_ptr<session::ClavisController> controller;
         /// The address of the wrapper
         std::string myAddress;
+
+        // IQKDDevice interface
+    public:
     };
 
 } // namespace cqp

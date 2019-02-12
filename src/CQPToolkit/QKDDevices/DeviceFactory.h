@@ -90,14 +90,15 @@ namespace cqp
         void ReturnDevice(std::shared_ptr<IQKDDevice> device);
 
         /// Function spec for creating a device object based on a url
-        using DeviceCreateFunc = std::function<std::shared_ptr<IQKDDevice>(const std::string&, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)>;
+        using DeviceCreateFunc = std::function<std::shared_ptr<IQKDDevice>(
+            const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)>;
 
         /**
          * @brief RegisterDriver
          * @param name The driver name
          * @param createFunc Function which will create the device
          */
-        static void RegisterDriver(const std::string& name, const DeviceCreateFunc& createFunc);
+        static void RegisterDriver(const std::string& name, remote::Side::Type side, const DeviceCreateFunc& createFunc);
 
         /**
          * @brief GetSide
@@ -123,8 +124,14 @@ namespace cqp
          */
         static std::vector<std::string> GetKnownDrivers();
     protected:
+        /// A unqiue identifier for a driver
+        using DriverNameList = std::unordered_map<std::string/*driver name*/, DeviceCreateFunc>;
+        /// drivers stored by side
+        using DriversBySide = std::unordered_map<remote::Side::Type, DriverNameList>;
+
+
         /// A list of all drivers
-        static std::unordered_map<std::string /*driver name*/, DeviceCreateFunc> driverMapping;
+        static DriversBySide driverMapping;
         /// a list of all devices
         std::unordered_map<std::string /*driver+address*/, std::shared_ptr<IQKDDevice>> allDevices;
         /// devices which haven't been checked out with CreateDevice

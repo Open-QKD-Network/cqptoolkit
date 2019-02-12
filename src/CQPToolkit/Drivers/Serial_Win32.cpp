@@ -243,7 +243,7 @@ namespace cqp
                         realDesc = description;
                     }
 
-                    results.push_back(new Serial(std::string(portName), realDesc));
+                    results.emplace_back(std::make_unique<Serial>(std::string(portName), realDesc));
                 }
 
                 index++;
