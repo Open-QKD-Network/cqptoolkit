@@ -10,8 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "Base.h"
-#include "Framing.h"
+#include "Algorithms/Datatypes/Base.h"
+#include "Algorithms/Datatypes/Framing.h"
+#include "Algorithms/Datatypes/URI.h"
 #include <iomanip>
 #include <vector>
 
