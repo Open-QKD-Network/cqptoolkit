@@ -7,6 +7,8 @@ namespace cqp {
 
         /**
          * @brief The Offsetting class finds the alignment between two sets of loosly connected data
+         * The algorithm has been adapted from the work of Dr David Lowndes <David.Lowndes@bristol.ac.uk> in
+         * @cite HandHeld
          */
         class ALGORITHMS_EXPORT Offsetting
         {
