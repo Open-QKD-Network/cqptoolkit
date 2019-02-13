@@ -47,7 +47,7 @@ namespace cqp
         /// @param nice Higher number == less chance it will run, more nice
         /// @param realtimePriority Higher number == more chance it will run
         /// @param policy The kind of scheduler to use
-        virtual void Start(int nice = 0, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
+        virtual void Start(int nice = 0, threads::Scheduler policy = threads::Scheduler::Normal, int realtimePriority = 1);
         /// Signal the worker thread to stop what it's doing.
         /// @details The WorkerThread::DoWork() call must provide a means of being interrupted if this is not going to block.
         /// @param[in] wait If the thread is running and this is true, the call will not return until the worker thread completes.
@@ -68,7 +68,7 @@ namespace cqp
          * @param policy The kind of scheduler to use
          * @return true on success
          */
-        bool SetPriority(int niceLevel, Scheduler policy = Scheduler::Normal, int realtimePriority = 1);
+        bool SetPriority(int niceLevel, threads::Scheduler policy = threads::Scheduler::Normal, int realtimePriority = 1);
 
     protected:
         /// Member function for performing work on the separate thread.

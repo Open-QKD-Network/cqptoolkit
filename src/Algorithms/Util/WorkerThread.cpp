@@ -43,7 +43,7 @@ namespace cqp
         WorkerThread::Stop(true);
     }
 
-    void WorkerThread::Start(int nice, Scheduler policy, int realtimePriority)
+    void WorkerThread::Start(int nice, threads::Scheduler policy, int realtimePriority)
     {
         lock_guard<mutex> lock(accessMutex);
         // Start the task if need be.
@@ -52,7 +52,7 @@ namespace cqp
             LOGTRACE("Thread Starting.");
             state = State::Started;
             worker = thread(&WorkerThread::ThreadExec, this);
-            if(nice != 0 || policy != Scheduler::Normal)
+            if(nice != 0 || policy != threads::Scheduler::Normal)
             {
                 SetPriority(nice, policy, realtimePriority);
             }
@@ -100,9 +100,9 @@ namespace cqp
         return result;
     }
 
-    bool WorkerThread::SetPriority(int niceLevel, Scheduler policy, int realtimePriority)
+    bool WorkerThread::SetPriority(int niceLevel, threads::Scheduler policy, int realtimePriority)
     {
-        return cqp::SetPriority(worker, niceLevel, policy, realtimePriority);
+        return cqp::threads::SetPriority(worker, niceLevel, policy, realtimePriority);
     }
 
     bool WorkerThread::ShouldStop()

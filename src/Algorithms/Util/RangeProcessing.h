@@ -9,7 +9,7 @@ namespace cqp {
      * @tparam RangeType The type passed to the iteration
      */
     template<typename RangeType>
-    class ALGORITHMS_EXPORT RangeProcessing : public ThreadManager
+    class ALGORITHMS_EXPORT RangeProcessing : public threads::ThreadManager
     {
     public:
         /// The function to perform on each iteration

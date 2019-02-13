@@ -11,7 +11,7 @@ namespace cqp
      * @brief The ProcessingQueue class uses multiple threads to process a list of data
      */
     template<typename Return = void>
-    class ALGORITHMS_EXPORT ProcessingQueue : public ThreadManager
+    class ALGORITHMS_EXPORT ProcessingQueue : public threads::ThreadManager
     {
     public:
         /// The function to perform on the data
