@@ -16,6 +16,7 @@
 #include "Algorithms/Datatypes/Base.h"     // for IntList, DataBlock
 #include "Algorithms/Datatypes/URI.h"           // for URI
 #include "Algorithms/Util/WorkerThread.h"  // for WorkerThread
+#include <functional>
 
 #if defined(_MSC_VER)
     #pragma warning(push)
@@ -64,7 +65,7 @@ namespace cqp
 
         /// Called by the subsystem when new data has arrived
         /// @param[in,out] transfer The details of the transfer under way.
-        using ReadCallback = void(*) (struct ::libusb_transfer *transfer);
+        using CallbackFunc = void(*) (struct ::libusb_transfer *transfer);
 
         /// Send a block of data in bulk mode
         /// @param[in] data The data to send
@@ -72,10 +73,47 @@ namespace cqp
         /// @returns true on success
         virtual bool WriteBulk(DataBlock data, unsigned char endpoint);
 
+        /// Send a block of data in bulk mode
+        /// @param[in,out] data The storage for incomming data
+        /// @param[in] request The id of the request to make
+        /// @returns true on success
+        virtual bool ReadBulk(DataBlock& data, uint8_t endPoint, std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
+
+        libusb_transfer* StartReadingBulk(uint8_t endPoint, unsigned char* buffer, size_t bufferLength, CallbackFunc callback, void* userData);
+
+        /// Class to pass relevant data to the event listeners
+        template<typename C>
+        struct ReadEventData {
+            using CallbackFunc = void (C::*)(std::unique_ptr<DataBlock>);
+            Usb* self;
+            CallbackFunc callback;
+            C* obj;
+            std::unique_ptr<DataBlock> buffer;
+
+        };
+
         /// Issue a request to the subsystem to receive data
         /// ReadCallback will be called when it arrives
-        /// @param[in] request The id of the request to make
-        virtual void StartReadingBulk(ReadCallback callback, uint8_t request, void* userData = nullptr);
+        /// @param[in] endPoint The id of the request to make
+        template<typename C>
+        libusb_transfer* StartReadingBulk(uint8_t endPoint, std::unique_ptr<DataBlock> buffer,  void (C::* func)(std::unique_ptr<DataBlock>) , C* obj)
+        {
+            ReadEventData<C>* eventData = new ReadEventData<C>();
+            const auto bufferSize = buffer->size();
+            eventData->self = this;
+            eventData->buffer = move(buffer);
+            eventData->obj = obj;
+            eventData->callback = func;
+
+            return StartReadingBulk(endPoint, &(*buffer)[0], bufferSize, &Usb::ReadCallback<C>, static_cast<void*>(eventData));
+        }
+
+        /**
+         * @brief CancelTransfer
+         * @param transfer The transfer object returned by StartReadingBuilk
+         * @return true on success
+         */
+        virtual bool CancelTransfer(struct ::libusb_transfer *transfer);
 
         /// Print any error or warning in a human readable form
         /// @details Noes not produce any output on success
@@ -100,10 +138,45 @@ namespace cqp
          * @return The unique ID for the device - this may not be supported by the device
          */
         std::string GetSerialNumber();
-    protected:
+    protected: // methods
 
-        /// Class to pass relevant data to the event listeners
-        class EventData {};
+        /**
+         * @brief GetUserData returns the user data from within the structure
+         * @param transfer the opaque struct
+         * @return The userdata inside the struct
+         */
+        static void* GetUserData(struct libusb_transfer *transfer);
+
+        /**
+         * @brief GetUserData returns the buffer size from within the structure
+         * @param transfer the opaque struct
+         * @return The buffer size inside the struct
+         */
+        static std::size_t GetBufferSize(struct ::libusb_transfer *transfer);
+
+        template<typename C>
+        static void ReadCallback(struct ::libusb_transfer *transfer)
+        {
+            using namespace std;
+            // get the caller details from the user data
+            auto eventData = reinterpret_cast<ReadEventData<C>*>(GetUserData(transfer));
+
+            if(eventData && eventData->self && eventData->callback && eventData->obj)
+            {
+                // set the buffer size to what was actually received
+                eventData->buffer->resize(GetBufferSize(transfer));
+                using namespace std::placeholders;
+
+                auto callback = bind(eventData->callback, eventData->obj, _1);
+                // call the initiator with the buffer of received data
+                callback(move(eventData->buffer));
+            } else {
+                //LOGERROR("Invalid userdata in callback");
+            }
+            delete eventData;
+        }
+
+    protected: // members
 
         /// The subsystem device which this is attached to
         /// @note this does not mean that the interface is connected
@@ -130,9 +203,7 @@ namespace cqp
         uint16_t product = 0;
         /// usb parameter
         unsigned int writeTimeout = 0;
-    private:
-        /// buffer for incoming data
-        uint8_t readBuffer[MaxBulkRead] = { 0 };
+
 
     };
 

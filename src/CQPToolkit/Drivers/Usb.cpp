@@ -200,20 +200,6 @@ namespace cqp
         return result;
     }
 
-    void Usb::StartReadingBulk(ReadCallback callback, uint8_t request, void* userData)
-    {
-        struct ::libusb_transfer *transfer = libusb_alloc_transfer(0);
-
-        libusb_fill_bulk_transfer(
-            transfer, myHandle, request, readBuffer, sizeof(readBuffer),
-            callback, userData, 0);
-
-        if (LogUsb(libusb_submit_transfer(transfer)) != LIBUSB_SUCCESS)
-        {
-            LOGERROR("Failed to submit usb transfer.");
-        }
-    }
-
     bool Usb::WriteBulk(DataBlock data, unsigned char endpoint)
     {
         int numSent = 0;
@@ -222,16 +208,56 @@ namespace cqp
         return result == libusb_error::LIBUSB_SUCCESS;
     }
 
+    bool Usb::ReadBulk(DataBlock& data, uint8_t endPoint, std::chrono::milliseconds timeout)
+    {
+        int bytesRecieved = 0;
+
+        auto result = LogUsb(libusb_bulk_transfer(
+            myHandle, endPoint, data.data(), sizeof(data.size()), &bytesRecieved, static_cast<unsigned int>(timeout.count())));
+
+        if (result == LIBUSB_SUCCESS && bytesRecieved > 0)
+        {
+            data.resize(static_cast<size_t>(bytesRecieved));
+        } else
+        {
+            data.resize(0);
+            LOGERROR("Failed to submit usb transfer.");
+        }
+
+        return result == LIBUSB_SUCCESS;
+    }
+
+    struct ::libusb_transfer * Usb::StartReadingBulk(uint8_t endPoint, unsigned char* buffer, size_t bufferLength, Usb::CallbackFunc callback, void* userData)
+    {
+        struct ::libusb_transfer *transfer = libusb_alloc_transfer(0);
+
+        ::libusb_fill_bulk_transfer(
+                    transfer, myHandle, endPoint, buffer, static_cast<int>(bufferLength),
+                callback, userData, 0);
+
+        if (LogUsb(libusb_submit_transfer(transfer)) != LIBUSB_SUCCESS)
+        {
+            LOGERROR("Failed to submit usb transfer.");
+        }
+
+        return transfer;
+    }
+
+    bool Usb::CancelTransfer(libusb_transfer* transfer)
+    {
+        return ::libusb_cancel_transfer(transfer) == LIBUSB_SUCCESS;
+    }
+
     int Usb::LogUsb(int result)
     {
         if (result != LIBUSB_SUCCESS)
         {
             std::string message = "LibUsb: " + std::string(libusb_error_name(result));
-// strerror is not provided by earlier versions of libusb
+            // strerror is not provided by earlier versions of libusb
 #if defined(libusb_strerror)
             message += " : " + std::string(libusb_strerror(static_cast<libusb_error>(result)))
-#endif
-                       LOGDEBUG(message);
+        #endif
+                    LOGDEBUG(message);
         }
         return result;
     }
@@ -283,8 +309,6 @@ namespace cqp
         return result;
     }
 
-    }
-
     std::string cqp::Usb::GetSerialNumber()
     {
         std::string serial(255u, '\0'); // max size from spec
@@ -314,4 +338,21 @@ namespace cqp
         } // device ok
 
         return serial;
-    } // GetSerialNumber
+    }
+
+    void*Usb::GetUserData(libusb_transfer* transfer)
+    {
+        return transfer->user_data;
+    }
+
+    size_t Usb::GetBufferSize(libusb_transfer* transfer)
+    {
+        size_t result = 0;
+        if(transfer->actual_length > 0)
+        {
+            result = static_cast<size_t>(transfer->actual_length);
+        }
+
+        return result;
+    }
+} // namespace cqp

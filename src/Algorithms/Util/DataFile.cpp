@@ -134,44 +134,38 @@ namespace cqp
 
                         if(!inFile.eof())
                         {
-                            if(gotConfig && noxReport.messageType == NoxReport::MessageType::Detection)
+                            if(noxReport.LoadRaw(buffer))
                             {
-                                noxReport.detection.coarse = (
-                                                                 static_cast<uint64_t>(buffer[1]) <<28 |
-                                                                 static_cast<uint64_t>(buffer[2]) <<20 |
-                                                                 static_cast<uint64_t>(buffer[3]) <<12 |
-                                                                 static_cast<uint64_t>(buffer[4]) <<4 |
-                                                                 static_cast<uint64_t>(buffer[5]) >>4
-                                                             );
 
-                                if(maxCourseTime != 0 && noxReport.detection.coarse >= maxCourseTime)
+                                if(gotConfig && noxReport.messageType == NoxReport::MessageType::Detection)
                                 {
-                                    keepReading = false;
-                                } else {
-                                    noxReport.detection.fine = static_cast<uint16_t>((buffer[6] & 0x0F) << 8) | buffer[7];
-
-                                    noxReport.detection.channel = (buffer[6] >> 4) -1;
-
-
-                                    if(noxReport.detection.channel < channelMappings.size())
+                                    if(maxCourseTime != 0 && noxReport.detection.coarse >= maxCourseTime)
                                     {
-                                        output.push_back({
-                                                             noxReport.GetTime(),
-                                                             channelMappings[noxReport.detection.channel]
-                                                         });
-                                    }
-                                    else
-                                    {
-                                        LOGWARN("Channel " + std::to_string(noxReport.detection.channel) + " not mapped.");
-                                        droppedDetections++;
+                                        keepReading = false;
+                                    } else {
+                                        if(noxReport.detection.channel < channelMappings.size())
+                                        {
+                                            output.push_back({
+                                                                 noxReport.GetTime(),
+                                                                 channelMappings[noxReport.detection.channel]
+                                                             });
+                                        }
+                                        else
+                                        {
+                                            LOGWARN("Channel " + std::to_string(noxReport.detection.channel) + " not mapped.");
+                                            droppedDetections++;
+                                        }
                                     }
                                 }
-                            }
-                            else if(noxReport.messageType == NoxReport::MessageType::Config)
-                            {
-                                gotConfig = true;
+                                else if(noxReport.messageType == NoxReport::MessageType::Config)
+                                {
+                                    gotConfig = true;
 
+                                }
+                            } else {
+                                LOGERROR("Failed to decode buffer");
                             }
+
                             result = true;
                         }
                     }
@@ -264,6 +258,34 @@ namespace cqp
                 // convert to Picoseconds
                 result = duration_cast<PicoSeconds>(courseTime + fineTime);
             }
+            return result;
+        }
+
+        bool DataFile::NoxReport::LoadRaw(const uint8_t buffer[])
+        {
+            bool result = false;
+            messageType = static_cast<NoxReport::MessageType>(buffer[0]);
+            if(messageType == MessageType::Detection)
+            {
+                detection.coarse = (
+                                                 static_cast<uint64_t>(buffer[1]) <<28 |
+                                                 static_cast<uint64_t>(buffer[2]) <<20 |
+                                                 static_cast<uint64_t>(buffer[3]) <<12 |
+                                                 static_cast<uint64_t>(buffer[4]) <<4 |
+                                                 static_cast<uint64_t>(buffer[5]) >>4
+                                             );
+
+                detection.fine = static_cast<uint16_t>((buffer[6] & 0x0F) << 8) | buffer[7];
+                detection.channel = (buffer[6] >> 4) -1;
+                result = true;
+            } else if(messageType == MessageType::Config)
+            {
+                // TODO
+                result = true;
+            } else {
+                messageType = MessageType::Invalid;
+            }
+
             return result;
         }
 

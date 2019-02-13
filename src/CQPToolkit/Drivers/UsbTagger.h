@@ -68,27 +68,31 @@ namespace cqp
             static NAMEDSTRING(usbserial);
         };
 
-    protected: // methods
-        static void ReadTags(::libusb_transfer* transfer);
+        void SetChannelMappings(const std::vector<Qubit>& mapping);
 
     protected: // members
+        class DataPusher;
+
         /// Device used for the C&C of the device
         std::unique_ptr<Serial> configPort;
         /// Transfers the results using bulk transfer
         std::unique_ptr<Usb> dataPort;
 
+        std::unique_ptr<DataPusher> dataPusher;
+
         /// The vendor id of this device
-        const uint16_t usbVID = 0x221A;
+        static constexpr uint16_t usbVID = 0x221A;
         /// The product id of the device
-        const uint16_t usbPID = 0x0100;
+        static constexpr uint16_t usbPID = 0x0100;
         /// the request id for the standard bulk transfer read
-        const uint8_t BulkReadRequest = 0x82;
+        static constexpr uint8_t bulkReadRequest = 0x82;
         /// Called by Usb::ReadCallback() when a read has completed
         /// @param transfer Details of the transfer
         void ReadCallback(::libusb_transfer* transfer);
         /// speed used to communicate with the device
         Serial::BaudRate myBaudRate = Serial::BaudRate::B_9600;
-
+        /// how the detector channels are linked to qubits
+        std::vector<Qubit> channelMappings {0, 1, 2, 3};
     };
 
 }

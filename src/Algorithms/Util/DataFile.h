@@ -117,8 +117,9 @@ namespace cqp {
                     uint8_t channel {0};
                 };
 
+                static constexpr size_t messageBytes = 8u;
                 /// storage type for buffering output
-                using Buffer = std::array<uint8_t, 8>;
+                using Buffer = uint8_t[messageBytes];
 
             public: // members
                 /// Possible variations of the message
@@ -133,8 +134,19 @@ namespace cqp {
                  */
                 PicoSeconds GetTime() const;
 
+                bool LoadRaw(const uint8_t buffer[8]);
             }; // NoxReport
 
+            /**
+             * @brief DecodeNoxDetection
+             * @param[in] channelMappings How to map the raw channel numbers to qubits
+             * @param[in] buffer The raw data
+             * @param[out] output The converted data
+             * @return True on success, false if the channels could not be mapped
+             */
+            static bool DecodeNoxDetection(const std::vector<Qubit>& channelMappings,
+                                           const NoxReport::Buffer& buffer,
+                                           DetectionReport& output);
         }; // DataFile class
 
     } // namespace fs
