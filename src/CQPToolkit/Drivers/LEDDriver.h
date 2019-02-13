@@ -29,10 +29,25 @@ namespace cqp
             public Provider<IEmitterEventCallback>
     {
     public:
+        /**
+         * @brief LEDDriver
+         * Create the driver with strings
+         * @param randomSource randomness
+         * @param controlName The path to the serial device
+         * @param usbSerialNumber the serial number of the usb device, use empty to pick the first one
+         */
         LEDDriver(IRandom* randomSource, const std::string& controlName = "", const std::string& usbSerialNumber = "");
 
+        /**
+         * @brief LEDDriver
+         * Create the driver with existing devices
+         * @param randomSource randomness
+         * @param controlDev The serial control device
+         * @param dataDev The bulk transfer usb device
+         */
         LEDDriver(IRandom* randomSource, std::unique_ptr<Serial> controlDev, std::unique_ptr<Usb> dataDev);
 
+        /// destructor
         virtual ~LEDDriver() override = default;
 
         /// @name IPhotonGenerator Interface realisation
@@ -50,6 +65,7 @@ namespace cqp
         void EndFrame() override;
 
         /// @copydoc IPhotonGenerator::Fire
+        /// @param numQubits How many qubits to send in one burst
         bool Fire(unsigned long numQubits);
 
         ///@}

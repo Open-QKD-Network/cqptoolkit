@@ -78,9 +78,11 @@ namespace cqp {
             /// @name remote::ISession interface
 
             /// @copydoc remote::ISession::SessionStarting
+            /// @param context Connection details from the server
             grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*) override;
             /// @copydoc remote::ISession::SessionEnding
-            grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty* request, google::protobuf::Empty*) override;
+            /// @param context Connection details from the server
+            grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
             ///@}
 
         protected: // methods
@@ -90,6 +92,7 @@ namespace cqp {
             /// negative numbers = higher priority
             static const int threadPriority = -5;
         protected: // members
+            /// where photons are made
             std::shared_ptr<IPhotonGenerator> photonSource;
         }; // class AliceSessionController
     } // namespace session

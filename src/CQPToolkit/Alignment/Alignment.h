@@ -43,6 +43,11 @@ namespace cqp
              */
             Alignment();
 
+            /**
+             * @brief SendResults Send the emissions to the listener
+             * @param emissions
+             * @param securityParameter
+             */
             void SendResults(const QubitList& emissions, double securityParameter);
 
             /// our alignment sequence counter

@@ -85,17 +85,20 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
         remote::Device GetDeviceDetails() override;
 
-        /// @copydoc cqp::ISessionController::GetStats
+        /// @copydoc cqp::IQKDDevice::GetStats
         virtual std::vector<stats::StatCollection*> GetStats() override;
 
-        /// @copydoc cqp::ISessionController::GetKeyPublisher
+        /// @copydoc cqp::IQKDDevice::GetKeyPublisher
         IKeyPublisher* GetKeyPublisher() override;
         ///@}
     protected: // members
+        /// randomness
         RandomNumber rng;
 
+        /// handles postprocessing
         class ProcessingChain;
 
+        /// handles postprocessing
         std::unique_ptr<ProcessingChain> processing;
 
         /// The address to use to contact this

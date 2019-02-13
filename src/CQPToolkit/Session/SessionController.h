@@ -76,7 +76,7 @@ namespace cqp
             /// @copydoc ISessionController::StartServerAndConnect
             grpc::Status StartServerAndConnect(URI otherController, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
 
-            /// @copydoc cqp::remote::ISession::WaitForEndOfSession
+            /// @copydoc ISessionController::WaitForEndOfSession
             void WaitForEndOfSession() override;
             ///@}
 

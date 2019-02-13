@@ -38,13 +38,17 @@ namespace cqp
 
         /**
          * @brief PhotonDetectorMk1
-         * Constructor which opens a device
+         * Create a deivce using strings
+         * @param creds grpc channel credentials to use
+         * @param controlName The path to the serial device
+         * @param usbSerialNumber The serial number of the usb device, use blank to use the first device
          */
         explicit PhotonDetectorMk1(std::shared_ptr<grpc::ChannelCredentials> creds, const std::string& controlName = "", const std::string& usbSerialNumber = "");
 
         /**
          * @brief PhotonDetectorMk1
          * Open a device which uses both usb and serial
+         * @param creds grpc channel credentials to use
          * @param usbDev usb data transfer device
          * @param serialDev serial control device
          */
@@ -82,7 +86,7 @@ namespace cqp
         class ProcessingChain;
         /// For processing the incomming data
         std::unique_ptr<ProcessingChain> processing;
-        // our session controller
+        /// our session controller
         std::unique_ptr<session::SessionController> sessionController;
         /// The driver which detects the photons
         std::shared_ptr<UsbTagger> driver;

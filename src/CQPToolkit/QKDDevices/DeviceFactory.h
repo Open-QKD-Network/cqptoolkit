@@ -96,6 +96,7 @@ namespace cqp
         /**
          * @brief RegisterDriver
          * @param name The driver name
+         * @param side The side this driver works with
          * @param createFunc Function which will create the device
          */
         static void RegisterDriver(const std::string& name, remote::Side::Type side, const DeviceCreateFunc& createFunc);

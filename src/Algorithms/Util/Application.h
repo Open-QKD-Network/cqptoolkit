@@ -81,7 +81,11 @@ namespace cqp
         /// The static instance used for signal handling
         /// it will be set by calling AddSignalHandler
         static std::unordered_map<int, SignalFunction> signalHandlers;
-        /// callback from a signal which will map to a handler
+        /**
+         * @brief SignalHandler
+         * Callback from a signal which will map to a handler
+         * @param signal The signal being thrown
+         */
         static void SignalHandler(int signal);
     };
 

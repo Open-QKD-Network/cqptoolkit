@@ -35,7 +35,7 @@ namespace cqp
 
         /**
          * @brief RandQubitList
-         * @param NumQubits The number of qubits to return
+         * @param numQubits The number of qubits to return
          * @return A random selection of valid Qubits
          */
         virtual QubitList RandQubitList(size_t numQubits) = 0;

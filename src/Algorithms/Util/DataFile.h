@@ -117,6 +117,7 @@ namespace cqp {
                     uint8_t channel {0};
                 };
 
+                /// The number of bytes in a NoxBx message
                 static constexpr size_t messageBytes = 8u;
                 /// storage type for buffering output
                 using Buffer = uint8_t[messageBytes];
@@ -134,6 +135,11 @@ namespace cqp {
                  */
                 PicoSeconds GetTime() const;
 
+                /**
+                 * @brief LoadRaw Read raw data into the structure
+                 * @param buffer raw data to convert
+                 * @return true on success
+                 */
                 bool LoadRaw(const uint8_t buffer[8]);
             }; // NoxReport
 

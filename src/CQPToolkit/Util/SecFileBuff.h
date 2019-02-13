@@ -45,6 +45,7 @@ namespace cqp
         int_type underflow() override;
 
         /** React to buffer underflow
+         * @param __c The last character retrieved
          * @return The last character retrieved
          */
         int_type overflow(int_type __c) override;

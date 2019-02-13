@@ -132,7 +132,8 @@ namespace cqp
         /// @name ISiteDetails interface
 
         /// @copydoc ISiteDetails::GetLinkStatus
-        grpc::Status GetLinkStatus(grpc::ServerContext* context, const google::protobuf::Empty* request, ::grpc::ServerWriter<remote::LinkStatus>* writer) override;
+        /// @param context Connection details from the server
+        grpc::Status GetLinkStatus(grpc::ServerContext* context, const google::protobuf::Empty*, ::grpc::ServerWriter<remote::LinkStatus>* writer) override;
         ///@}
 
         /// Start any devices with static links

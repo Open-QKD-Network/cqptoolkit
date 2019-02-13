@@ -44,10 +44,12 @@ namespace cqp
         /// @returns a random number
         static int SRandInt();
 
+        /// return a single random qubit
+        /// @returns a random qubit
         Qubit RandQubit();
 
         /// @copydoc IRandom::RandQubitList
-        QubitList RandQubitList(size_t numQubits);
+        QubitList RandQubitList(size_t numQubits) override;
     protected:
         /// Distribution algorithms to ensure good distribution of numbers
         std::uniform_int_distribution<ulong> intDistribution;
