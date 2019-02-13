@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "CQPToolkit/Drivers/UsbTagger.h"
-#include <libusb-1.0/libusb.h>       // for libusb_exit, libusb_free_device_...
 #include "Algorithms/Logging/Logger.h"  // for LOGDEBUG, LOGERROR, LOGTRACE
 #include "CQPToolkit/Drivers/Usb.h"
 #include "CQPToolkit/Drivers/Serial.h"
@@ -22,46 +21,307 @@ namespace cqp
 {
     using namespace std;
 
+    /**
+     * @brief The UsbTagger::DataPusher class
+     * Marshall data from the device and process it into detection reports.
+     * This uses threads and asyncronous IO to minimise the chance of buffer overflow
+     * @details
+     * @startuml
+        participant "Usb" as usb
+        participant "DataPusher" as dp
+        participant "data : queue" as data
+        participant "report" as report
+        boundary "IDetectionEventCallback" as listener
+
+        [-> dp : Start()
+        activate dp
+            note over dp
+                Setup the report for the listener
+            end note
+            note over usb, dp
+                The usb device will call back when data is ready
+            end note
+            dp -> usb : StartReadingBulk()
+        deactivate dp
+
+        par
+            [-\ usb
+            activate usb
+                usb -> dp : ReadDataAsync()
+                activate dp
+                    note over dp
+                        Extracted raw data is pushed onto a queue
+                        and then the next request is issued
+                    end note
+                    dp -> data : push()
+                deactivate dp
+            deactivate usb
+        else
+        [--> dp : ConvertData()
+            activate dp
+                loop
+                    dp -> data : pop()
+                    note over dp
+                        Convert the data to a report and
+                        append it to the list
+                    end note
+                    dp -> report : append()
+                end loop
+            deactivate dp
+        end par
+
+        [-> dp : Stop()
+        activate dp
+            note over dp
+                Wait for procesing to finish then send
+                the report
+            end note
+            dp -> listener : OnPhotonreport()
+        deactivate dp
+        @enduml
+     */
     class UsbTagger::DataPusher
     {
     public:
+        /// managed pointer for data
         using DataBlockPtr = std::unique_ptr<DataBlock>;
 
+        /**
+         * @brief DataPusher
+         * Create the instance to manage a device
+         * @param device The device to read data from
+         * @param channelMappings
+         */
         DataPusher(Usb& device, const std::vector<Qubit>& channelMappings);
 
+        /// destructor
         ~DataPusher();
 
+        /**
+         * @brief Start
+         * Start reading detections from the usb device. The full report is sent once the reading has been stopped
+         * @param epoc The time which the transmitter started generating
+         * @param newListener The receiver of the detection report
+         */
         void Start(const std::chrono::high_resolution_clock::time_point& epoc, IDetectionEventCallback* newListener);
 
-        void ReadData();
+
+        void Stop();
+
+    protected: // members
 
         void ReadDataAsync(std::unique_ptr<DataBlock> data);
 
         void ConvertData();
 
-        void Stop();
-
         DataBlockPtr GetBuffer();
 
         void ReturnBuffer(DataBlockPtr buffer);
 
-    protected:
+    protected: // members
+        /// destination for the final report
+        IDetectionEventCallback* listener = nullptr;
+        /// The device to read
+        Usb& device;
+        /// how channels are mapped to qubits
+        const std::vector<Qubit>& channelMappings;
+
         std::mutex unusedQueueMutex;
         std::mutex processingQueueMutex;
         std::condition_variable dataReadyCv;
         std::unique_ptr<ProtocolDetectionReport> report;
-        bool stopProcessing = false;
-        std::thread reader;
+        bool shutdown = false;
+        bool keepReading = true;
         std::thread processor;
         std::queue<DataBlockPtr> unusedBuffers;
         std::queue<DataBlockPtr> processingQueue;
         SequenceNumber frame = 1;
         ::libusb_transfer* activeTransfer = nullptr;
 
-        IDetectionEventCallback* listener = nullptr;
-        Usb& device;
-        const std::vector<Qubit>& channelMappings;
+        /// The maximum number of bytes to read in any one bulk read event
+        static const int maxBulkRead = 8192;
+
     };
+
+    // ******* DataPusher methods **************
+
+    UsbTagger::DataPusher::DataPusher(Usb& device, const std::vector<Qubit>& channelMappings)  :
+        device{device},
+        channelMappings{channelMappings},
+        processor{std::thread(&DataPusher::ConvertData, this)}
+    {
+        // make the processing thread nicer than the reading thread
+        threads::SetPriority(processor, 1);
+
+    }
+
+    UsbTagger::DataPusher::~DataPusher()
+    {
+        shutdown = true;
+
+        dataReadyCv.notify_all();
+
+        if(processor.joinable())
+        {
+            processor.join();
+        }
+
+        // if the usb callback hasn't been called by now we need to cancel it
+        if(activeTransfer)
+        {
+            device.CancelTransfer(activeTransfer);
+        }
+    }
+
+    void UsbTagger::DataPusher::Start(const chrono::system_clock::time_point& epoc, IDetectionEventCallback* newListener)
+    {
+        listener = newListener;
+        report = std::make_unique<ProtocolDetectionReport>();
+        report->epoc = epoc;
+        report->frame = frame;
+        keepReading = true;
+
+        // get a buffer for the data
+        activeTransfer = device.StartReadingBulk<DataPusher>(bulkReadRequest, GetBuffer(), &DataPusher::ReadDataAsync, this);
+    }
+
+    void UsbTagger::DataPusher::Stop()
+    {
+        // tell the read callback to stop
+        keepReading = false;
+
+        // wait for all the data to processed
+        {/*lock scope*/
+            unique_lock<mutex> lock(processingQueueMutex);
+            dataReadyCv.wait(lock, [&](){
+                return processingQueue.empty();
+            });
+
+            if(listener)
+            {
+                // send the report to the listener
+                listener->OnPhotonReport(move(report));
+            } else {
+                LOGERROR("No listener to send frame to");
+            }
+
+            // if the usb callback hasn't been called by now we need to cancel it
+            if(activeTransfer)
+            {
+                device.CancelTransfer(activeTransfer);
+            }
+            frame++;
+
+        }/*lock scope*/
+
+    }
+
+    void UsbTagger::DataPusher::ReadDataAsync(std::unique_ptr<DataBlock> data)
+    {
+        activeTransfer = nullptr;
+
+        {/*lock scope*/
+            unique_lock<mutex> lock(processingQueueMutex);
+            // move the data onto the processing queue
+            processingQueue.push(move(data));
+        }/*lock scope*/
+
+        // trigger the converter to process it
+        dataReadyCv.notify_one();
+
+        if(!shutdown && keepReading)
+        {
+            // start off the next transfer
+            activeTransfer = device.StartReadingBulk(bulkReadRequest, GetBuffer(), &DataPusher::ReadDataAsync, this);
+        }
+    }
+
+    void UsbTagger::DataPusher::ConvertData()
+    {
+        using NoxReport = fs::DataFile::NoxReport;
+        NoxReport devReport;
+        DataBlockPtr data;
+
+        while(!shutdown)
+        {
+            {/*lock scope*/
+                unique_lock<mutex> lock(processingQueueMutex);
+                dataReadyCv.wait(lock, [&](){
+                    return !processingQueue.empty() || shutdown;
+                });
+
+                if(!shutdown)
+                {
+                    data = move(processingQueue.front());
+                    processingQueue.pop();
+                }
+            }/*lock scope*/
+
+            if(data)
+            {
+                if(data->size() % NoxReport::messageBytes == 0)
+                {
+                    const auto numDetections = data->size() / NoxReport::messageBytes;
+                    // reserve space for the new items
+                    report->detections.reserve(report->detections.size() + numDetections);
+
+                    for(auto offset = 0u; offset < data->size(); offset += NoxReport::messageBytes)
+                    {
+                        // read the report
+                        if(devReport.LoadRaw(&(*data)[offset]))
+                        {
+                            if(devReport.messageType == NoxReport::MessageType::Detection &&
+                               devReport.detection.channel < channelMappings.size())
+                            {
+                                report->detections.push_back({devReport.GetTime(), channelMappings[devReport.detection.channel]});
+                            }
+                        } // if report valid
+
+                    } // for each message
+                } else
+                {
+                    LOGERROR("Data size invalid");
+                }
+
+                // but the buffer back onto the queue for the reader to use
+                data->clear();
+                ReturnBuffer(move(data));
+            } // if data
+
+            // trigger anything waiting for us to finish
+            dataReadyCv.notify_one();
+        }// while !stopProcessing
+
+    } // ConvertData
+
+    UsbTagger::DataPusher::DataBlockPtr UsbTagger::DataPusher::GetBuffer()
+    {
+        using namespace std;
+        DataBlockPtr result;
+
+        unique_lock<mutex> lock(unusedQueueMutex);
+        if(unusedBuffers.empty())
+        {
+            // there are no free buffers, make another
+            result = make_unique<DataBlock>();
+        } else {
+            result = move(unusedBuffers.front());
+            unusedBuffers.pop();
+        }
+        // prepare the buffer for receiving data
+        result->resize(maxBulkRead);
+
+        return result;
+    }
+
+    void UsbTagger::DataPusher::ReturnBuffer(UsbTagger::DataPusher::DataBlockPtr buffer)
+    {
+        using namespace std;
+        unique_lock<mutex> lock(unusedQueueMutex);
+        unusedBuffers.push(move(buffer));
+    }
+
+    // ******* UsbTagger methods **************
 
     UsbTagger::UsbTagger(const string& controlName, const string& usbSerialNumber)
     {
@@ -160,175 +420,4 @@ namespace cqp
     {
         channelMappings = mapping;
     }
-
-    UsbTagger::DataPusher::DataPusher(Usb& device, const std::vector<Qubit>& channelMappings)  :
-        device{device},
-        channelMappings{channelMappings}
-    {
-
-    }
-
-    UsbTagger::DataPusher::~DataPusher()
-    {
-        Stop();
-    }
-
-    void UsbTagger::DataPusher::Start(const chrono::system_clock::time_point& epoc, IDetectionEventCallback* newListener)
-    {
-        listener = newListener;
-        report = std::make_unique<ProtocolDetectionReport>();
-        report->epoc = epoc;
-        report->frame = frame;
-        reader = thread(&DataPusher::ReadData, this);
-        // try and give the reader higher priority to reduce the risk of buffer overflows
-        // this will fail if we dont have the rights
-        threads::SetPriority(reader, -1);
-
-        processor = std::thread(&DataPusher::ConvertData, this);
-        // make the processing thread nicer than the reading thread
-        threads::SetPriority(processor, 1);
-
-        // get a buffer for the data
-        activeTransfer = device.StartReadingBulk<DataPusher>(bulkReadRequest, GetBuffer(), &DataPusher::ReadDataAsync, this);
-    }
-
-    void UsbTagger::DataPusher::ReadData()
-    {
-        using namespace std;
-
-        while(!stopProcessing)
-        {
-            // get a buffer for the data
-            auto data = GetBuffer();
-            // read from the device
-            device.ReadBulk(*data, bulkReadRequest);
-
-            {
-                unique_lock<mutex> lock(processingQueueMutex);
-                processingQueue.push(move(data));
-            }
-            // trigger the converter to process it
-            dataReadyCv.notify_one();
-        }
-    }
-
-    void UsbTagger::DataPusher::ReadDataAsync(std::unique_ptr<DataBlock> data)
-    {
-
-        {
-            unique_lock<mutex> lock(processingQueueMutex);
-            processingQueue.push(move(data));
-        }
-        // trigger the converter to process it
-        dataReadyCv.notify_one();
-
-        if(!stopProcessing)
-        {
-            activeTransfer = device.StartReadingBulk(bulkReadRequest, GetBuffer(), &DataPusher::ReadDataAsync, this);
-        }
-    }
-
-    void UsbTagger::DataPusher::ConvertData()
-    {
-        using NoxReport = fs::DataFile::NoxReport;
-        NoxReport devReport;
-        DataBlockPtr data;
-
-        while(!stopProcessing)
-        {
-            {
-                unique_lock<mutex> lock(processingQueueMutex);
-                dataReadyCv.wait(lock, [&](){
-                    return !processingQueue.empty() || stopProcessing;
-                });
-
-                if(!stopProcessing)
-                {
-                    data = move(processingQueue.front());
-                    processingQueue.pop();
-                }
-            }
-
-            if(data)
-            {
-                if(data->size() % NoxReport::messageBytes == 0)
-                {
-                    const auto numDetections = data->size() / NoxReport::messageBytes;
-                    // reserve space for the new items
-                    report->detections.reserve(report->detections.size() + numDetections);
-
-                    for(auto offset = 0u; offset < data->size(); offset += NoxReport::messageBytes)
-                    {
-                        // read the report
-                        if(devReport.LoadRaw(&(*data)[offset]))
-                        {
-                            if(devReport.messageType == NoxReport::MessageType::Detection &&
-                               devReport.detection.channel < channelMappings.size())
-                            {
-                                report->detections.push_back({devReport.GetTime(), channelMappings[devReport.detection.channel]});
-                            }
-                        } // if report valid
-
-                    } // for each message
-                } else
-                {
-                    LOGERROR("Data size invalid");
-                }
-
-                // but the buffer back onto the queue for the reader to use
-                data->clear();
-                ReturnBuffer(move(data));
-            }
-        }// while !stopProcessing
-
-        if(listener)
-        {
-            listener->OnPhotonReport(move(report));
-        }
-    }
-
-    void UsbTagger::DataPusher::Stop()
-    {
-        stopProcessing = true;
-        if(activeTransfer != nullptr)
-        {
-            device.CancelTransfer(activeTransfer);
-        }
-        dataReadyCv.notify_all();
-
-        if(reader.joinable())
-        {
-            reader.join();
-        }
-        if(processor.joinable())
-        {
-            processor.join();
-        }
-        frame++;
-    }
-
-    UsbTagger::DataPusher::DataBlockPtr UsbTagger::DataPusher::GetBuffer()
-    {
-        using namespace std;
-        DataBlockPtr result;
-
-        unique_lock<mutex> lock(unusedQueueMutex);
-        if(unusedBuffers.empty())
-        {
-            result = make_unique<DataBlock>();
-        } else {
-            result = move(unusedBuffers.front());
-            unusedBuffers.pop();
-        }
-
-        return result;
-    }
-
-    void UsbTagger::DataPusher::ReturnBuffer(UsbTagger::DataPusher::DataBlockPtr buffer)
-    {
-        using namespace std;
-        unique_lock<mutex> lock(unusedQueueMutex);
-        unusedBuffers.push(move(buffer));
-    }
-
 } // namespace cqp

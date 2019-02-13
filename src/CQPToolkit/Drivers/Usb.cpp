@@ -200,10 +200,10 @@ namespace cqp
         return result;
     }
 
-    bool Usb::WriteBulk(DataBlock data, unsigned char endpoint)
+    bool Usb::WriteBulk(DataBlock data, unsigned char endpoint, std::chrono::milliseconds timeout)
     {
         int numSent = 0;
-        auto result = LogUsb(libusb_bulk_transfer(myHandle, endpoint, data.data(), static_cast<int>(data.size()), &numSent, writeTimeout));
+        auto result = LogUsb(libusb_bulk_transfer(myHandle, endpoint, data.data(), static_cast<int>(data.size()), &numSent, static_cast<unsigned int>(timeout.count())));
 
         return result == libusb_error::LIBUSB_SUCCESS;
     }
@@ -212,6 +212,8 @@ namespace cqp
     {
         int bytesRecieved = 0;
 
+        // create the transfer object and issue the request
+        // block until data arrives
         auto result = LogUsb(libusb_bulk_transfer(
             myHandle, endPoint, data.data(), sizeof(data.size()), &bytesRecieved, static_cast<unsigned int>(timeout.count())));
 
@@ -231,13 +233,20 @@ namespace cqp
     {
         struct ::libusb_transfer *transfer = libusb_alloc_transfer(0);
 
-        ::libusb_fill_bulk_transfer(
-                    transfer, myHandle, endPoint, buffer, static_cast<int>(bufferLength),
-                callback, userData, 0);
-
-        if (LogUsb(libusb_submit_transfer(transfer)) != LIBUSB_SUCCESS)
+        if(transfer)
         {
-            LOGERROR("Failed to submit usb transfer.");
+            // create the transfer object
+            ::libusb_fill_bulk_transfer(
+                        transfer, myHandle, endPoint, buffer, static_cast<int>(bufferLength),
+                    callback, userData, 0);
+
+            // issue the request, the callback will be called when data is ready
+            if (LogUsb(libusb_submit_transfer(transfer)) != LIBUSB_SUCCESS)
+            {
+                LOGERROR("Failed to submit usb transfer.");
+                libusb_free_transfer(transfer);
+                transfer = nullptr;
+            }
         }
 
         return transfer;
@@ -264,7 +273,7 @@ namespace cqp
 
     void Usb::EventHandler::DoWork()
     {
-        LOGTRACE("EventHandler Running...");
+        LOGTRACE("USB EventHandler Running...");
         // negative results from libusb are errors, positive are warnings
         // TODO: Still not convinced by the wording in the libusb async docs
         //      This may need to be a single thread per context, which is more difficult to manage.
@@ -342,17 +351,32 @@ namespace cqp
 
     void*Usb::GetUserData(libusb_transfer* transfer)
     {
-        return transfer->user_data;
+        if(transfer)
+        {
+            LogUsb(transfer->status);
+            return transfer->user_data;
+        } else {
+            return nullptr;
+        }
     }
 
     size_t Usb::GetBufferSize(libusb_transfer* transfer)
     {
         size_t result = 0;
-        if(transfer->actual_length > 0)
+        if(transfer && transfer->actual_length > 0)
         {
             result = static_cast<size_t>(transfer->actual_length);
         }
 
         return result;
+    }
+
+    void Usb::CleanupTransfer(libusb_transfer*& transfer)
+    {
+        if(transfer)
+        {
+            libusb_free_transfer(transfer);
+            transfer = nullptr;
+        }
     }
 } // namespace cqp

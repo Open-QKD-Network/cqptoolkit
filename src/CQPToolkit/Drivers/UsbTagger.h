@@ -29,10 +29,23 @@ namespace cqp
             public Provider<IDetectionEventCallback>
     {
     public:
+        /**
+         * @brief UsbTagger
+         * Create the tagger using device names
+         * @param controlName The path of the serial device
+         * @param usbSerialNumber The serial number of the usb device or empty for the first device
+         */
         UsbTagger(const std::string& controlName = "", const std::string& usbSerialNumber = "");
 
+        /**
+         * @brief UsbTagger
+         * Create the tagger using initialised devices
+         * @param controlDev The serial device
+         * @param dataDev The usb device
+         */
         UsbTagger(std::unique_ptr<Serial> controlDev, std::unique_ptr<Usb> dataDev);
 
+        /// Destructor
         virtual ~UsbTagger() override;
 
         ///@{
@@ -68,16 +81,22 @@ namespace cqp
             static NAMEDSTRING(usbserial);
         };
 
+        /**
+         * @brief SetChannelMappings
+         * Specify how detector numbers are mapped to qubits
+         * @param mapping
+         */
         void SetChannelMappings(const std::vector<Qubit>& mapping);
 
     protected: // members
+        /// Impl class for managing the incomming data
         class DataPusher;
 
         /// Device used for the C&C of the device
         std::unique_ptr<Serial> configPort;
         /// Transfers the results using bulk transfer
         std::unique_ptr<Usb> dataPort;
-
+        /// pulls data from the device and proceses it
         std::unique_ptr<DataPusher> dataPusher;
 
         /// The vendor id of this device
@@ -86,9 +105,6 @@ namespace cqp
         static constexpr uint16_t usbPID = 0x0100;
         /// the request id for the standard bulk transfer read
         static constexpr uint8_t bulkReadRequest = 0x82;
-        /// Called by Usb::ReadCallback() when a read has completed
-        /// @param transfer Details of the transfer
-        void ReadCallback(::libusb_transfer* transfer);
         /// speed used to communicate with the device
         Serial::BaudRate myBaudRate = Serial::BaudRate::B_9600;
         /// how the detector channels are linked to qubits
