@@ -13,6 +13,8 @@ cmake_minimum_required (VERSION 3.7.2)
 project(HandheldAlice CXX)
 include(CommonSetup)
 
+ADD_GRPC_FILES()
+
 # MAke standard program which uses the CQP Toolkit
 CQP_EXE_PROJECT()
 

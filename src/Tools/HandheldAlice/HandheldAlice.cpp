@@ -19,6 +19,7 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Interfaces/ISessionController.h"
 #include "CQPToolkit/Session/AliceSessionController.h"
+#include "Algorithms/Util/FileIO.h"
 
 using namespace cqp;
 
@@ -34,10 +35,9 @@ struct Names
     static CONSTSTRING sessionPort = "session-port";
     static CONSTSTRING device = "device";
     static CONSTSTRING usbDevice = "usb-device";
+    static CONSTSTRING configFile = "config";
+    static CONSTSTRING writeConfig = "write-config";
 };
-
-const std::string defaultKeyServAddress = "localhost:9001";
-
 
 HandheldAlice::HandheldAlice()
 {
@@ -65,7 +65,7 @@ HandheldAlice::HandheldAlice()
     .Callback(std::bind(&HandheldAlice::HandleVerbose, this, _1));
 
 
-    definedArguments.AddOption(Names::keyServer, "k", "Listen address for serving keys, defaults to " + defaultKeyServAddress)
+    definedArguments.AddOption(Names::keyServer, "k", "Listen address for serving keys")
     .Bind();
     definedArguments.AddOption(Names::sessionAddr, "", "Bind address for internal communication")
     .Bind();
@@ -75,8 +75,20 @@ HandheldAlice::HandheldAlice()
     .Bind();
     definedArguments.AddOption(Names::usbDevice, "u", "The serial number for the usb device to use, otherwise use the first detected")
     .Bind();
-    definedArguments.AddOption(Names::connect, "c", "The address of Bob's session controller. Required")
+    definedArguments.AddOption(Names::connect, "b", "The address of Bob's session controller. Required")
     .Bind().Required();
+
+    definedArguments.AddOption(Names::configFile, "c", "Filename of the config file to load").HasArgument()
+    .Callback(std::bind(&HandheldAlice::HandleConfigFile, this, _1));
+    definedArguments.AddOption(Names::writeConfig, "w", "Write the final configuration to the filename .")
+    .Bind();
+
+    // set sensible default values for config items
+    config.set_sessionport(0);
+    config.set_sessionaddress("0.0.0.0");
+    config.set_keylistenaddress("localhost:0");
+    config.mutable_params()->set_photonsperburst(LEDAliceMk1::DefaultParameters.photonsPerBurst);
+    config.mutable_params()->set_markerfraction(LEDAliceMk1::DefaultParameters.markerFraction);
 }
 
 void HandheldAlice::DisplayHelp(const CommandArgs::Option&)
@@ -84,6 +96,40 @@ void HandheldAlice::DisplayHelp(const CommandArgs::Option&)
     definedArguments.PrintHelp(std::cout, "Outputs statistics from CQP services in CSV format.\nCopyright Bristol University. All rights reserved.");
     definedArguments.StopOptionsProcessing();
     stopExecution = true;
+}
+
+void HandheldAlice::HandleConfigFile(const CommandArgs::Option& option)
+{
+    if(fs::Exists(option.value))
+    {
+        std::string buffer;
+        if(fs::ReadEntireFile(option.value, buffer))
+        {
+            using namespace google::protobuf::util;
+            JsonParseOptions parseOptions;
+            if(!LogStatus(JsonStringToMessage(buffer, &config, parseOptions)).ok())
+            {
+                exitCode = InvalidConfig;
+            }
+            else if(!config.bobaddress().empty())
+            {
+                // dont need this option if the config file specifies it
+                definedArguments[Names::connect]->set = true;
+            }
+        } else {
+            LOGERROR("Failed to read "  + option.value);
+            exitCode = InvalidConfig;
+        }
+    } else {
+        LOGERROR("File not found: " + option.value);
+        exitCode = ConfigNotFound;
+    }
+
+    if(exitCode != ExitCodes::Ok)
+    {
+        stopExecution = true;
+        definedArguments.StopOptionsProcessing();
+    }
 }
 
 int HandheldAlice::Main(const std::vector<std::string>& args)
@@ -102,37 +148,60 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
             creds.set_usetls(true);
         } // if tls set
 
-        std::string keyListenAddress = defaultKeyServAddress;
-        std::string sessionAddress;
-        std::string deviceName;
-        std::string usbDeviceName;
-        definedArguments.GetProp(Names::keyServer, keyListenAddress);
-        definedArguments.GetProp(Names::sessionAddr, sessionAddress);
-        definedArguments.GetProp(Names::device, deviceName);
-        definedArguments.GetProp(Names::usbDevice, usbDeviceName);
+        definedArguments.GetProp(Names::connect, *config.mutable_bobaddress());
+        definedArguments.GetProp(Names::keyServer, *config.mutable_keylistenaddress());
+        definedArguments.GetProp(Names::sessionAddr, *config.mutable_sessionaddress());
+        definedArguments.GetProp(Names::device, *config.mutable_devicename());
+        definedArguments.GetProp(Names::usbDevice, *config.mutable_usbdevicename());
 
-        driver = make_shared<LEDAliceMk1>(LoadChannelCredentials(creds), deviceName, usbDeviceName);
+        {/* temp scope */
+            uint32_t temp;
+            if(definedArguments.GetProp(Names::sessionPort, temp))
+            {
+                config.set_sessionport(temp);
+            }
+        }/* temp scope */
+
+        // any changes to config need to be applied by now
+        if(definedArguments.HasProp(Names::writeConfig))
+        {
+            // write out the current settings
+            using namespace google::protobuf::util;
+            string configJson;
+            JsonOptions jsonOptions;
+            jsonOptions.add_whitespace = true;
+            jsonOptions.preserve_proto_field_names = true;
+            if(LogStatus(MessageToJsonString(config, &configJson, jsonOptions)).ok())
+            {
+                if(!fs::WriteEntireFile(definedArguments.GetStringProp(Names::writeConfig), configJson))
+                {
+                    LOGERROR("Failed to write config to " + definedArguments.GetStringProp(Names::writeConfig));
+                }
+            }
+        } // if write config file
+
+        driver = make_shared<LEDAliceMk1>(LoadChannelCredentials(creds), config.devicename(), config.usbdevicename());
 
         if(driver)
         {
+            driver->SetParameters({
+                                      config.params().photonsperburst(),
+                                      config.params().markerfraction()
+                                  });
             // create the servers
-            uint16_t sessionPort = 0;
-            definedArguments.GetProp(Names::sessionPort, sessionPort);
-            keystoreUrl = definedArguments.GetStringProp(Names::connect);
-
-            auto sessionStatus = driver->GetSessionController()->StartServerAndConnect(keystoreUrl,
+            auto sessionStatus = driver->GetSessionController()->StartServerAndConnect(config.bobaddress(),
                                                                   definedArguments.GetStringProp(Names::sessionAddr),
-                                                                  sessionPort,
+                                                                  static_cast<uint16_t>(config.sessionport()),
                                                                   LoadServerCredentials(creds));
 
             LogStatus(sessionStatus);
             if(sessionStatus.ok())
             {
-                keystore = make_unique<keygen::KeyStore>(keyListenAddress, LoadChannelCredentials(creds), keystoreUrl);
+                keystore = make_unique<keygen::KeyStore>(config.keylistenaddress(), LoadChannelCredentials(creds), config.bobaddress());
 
                 grpc::ServerBuilder keyServBuilder;
 
-                keyServBuilder.AddListeningPort(keyListenAddress, LoadServerCredentials(creds));
+                keyServBuilder.AddListeningPort(*config.mutable_keylistenaddress(), LoadServerCredentials(creds));
                 keyServBuilder.RegisterService(this);
 
                 keyServer = keyServBuilder.BuildAndStart();
@@ -173,14 +242,14 @@ void HandheldAlice::StopProcessing(int)
 
 grpc::Status HandheldAlice::GetKeyStores(grpc::ServerContext*, const google::protobuf::Empty*, remote::SiteList* response)
 {
-    response->add_urls(keystoreUrl);
+    response->add_urls(config.bobaddress());
     return grpc::Status();
 }
 
 grpc::Status HandheldAlice::GetSharedKey(grpc::ServerContext*, const remote::KeyRequest* request, remote::SharedKey* response)
 {
     grpc::Status result;
-    if(request->siteto() == keystoreUrl)
+    if(request->siteto() == config.bobaddress())
     {
         // there is a keystore
         KeyID keyId = 0;
@@ -209,7 +278,7 @@ grpc::Status HandheldAlice::GetSharedKey(grpc::ServerContext*, const remote::Key
             response->mutable_keyvalue()->assign(keyValue.begin(), keyValue.end());
 
             // store a url on how to access the key
-            response->set_url(KeyToPKCS11(keyId, keystoreUrl));
+            response->set_url(KeyToPKCS11(keyId, config.bobaddress()));
         }
     } else {
         result = grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "Invalid destination");

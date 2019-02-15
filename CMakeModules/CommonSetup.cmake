@@ -526,11 +526,7 @@ macro(CQP_QT_LIB_PROJECT)
     endif(${Qt5Widgets_FOUND})
 endmacro(CQP_QT_LIB_PROJECT)
 
-### @def GRPC_PROJECT special kind of CQP_LIBRARY_PROJECT for generating gRPC interfaces
-### proto files are handled automatically
-macro(GRPC_PROJECT)
-
-
+macro(ADD_GRPC_FILES)
     # search through specific folders for files to build
     file(GLOB_RECURSE ${PROJECT_NAME}_INTERFACES LIST_DIRECTORIES false RELATIVE "${PROJECT_SOURCE_DIR}" "*.proto")
 
@@ -553,6 +549,14 @@ macro(GRPC_PROJECT)
         ${${PROJECT_NAME}_GRPC_HDRS}
         ${${PROJECT_NAME}_PROTO_SRCS}
         ${${PROJECT_NAME}_GRPC_SRCS})
+
+endmacro(ADD_GRPC_FILES)
+
+### @def GRPC_PROJECT special kind of CQP_LIBRARY_PROJECT for generating gRPC interfaces
+### proto files are handled automatically
+macro(GRPC_PROJECT)
+
+    ADD_GRPC_FILES()
 
     CQP_LIBRARY_PROJECT()
 

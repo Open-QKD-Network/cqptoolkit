@@ -45,6 +45,10 @@ namespace align {
         grpc::Status DiscardTransmissions(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) override;
         ///@}
 
+        void SetMarkerFraction(uint64_t fraction)
+        {
+            markerFractionToSend = fraction;
+        }
     protected:
         /// The data to process
         EmitterReportList receivedData;

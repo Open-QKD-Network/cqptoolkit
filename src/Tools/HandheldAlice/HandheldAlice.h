@@ -19,6 +19,7 @@
 #include "Algorithms/Random/RandomNumber.h"
 #include "KeyManagement/KeyStores/KeyStore.h"
 #include "QKDInterfaces/IKey.grpc.pb.h"
+#include "AliceConfig.pb.h"
 
 /**
  * @brief The SiteAgentRunner class
@@ -53,6 +54,12 @@ public:
         cqp::DefaultLogger().DecOutputLevel();
     }
 
+    /**
+     * @brief HandleQuiet
+     * Parse commandline argument
+     */
+    void HandleConfigFile(const cqp::CommandArgs::Option& option);
+
 protected:
     /**
      * @brief Main
@@ -75,9 +82,9 @@ protected:
 protected: // members
     std::shared_ptr<cqp::LEDAliceMk1> driver;
     std::unique_ptr<grpc::Server> keyServer;
-    std::string keystoreUrl;
     std::unique_ptr<cqp::keygen::KeyStore> keystore;
 
+    cqp::config::AliceConfig config;
     // Service interface
 public:
     grpc::Status GetKeyStores(grpc::ServerContext*, const google::protobuf::Empty*, cqp::remote::SiteList* response) override;

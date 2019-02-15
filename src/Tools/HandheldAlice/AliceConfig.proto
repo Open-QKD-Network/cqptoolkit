@@ -1,0 +1,37 @@
+/*!
+* @file
+* @brief AliceConfig
+*
+* @copyright Copyright (C) University of Bristol 2019
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 14/04/2019
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+
+package cqp.config;
+message PhotonSourceParameters {
+    uint64 photonsPerBurst = 1;
+    uint64 markerFraction = 2;
+}
+
+/// Alice handheld config
+message AliceConfig {
+    /// how to connect to bob
+    string bobaddress = 1;
+    /// The listen address for providing keys
+    string keyListenAddress = 2;
+    /// Bind address for session communication
+    string sessionAddress = 3;
+    /// port numer for session communication
+    uint32 sessionPort = 4;
+    /// serial device name
+    string deviceName = 5;
+    /// usb device name
+    string usbDeviceName = 6;
+
+    PhotonSourceParameters params = 7;
+}

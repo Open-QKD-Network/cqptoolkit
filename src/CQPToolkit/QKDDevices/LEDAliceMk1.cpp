@@ -141,6 +141,12 @@ namespace cqp
         return driver->Initialise();
     }
 
+    void LEDAliceMk1::SetParameters(const LEDAliceMk1::Parameters& params)
+    {
+        driver->SetPhotonsPerBurst(params.photonsPerBurst);
+        processing->align->SetMarkerFraction(params.markerFraction);
+    }
+
     ISessionController* LEDAliceMk1::GetSessionController()
     {
         return sessionController.get();

@@ -81,6 +81,16 @@ namespace cqp
         virtual bool Initialise() override;
         ///@}
 
+        struct Parameters
+        {
+            uint64_t photonsPerBurst;
+            uint64_t markerFraction;
+        };
+
+        static constexpr const Parameters DefaultParameters { 1024, 3 };
+
+        void SetParameters(const Parameters& params);
+
     protected: // members
 
         /// What this driver is called

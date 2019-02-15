@@ -94,6 +94,9 @@ namespace cqp
          */
         bool Initialise();
 
+        void SetPhotonsPerBurst(uint64_t numPhotons) {
+            photonsPerBurst = numPhotons;
+        }
     protected: // members
         // Instruct the compiler that we do not want any extra bytes to be added inbetween values in the structures
         // Care should be taken to ensure that each structure meets the alignment requirements of the target system.
