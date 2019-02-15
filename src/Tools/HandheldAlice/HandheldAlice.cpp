@@ -91,7 +91,7 @@ HandheldAlice::HandheldAlice()
 
 void HandheldAlice::DisplayHelp(const CommandArgs::Option&)
 {
-    definedArguments.PrintHelp(std::cout, "Outputs statistics from CQP services in CSV format.\nCopyright Bristol University. All rights reserved.");
+    definedArguments.PrintHelp(std::cout, "Drives the UoB HandheldAlice unit using session control and proves key through the IKey interface.\nCopyright Bristol University. All rights reserved.");
     definedArguments.StopOptionsProcessing();
     stopExecution = true;
 }

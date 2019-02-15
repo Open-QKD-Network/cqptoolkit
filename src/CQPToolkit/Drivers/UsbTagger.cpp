@@ -332,7 +332,7 @@ namespace cqp
             Serial::Detect(devices, true);
             if(devices.empty())
             {
-                LOGERROR("No serail device found");
+                LOGERROR("No serial device found");
             } else {
                 configPort = move(devices[0]);
             }
