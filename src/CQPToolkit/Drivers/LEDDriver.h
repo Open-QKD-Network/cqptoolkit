@@ -19,6 +19,9 @@
 
 namespace cqp
 {
+    namespace config {
+        class DeviceConfig;
+    }
     class Usb;
     class IRandom;
     class IEmitterEventCallback;
@@ -92,7 +95,7 @@ namespace cqp
          * @brief Initialise the device
          * @return true on success
          */
-        bool Initialise();
+        bool Initialise(config::DeviceConfig& parameters);
 
         void SetPhotonsPerBurst(uint64_t numPhotons) {
             photonsPerBurst = numPhotons;

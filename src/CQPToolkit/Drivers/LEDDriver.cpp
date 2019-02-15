@@ -14,6 +14,7 @@
 #include "CQPToolkit/Drivers/Usb.h"
 #include "CQPToolkit/Interfaces/IEmitterEventPublisher.h"
 #include "Algorithms/Random/IRandom.h"
+#include "QKDInterfaces/Device.pb.h"
 
 namespace cqp
 {
@@ -84,7 +85,6 @@ namespace cqp
     void LEDDriver::StartFrame()
     {
         using std::chrono::high_resolution_clock;
-        Initialise();
         epoc = high_resolution_clock::now();
     }
 
@@ -110,7 +110,7 @@ namespace cqp
         return result;
     }
 
-    bool LEDDriver::Initialise()
+    bool LEDDriver::Initialise(config::DeviceConfig& parameters)
     {
         using std::chrono::nanoseconds;
         //std::cout << "\tSending " << Div << ", " << Del << std::endl;

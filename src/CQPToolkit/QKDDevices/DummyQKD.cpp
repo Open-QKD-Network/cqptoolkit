@@ -157,7 +157,7 @@ namespace cqp
         return myAddress;
     }
 
-    bool cqp::DummyQKD::Initialise()
+    bool cqp::DummyQKD::Initialise(cqp::config::DeviceConfig&)
     {
         return true;
     }

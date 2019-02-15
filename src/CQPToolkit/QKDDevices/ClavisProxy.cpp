@@ -50,9 +50,9 @@ namespace cqp
         return myAddress;
     }
 
-    bool ClavisProxy::Initialise()
+    bool ClavisProxy::Initialise(config::DeviceConfig& parameters)
     {
-        return true;
+        return controller->Initialise(parameters);
     }
 
     ISessionController*ClavisProxy::GetSessionController()

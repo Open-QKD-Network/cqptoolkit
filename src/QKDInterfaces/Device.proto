@@ -1,0 +1,38 @@
+/*!
+* @file
+* @brief Device
+*
+* @copyright Copyright (C) University of Bristol 2019
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 15/04/2019
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import public "google/protobuf/empty.proto";
+
+package cqp.config;
+
+message Pair {
+    string name = 1;
+    string value = 2;
+}
+
+// possible parameters
+// pulse width
+// avg. photons per pulse (<1.0)
+// filter bias of bases
+// wavelength + tolerance
+// photon state purity
+
+/// values which describe the optical link
+message DeviceConfig {
+    /// arbritary parameters
+    repeated Pair parameters = 1;
+    /// The loss in dB for this link
+    double lineAttenuation = 2;
+    uint64 photonsPerBurst = 3;
+    uint32 repitionRate = 4;
+};

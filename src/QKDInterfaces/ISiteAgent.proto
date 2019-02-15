@@ -24,7 +24,38 @@ package cqp.remote;
 service ISiteAgent
 {
     /**
-    * Continues on from BeginKeyExchange, called by other side agents
+    * Start a key exchange using one or more device pairs.
+    * @details Parameters can be passed to the low level system. The site agent is responsible for
+    * sending the parameters to the Device
+    @startuml
+        title Passing system parameters to both sites
+
+        participant "Site A" as sa1
+        boundary "IQKDDevice" as iqkd
+        participant "others" as others
+        boundary "ISessionController" as sesh
+        boundary "ISiteAgent" as sa2
+        boundary "IQKDDevice" as iqkd2
+
+        [-> sa1 : StartNode()
+        activate sa1
+        sa1 -> iqkd : Initialise(intial)
+        activate iqkd
+            iqkd -> others : SetParameters()
+            iqkd -> sesh : SetParameters()
+            note over iqkd
+                accepted parameters are returned
+            end note
+            iqkd -> sa1
+        deactivate iqkd
+            sa1 -> sa2 : StartNode()
+            activate sa2
+
+                sa2 -> iqkd2 : Initialise(requested)
+            deactivate sa2
+        deactivate sa1
+
+        @enduml
     * @param request The full path of the exchange to start
     * @return status
     */

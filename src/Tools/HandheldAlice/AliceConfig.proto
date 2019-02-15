@@ -13,10 +13,6 @@
 syntax = "proto3";
 
 package cqp.config;
-message PhotonSourceParameters {
-    uint64 photonsPerBurst = 1;
-    uint64 markerFraction = 2;
-}
 
 /// Alice handheld config
 message AliceConfig {
@@ -32,6 +28,6 @@ message AliceConfig {
     string deviceName = 5;
     /// usb device name
     string usbDeviceName = 6;
-
-    PhotonSourceParameters params = 7;
+    // TODO:
+    //DeviceConfig params = 7;
 }

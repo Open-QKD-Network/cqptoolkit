@@ -118,9 +118,12 @@ namespace cqp
         return DriverName;
     }
 
-    bool PhotonDetectorMk1::Initialise()
+    bool PhotonDetectorMk1::Initialise(config::DeviceConfig& parameters)
     {
-        return driver->Initialise();
+        bool result = driver->Initialise(parameters);
+        result &= processing->align->SetParameters(parameters);
+
+        return result;
     }
 
     URI PhotonDetectorMk1::GetAddress() const

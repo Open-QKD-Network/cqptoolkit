@@ -12,8 +12,6 @@
 
 syntax = "proto3";
 import public "google/protobuf/empty.proto";
-import public "Keys.proto";
-import public "Site.proto";
 
 package cqp.remote;
 
@@ -45,8 +43,6 @@ service ISession {
 message SessionDetails {
     /// other side
     string peerAddress = 1;
-    /// token used to retrieve public key
+    /// token used to retrieve the intial key
     string keyToken = 2;
-    /// parameters for the optical link
-    OpticalParameters params = 3;
 }

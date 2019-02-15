@@ -32,6 +32,10 @@ namespace cqp
         class Device;
     }
 
+    namespace config {
+        class DeviceConfig;
+    }
+
     /// Manages Key callbacks
     /// @see Provider
     using IKeyPublisher = Provider<IKeyCallback>;
@@ -52,9 +56,11 @@ namespace cqp
          * @return Returns a URL which describes how to connect to the device
          */
         virtual URI GetAddress() const = 0;
-        /// Establish communications with the device
+        /// Establish communications with the device and configure it for the specifed parameters
+        /// Th parameters should be adjusted to reflect the actial values used where default/invalid values are provided
+        /// @param[in,out] parameters The system settings to use when configuring the device.
         /// @return true if the device was successfully setup
-        virtual bool Initialise() = 0;
+        virtual bool Initialise(config::DeviceConfig& parameters) = 0;
 
         /**
          * @brief GetSessionController

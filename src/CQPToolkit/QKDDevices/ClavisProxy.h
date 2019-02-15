@@ -72,7 +72,7 @@ namespace cqp
         URI GetAddress() const override;
 
         /// @copydoc cqp::IQKDDevice::Initialise
-        bool Initialise() override;
+        bool Initialise(config::DeviceConfig& parameters) override;
 
         /// @copydoc cqp::IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;

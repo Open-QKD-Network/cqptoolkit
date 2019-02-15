@@ -45,7 +45,7 @@ namespace cqp
             /// @name ISessionController
 
             /// @copydoc cqp::ISessionController::StartSession
-            grpc::Status StartSession(const remote::OpticalParameters& params) override;
+            grpc::Status StartSession() override;
 
             /// @copydoc cqp::ISessionController::EndSession
             void EndSession() override;
@@ -75,6 +75,8 @@ namespace cqp
              * @return Which type of device is it
              */
             remote::Side::Type GetSide();
+
+            bool Initialise(config::DeviceConfig& parameters);
         protected:
 
             /**
@@ -99,6 +101,7 @@ namespace cqp
             PublicKeyService* pubKeyServ = nullptr;
             /// Our authentication token for getting shared secrets
             std::string keyToken;
+            config::DeviceConfig deviceConfig;
         };// ClavisController
     }
 

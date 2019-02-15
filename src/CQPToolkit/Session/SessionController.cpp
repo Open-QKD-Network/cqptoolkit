@@ -35,7 +35,7 @@ namespace cqp
 
         } // SessionController
 
-        grpc::Status SessionController::StartSession(const remote::OpticalParameters&)
+        grpc::Status SessionController::StartSession()
         {
             Status result;
             // the local system is starting the session

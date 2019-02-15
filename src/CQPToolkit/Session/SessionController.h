@@ -66,7 +66,7 @@ namespace cqp
             }
 
             /// @copydoc ISessionController::StartSession
-            grpc::Status StartSession(const remote::OpticalParameters& params) override;
+            grpc::Status StartSession() override;
 
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
@@ -114,7 +114,6 @@ namespace cqp
             std::condition_variable threadControlCv;
             /// track the session state
             bool sessionEnded = true;
-
         }; // class SessionController
 
     } // namespace session

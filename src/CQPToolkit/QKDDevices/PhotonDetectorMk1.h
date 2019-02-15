@@ -64,9 +64,8 @@ namespace cqp
         /// The name of this driver
         std::string GetDriverName() const override;
 
-        /// Establish communications with the device
-        /// @return true if the device was successfully setup
-        bool Initialise() override;
+        /// @copydoc IQKDDevice::Initialise
+        bool Initialise(config::DeviceConfig& parameters) override;
         /// @copydoc IQKDDevice::GetAddress
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::GetSessionController

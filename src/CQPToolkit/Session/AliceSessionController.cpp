@@ -32,10 +32,10 @@ namespace cqp {
 
         }
 
-        grpc::Status AliceSessionController::StartSession(const remote::OpticalParameters& params)
+        grpc::Status AliceSessionController::StartSession()
         {
             // the local system is starting the session
-            auto result = SessionController::StartSession(params);
+            auto result = SessionController::StartSession();
             if(result.ok() && photonSource)
             {
                 Start(threadPriority);

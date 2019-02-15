@@ -21,6 +21,9 @@ struct libusb_transfer;
 
 namespace cqp
 {
+    namespace config {
+        class DeviceConfig;
+    }
     class Usb;
 
     /// Class for controlling the "RWN 11" time tagger and coincidence counter built at UOB.
@@ -61,7 +64,7 @@ namespace cqp
          * @brief Initialise the device
          * @return true on success
          */
-        bool Initialise();
+        bool Initialise(config::DeviceConfig& parameters);
 
         /**
          * @brief GetAddress

@@ -135,7 +135,7 @@ namespace cqp
             }
         }
 
-        grpc::Status ClavisController::StartSession(const remote::OpticalParameters& params)
+        grpc::Status ClavisController::StartSession()
         {
             LOGTRACE("Called");
             using namespace std;
@@ -200,7 +200,7 @@ namespace cqp
 
                 // launch the clavis driver remotely
                 std::unique_ptr<ClientContext> wrapperCtx(new ClientContext());
-                options.set_lineattenuation(params.lineattenuation());
+                options.set_lineattenuation(deviceConfig.lineattenuation());
                 options.set_peerwrapperport(wrapperPort);
 
                 LOGTRACE("Calling wrapper StartQKDSequence");
@@ -266,7 +266,7 @@ namespace cqp
                     LOGWARN("Initial secret too small");
                     options.mutable_initialsecret()->assign(secret->begin(), secret->end());
                 }
-                options.set_lineattenuation(request->params().lineattenuation());
+                options.set_lineattenuation(deviceConfig.lineattenuation());
                 for(const auto& param : ctx->client_metadata())
                 {
                     if(param.first == wrapperPeerKey)
@@ -328,6 +328,12 @@ namespace cqp
         remote::Side::Type ClavisController::GetSide()
         {
             return myWrapperDetails.side();
+        }
+
+        bool ClavisController::Initialise(config::DeviceConfig& parameters)
+        {
+            deviceConfig = parameters;
+            return true;
         } // RegisterServices
 
     } // namespace session

@@ -151,5 +151,11 @@ namespace align {
         } // while keepGoing
     }
 
+    bool DetectionReciever::SetParameters(config::DeviceConfig& parameters)
+    {
+        // TODO
+        return true;
+    }
+
 } // namespace align
 } // namespace cqp

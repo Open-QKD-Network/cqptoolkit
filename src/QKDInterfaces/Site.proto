@@ -11,6 +11,7 @@
 */
 
 syntax = "proto3";
+import "Device.proto";
 
 package cqp.remote;
 
@@ -85,12 +86,6 @@ message Hop {
     string deviceId = 2;
 }
 
-/// values which describe the optical link
-message OpticalParameters {
-    /// The loss in dB for this link
-    double lineAttenuation = 1;
-};
-
 /// two points
 message HopPair {
     /// left side of a connection
@@ -98,7 +93,7 @@ message HopPair {
     /// right side of a connection
     Hop second = 2;
     /// properties for this link
-    OpticalParameters params = 3;
+    config.DeviceConfig params = 3;
 };
 
 /// Contact details for a site

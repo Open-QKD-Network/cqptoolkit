@@ -67,7 +67,7 @@ namespace cqp {
              *     deactivate as
              * @enduml
              */
-            grpc::Status StartSession(const remote::OpticalParameters& params) override;
+            grpc::Status StartSession() override;
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
 

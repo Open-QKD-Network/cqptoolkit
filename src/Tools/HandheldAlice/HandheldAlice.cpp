@@ -87,8 +87,6 @@ HandheldAlice::HandheldAlice()
     config.set_sessionport(0);
     config.set_sessionaddress("0.0.0.0");
     config.set_keylistenaddress("localhost:0");
-    config.mutable_params()->set_photonsperburst(LEDAliceMk1::DefaultParameters.photonsPerBurst);
-    config.mutable_params()->set_markerfraction(LEDAliceMk1::DefaultParameters.markerFraction);
 }
 
 void HandheldAlice::DisplayHelp(const CommandArgs::Option&)
@@ -184,10 +182,9 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
 
         if(driver)
         {
-            driver->SetParameters({
-                                      config.params().photonsperburst(),
-                                      config.params().markerfraction()
-                                  });
+            // TODO: move this into the config message for the whole program
+            config::DeviceConfig deviceConfig;
+            driver->Initialise(deviceConfig);
             // create the servers
             auto sessionStatus = driver->GetSessionController()->StartServerAndConnect(config.bobaddress(),
                                                                   definedArguments.GetStringProp(Names::sessionAddr),
@@ -206,9 +203,8 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
 
                 keyServer = keyServBuilder.BuildAndStart();
 
-                remote::OpticalParameters params;
                 // TODO
-                sessionStatus = LogStatus(driver->GetSessionController()->StartSession(params));
+                sessionStatus = LogStatus(driver->GetSessionController()->StartSession());
                 if(!sessionStatus.ok())
                 {
                     exitCode = ExitCodes::FailedToStartSession;

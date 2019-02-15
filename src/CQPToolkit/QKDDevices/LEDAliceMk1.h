@@ -78,18 +78,8 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::GetAddress
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::Initialise
-        virtual bool Initialise() override;
+        virtual bool Initialise(config::DeviceConfig& parameters) override;
         ///@}
-
-        struct Parameters
-        {
-            uint64_t photonsPerBurst;
-            uint64_t markerFraction;
-        };
-
-        static constexpr const Parameters DefaultParameters { 1024, 3 };
-
-        void SetParameters(const Parameters& params);
 
     protected: // members
 

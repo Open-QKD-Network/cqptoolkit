@@ -215,7 +215,7 @@ namespace cqp
          * deactivate SiteAgent
          * @enduml
          */
-        grpc::Status StartLeftSide(const remote::PhysicalPath* path, const remote::HopPair& hopPair);
+        grpc::Status StartLeftSide(remote::PhysicalPath* path, remote::HopPair& hopPair);
         /**
          * @brief StartRightSide
          * Start the node
@@ -240,7 +240,7 @@ namespace cqp
          * deactivate SiteAgent
          * @enduml
          */
-        grpc::Status StartRightSide(grpc::ServerContext* ctx, const remote::HopPair& hopPair, const std::string& remoteSessionAddress);
+        grpc::Status StartRightSide(grpc::ServerContext* ctx, remote::HopPair& hopPair, const std::string& remoteSessionAddress);
         /**
          * @brief PrepHop
          * Setup the devices/controllers/etc
@@ -249,7 +249,7 @@ namespace cqp
          * @param[out] controller The controller to be used to complete the hop setup
          * @return Success
          */
-        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller);
+        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller, cqp::config::DeviceConfig& params);
 
         /**
          * @brief StopNode

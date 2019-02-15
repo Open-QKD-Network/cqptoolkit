@@ -136,15 +136,11 @@ namespace cqp
         return result;
     }
 
-    bool LEDAliceMk1::Initialise()
+    bool LEDAliceMk1::Initialise(config::DeviceConfig& parameters)
     {
-        return driver->Initialise();
-    }
-
-    void LEDAliceMk1::SetParameters(const LEDAliceMk1::Parameters& params)
-    {
-        driver->SetPhotonsPerBurst(params.photonsPerBurst);
-        processing->align->SetMarkerFraction(params.markerFraction);
+        bool result = driver->Initialise(parameters);
+        result &= processing->align->SetParameters(parameters);
+        return result;
     }
 
     ISessionController* LEDAliceMk1::GetSessionController()

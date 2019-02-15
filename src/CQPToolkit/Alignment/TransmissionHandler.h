@@ -19,6 +19,9 @@
 
 namespace cqp {
 
+    namespace config {
+        class DeviceConfig;
+    }
 namespace align {
 
     /**
@@ -45,10 +48,7 @@ namespace align {
         grpc::Status DiscardTransmissions(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) override;
         ///@}
 
-        void SetMarkerFraction(uint64_t fraction)
-        {
-            markerFractionToSend = fraction;
-        }
+        bool SetParameters(config::DeviceConfig& parameters);
     protected:
         /// The data to process
         EmitterReportList receivedData;

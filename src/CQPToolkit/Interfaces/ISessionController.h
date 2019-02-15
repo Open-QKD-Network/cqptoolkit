@@ -17,11 +17,6 @@
 namespace cqp
 {
 
-    namespace remote
-    {
-        class OpticalParameters;
-    }
-
     /**
      * @brief The ISessionController class
      * Interface for managing key generation between two points
@@ -74,10 +69,9 @@ namespace cqp
          *        SeshA -> SeshB : SessionStarting()
          *    deactivate SeshA
          * @enduml
-         * @param params Settings for this session
          * @return result of command
          */
-        virtual grpc::Status StartSession(const remote::OpticalParameters& params) = 0;
+        virtual grpc::Status StartSession() = 0;
 
         /**
          * @brief EndSession

@@ -16,6 +16,7 @@
 #include "Algorithms/Util/DataFile.h"
 #include "Algorithms/Util/ProcessingQueue.h"
 #include "Algorithms/Util/Threading.h"
+#include "QKDInterfaces/Device.pb.h"
 
 namespace cqp
 {
@@ -383,7 +384,7 @@ namespace cqp
         return result;
     }
 
-    bool UsbTagger::Initialise()
+    bool UsbTagger::Initialise(config::DeviceConfig& parameters)
     {
         bool result = true;
 

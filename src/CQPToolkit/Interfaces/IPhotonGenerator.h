@@ -17,13 +17,6 @@
 namespace cqp
 {
 
-    // possible parameters
-    // pulse width
-    // avg. photons per pulse (<1.0)
-    // filter bias of bases
-    // wavelength + tolerance
-    // photon state purity
-
     /// @brief  A device which produces photons.
     /// @details Calls the associated callback interface when new data is available.
     class CQPTOOLKIT_EXPORT IPhotonGenerator

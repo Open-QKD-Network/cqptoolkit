@@ -223,7 +223,8 @@ namespace cqp
         return result;
     } // RegisterWithDiscovery
 
-    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller)
+    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller,
+                                    config::DeviceConfig& params)
     {
         using namespace std;
         using namespace grpc;
@@ -234,7 +235,10 @@ namespace cqp
         std::shared_ptr<IQKDDevice> localDev = deviceFactory->UseDeviceById(deviceId);
         if(localDev)
         {
-            controller = localDev->GetSessionController();
+            if(localDev->Initialise(params))
+            {
+                controller = localDev->GetSessionController();
+            }
 
             if(controller)
             {
@@ -307,7 +311,7 @@ namespace cqp
         return result;
     } // PrepHop
 
-    grpc::Status SiteAgent::StartLeftSide(const remote::PhysicalPath* path, const remote::HopPair& hopPair)
+    grpc::Status SiteAgent::StartLeftSide(remote::PhysicalPath* path, remote::HopPair& hopPair)
     {
         using namespace std;
         using namespace grpc;
@@ -338,7 +342,7 @@ namespace cqp
         } else
         {
             // configure the device and set up the controller
-            result = PrepHop(localDeviceId, hopPair.second().site(), controller);
+            result = PrepHop(localDeviceId, hopPair.second().site(), controller, *hopPair.mutable_params());
         }
 
         if(result.ok() && controller)
@@ -393,7 +397,7 @@ namespace cqp
         return result;
     } // StartLeftSide
 
-    grpc::Status SiteAgent::StartRightSide(grpc::ServerContext*, const remote::HopPair& hopPair, const std::string& remoteSessionAddress)
+    grpc::Status SiteAgent::StartRightSide(grpc::ServerContext*, remote::HopPair& hopPair, const std::string& remoteSessionAddress)
     {
         using namespace std;
         using namespace grpc;
@@ -416,7 +420,7 @@ namespace cqp
         {
             ISessionController* controller = nullptr;
             // configure the device and set up the controller
-            Status result = PrepHop(hopPair.second().deviceid(), hopPair.first().site(), controller);
+            Status result = PrepHop(hopPair.second().deviceid(), hopPair.first().site(), controller, *hopPair.mutable_params());
 
             otherSites[hopPair.first().site()].channel = nullptr;
 
@@ -430,7 +434,7 @@ namespace cqp
                 {
                     LOGTRACE("Starting session");
                     // start exchanging keys
-                    result = controller->StartSession(hopPair.params());
+                    result = controller->StartSession();
                 }
             }
 
@@ -468,17 +472,19 @@ namespace cqp
             LOGDEBUG(GetConnectionAddress() + " is starting node with: " + pathString);
         }
 
+        auto myPath = *path;
+
         // default result
         grpc::Status result = Status(StatusCode::NOT_FOUND, "No hops applicable to this site");
         // walk through each hop in the path
         // path example = [ [a, b], [b, c] ]
-        for(const auto& hopPair : path->hops())
+        for(auto& hopPair : *myPath.mutable_hops())
         {
             LOGTRACE("Looking at hop from " + hopPair.first().site() + " to " + hopPair.second().site());
             // if we are the left side of a hop, ie a in [a, b]
             if(AddressIsThisSite(hopPair.first().site()))
             {
-                result = StartLeftSide(path, hopPair);
+                result = StartLeftSide(&myPath, hopPair);
 
             } // if left
             else if(AddressIsThisSite(hopPair.second().site()))
@@ -506,7 +512,7 @@ namespace cqp
                     *reversedHop.mutable_first() = hopPair.second();
                     *reversedHop.mutable_second() = hopPair.first();
                     // carry on with the hops reversed
-                    result = StartLeftSide(path, reversedHop);
+                    result = StartLeftSide(&myPath, reversedHop);
                 }
             } // if right
         } // for pairs
