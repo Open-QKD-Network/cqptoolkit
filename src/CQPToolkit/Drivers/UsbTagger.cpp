@@ -342,6 +342,12 @@ namespace cqp
 
         dataPort = Usb::Detect(usbVID, usbPID, usbSerialNumber);
 
+        if(dataPort)
+        {
+            dataPusher = make_unique<DataPusher>(*dataPort, channelMappings);
+        } else {
+            LOGERROR("Invalid USB device");
+        }
     }
 
     UsbTagger::UsbTagger(std::unique_ptr<Serial> controlDev, std::unique_ptr<Usb> dataDev) :
@@ -358,7 +364,7 @@ namespace cqp
     {
         using std::chrono::high_resolution_clock;
         grpc::Status result;
-        if(configPort)
+        if(configPort && dataPusher)
         {
             // TODO: convert the incomming timestamp into an epoc
             // Start reading data from the usb port
@@ -366,7 +372,7 @@ namespace cqp
             // Start the detector
             configPort->Write('R');
         } else {
-            result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid serial device");
+            result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid device");
         }
         return result;
     }
@@ -374,12 +380,13 @@ namespace cqp
     grpc::Status UsbTagger::StopDetecting(grpc::ServerContext*, const google::protobuf::Timestamp* request, google::protobuf::Empty*)
     {
         grpc::Status result;
-        if(configPort)
+        if(configPort && dataPusher)
         {
             configPort->Write('S');
             dataPusher->Stop();
+            configPort->Close();
         } else {
-            result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid serial device");
+            result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid device");
         }
         return result;
     }
@@ -390,6 +397,7 @@ namespace cqp
 
         if (configPort != nullptr)
         {
+            configPort->Open();
             const char InitSeq[] = { 'W', 'S' };
             // predefined command sequence for initialisation
             for (char cmd : InitSeq)
