@@ -18,6 +18,17 @@
 
 The runtime dependencies need to be ether in the current folder or in the PATH variable. For MinGW, ensure that the mingw/bin folder is in the PATH when running the program. For installed runtimes, add the file to the ***CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS*** variable in ***CMakeFileLists.txt***
 
+### ZeroMQ gives me an error about non-existent path
+
+```
+CMake Error in src/Tools/Clavis3Driver/CMakeLists.txt:
+  Imported target "PkgConfig::ZeroMQ" includes non-existent path
+
+    "/usr/lib/pgm-5.2/include"
+```
+This is an issue with the pkgconfig of openpgm, edit the file: `/usr/lib/pkgconfig/openpgm-5.2.pc`
+remove the `-I${libdir}/pgm-5.2/include` from the line begining `Cflags`. Then send an email to the openpgm developers, asking them to fix this issue.
+
 ## Runtime
 
 ### Trying to run a gui program crashes with something about protobuf versions
