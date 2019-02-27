@@ -29,6 +29,7 @@ struct Names
     static CONSTSTRING bob = "bob";
     static CONSTSTRING output = "output";
     static CONSTSTRING numPhotons = "num-photons";
+    static CONSTSTRING timeout = "timeout";
 };
 
 FreespaceTest::FreespaceTest()
@@ -56,6 +57,8 @@ FreespaceTest::FreespaceTest()
     definedArguments.AddOption(Names::output, "o", "Output file for the results")
             .Bind();
     definedArguments.AddOption(Names::numPhotons, "n", "Alice: Number of photons to transmit")
+            .Bind();
+    definedArguments.AddOption(Names::timeout, "t", "Timeout for detections in miliseconds")
             .Bind();
 }
 
@@ -180,9 +183,16 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
                     if(LogStatus(tagger->StartDetecting(nullptr, &request, &response)).ok())
                     {
                         unique_lock<mutex> lock(waitMutex);
-                        waitCv.wait(lock, [&]{
-                            return stopExecution;
-                        });
+                        int timeout(0);
+                        if(definedArguments.HasProp(Names::timeout) && definedArguments.GetProp(Names::timeout, timeout))
+                        {
+                            this_thread::sleep_for(std::chrono::milliseconds(timeout));
+                            tagger->StopDetecting(nullptr, nullptr, nullptr);
+                        } else {
+                            waitCv.wait(lock, [&]{
+                                return stopExecution;
+                            });
+                        }
                     } else {
                         LOGERROR("Failed to start detecting");
                         exitCode = ExitCodes::UnknownError;
@@ -208,6 +218,7 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
 
 void FreespaceTest::StopProcessing(int)
 {
+    LOGTRACE("");
     using namespace std;
     // The program is terminating,
     // stop the session
