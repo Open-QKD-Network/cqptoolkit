@@ -80,15 +80,20 @@ namespace cqp
             }
             else
             {
-                LOGTRACE("Device has " + std::to_string(desc.bNumConfigurations) + " Configurations.");
                 if(desc.idVendor == vendorId && desc.idProduct == productId)
                 {
+                    LOGTRACE("Device has " + std::to_string(desc.bNumConfigurations) + " Configurations.");
                     // opening the device will increase it's reference count, making it safe to delete the list
                     result = make_unique<Usb>(devs[devIndex]);
 
                     if(serial.empty() || result->GetSerialNumber() == serial)
                     {
+                        result->vendor = desc.idVendor;
+                        result->product = desc.idProduct;
+
+                        LOGINFO("Using device: " + result->GetAddress().ToString());
                         // match is good
+
                         break; // for
                     } else {
                         // false match, drop the device
@@ -146,6 +151,11 @@ namespace cqp
         if (myDev != nullptr && myHandle != nullptr)
         {
 
+            if (!eventHandler.IsRunning())
+            {
+                eventHandler.Start();
+            }
+
             if (libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER))
             //        libusb_kernel_driver_active(myHandle, interfaceIndex) != LIBUSB_SUCCESS)
             {
@@ -192,10 +202,6 @@ namespace cqp
                 result &= LogUsb(libusb_claim_interface(myHandle, interface)) == LIBUSB_SUCCESS;
             } // for interfaces
 
-            if (result && !eventHandler.IsRunning())
-            {
-                eventHandler.Start();
-            }
         } // if device is ok
         return result;
     }
@@ -229,7 +235,9 @@ namespace cqp
         return result == LIBUSB_SUCCESS;
     }
 
-    struct ::libusb_transfer * Usb::StartReadingBulk(uint8_t endPoint, unsigned char* buffer, size_t bufferLength, Usb::CallbackFunc callback, void* userData)
+    struct ::libusb_transfer * Usb::StartReadingBulk(uint8_t endPoint, unsigned char* buffer, size_t bufferLength,
+                                                     Usb::CallbackFunc callback, void* userData,
+                                                     chrono::milliseconds timeout)
     {
         struct ::libusb_transfer *transfer = libusb_alloc_transfer(0);
 
@@ -238,7 +246,7 @@ namespace cqp
             // create the transfer object
             ::libusb_fill_bulk_transfer(
                         transfer, myHandle, endPoint, buffer, static_cast<int>(bufferLength),
-                    callback, userData, 0);
+                    callback, userData, timeout.count());
 
             // issue the request, the callback will be called when data is ready
             if (LogUsb(libusb_submit_transfer(transfer)) != LIBUSB_SUCCESS)
@@ -247,6 +255,8 @@ namespace cqp
                 libusb_free_transfer(transfer);
                 transfer = nullptr;
             }
+        } else {
+            LOGERROR("Failed to allocate transfer");
         }
 
         return transfer;
@@ -299,6 +309,7 @@ namespace cqp
         }
         result.AddParameter("product", to_string(product));
         result.AddParameter("vendor", to_string(vendor));
+        result.AddParameter("serial", GetSerialNumber());
 
         return result;
     }

@@ -60,7 +60,7 @@ namespace cqp
 
     Serial::Serial()
     {
-        accessMode = O_RDWR | O_NOCTTY;
+        accessMode = O_RDWR | O_NOCTTY | O_NDELAY;
     }
 
 
@@ -85,7 +85,10 @@ namespace cqp
 
         bool result = IsOpen();
 
-        result &= IsOpen();
+        if(result)
+        {
+            result &= Setup();
+        }
         return result;
     }
 
@@ -185,10 +188,10 @@ namespace cqp
                     {
                         break; // for
                     }
-                }
-            }
-        }
-    }
+                } // for files
+            } // for deviceNames
+        } // else
+    } // Detect
 
-}
+} // namespace cqp
 #endif // defined(__unix)
