@@ -120,6 +120,10 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
         AddSignalHandler(SIGTERM, [this](int signum) {
             StopProcessing(signum);
         });
+        AddSignalHandler(SIGINT, [this](int signum) {
+            StopProcessing(signum);
+        });
+
         config::DeviceConfig params;
 
         if(definedArguments.HasProp(Names::alice))
@@ -234,6 +238,7 @@ void FreespaceTest::StopProcessing(int)
             });
         }
     }
+    exit(exitCode);
 }
 
 

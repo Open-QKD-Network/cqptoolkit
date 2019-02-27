@@ -74,7 +74,7 @@ protected:
                      NoDevice = 1,
                      ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99 };
 
-    void StopProcessing(int);
+    [[noreturn]] void StopProcessing(int);
 protected: // members
     cqp::RandomNumber rng;
     std::fstream outputFile;
