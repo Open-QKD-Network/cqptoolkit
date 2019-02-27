@@ -19,7 +19,7 @@
 #include "CQPToolkit/Drivers/Serial.h"  // for Serial, SerialList, Serial::B...
 #include "Algorithms/Util/FileIO.h"     // for Exists, FindGlob, IsDirectory
 #include "Algorithms/Logging/Logger.h"     // for LOGTRACE
-
+#include <sys/file.h>
 
 namespace cqp
 {
@@ -87,6 +87,7 @@ namespace cqp
 
         if(result)
         {
+            result = flock(fileId, LOCK_EX | LOCK_NB) == 0;
             result &= Setup();
         }
         return result;
@@ -95,6 +96,7 @@ namespace cqp
     bool Serial::Close()
     {
         close(fileId);
+        flock(fileId, LOCK_UN);
         fileId = 0;
         return true;
     }

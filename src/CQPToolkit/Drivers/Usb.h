@@ -65,7 +65,7 @@ namespace cqp
          * @param detachKernelDriver detach kernel driver if one is attached to the device (it will be reatached once the device is closed)
          * @return true on success
          */
-        virtual bool Open(int configIndex = -1, const std::vector<int>& interfaces = {}, bool detachKernelDriver = false);
+        virtual bool Open(int configIndex = -1, const std::vector<int>& interfaces = {}, bool detachKernelDriver = true);
 
         /// The defintion of a callback from libusb
         using CallbackFunc = void(*) (struct ::libusb_transfer *transfer);
