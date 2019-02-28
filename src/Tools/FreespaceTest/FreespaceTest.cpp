@@ -133,10 +133,11 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
             string outputFilename = "alice.csv";
             definedArguments.GetProp(Names::output, outputFilename);
             try {
-                outputFile = fstream(outputFilename);
+                outputFile.open(outputFilename, std::ofstream::out);
             } catch (const exception& e) {
                 LOGERROR(e.what());
                 exitCode = ExitCodes::InvalidConfig;
+                stopExecution = true;
             }
 
             leds = make_unique<LEDDriver>(&rng, serialDevice, usbSerialNum);
@@ -162,6 +163,7 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
             } else {
                 LOGERROR("Failed to create device");
                 exitCode = ExitCodes::NoDevice;
+                stopExecution = true;
             }
 
         } else {
@@ -169,10 +171,12 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
             string outputFilename = "bob.csv";
             definedArguments.GetProp(Names::output, outputFilename);
             try {
-                outputFile = fstream(outputFilename);
+                outputFile.open(outputFilename, std::ofstream::out);
+
             } catch (const exception& e) {
                 LOGERROR(e.what());
                 exitCode = ExitCodes::InvalidConfig;
+                stopExecution = true;
             }
 
             tagger = make_unique<UsbTagger>(serialDevice, usbSerialNum);
@@ -192,6 +196,9 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
                         {
                             this_thread::sleep_for(std::chrono::milliseconds(timeout));
                             tagger->StopDetecting(nullptr, nullptr, nullptr);
+                            waitCv.wait(lock, [&]{
+                                return stopExecution;
+                            });
                         } else {
                             waitCv.wait(lock, [&]{
                                 return stopExecution;
@@ -249,12 +256,13 @@ void FreespaceTest::OnPhotonReport(std::unique_ptr<ProtocolDetectionReport> repo
     {
         for(const auto& detection : report->detections)
         {
-            outputFile << detection.time.count() << ", " << detection.value << endl;
+            outputFile << detection.time.count() << ", " << std::to_string(detection.value) << endl;
         }
         outputFile.close();
     } else {
         LOGWARN("Output file not writabe");
     }
+    stopExecution = true;
     waitCv.notify_all();
 }
 
@@ -267,10 +275,11 @@ void FreespaceTest::OnEmitterReport(std::unique_ptr<EmitterReport> report)
         {
             outputFile << emision << endl;
         }
+        outputFile.close();
     } else {
         LOGWARN("Output file not writabe");
     }
-    outputFile.close();
+    stopExecution = true;
     waitCv.notify_all();
 }
 

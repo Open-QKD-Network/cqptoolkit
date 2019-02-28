@@ -275,7 +275,7 @@ namespace cqp
                 }
             }/*lock scope*/
 
-            if(data)
+            if(data && report)
             {
                 LOGTRACE("Processing data");
                 if(data->size() % NoxReport::messageBytes == 0)
