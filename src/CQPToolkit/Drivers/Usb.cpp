@@ -223,7 +223,7 @@ namespace cqp
         auto result = LogUsb(libusb_bulk_transfer(
             myHandle, endPoint, data.data(), sizeof(data.size()), &bytesRecieved, static_cast<unsigned int>(timeout.count())));
 
-        if (result == LIBUSB_SUCCESS && bytesRecieved > 0)
+        if ((result == LIBUSB_SUCCESS || result == LIBUSB_ERROR_OVERFLOW) && bytesRecieved > 0)
         {
             data.resize(static_cast<size_t>(bytesRecieved));
         } else

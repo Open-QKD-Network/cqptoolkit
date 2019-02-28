@@ -112,6 +112,8 @@ namespace cqp
         Serial::BaudRate myBaudRate = Serial::BaudRate::B_9600;
         /// how the detector channels are linked to qubits
         std::vector<Qubit> channelMappings {0, 1, 2, 3};
+        /// The maximum number of bytes to read in any one bulk read event
+        static const int maxBulkRead = 8192;
     };
 
 }

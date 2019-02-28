@@ -132,6 +132,11 @@ namespace cqp
         return result;
     }
 
+    void Serial::Flush()
+    {
+        tcflush(fileId ,TCIOFLUSH);
+    }
+
     bool Serial::Setup()
     {
         struct termios serialSettings = {};
@@ -143,12 +148,12 @@ namespace cqp
         serialSettings.c_cflag     &=  static_cast<unsigned int>(~CSIZE);
         serialSettings.c_cflag     |=  CS8;
 
-        tcflush(fileId, TCIFLUSH);
         if(result == 0)
         {
             result = tcsetattr(fileId, TCSANOW, &serialSettings);
         }
 
+        tcflush(fileId, TCIFLUSH);
         if(result != 0){
             LOGERROR("Failed to set serial settings");
         }
