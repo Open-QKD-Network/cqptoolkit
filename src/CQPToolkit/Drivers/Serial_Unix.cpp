@@ -144,6 +144,14 @@ namespace cqp
         serialSettings.c_cflag     |=  CS8;
 
         tcflush(fileId, TCIFLUSH);
+        if(result == 0)
+        {
+            result = tcsetattr(fileId, TCSANOW, &serialSettings);
+        }
+
+        if(result != 0){
+            LOGERROR("Failed to set serial settings");
+        }
 
         return result == 0;
     }
