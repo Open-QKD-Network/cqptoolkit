@@ -1,0 +1,3 @@
+[submodule "external/idq4p"]
+	path = external/idq4p
+	url = ../idq4p.git

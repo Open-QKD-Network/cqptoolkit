@@ -11,7 +11,7 @@
 # See: https://cognitivewaves.wordpress.com/cmake-and-visual-studio/
 cmake_minimum_required (VERSION 3.7.2)
 
-if(TARGET IDQ_IDQ4PClasses)
+if(TARGET IDQ4PClasses)
     project(Clavis3Driver CXX)
     include(CommonSetup)
 
@@ -21,19 +21,18 @@ if(TARGET IDQ_IDQ4PClasses)
     if(TARGET Clavis3Driver)
 
         target_compile_definitions(Clavis3Driver PRIVATE MSGPACK_DEFAULT_API_VERSION=1)
-        #target_compile_definitions(Clavis3Driver PRIVATE IDQ4P_ENABLE_SERIALIZER=true)
         target_compile_definitions(Clavis3Driver PRIVATE IDQ4P_DEBUG=true)
+        target_compile_definitions(Clavis3Driver PRIVATE IDQ4P_ENABLE_SERIALIZER=true)
+
         #target_compile_definitions(Clavis3Driver PRIVATE MSGPACK_USE_DEFINE_MAP=true)
         #target_compile_definitions(Clavis3Driver PRIVATE MSGPACK_DISABLE_LEGACY_CONVERT=true)
 
         target_link_libraries(${PROJECT_NAME} PRIVATE
             CQPToolkit_Shared
             QKDInterfaces_Shared
-            PkgConfig::ZeroMQ
-            PkgConfig::MsgPack
-            IDQ_IDQ4PClasses
-            IDQ_DomainModel
-            IDQ_Utilities
+            IDQ4PClasses
+            DomainModel
+            Utilities
             )
     endif()
 endif()

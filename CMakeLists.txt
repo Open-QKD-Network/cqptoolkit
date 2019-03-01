@@ -313,38 +313,9 @@ else(TARGET PkgConfig::libUSB_1)
     message(WARNING "Libusb was not found, projects will be disabled. see README.md")
 endif(TARGET PkgConfig::libUSB_1)
 
-find_package(ZeroMQ QUIET)
-if(TARGET PkgConfig::ZeroMQ)
-    message(STATUS "ZeroMQ : ${ZeroMQ_VERSION}")
-else()
-    message(WARNING "No ZeroMQ library found, projects will be disabled.")
-endif()
-
-find_package(MsgPack QUIET)
-if(TARGET PkgConfig::MsgPack)
-    message(STATUS "MsgPack : ${MsgPack_VERSION}")
-else()
-    message(WARNING "No MsgPack library found, projects will be disabled.")
-endif()
-
-if(TARGET  PkgConfig::ZeroMQ)
-    if(TARGET PkgConfig::MsgPack)
-        # test for IDQ Clavis 3 headers (proprietary)
-        SET(IDQ4P_DIR "${CMAKE_SOURCE_DIR}/external/IDQ4P/src" CACHE STRING "Location of IDQ 4P code")
-
-        foreach(_libtype "IDQ4PClasses" "DomainModel" "Utilities")
-            if(EXISTS "${IDQ4P_DIR}/${_libtype}/Debug/lib${_libtype}.a")
-                add_library(IDQ_${_libtype} STATIC IMPORTED)
-                set_target_properties(IDQ_${_libtype} PROPERTIES
-                  IMPORTED_LOCATION "${IDQ4P_DIR}/${_libtype}/Debug/lib${_libtype}.a"
-                  INTERFACE_INCLUDE_DIRECTORIES "${IDQ4P_DIR}/${_libtype}/src"
-                )
-                message("Found IDQ ${_libtype} library")
-            else()
-                message(WARNING "Missing IDQ ${_libtype} library, some projects will be disabled.")
-            endif()
-        endforeach()
-    endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/external/idq4p/CMakeLists.txt")
+    message("Adding idq4p to build")
+    add_subdirectory(external/idq4p)
 endif()
 
 if(BUILD_TESTING)
