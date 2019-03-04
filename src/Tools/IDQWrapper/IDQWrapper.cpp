@@ -93,6 +93,8 @@ grpc::Status IDQWrapper::StartQKDSequence(grpc::ServerContext* srvCtx,
             LOGTRACE("Starting Clavis driver");
             // start communicating with the device
             device.reset(new Clavis(request->peerhostname(), side == IDQSequenceLauncher::DeviceType::Alice));
+            // publish stats from the device
+            launcher.stats.Add(&statsReporter);
 
             device->SetRequestRetryLimit(3);
             LOGTRACE("Sending initial metadata");
@@ -124,7 +126,7 @@ grpc::Status IDQWrapper::StartQKDSequence(grpc::ServerContext* srvCtx,
                 // we'll request new keys and send the id to bob
                 while(keepGoing && bobWriter && !srvCtx->IsCancelled())
                 {
-                    if(device->GetNewKey(key, id))
+                    if(launcher.WaitForKey() && device->GetNewKey(key, id))
                     {
                         LOGDEBUG("Got key from device: " + key.ToString());
                         remote::SharedKey message;
@@ -140,11 +142,6 @@ grpc::Status IDQWrapper::StartQKDSequence(grpc::ServerContext* srvCtx,
                         LOGTRACE("Sending key to caller");
                         writer->Write(message);
                         key.clear();
-                    }
-                    else
-                    {
-                        LOGDEBUG("Failed to get key, retrying");
-                        std::this_thread::sleep_for(std::chrono::seconds(10));
                     }
                 }
 
@@ -165,13 +162,13 @@ grpc::Status IDQWrapper::StartQKDSequence(grpc::ServerContext* srvCtx,
                     std::unique_lock<std::mutex> lock(waitingKeyIdsMutex);
 
                     LOGTRACE("Waiting for key id");
-                    bool dataReady = waitingKeyIdsCv.wait_for(lock, std::chrono::seconds(10), [&]()
+                    waitingKeyIdsCv.wait(lock, [&]()
                     {
-                        return !waitingKeyIds.empty();
+                        return !waitingKeyIds.empty() || stopExecution;
                     });
 
                     // wait for a key id to be sent to us from alice
-                    if(dataReady)
+                    if(!waitingKeyIds.empty())
                     {
                         LOGTRACE("Received key id");
                         Clavis::ClavisKeyID id;
@@ -200,11 +197,15 @@ grpc::Status IDQWrapper::StartQKDSequence(grpc::ServerContext* srvCtx,
                     } // if data ready
                 } // whiel keep reading
             } // else device is bob
+
+            // stop publishing stats from the device
+            launcher.stats.Remove(&statsReporter);
         }
         catch(const std::exception& e)
         {
             LOGERROR(e.what());
         }
+
     } // if device valid
     else
     {
@@ -226,12 +227,12 @@ grpc::Status IDQWrapper::UseKeyID(grpc::ServerContext* ctx,
     try
     {
         // wait for our StartQKDSequence to be called
-        bool deviceReady = deviceReadyCv.wait_for(lock, std::chrono::seconds(30), [&]()
+        deviceReadyCv.wait(lock, [&]()
         {
-            return device != nullptr;
+            return (device != nullptr) || stopExecution;
         });
 
-        if(deviceReady)
+        if(device != nullptr)
         {
             // release the caller
             reader->SendInitialMetadata();
@@ -250,7 +251,7 @@ grpc::Status IDQWrapper::UseKeyID(grpc::ServerContext* ctx,
         }
         else
         {
-            result = Status(StatusCode::UNAVAILABLE, "No device configured within timeout.");
+            result = Status(StatusCode::UNAVAILABLE, "No device configured.");
             ctx->TryCancel();
         }
     }
@@ -305,6 +306,13 @@ IDQWrapper::IDQWrapper()
 
 }
 
+IDQWrapper::~IDQWrapper()
+{
+    this->stopExecution = true;
+    deviceReadyCv.notify_all();
+    waitingKeyIdsCv.notify_all();
+}
+
 void IDQWrapper::DisplayHelp(const CommandArgs::Option&)
 {
     definedArguments.PrintHelp(std::cout, "Bridges communication between CQP Site Agents and the Clavis devices.\nCopyright Bristol University. All rights reserved.");
@@ -336,6 +344,7 @@ int IDQWrapper::Main(const std::vector<std::string>& args)
         LOGTRACE("Registering services");
         // Register services
         builder.RegisterService(this);
+        builder.RegisterService(&statsReporter);
         // ^^^ Add new services here ^^^ //
 
         server = builder.BuildAndStart();

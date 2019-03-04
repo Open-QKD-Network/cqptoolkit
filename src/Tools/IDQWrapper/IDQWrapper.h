@@ -19,6 +19,7 @@
 #include <grpcpp/server.h>
 #include <queue>
 #include "Algorithms/Datatypes/Keys.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 /**
  * @brief The IDQWrapper program
@@ -29,6 +30,9 @@ class IDQWrapper : public cqp::Application, public cqp::remote::IIDQWrapper::Ser
 {
 public:
     IDQWrapper();
+
+    /// Distructor
+    virtual ~IDQWrapper() override;
 
     /**
      * @brief DisplayHelp
@@ -115,5 +119,6 @@ protected:
     bool keepReadingKey = false;
     /// The type of device detected
     cqp::IDQSequenceLauncher::DeviceType side = cqp::IDQSequenceLauncher::DeviceType::None;
-
+    /// track and publish stats
+    cqp::stats::ReportServer statsReporter;
 };
