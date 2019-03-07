@@ -81,6 +81,7 @@ public:
         grpc::ServerContext* context,
         const google::protobuf::Empty*,
         cqp::remote::WrapperDetails* response) override;
+
     ///@}
 protected:
     /**
@@ -121,4 +122,5 @@ protected:
     cqp::IDQSequenceLauncher::DeviceType side = cqp::IDQSequenceLauncher::DeviceType::None;
     /// track and publish stats
     cqp::stats::ReportServer statsReporter;
+
 };

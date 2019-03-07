@@ -24,6 +24,7 @@
 #include "KeyGen/KeyConverter.h"
 #include "CQPToolkit/Simulation/DummyTransmitter.h"
 #include "CQPToolkit/Simulation/DummyTimeTagger.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 namespace cqp
 {
@@ -39,12 +40,14 @@ namespace cqp
             alignment(std::make_shared<align::NullAlignment>()),
           ec(std::make_shared<ec::ErrorCorrection>()),
           privacy(std::make_shared<privacy::PrivacyAmplify>()),
-          keyConverter(std::make_shared<keygen::KeyConverter>())
+          keyConverter(std::make_shared<keygen::KeyConverter>()),
+          reportServer(std::make_shared<stats::ReportServer>())
         {
             using namespace std;
             session::SessionController::RemoteCommsList remotes;
             session::SessionController::Services services;
             remotes.push_back(alignment);
+            services.push_back(reportServer.get());
 
             // create the controller for this device
             switch (side)
@@ -54,12 +57,13 @@ namespace cqp
                     photonSource = make_shared<sim::DummyTransmitter>(rng);
                     photonSource->Attach(alignment.get());
                     remotes.push_back(photonSource);
+                    photonSource->stats.Add(reportServer.get());
 
                     auto transmitter = std::make_shared<sift::Transmitter>();
                     sifter = transmitter;
                     remotes.push_back(transmitter);
 
-                    controller = make_shared<session::AliceSessionController>(creds, services, remotes, photonSource);
+                    controller = make_shared<session::AliceSessionController>(creds, services, remotes, photonSource, reportServer);
                 }
 
                 break;
@@ -70,11 +74,13 @@ namespace cqp
                     services.push_back(static_cast<remote::IDetector::Service*>(timeTagger.get()));
                     services.push_back(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
 
+                    timeTagger->stats.Add(reportServer.get());
+
                     auto receiver = std::make_shared<sift::Receiver>();
                     sifter = receiver;
                     services.push_back(receiver.get());
 
-                    controller = make_shared<session::SessionController>(creds, services, remotes);
+                    controller = make_shared<session::SessionController>(creds, services, remotes, reportServer);
                 }
                 break;
             default:
@@ -86,6 +92,11 @@ namespace cqp
             sifter->Attach(ec.get());
             ec->Attach(privacy.get());
             privacy->Attach(keyConverter.get());
+
+            // send stats to our report server
+            sifter->stats.Add(reportServer.get());
+            ec->stats.Add(reportServer.get());
+            privacy->stats.Add(reportServer.get());
         }
         /// aligns detections
         std::shared_ptr<align::NullAlignment> alignment;
@@ -106,6 +117,7 @@ namespace cqp
 
         std::shared_ptr<session::SessionController> controller = nullptr;
 
+        std::shared_ptr<stats::ReportServer> reportServer;
     };
 
     void DummyQKD::RegisterWithFactory()
@@ -183,22 +195,9 @@ namespace cqp
         return result;
     }
 
-    std::vector<stats::StatCollection*> DummyQKD::GetStats()
+    stats::IStatsPublisher* DummyQKD::GetStatsPublisher()
     {
-        std::vector<stats::StatCollection*> results;
-        results.push_back(&processing->ec->stats);
-        results.push_back(&processing->privacy->stats);
-        results.push_back(&processing->sifter->stats);
-
-        if(processing->timeTagger)
-        {
-            results.push_back(&processing->timeTagger->stats);
-        }
-        if(processing->photonSource)
-        {
-            results.push_back(&processing->photonSource->stats);
-        }
-        return results;
+        return processing->reportServer.get();
     }
 
     IKeyPublisher* DummyQKD::GetKeyPublisher()

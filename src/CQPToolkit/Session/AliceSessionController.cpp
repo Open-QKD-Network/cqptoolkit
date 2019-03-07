@@ -25,8 +25,9 @@ namespace cqp {
 
         AliceSessionController::AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
                                                        const Services& services,
-                                                       const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source) :
-            SessionController (creds, services, remotes),
+                                                       const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source,
+                                                       std::shared_ptr<stats::ReportServer> theReportServer) :
+            SessionController (creds, services, remotes, theReportServer),
             photonSource{source}
         {
 

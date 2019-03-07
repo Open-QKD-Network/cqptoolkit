@@ -66,8 +66,6 @@ namespace cqp
         ISessionController* GetSessionController() override;
         /// @copydoc IQKDDevice::GetKeyPublisher
         IKeyPublisher*GetKeyPublisher() override;
-        /// @copydoc IQKDDevice::GetStats
-        std::vector<stats::StatCollection*> GetStats() override;
 
         /// @copydoc IQKDDevice::GetDriverName
         virtual std::string GetDriverName() const override;
@@ -79,6 +77,8 @@ namespace cqp
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::Initialise
         virtual bool Initialise(config::DeviceConfig& parameters) override;
+        /// @copydoc IQKDDevice::GetStatsPublisher
+        stats::IStatsPublisher* GetStatsPublisher() override;
         ///@}
 
     protected: // members

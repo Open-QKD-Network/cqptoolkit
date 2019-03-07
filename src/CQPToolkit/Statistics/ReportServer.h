@@ -14,11 +14,15 @@
 #include "QKDInterfaces/IReporting.grpc.pb.h"
 #include "Algorithms/Statistics/Stat.h"
 #include <condition_variable>
+#include "CQPToolkit/Interfaces/IQKDDevice.h"
+#include "Algorithms/Util/Event.h"
 
 namespace cqp
 {
     namespace stats
     {
+
+        using StatsPublisher = Event<void(IStatsReportCallback::*)(const remote::SiteAgentReport&), &IStatsReportCallback::StatsReport>;
 
         /**
          * @brief The ReportServer class
@@ -26,7 +30,9 @@ namespace cqp
          */
         class CQPTOOLKIT_EXPORT ReportServer :
             public remote::IReporting::Service,
-            public virtual stats::IAllStatsCallback
+            public virtual stats::IAllStatsCallback,
+            public StatsPublisher,
+            public IStatsReportCallback
         {
         public:
             /**
@@ -34,6 +40,8 @@ namespace cqp
              *  Constructor
              */
             ReportServer() = default;
+
+            virtual ~ReportServer() override;
 
             ///@{
             /// @name remote::IReporting interface
@@ -59,9 +67,19 @@ namespace cqp
             void StatUpdated(const stats::Stat<size_t>* stat) override;
             ///@}
 
+            /**
+             * queue up the stat to send it to listeners
+             * @param report report to queue
+             */
+            void StatsReport(const remote::SiteAgentReport& report) override; // PublishStat
+
+            /**
+            * @brief SetAdditionalProperties
+            * Set values to be sent with every report
+            * @param addProps
+            */
+            void AddAdditionalProperties(const std::string& key, const std::string& value);
         protected: // members
-            /// How often to check for a signal to stop the publishing thread
-            std::chrono::milliseconds waitTimeout = std::chrono::milliseconds(500);
 
             /**
              * @brief The Reportlistener struct
@@ -81,12 +99,17 @@ namespace cqp
                 std::condition_variable reportCv;
             };
             /// All current listeners
-            std::unordered_map<size_t, Reportlistener> listeners;
+            std::unordered_map<size_t, Reportlistener> remoteListeners;
             /// counter for giving each listener a unique id
             size_t nextListenerId = 0;
             /// protect access to list of listeners
             std::mutex listenersMutex;
-
+            /// allows waiting for the listeners to leave
+            std::condition_variable listenerCv;
+            /// Properties to append to reports before they are sent
+            KeyValue additional;
+            /// should the thread exit
+            bool shutdown = false;
         protected: // methods
 
             /**
@@ -106,12 +129,6 @@ namespace cqp
              * @param report The message to fill in with other details
              */
             void CompleteReport(const stats::StatBase* stat, remote::SiteAgentReport& report);
-
-            /**
-             * queue up the stat to send it to listeners
-             * @param report report to queue
-             */
-            void QueueReport(const remote::SiteAgentReport& report); // PublishStat
 
         }; // ReportServer
 

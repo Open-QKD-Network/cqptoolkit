@@ -69,13 +69,13 @@ namespace cqp
         /// @copydoc IQKDDevice::GetAddress
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::GetSessionController
-        ISessionController*GetSessionController() override;
+        ISessionController* GetSessionController() override;
         /// @copydoc IQKDDevice::GetKeyPublisher
-        IKeyPublisher*GetKeyPublisher() override;
+        IKeyPublisher* GetKeyPublisher() override;
         /// @copydoc IQKDDevice::GetDeviceDetails
         remote::Device GetDeviceDetails() override;
-        /// @copydoc IQKDDevice::GetStats
-        std::vector<stats::StatCollection*> GetStats() override;
+        /// @copydoc IQKDDevice::GetStatsPublisher
+        stats::IStatsPublisher* GetStatsPublisher() override;
         /// @}
     protected: // members
         /// What this driver is called
@@ -91,5 +91,6 @@ namespace cqp
         std::shared_ptr<UsbTagger> driver;
 
     };
+
 }
 

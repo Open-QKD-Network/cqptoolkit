@@ -37,7 +37,8 @@ namespace cqp {
             AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
                                    const Services& services,
                                    const RemoteCommsList& remotes,
-                                   std::shared_ptr<IPhotonGenerator> source);
+                                   std::shared_ptr<IPhotonGenerator> source,
+                                   std::shared_ptr<stats::ReportServer> theReportServer);
 
             ///@{
             /// @name ISessionController interface

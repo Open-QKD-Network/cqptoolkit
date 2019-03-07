@@ -33,7 +33,7 @@ namespace cqp
 
     namespace stats
     {
-        class IAllStatsCallback;
+        class IStatsReportCallback;
     }
 
     /**
@@ -112,12 +112,12 @@ namespace cqp
          * @brief AddReportingCallback
          * @param callback
          */
-        void AddReportingCallback(stats::IAllStatsCallback* callback);
+        void AddReportingCallback(stats::IStatsReportCallback* callback);
         /**
          * @brief RemoveReportingCallback
          * @param callback
          */
-        void RemoveReportingCallback(stats::IAllStatsCallback* callback);
+        void RemoveReportingCallback(stats::IStatsReportCallback* callback);
 
         /**
          * @brief GetKnownDrivers
@@ -142,7 +142,7 @@ namespace cqp
         /// credentials passed to drivers when they are created
         std::shared_ptr<grpc::ChannelCredentials> clientCreds;
         /// all the callbacks to attach to owned devices
-        std::vector<stats::IAllStatsCallback*> reportingCallbacks;
+        std::vector<stats::IStatsReportCallback*> reportingCallbacks;
     };
 
 } // namespace cqp

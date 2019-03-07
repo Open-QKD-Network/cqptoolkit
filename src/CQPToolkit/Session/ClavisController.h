@@ -36,7 +36,8 @@ namespace cqp
              * @param address The uri of the wrapper
              * @param creds credentials to use when connecting to the wrapper
              */
-            ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds);
+            ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds,
+                             std::shared_ptr<stats::ReportServer> theReportServer);
 
             /// distructor
             ~ClavisController() override;
@@ -87,12 +88,20 @@ namespace cqp
              */
             void ReadKey(std::unique_ptr<grpc::ClientReader<remote::SharedKey> > reader, std::unique_ptr<grpc::ClientContext> wrapperCtx);
 
+            /**
+             * @brief CollectStats
+             * Read stats from the external process
+             */
+            void CollectStats();
+
             /// whether the threads should exit
             bool keepGoing = true;
             /// run the ReadKey call
             std::thread readThread;
             /// Setting provided by the wrapper
             remote::WrapperDetails myWrapperDetails;
+            /// gets the stats from the device
+            std::thread statsThread;
             /// channel to wrapper
             std::shared_ptr<grpc::Channel> channel;
             /// wrapper stub

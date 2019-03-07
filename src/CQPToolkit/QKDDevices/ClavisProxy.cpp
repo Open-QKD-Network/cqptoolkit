@@ -16,16 +16,18 @@
 #include "CQPToolkit/Session/ClavisController.h"   // for ClavisController
 #include "CQPToolkit/Interfaces/IQKDDevice.h"                 // for IQKDDevice, IQKDDe...
 #include "Algorithms/Logging/Logger.h"                           // for LOGTRACE
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 namespace cqp
 {
     class ISessionController;
 
     ClavisProxy::ClavisProxy(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t):
-        myAddress(address)
+        myAddress(address),
+        reportServer(std::make_shared<stats::ReportServer>())
     {
         LOGTRACE("Creating controller");
-        controller.reset(new session::ClavisController(address, creds));
+        controller.reset(new session::ClavisController(address, creds, reportServer));
     }
 
     void ClavisProxy::RegisterWithFactory()
@@ -79,9 +81,10 @@ namespace cqp
         return controller.get();
     }
 
-    std::vector<stats::StatCollection*> ClavisProxy::GetStats()
+    stats::IStatsPublisher* ClavisProxy::GetStatsPublisher()
     {
-        return {};
+        return reportServer.get();
     }
+
 } // namespace cqp
 

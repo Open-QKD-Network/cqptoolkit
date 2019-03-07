@@ -19,6 +19,7 @@
 #include "CQPToolkit/Drivers/LEDDriver.h"
 #include "CQPToolkit/Drivers/Usb.h"
 #include "CQPToolkit/QKDDevices/DeviceFactory.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 namespace cqp
 {
@@ -40,10 +41,16 @@ namespace cqp
             align = make_shared<align::TransmissionHandler>();
             ec = make_shared<ec::ErrorCorrection>();
             privacy = make_shared<privacy::PrivacyAmplify>();
+            reportServer = make_shared<stats::ReportServer>();
 
             align->Attach(ec.get());
             ec->Attach(privacy.get());
             privacy->Attach(keyConverter.get());
+
+            // send stats to our report server
+            align->stats.Add(reportServer.get());
+            ec->stats.Add(reportServer.get());
+            privacy->stats.Add(reportServer.get());
         }
 
         shared_ptr<align::TransmissionHandler> align;
@@ -53,6 +60,8 @@ namespace cqp
         shared_ptr<privacy::PrivacyAmplify> privacy;
         /// prepare keys for the keystore
         shared_ptr<keygen::KeyConverter> keyConverter;
+
+        shared_ptr<stats::ReportServer> reportServer;
 
         session::SessionController::RemoteCommsList GetRemotes() const
         {
@@ -65,7 +74,8 @@ namespace cqp
             session::SessionController::Services services {
                 align.get(),
                 ec.get(),
-                privacy.get()
+                privacy.get(),
+                reportServer.get() // allow external clients to get stats
             };
 
             return services;
@@ -78,7 +88,7 @@ namespace cqp
       driver{std::make_shared<LEDDriver>(&rng, controlName, usbSerialNumber)}
     {
         // create the session controller
-        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver);
+        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver, processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
@@ -89,7 +99,7 @@ namespace cqp
         driver{std::make_shared<LEDDriver>(&rng, move(controlPort), move(dataPort))}
     {
         // create the session controller
-        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver);
+        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver, processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
@@ -143,6 +153,11 @@ namespace cqp
         return result;
     }
 
+    stats::IStatsPublisher*LEDAliceMk1::GetStatsPublisher()
+    {
+        return processing->reportServer.get();
+    }
+
     ISessionController* LEDAliceMk1::GetSessionController()
     {
         return sessionController.get();
@@ -153,10 +168,6 @@ namespace cqp
         return processing->keyConverter.get();
     }
 
-    std::vector<stats::StatCollection*> cqp::LEDAliceMk1::GetStats()
-    {
-        return {&driver->myStats};
-    }
 }
 
 

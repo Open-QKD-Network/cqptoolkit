@@ -20,7 +20,9 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/QKDDevices/ClavisProxy.h"
 #include "CQPToolkit/Session/TwoWayServerConnector.h"
+#include "QKDInterfaces/IReporting.grpc.pb.h"
 #include <future>
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 namespace cqp
 {
@@ -34,8 +36,9 @@ namespace cqp
         const int wrapperPort = 7000;
         CONSTSTRING wrapperPeerKey = "peer";
 
-        ClavisController::ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds) :
-            SessionController(creds, {}, {}),
+        ClavisController::ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds,
+                                           std::shared_ptr<stats::ReportServer> theReportServer) :
+            SessionController(creds, {}, {}, theReportServer),
             pubKeyServ{new PublicKeyService()}
         {
             URI addressUri(address);
@@ -131,6 +134,26 @@ namespace cqp
             }
         }
 
+        void ClavisController::CollectStats()
+        {
+            using namespace std;
+            auto statsSource = remote::IReporting::NewStub(channel);
+            grpc::ClientContext ctx;
+            remote::ReportingFilter filter;
+            filter.set_listisexclude(true);
+
+            if(statsSource)
+            {
+                auto reader = statsSource->GetStatistics(&ctx, filter);
+                remote::SiteAgentReport report;
+                while(reader && reader->Read(&report))
+                {
+                    // feed the data back to the site agent
+                    reportServer->StatsReport(report);
+                }
+            }
+        }
+
         grpc::Status ClavisController::StartSession()
         {
             LOGTRACE("Called");
@@ -208,6 +231,8 @@ namespace cqp
                 keepGoing = true;
                 LOGTRACE("Starting ReadKey Thread");
                 readThread = std::thread(&ClavisController::ReadKey, this, std::move(reader), std::move(wrapperCtx));
+                LOGTRACE("Starting CollectStats Thread");
+                statsThread = std::thread(&ClavisController::CollectStats, this);
 
                 if(myWrapperDetails.side() != remote::Side_Type::Side_Type_Alice)
                 {

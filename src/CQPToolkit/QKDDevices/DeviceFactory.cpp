@@ -98,13 +98,16 @@ namespace cqp
                 unusedDevices[identifier] = result;
                 LOGTRACE("Device ready, collecting device statistics");
                 // link the reporting callbacks
-                for(auto* collection : result->GetStats())
+                auto statsPub = result->GetStatsPublisher();
+
+                if(statsPub)
                 {
                     for(auto reportCb : reportingCallbacks)
                     {
-                        collection->Add(reportCb);
+                        statsPub->Add(reportCb);
                     }
                 }
+
                 LOGINFO("Device " + addrUri.GetScheme() + " ready");
             }
         }
@@ -183,19 +186,20 @@ namespace cqp
         return result;
     }
 
-    void DeviceFactory::AddReportingCallback(stats::IAllStatsCallback* callback)
+    void DeviceFactory::AddReportingCallback(stats::IStatsReportCallback* callback)
     {
         reportingCallbacks.push_back(callback);
         for(const auto& dev : allDevices)
         {
-            for(auto* collection : dev.second->GetStats())
+            auto statsPub = dev.second->GetStatsPublisher();
+            if(statsPub)
             {
-                collection->Add(callback);
+                statsPub->Add(callback);
             }
         }
     }
 
-    void DeviceFactory::RemoveReportingCallback(stats::IAllStatsCallback* callback)
+    void DeviceFactory::RemoveReportingCallback(stats::IStatsReportCallback* callback)
     {
         for(auto it = reportingCallbacks.begin(); it != reportingCallbacks.end(); it++)
         {
@@ -208,9 +212,10 @@ namespace cqp
 
         for(const auto& dev : allDevices)
         {
-            for(auto* collection : dev.second->GetStats())
+            auto statsPub = dev.second->GetStatsPublisher();
+            if(statsPub)
             {
-                collection->Remove(callback);
+                statsPub->Remove(callback);
             }
         }
     }

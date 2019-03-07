@@ -11,11 +11,11 @@
 */
 #include "SessionController.h"
 #include "Algorithms/Logging/Logger.h"
-#include "CQPToolkit/Session/PublicKeyService.h"
 #include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "Algorithms/Random/RandomNumber.h"
 #include "Algorithms/Net/DNS.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 namespace cqp
 {
@@ -27,9 +27,11 @@ namespace cqp
         using grpc::ClientContext;
 
         SessionController::SessionController(std::shared_ptr<grpc::ChannelCredentials> creds, const Services& services,
-                                             const RemoteCommsList& remotes):
+                                             const RemoteCommsList& remotes,
+                                             std::shared_ptr<stats::ReportServer> theReportServer):
             services{services},
-            remoteComms{remotes}
+            remoteComms{remotes},
+            reportServer(theReportServer)
         {
             twoWayComm = new net::TwoWayServerConnector(creds);
 
@@ -64,6 +66,10 @@ namespace cqp
                     {
                         dependant->Connect(channel);
                     }
+                    if(reportServer)
+                    {
+                        reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "true");
+                    }
                 }
             } // if(otherController)
             else
@@ -79,6 +85,12 @@ namespace cqp
             Empty response;
             ClientContext ctx;
             auto channel = twoWayComm->GetClient();
+
+            if(reportServer)
+            {
+                reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "false");
+            }
+
             std::unique_ptr<remote::ISession::Stub> otherController;
             if(channel)
             {
@@ -121,6 +133,12 @@ namespace cqp
                 {
                     dependant->Connect(channel);
                 }
+
+                if(reportServer)
+                {
+                    reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "true");
+                    reportServer->AddAdditionalProperties(PropertyNames::to, twoWayComm->GetClientAddress());
+                }
             } else {
                 result = Status(StatusCode::DEADLINE_EXCEEDED, "Failed to get client channel");
             }
@@ -129,6 +147,11 @@ namespace cqp
 
         Status SessionController::SessionEnding(grpc::ServerContext*, const Empty*, Empty*)
         {
+            if(reportServer)
+            {
+                reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "false");
+            }
+
             for(auto& dependant : remoteComms)
             {
                 dependant->Disconnect();
@@ -153,6 +176,11 @@ namespace cqp
                 {
                     myAddress = hostname;
                 } // else
+
+                if(reportServer)
+                {
+                    reportServer->AddAdditionalProperties(PropertyNames::from, myAddress);
+                }
                 // create our own server which all the steps will use
                 grpc::ServerBuilder builder;
                 // grpc will create worker threads as it needs, idle work threads
@@ -192,6 +220,11 @@ namespace cqp
             {
                 using namespace std;
                 pairedControllerUri = otherControllerURI;
+
+                if(reportServer)
+                {
+                    reportServer->AddAdditionalProperties(PropertyNames::to, pairedControllerUri);
+                }
 
                 // get a two way connection going
                 Status result = LogStatus(

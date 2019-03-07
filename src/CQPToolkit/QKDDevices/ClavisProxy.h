@@ -15,7 +15,6 @@
 #include <string>                              // for string
 #include "CQPToolkit/Interfaces/IQKDDevice.h"  // for IQKDDevice
 #include "QKDInterfaces/Site.pb.h"             // for Device
-                     // for CONSTSTRING
 #include "Algorithms/Datatypes/URI.h"                          // for URI
 namespace grpc
 {
@@ -26,6 +25,9 @@ namespace cqp
 {
     namespace session {
         class ClavisController;
+    }
+    namespace stats {
+        class ReportServer;
     }
     class ISessionController;
 
@@ -82,9 +84,9 @@ namespace cqp
 
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
         IKeyPublisher*GetKeyPublisher() override;
+        /// @copydoc IQKDDevice::GetStatsPublisher
+        stats::IStatsPublisher* GetStatsPublisher() override;
 
-        /// @copydoc cqp::IQKDDevice::GetStats
-        std::vector<stats::StatCollection*> GetStats() override;
         ///@}
     protected:
         /// controller which passes key from the wrapper
@@ -92,8 +94,7 @@ namespace cqp
         /// The address of the wrapper
         std::string myAddress;
 
-        // IQKDDevice interface
-    public:
+        std::shared_ptr<stats::ReportServer> reportServer;
     };
 
 } // namespace cqp

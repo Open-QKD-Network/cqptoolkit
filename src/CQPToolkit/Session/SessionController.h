@@ -15,16 +15,25 @@
 #include "Algorithms/Util/Provider.h"
 #include "CQPToolkit/cqptoolkit_export.h"
 #include "CQPToolkit/Interfaces/IRemoteComms.h"
+#include <condition_variable>
+#include "Algorithms/Util/Strings.h"
+
+namespace grpc {
+    class ChannelCredentials;
+}
 
 namespace cqp
 {
     // pre-declarations for limiting build complexity
-    class PublicKeyService;
     class IRandom;
 
     namespace net
     {
         class TwoWayServerConnector;
+    }
+
+    namespace stats {
+        class ReportServer;
     }
 
     namespace session {
@@ -51,7 +60,8 @@ namespace cqp
              */
             SessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
                               const Services& services,
-                                       const RemoteCommsList& remotes);
+                              const RemoteCommsList& remotes,
+                              std::shared_ptr<stats::ReportServer> theReportServer);
 
             /// Destructor
             ~SessionController() override;
@@ -91,6 +101,13 @@ namespace cqp
             grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
             ///@}
 
+            struct PropertyNames
+            {
+                static CONSTSTRING sessionActive = "sessionActive";
+                static CONSTSTRING from = "from";
+                static CONSTSTRING to = "to";
+            };
+
         protected: // members
 
             /// the address to connect to us
@@ -114,6 +131,8 @@ namespace cqp
             std::condition_variable threadControlCv;
             /// track the session state
             bool sessionEnded = true;
+            /// Collects data from all the stat producers
+            std::shared_ptr<stats::ReportServer> reportServer;
         }; // class SessionController
 
     } // namespace session

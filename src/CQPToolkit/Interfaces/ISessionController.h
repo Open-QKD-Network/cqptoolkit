@@ -12,7 +12,12 @@
 #pragma once
 #include "Algorithms/Datatypes/Base.h"
 #include "Algorithms/Datatypes/URI.h"
-#include "grpc++/grpc++.h"
+#include <grpc++/security/server_credentials.h>
+
+namespace grpc {
+    class Status;
+    class ServerCredentials;
+}
 
 namespace cqp
 {

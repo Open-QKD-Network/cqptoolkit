@@ -16,6 +16,7 @@ import public "Keys.proto";
 import public "Site.proto";
 import public "Messages.proto";
 import public "google/protobuf/empty.proto";
+import public "Reporting.proto";
 
 package cqp.remote;
 
@@ -113,4 +114,5 @@ service IIDQWrapper
     * @return Status
     */
     rpc UseKeyID(stream KeyIdValue) returns (google.protobuf.Empty);
+
 }

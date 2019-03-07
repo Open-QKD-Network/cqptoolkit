@@ -22,6 +22,7 @@
 #include "PrivacyAmp/PrivacyAmplify.h"
 #include "KeyGen/KeyConverter.h"
 #include "CQPToolkit/Session/SessionController.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 namespace cqp
 {
@@ -39,10 +40,16 @@ namespace cqp
             align = make_shared<align::DetectionReciever>();
             ec = make_shared<ec::ErrorCorrection>();
             privacy = make_shared<privacy::PrivacyAmplify>();
+            reportServer = make_shared<stats::ReportServer>();
 
             align->Attach(ec.get());
             ec->Attach(privacy.get());
             privacy->Attach(keyConverter.get());
+
+            // send stats to our report server
+            align->stats.Add(reportServer.get());
+            ec->stats.Add(reportServer.get());
+            privacy->stats.Add(reportServer.get());
         }
 
         shared_ptr<align::DetectionReciever> align;
@@ -53,6 +60,8 @@ namespace cqp
         /// prepare keys for the keystore
         shared_ptr<keygen::KeyConverter> keyConverter;
 
+        shared_ptr<stats::ReportServer> reportServer;
+
         session::SessionController::RemoteCommsList GetRemotes() const
         {
             session::SessionController::RemoteCommsList remotes;
@@ -60,11 +69,12 @@ namespace cqp
             return remotes;
         }
 
-        session::SessionController::Services GetServices() const
+        session::SessionController::Services GetServices()
         {
             session::SessionController::Services services {
                 ec.get(),
-                privacy.get()
+                privacy.get(),
+                reportServer.get() // allow external clients to get stats
             };
 
             return services;
@@ -95,7 +105,7 @@ namespace cqp
         services.push_back(driver.get());
 
         // create the session controller
-        sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes());
+        sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes(), processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
@@ -108,7 +118,8 @@ namespace cqp
         services.push_back(driver.get());
 
         // create the session controller
-        sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes());
+        sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes(),
+                                                                         processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
@@ -155,9 +166,8 @@ namespace cqp
         return result;
     }
 
-    std::vector<stats::StatCollection*> PhotonDetectorMk1::GetStats()
+    stats::IStatsPublisher* PhotonDetectorMk1::GetStatsPublisher()
     {
-        // TODO
-        return { &driver->myStats};
+        return processing->reportServer.get();
     }
 } // namespace cqp

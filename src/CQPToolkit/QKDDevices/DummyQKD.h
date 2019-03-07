@@ -85,11 +85,11 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
         remote::Device GetDeviceDetails() override;
 
-        /// @copydoc cqp::IQKDDevice::GetStats
-        virtual std::vector<stats::StatCollection*> GetStats() override;
-
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
         IKeyPublisher* GetKeyPublisher() override;
+
+        /// @copydoc cqp::IQKDDevice::GetStatsPublisher
+        stats::IStatsPublisher* GetStatsPublisher() override;
         ///@}
     protected: // members
         /// randomness
