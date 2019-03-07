@@ -110,12 +110,8 @@ namespace cqp
                     {
                         LOGTRACE("Sending " + to_string(toEmit.size()) + " keys.");
                         unique_lock<mutex> lock(emitMutex);
-                        if(listener)
-                        {
 
-                            listener->OnKeyGeneration(unique_ptr<KeyList>(new KeyList(toEmit)));
-                        }
-
+                        Emit(&IKeyCallback::OnKeyGeneration, std::make_unique<KeyList>(toEmit));
                     }
                     this_thread::sleep_for(chrono::milliseconds(10));
                 }

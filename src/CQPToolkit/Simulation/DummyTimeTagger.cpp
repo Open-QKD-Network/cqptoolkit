@@ -78,10 +78,9 @@ namespace cqp
             } // lock scope
 
             stats.qubitsReceived.Update(report->detections.size());
-            if(listener)
-            {
-                listener->OnPhotonReport(move(report));
-            }
+
+            Emit(&IDetectionEventCallback::OnPhotonReport, move(report));
+
             stats.frameTime.Update(high_resolution_clock::now() - epoc);
 
             frame++;

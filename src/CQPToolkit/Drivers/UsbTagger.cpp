@@ -106,7 +106,7 @@ namespace cqp
          * @param epoc The time which the transmitter started generating
          * @param newListener The receiver of the detection report
          */
-        void Start(const std::chrono::high_resolution_clock::time_point& epoc, IDetectionEventCallback* newListener);
+        void Start(const std::chrono::high_resolution_clock::time_point& epoc, Provider<IDetectionEventCallback>* provider);
 
 
         void Stop();
@@ -123,7 +123,7 @@ namespace cqp
 
     protected: // members
         /// destination for the final report
-        IDetectionEventCallback* listener = nullptr;
+        Provider<IDetectionEventCallback>* provider = nullptr;
         /// The device to read
         Usb& device;
         /// how channels are mapped to qubits
@@ -179,10 +179,10 @@ namespace cqp
         }
     }
 
-    void UsbTagger::DataPusher::Start(const chrono::system_clock::time_point& epoc, IDetectionEventCallback* newListener)
+    void UsbTagger::DataPusher::Start(const chrono::system_clock::time_point& epoc, Provider<IDetectionEventCallback>* provider)
     {
         LOGTRACE("");
-        listener = newListener;
+        provider = provider;
         report = std::make_unique<ProtocolDetectionReport>();
         report->epoc = epoc;
         report->frame = frame;
@@ -215,12 +215,12 @@ namespace cqp
                 return processingQueue.empty();
             });
 
-            if(listener)
+            if(provider)
             {
                 if(report)
                 {
                     // send the report to the listener
-                    listener->OnPhotonReport(move(report));
+                    provider->Emit(&IDetectionEventCallback::OnPhotonReport, move(report));
                 } else {
                     LOGERROR("Report is invalid");
                 }
@@ -421,7 +421,7 @@ namespace cqp
             // TODO: convert the incomming timestamp into an epoc
             // Start reading data from the usb port
             // This may need to come after the 'R'
-            dataPusher->Start(high_resolution_clock::now(), listener);
+            dataPusher->Start(high_resolution_clock::now(), this);
             // Start the detector
             configPort->Write('R');
             configPort->Flush();

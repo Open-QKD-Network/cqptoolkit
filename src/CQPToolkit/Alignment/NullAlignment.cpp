@@ -69,9 +69,9 @@ namespace cqp {
                     }
                 } /*lock scope*/
 
-                if(listener && report && !report->empty())
+                if(report && !report->empty())
                 {
-                    listener->OnAligned(seq++, 0.0, move(report));
+                    Emit(&IAlignmentCallback::OnAligned, seq++, 0.0, move(report));
                 }
             } // while keepGoing
         }
