@@ -182,7 +182,7 @@ namespace cqp
             /// The objects which are processed
             ObjectList waitingObjects;
             /// Should the thread exit
-            bool stopProcessing = false;
+            std::atomic_bool stopProcessing {false};
         private:
             /// only instance
             static std::weak_ptr<ProcessingWorker> me;

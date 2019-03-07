@@ -74,13 +74,11 @@ namespace cqp
                     /*lock scope*/{
 
                         unique_lock<mutex> lock(processMutex);
-                        bool dataWaiting = false;
                         processCv.wait(lock, [&](){
-                            dataWaiting = !waitingObjects.empty();
-                            return dataWaiting || stopProcessing;
+                            return !waitingObjects.empty() || stopProcessing;
                         });
 
-                        if(dataWaiting)
+                        if(!waitingObjects.empty())
                         {
                             processList = waitingObjects;
                             waitingObjects.clear();
