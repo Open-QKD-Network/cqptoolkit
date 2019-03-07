@@ -116,7 +116,8 @@ protected:
     std::default_random_engine generator;
 
     /// for storing reports
-    cqp::stats::ReportServer reportServer;
+    cqp::stats::ReportServer reportServer1;
+    cqp::stats::ReportServer reportServer2;
     /// pro printing reports
     cqp::stats::StatisticsLogger statsLogger;
 

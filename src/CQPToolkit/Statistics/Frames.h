@@ -56,14 +56,6 @@ namespace cqp
                 frameTime.Remove(statsCb);
             }
 
-            /// @copydoc stats::StatCollection::AllStats
-            std::vector<stats::StatBase*> AllStats() override
-            {
-                return
-                {
-                    &qubitsTransmitted, &qubitsReceived, &timeTaken, &frameTime
-                };
-            }
         }; // struct Statistics
 
     } // namespace sim

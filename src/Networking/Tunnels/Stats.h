@@ -54,14 +54,6 @@ namespace cqp
                 keyChangeTime.Remove(statsCb);
             }
 
-            /// @copydoc stats::StatCollection::AllStats
-            std::vector<stats::StatBase*> AllStats() override
-            {
-                return
-                {
-                    &bytesEncrypted, &encryptTime, &decryptTime, &keyChangeTime
-                };
-            }
         }; // struct Statistics
     } // namespace tunnels
 } // namespace cqp

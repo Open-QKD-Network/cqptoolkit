@@ -36,8 +36,6 @@ namespace cqp
                 // sync our key is with the backing store so we don't clash with existing keys.
                 nextKeyId = backingStore->GetNextKeyId(mySiteTo);
             }
-            // configure the stats
-            stats.SetEndpoints(thisSiteAddress, mySiteTo);
 
             /// channel to the paired site agent
             std::shared_ptr<grpc::Channel> channel = grpc::CreateChannel(mySiteTo, creds);

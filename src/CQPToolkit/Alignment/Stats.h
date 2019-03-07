@@ -51,14 +51,6 @@ namespace cqp
                 qubitsProcessed.Remove(statsCb);
             }
 
-            /// @copydoc stats::StatCollection::AllStats
-            std::vector<stats::StatBase*> AllStats() override
-            {
-                return
-                {
-                    &overhead, &timeTaken, &qubitsProcessed
-                };
-            }
         };
     } // namespace stats
 } // namespace cqp

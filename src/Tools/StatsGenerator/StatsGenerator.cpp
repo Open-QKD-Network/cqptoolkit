@@ -175,7 +175,7 @@ int StatsGenerator::Main(const std::vector<std::string>& args)
         builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, 50);
         builder.AddListeningPort(myAddress + ":" + std::to_string(listenPort), LoadServerCredentials(creds), &listenPort);
 
-        builder.RegisterService(&reportServer);
+        builder.RegisterService(&reportServer1);
         // ^^^ Add new services here ^^^ //
 
         // start the server
@@ -221,28 +221,30 @@ int StatsGenerator::Main(const std::vector<std::string>& args)
 
         if(allMessageTypes[TypeNames::all] || allMessageTypes[TypeNames::keygen])
         {
-            keygenStats1.SetEndpoints("SiteA.cqp:7000", "SiteB.cqp:7101");
-            keygenStats2.SetEndpoints("SiteA.cqp:7000", "SiteC.cqp:7000");
-            keygenStats1.Add(&reportServer);
-            keygenStats2.Add(&reportServer);
+            reportServer1.AddAdditionalProperties("from", "SiteA.cqp:7000");
+            reportServer1.AddAdditionalProperties("to", "SiteB.cqp:7101");
+
+            reportServer2.AddAdditionalProperties("from", "SiteA.cqp:7000");
+            reportServer2.AddAdditionalProperties("to", "SiteC.cqp:7000");
+            keygenStats1.Add(&reportServer1);
+            keygenStats2.Add(&reportServer2);
             keygenStats1.Add(&statsLogger);
             keygenStats2.Add(&statsLogger);
         }
         if(allMessageTypes[TypeNames::all] || allMessageTypes[TypeNames::alignment])
         {
-            alignmentStats.SetEndpoints("SiteA.cqp:7000", "SiteB.cqp:7101");
-            alignmentStats.Add(&reportServer);
+            alignmentStats.Add(&reportServer1);
             alignmentStats.Add(&statsLogger);
         }
         if(allMessageTypes[TypeNames::all] || allMessageTypes[TypeNames::session])
         {
-            sessionStats1.SetEndpoints("SiteA.cqp:7000", "SiteB.cqp:7101");
-            sessionStats2.SetEndpoints("SiteA.cqp:7000", "SiteC.cqp:7000");
-            sessionStats1.Add(&reportServer);
-            sessionStats2.Add(&reportServer);
+            sessionStats1.Add(&reportServer1);
+            sessionStats2.Add(&reportServer2);
             sessionStats1.Add(&statsLogger);
             sessionStats2.Add(&statsLogger);
         }
+        // send report2 to report1
+        reportServer1.Add(&reportServer2);
 
         if(definedArguments.IsSet(Names::local))
         {
