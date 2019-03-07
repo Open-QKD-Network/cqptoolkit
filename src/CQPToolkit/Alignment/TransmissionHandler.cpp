@@ -139,7 +139,7 @@ namespace align {
         return result;
     }
 
-    bool TransmissionHandler::SetParameters(config::DeviceConfig& parameters)
+    bool TransmissionHandler::SetParameters(remote::DeviceConfig& parameters)
     {
         // TODO:
         //markerFractionToSend = fraction;

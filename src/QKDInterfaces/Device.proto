@@ -13,7 +13,7 @@
 syntax = "proto3";
 import public "google/protobuf/empty.proto";
 
-package cqp.config;
+package cqp.remote;
 
 message Pair {
     string name = 1;

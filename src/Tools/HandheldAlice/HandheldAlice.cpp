@@ -183,7 +183,7 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
         if(driver)
         {
             // TODO: move this into the config message for the whole program
-            config::DeviceConfig deviceConfig;
+            remote::DeviceConfig deviceConfig;
             driver->Initialise(deviceConfig);
             // create the servers
             auto sessionStatus = driver->GetSessionController()->StartServerAndConnect(config.bobaddress(),

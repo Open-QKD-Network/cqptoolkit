@@ -249,7 +249,7 @@ namespace cqp
          * @param[out] controller The controller to be used to complete the hop setup
          * @return Success
          */
-        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller, cqp::config::DeviceConfig& params);
+        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller, cqp::remote::DeviceConfig& params);
 
         /**
          * @brief StopNode

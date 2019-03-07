@@ -27,6 +27,7 @@ namespace cqp
     {
         class Device;
         class SiteAgentReport;
+        class DeviceConfig;
     }
 
     namespace stats
@@ -39,10 +40,6 @@ namespace cqp
 
         using IStatsPublisher = IEvent<IStatsReportCallback>;
 
-    }
-
-    namespace config {
-        class DeviceConfig;
     }
 
     /// Manages Key callbacks
@@ -70,7 +67,7 @@ namespace cqp
         /// Th parameters should be adjusted to reflect the actial values used where default/invalid values are provided
         /// @param[in,out] parameters The system settings to use when configuring the device.
         /// @return true if the device was successfully setup
-        virtual bool Initialise(config::DeviceConfig& parameters) = 0;
+        virtual bool Initialise(remote::DeviceConfig& parameters) = 0;
 
         /**
          * @brief GetSessionController

@@ -65,7 +65,7 @@ namespace cqp
         std::string GetDriverName() const override;
 
         /// @copydoc IQKDDevice::Initialise
-        bool Initialise(config::DeviceConfig& parameters) override;
+        bool Initialise(remote::DeviceConfig& parameters) override;
         /// @copydoc IQKDDevice::GetAddress
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::GetSessionController

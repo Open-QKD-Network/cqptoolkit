@@ -76,7 +76,7 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::GetAddress
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::Initialise
-        virtual bool Initialise(config::DeviceConfig& parameters) override;
+        virtual bool Initialise(remote::DeviceConfig& parameters) override;
         /// @copydoc IQKDDevice::GetStatsPublisher
         stats::IStatsPublisher* GetStatsPublisher() override;
         ///@}

@@ -52,7 +52,7 @@ namespace cqp
         return myAddress;
     }
 
-    bool ClavisProxy::Initialise(config::DeviceConfig& parameters)
+    bool ClavisProxy::Initialise(remote::DeviceConfig& parameters)
     {
         return controller->Initialise(parameters);
     }

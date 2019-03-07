@@ -146,7 +146,7 @@ namespace cqp
         return result;
     }
 
-    bool LEDAliceMk1::Initialise(config::DeviceConfig& parameters)
+    bool LEDAliceMk1::Initialise(remote::DeviceConfig& parameters)
     {
         bool result = driver->Initialise(parameters);
         result &= processing->align->SetParameters(parameters);

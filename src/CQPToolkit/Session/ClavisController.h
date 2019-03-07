@@ -77,7 +77,7 @@ namespace cqp
              */
             remote::Side::Type GetSide();
 
-            bool Initialise(config::DeviceConfig& parameters);
+            bool Initialise(remote::DeviceConfig& parameters);
         protected:
 
             /**
@@ -110,7 +110,7 @@ namespace cqp
             PublicKeyService* pubKeyServ = nullptr;
             /// Our authentication token for getting shared secrets
             std::string keyToken;
-            config::DeviceConfig deviceConfig;
+            remote::DeviceConfig deviceConfig;
         };// ClavisController
     }
 

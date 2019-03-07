@@ -224,7 +224,7 @@ namespace cqp
     } // RegisterWithDiscovery
 
     grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller,
-                                    config::DeviceConfig& params)
+                                    remote::DeviceConfig& params)
     {
         using namespace std;
         using namespace grpc;

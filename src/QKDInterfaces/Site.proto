@@ -93,7 +93,7 @@ message HopPair {
     /// right side of a connection
     Hop second = 2;
     /// properties for this link
-    config.DeviceConfig params = 3;
+    DeviceConfig params = 3;
 };
 
 /// Contact details for a site

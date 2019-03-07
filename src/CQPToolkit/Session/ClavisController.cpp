@@ -351,7 +351,7 @@ namespace cqp
             return myWrapperDetails.side();
         }
 
-        bool ClavisController::Initialise(config::DeviceConfig& parameters)
+        bool ClavisController::Initialise(remote::DeviceConfig& parameters)
         {
             deviceConfig = parameters;
             return true;

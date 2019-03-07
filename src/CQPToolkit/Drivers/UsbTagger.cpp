@@ -447,7 +447,7 @@ namespace cqp
         return result;
     }
 
-    bool UsbTagger::Initialise(config::DeviceConfig& parameters)
+    bool UsbTagger::Initialise(remote::DeviceConfig& parameters)
     {
         LOGTRACE("");
         bool result = true;

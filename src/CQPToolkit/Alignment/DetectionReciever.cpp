@@ -151,7 +151,7 @@ namespace align {
         } // while keepGoing
     }
 
-    bool DetectionReciever::SetParameters(config::DeviceConfig& parameters)
+    bool DetectionReciever::SetParameters(remote::DeviceConfig& parameters)
     {
         // TODO
         return true;

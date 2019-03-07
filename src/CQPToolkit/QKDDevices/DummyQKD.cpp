@@ -169,7 +169,7 @@ namespace cqp
         return myAddress;
     }
 
-    bool cqp::DummyQKD::Initialise(cqp::config::DeviceConfig&)
+    bool cqp::DummyQKD::Initialise(cqp::remote::DeviceConfig&)
     {
         return true;
     }

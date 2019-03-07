@@ -129,7 +129,7 @@ namespace cqp
         return DriverName;
     }
 
-    bool PhotonDetectorMk1::Initialise(config::DeviceConfig& parameters)
+    bool PhotonDetectorMk1::Initialise(remote::DeviceConfig& parameters)
     {
         bool result = driver->Initialise(parameters);
         result &= processing->align->SetParameters(parameters);

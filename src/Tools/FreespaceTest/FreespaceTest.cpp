@@ -124,7 +124,7 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
             StopProcessing(signum);
         });
 
-        config::DeviceConfig params;
+        remote::DeviceConfig params;
 
         if(definedArguments.HasProp(Names::alice))
         {

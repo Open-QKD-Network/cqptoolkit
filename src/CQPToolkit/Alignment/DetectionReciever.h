@@ -23,7 +23,7 @@
 #include "Algorithms/Datatypes/Framing.h"
 
 namespace cqp {
-    namespace config {
+    namespace remote {
         class DeviceConfig;
     }
 
@@ -105,7 +105,7 @@ namespace align {
          */
         void DoWork() override;
 
-        bool SetParameters(config::DeviceConfig& parameters);
+        bool SetParameters(remote::DeviceConfig& parameters);
     protected:
         /// storage for incoming data
         ProtocolDetectionReportList receivedData;

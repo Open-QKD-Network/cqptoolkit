@@ -110,7 +110,7 @@ namespace cqp
         return result;
     }
 
-    bool LEDDriver::Initialise(config::DeviceConfig& parameters)
+    bool LEDDriver::Initialise(remote::DeviceConfig& parameters)
     {
         using std::chrono::nanoseconds;
         //std::cout << "\tSending " << Div << ", " << Del << std::endl;
