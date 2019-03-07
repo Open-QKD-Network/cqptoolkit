@@ -42,7 +42,8 @@ namespace cqp
             virtual void Remove(IAllStatsCallback* statsCb) = 0;
 
             /// Destructor
-            virtual ~StatCollection() {}
+            virtual ~StatCollection() = default;
+
         }; // struct StatCollection
     } // namespace stats
 } // namespace cqp

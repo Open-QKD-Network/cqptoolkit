@@ -31,6 +31,7 @@
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include <thread>
 #include "KeyManagement/KeyStores/BackingStoreFactory.h"
+#include "Algorithms/Util/Env.h"
 
 #if defined(SQLITE3_FOUND)
     #include "KeyManagement/KeyStores/FileStore.h"
@@ -77,6 +78,7 @@ namespace cqp
         keystoreFactory.reset(new keygen::KeyStoreFactory(LoadChannelCredentials(config.credentials()),
                                                           keygen::BackingStoreFactory::CreateBackingStore(myConfig.backingstoreurl())));
         reportServer.reset(new stats::ReportServer());
+        reportServer->AddAdditionalProperties("siteName", config.name());
 
         // attach the reporting to the device factory so it link them when creating devices
         deviceFactory->AddReportingCallback(reportServer.get());
@@ -144,6 +146,7 @@ namespace cqp
         }
 
         LOGINFO("My address is: " + myConfig.connectionaddress());
+        reportServer->AddAdditionalProperties("siteFrom", myConfig.connectionaddress());
 
         (*siteDetails.mutable_url()) = myConfig.connectionaddress();
         // tell the key store factory our address now we have it

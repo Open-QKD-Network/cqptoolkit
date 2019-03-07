@@ -32,7 +32,7 @@ service IKey
     rpc GetKeyStores(google.protobuf.Empty) returns (SiteList);
 
     /**
-    * @brief GetNewKey
+    * @brief GetSharedKey
     * Get a shared key which is valid between two sites
     * @param request The key type to get, to get a new key, leave the keyid unassigned
     * @param response The keyid and it's value
