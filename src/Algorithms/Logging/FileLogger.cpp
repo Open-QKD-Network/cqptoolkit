@@ -16,6 +16,7 @@
 #include <string>
 #include "Algorithms/algorithms_export.h"
 #include "Algorithms/Util/FileIO.h"
+#include "Algorithms/Util/Env.h"
 
 namespace cqp
 {
@@ -26,7 +27,7 @@ namespace cqp
     FileLogger::FileLogger():
         fout(&fileBuffer)
     {
-        outputFilename = fs::GetHomeFolder() + fs::GetPathSep() + fs::GetApplicationName() + extension;
+        outputFilename = fs::GetHomeFolder() + fs::GetPathSep() + ApplicationName() + extension;
 
         SetFilename(outputFilename);
         // Attach ourselves as a logger

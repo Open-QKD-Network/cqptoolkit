@@ -48,10 +48,6 @@ namespace cqp
         /// @return true on success
         ALGORITHMS_EXPORT bool OpenURL(const std::string& url);
 
-        /// Returns the name of the executable which is running.
-        /// @return The application name
-        ALGORITHMS_EXPORT std::string GetApplicationName();
-
         /**
          * @brief Exists
          * @param filename
