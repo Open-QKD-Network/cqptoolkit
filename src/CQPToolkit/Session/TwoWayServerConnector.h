@@ -83,11 +83,22 @@ namespace cqp
              * @param newAddress The address to use to contact this server
              */
             void SetServerAddress(const std::string& newAddress);
+
+            /**
+             * @brief GetClientAddress
+             * Ensure that the client has connected first by calling WaitForClient()
+             * @return The address for the client channel
+             */
+            std::string GetClientAddress() const {
+                return clientAddress;
+            }
         protected:
             /// Has the remote server contacted us
             bool connectToMeCalled = false;
             /// The channel to the other side
             std::shared_ptr<grpc::Channel> clientChannel;
+            /// The address to the other side
+            std::string clientAddress;
             /// our address used to contact us.
             std::string serverAddress;
             /// credentials to use when connecting to peer
