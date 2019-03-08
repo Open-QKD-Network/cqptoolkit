@@ -13,6 +13,7 @@
 #include <string>
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Datatypes/URI.h"
+#include "Algorithms/Statistics/IStatistics.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "Algorithms/Util/Provider.h"
 #include <memory>

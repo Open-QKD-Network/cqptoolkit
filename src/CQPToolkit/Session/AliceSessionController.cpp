@@ -48,7 +48,7 @@ namespace cqp {
         {
             // the local system is stopping the session
             // wait for the transmitter to stop
-             Stop(true);
+            Stop(true);
 
             SessionController::EndSession();
         }
@@ -71,17 +71,6 @@ namespace cqp {
             Stop(true);
 
             return SessionController::SessionEnding(ctx, request, response);
-        }
-
-        void AliceSessionController::WaitForEndOfSession()
-        {
-            if(this->IsRunning())
-            {
-                std::unique_lock<std::mutex> lock(accessMutex);
-                threadConditional.wait(lock, [&](){
-                    return state == State::Stop;
-                });
-            }
         }
 
         void AliceSessionController::DoWork()

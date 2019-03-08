@@ -17,6 +17,10 @@ import public "Messages.proto";
 
 package cqp.remote;
 
+message RawKeys {
+    repeated bytes keyData = 1;
+}
+
 /**
 package cqp.remote;
 @startuml
@@ -97,9 +101,12 @@ service IDevice
 
          user2 -> dev2 : WaitForSession()
          activate dev2
+         user1 -> dev1 : WaitForSession()
+             activate dev1
          user1 -> dev1 : RunSession()
              activate dev1
              dev1 -> ises2 : SessionStarting
+             deactivate dev1
              == Key is exchanged ==
              loop
                  user1 /-- dev1 : key
@@ -115,7 +122,7 @@ service IDevice
     * @param response A stream of keys as they are created
     * @return status
     */
-    rpc RunSession(SessionDetails) returns (stream SharedKey);
+    rpc RunSession(SessionDetails) returns (google.protobuf.Empty);
 
     /**
      * @brief RunSession
@@ -123,7 +130,7 @@ service IDevice
      * @param response A stream of keys as they are created
      * @return status
      */
-    rpc WaitForSession(google.protobuf.Empty) returns (stream SharedKey);
+    rpc WaitForSession(google.protobuf.Empty) returns (stream RawKeys);
 
     /**
     * Receive updates on the state of key generation between this site and site

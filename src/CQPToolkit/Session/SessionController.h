@@ -86,8 +86,11 @@ namespace cqp
             /// @copydoc ISessionController::StartServerAndConnect
             grpc::Status StartServerAndConnect(URI otherController, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
 
-            /// @copydoc ISessionController::WaitForEndOfSession
-            void WaitForEndOfSession() override;
+            /// @copydoc ISessionController::StartServerAndConnect
+            grpc::Status Connect(URI otherController) override;
+
+            /// @copydoc ISessionController::GetLinkStatus
+            grpc::Status GetLinkStatus(grpc::ServerContext* context, ::grpc::ServerWriter<remote::LinkStatus>* writer) override;
             ///@}
 
             ///@{
@@ -107,6 +110,9 @@ namespace cqp
                 static CONSTSTRING from = "from";
                 static CONSTSTRING to = "to";
             };
+
+        protected: // methods
+            void UpdateStatus(remote::LinkStatus::State newState, int errorCode = grpc::StatusCode::OK);
 
         protected: // members
 
@@ -128,9 +134,9 @@ namespace cqp
             /// mutex for waiting for session end
             std::mutex threadControlMutex;
             /// cv for waiting for end of session
-            std::condition_variable threadControlCv;
+            std::condition_variable linkStatusCv;
             /// track the session state
-            bool sessionEnded = true;
+            remote::LinkStatus sessionState;
             /// Collects data from all the stat producers
             std::shared_ptr<stats::ReportServer> reportServer;
         }; // class SessionController

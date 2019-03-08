@@ -72,7 +72,6 @@ namespace cqp {
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
 
-            void WaitForEndOfSession() override;
             /// @}
 
             ///@{

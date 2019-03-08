@@ -16,11 +16,16 @@
 
 namespace grpc {
     class Status;
-    class ServerCredentials;
+    template<typename>
+    class ServerWriter;
+    class ServerContext;
 }
 
 namespace cqp
 {
+    namespace remote {
+        class LinkStatus;
+    }
 
     /**
      * @brief The ISessionController class
@@ -43,7 +48,7 @@ namespace cqp
         /**
          * @brief StartServiceAndConnect
          * The same as StartServer, but also connect to a running service
-         * @param otherController
+         * @param otherController The other side to connect to
          * @param hostname specify hostname to override the default
          * @param listenPort specify to override the default
          * @param creds Security credentials used for connections
@@ -52,10 +57,21 @@ namespace cqp
         virtual grpc::Status StartServerAndConnect(URI otherController, const std::string& hostname = "", uint16_t listenPort = 0, std::shared_ptr<grpc::ServerCredentials> creds = grpc::InsecureServerCredentials()) = 0;
 
         /**
+         * @brief Connect
+         * Connect to a running service, requires that StartServer has previously been called
+         * @param otherController The other side to connect to
+         * @return status of the connection
+         */
+        virtual grpc::Status Connect(URI otherController) = 0;
+
+        /**
          * @brief GetListenPort
          * @return The port number for connecting
          */
         virtual std::string GetConnectionAddress() const = 0;
+
+        /// @copydoc remote::IDevice::GetLinkStatus
+        virtual grpc::Status GetLinkStatus(grpc::ServerContext* context, ::grpc::ServerWriter<remote::LinkStatus>* writer) = 0;
 
         /**
          * @brief StartSession
@@ -83,11 +99,6 @@ namespace cqp
          * Stop generating key
          */
         virtual void EndSession() = 0;
-
-        /**
-         * @brief WaitForEndOfSession blocks until the current session is stopped
-         */
-        virtual void WaitForEndOfSession() = 0;
 
         /**
          * @brief ~ISessionController

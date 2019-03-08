@@ -166,6 +166,7 @@ namespace cqp
             if(!wrapper)
             {
                 result = Status(StatusCode::RESOURCE_EXHAUSTED, "No wrapper to connect to");
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected, result.error_code());
             }
             else
             {
@@ -184,7 +185,7 @@ namespace cqp
                 }
 
                 (*request.mutable_peeraddress()) = myAddress;
-                (*request.mutable_keytoken()) = keyToken;
+                //(*request.mutable_keytoken()) = keyToken;
                 controllerCtx.AddMetadata(wrapperPeerKey, myWrapperDetails.hostname());
 
                 if(myWrapperDetails.side() == remote::Side_Type::Side_Type_Alice)
@@ -253,8 +254,7 @@ namespace cqp
                     } // if otherController
                 } // if side != Alice
 
-                sessionEnded = false;
-                threadControlCv.notify_all();
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted, result.error_code());
             } // if wrapper
             LOGTRACE("Finished");
             return result;
@@ -265,11 +265,12 @@ namespace cqp
             LOGTRACE("Called");
             Status result;
             pairedControllerUri = request->peeraddress();
-            keyToken = request->keytoken();
+            //keyToken = request->keytoken();
 
             if(!wrapper)
             {
                 result = Status(StatusCode::RESOURCE_EXHAUSTED, "No wrapper to connect to");
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected, result.error_code());
             }
             else
             {
@@ -302,9 +303,6 @@ namespace cqp
                 auto reader = wrapper->StartQKDSequence(wrapperCtx.get(), options);
                 if(reader)
                 {
-                    sessionEnded = false;
-                    threadControlCv.notify_all();
-
                     LOGTRACE("Waiting for metadata from wrapper");
                     // this will block until the IDQ program is ready
                     reader->WaitForInitialMetadata();
@@ -313,8 +311,10 @@ namespace cqp
                     readThread = std::thread(&ClavisController::ReadKey, this, std::move(reader), std::move(wrapperCtx));
 
                     ctx->AddTrailingMetadata(wrapperPeerKey, myWrapperDetails.hostname());
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
                 } else {
-                    result = Status(StatusCode::ABORTED, "Invalided reader");
+                    result = Status(StatusCode::ABORTED, "Invalid reader");
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
                 }
             } // if wrapper
 
@@ -329,8 +329,7 @@ namespace cqp
             {
                 readThread.join();
             }
-            sessionEnded = true;
-            threadControlCv.notify_all();
+            UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected);
         } // SessionStarting
 
         grpc::Status ClavisController::SessionEnding(grpc::ServerContext*, const google::protobuf::Empty*, google::protobuf::Empty*)
@@ -341,8 +340,7 @@ namespace cqp
             {
                 readThread.join();
             }
-            sessionEnded = true;
-            threadControlCv.notify_all();
+            UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected);
             return result;
         } // SessionEnding
 
