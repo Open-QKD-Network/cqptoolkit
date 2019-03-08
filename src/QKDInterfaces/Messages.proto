@@ -65,3 +65,13 @@ message LinkStatus {
     /// this is mapped from grpc::StatusCode
     uint64 errorCode = 3;
 }
+
+/**
+* Session details
+*/
+message SessionDetails {
+    /// other side
+    string peerAddress = 1;
+    /// The measured line attenuation of the quantum optical path
+    double lineAttenuation = 2;
+};

@@ -17,6 +17,7 @@ import public "Site.proto";
 import public "Messages.proto";
 import public "google/protobuf/empty.proto";
 import public "Reporting.proto";
+import public "Device.proto";
 
 package cqp.remote;
 
