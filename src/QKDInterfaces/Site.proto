@@ -48,6 +48,21 @@ message Site {
     repeated Device devices = 2;
 }
 
+/** Defines which side of a pair of devices
+*/
+message Side {
+    /** Encapsulated type for scoping
+    */
+    enum Type {
+        Alice = 0;
+        Bob = 1;
+        /// For device independent QKD
+        Any = 2;
+    }
+    /// Value
+    Type value = 1;
+}
+
 /// Define a device
 message Device {
     /// An identifier for the device, unique to the site

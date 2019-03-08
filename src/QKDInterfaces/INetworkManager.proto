@@ -37,4 +37,12 @@ service INetworkManager {
     */
     rpc UnregisterSite(SiteAddress) returns (google.protobuf.Empty);
 
+    /**
+    * @brief UnregisterSite
+    *   Notify the server that the site can no longer be contacted.
+    * @param request The address of the site to unregister
+    * @return status
+    */
+    rpc UpdateStatistics(SiteAgentReport) returns (google.protobuf.Empty);
+
 }

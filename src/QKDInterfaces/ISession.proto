@@ -12,7 +12,6 @@
 
 syntax = "proto3";
 import public "google/protobuf/empty.proto";
-import public "Messages.proto";
 
 package cqp.remote;
 
@@ -21,7 +20,6 @@ package cqp.remote;
  * Interface for the communication between Sifting classes
  */
 service ISession {
-
     /**
     * @brief SessionStarting
     * Called by the other session controller, instructing the controller to start
@@ -37,4 +35,14 @@ service ISession {
     */
     rpc SessionEnding(google.protobuf.Empty) returns (google.protobuf.Empty);
 
+}
+
+/**
+* Session details
+*/
+message SessionDetails {
+    /// other side
+    string peerAddress = 1;
+    /// token used to retrieve the intial key
+    string keyToken = 2;
 }
