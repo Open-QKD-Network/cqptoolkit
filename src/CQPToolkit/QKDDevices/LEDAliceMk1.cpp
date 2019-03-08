@@ -163,7 +163,7 @@ namespace cqp
         return sessionController.get();
     }
 
-    IKeyPublisher*cqp::LEDAliceMk1::GetKeyPublisher()
+    KeyPublisher*cqp::LEDAliceMk1::GetKeyPublisher()
     {
         return processing->keyConverter.get();
     }

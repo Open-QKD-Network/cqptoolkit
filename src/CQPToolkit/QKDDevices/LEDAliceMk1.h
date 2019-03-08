@@ -65,7 +65,7 @@ namespace cqp
         /// @copydoc IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
         /// @copydoc IQKDDevice::GetKeyPublisher
-        IKeyPublisher*GetKeyPublisher() override;
+        KeyPublisher*GetKeyPublisher() override;
 
         /// @copydoc IQKDDevice::GetDriverName
         virtual std::string GetDriverName() const override;

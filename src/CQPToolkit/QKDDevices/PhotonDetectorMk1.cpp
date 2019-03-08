@@ -151,7 +151,7 @@ namespace cqp
         return sessionController.get();
     }
 
-    cqp::IKeyPublisher* PhotonDetectorMk1::GetKeyPublisher()
+    cqp::KeyPublisher* PhotonDetectorMk1::GetKeyPublisher()
     {
         return processing->keyConverter.get();
     }

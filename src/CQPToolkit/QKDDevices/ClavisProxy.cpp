@@ -76,7 +76,7 @@ namespace cqp
         return result;
     }
 
-    IKeyPublisher* ClavisProxy::GetKeyPublisher()
+    KeyPublisher* ClavisProxy::GetKeyPublisher()
     {
         return controller.get();
     }

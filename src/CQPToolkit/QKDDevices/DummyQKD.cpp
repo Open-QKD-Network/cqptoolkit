@@ -200,7 +200,7 @@ namespace cqp
         return processing->reportServer.get();
     }
 
-    IKeyPublisher* DummyQKD::GetKeyPublisher()
+    KeyPublisher* DummyQKD::GetKeyPublisher()
     {
         return processing->keyConverter.get();
     }

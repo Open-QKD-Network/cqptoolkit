@@ -13,17 +13,12 @@
 #include <string>
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Datatypes/URI.h"
-#include "Algorithms/Statistics/IStatistics.h"
-#include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "Algorithms/Util/Provider.h"
-#include <memory>
 #include "Algorithms/Util/IEvent.h"
+#include <memory>
 
 namespace cqp
 {
-
-    class ISessionController;
-
     namespace remote
     {
         class Device;
@@ -43,9 +38,10 @@ namespace cqp
 
     }
 
+    class IKeyCallback;
     /// Manages Key callbacks
     /// @see Provider
-    using IKeyPublisher = Provider<IKeyCallback>;
+    using KeyPublisher = Provider<IKeyCallback>;
 
     /// A generic device driver which can communicate or simulate a piece of hardware.
     class CQPTOOLKIT_EXPORT IQKDDevice
@@ -80,7 +76,7 @@ namespace cqp
          * @brief GetKeyPublisher
          * @return The interface which will issue callbacks when key is available
          */
-        virtual IKeyPublisher* GetKeyPublisher() = 0;
+        virtual KeyPublisher* GetKeyPublisher() = 0;
 
         /**
          * @brief GetDeviceDetails

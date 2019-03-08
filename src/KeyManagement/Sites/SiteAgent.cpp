@@ -254,7 +254,7 @@ namespace cqp
                     LOGTRACE("Attaching keystore");
                     // attach the device key publisher to the key store for this hop
                     shared_ptr<keygen::KeyStore> ks = keystoreFactory->GetKeyStore(destination);
-                    IKeyPublisher* pub = localDev->GetKeyPublisher();
+                    KeyPublisher* pub = localDev->GetKeyPublisher();
                     if(pub)
                     {
                         LOGTRACE("Adding keystore");

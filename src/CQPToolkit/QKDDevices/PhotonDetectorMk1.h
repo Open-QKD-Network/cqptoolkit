@@ -71,7 +71,7 @@ namespace cqp
         /// @copydoc IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
         /// @copydoc IQKDDevice::GetKeyPublisher
-        IKeyPublisher* GetKeyPublisher() override;
+        KeyPublisher* GetKeyPublisher() override;
         /// @copydoc IQKDDevice::GetDeviceDetails
         remote::Device GetDeviceDetails() override;
         /// @copydoc IQKDDevice::GetStatsPublisher

@@ -83,7 +83,7 @@ namespace cqp
         remote::Device GetDeviceDetails() override;
 
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
-        IKeyPublisher*GetKeyPublisher() override;
+        KeyPublisher*GetKeyPublisher() override;
         /// @copydoc IQKDDevice::GetStatsPublisher
         stats::IStatsPublisher* GetStatsPublisher() override;
 
