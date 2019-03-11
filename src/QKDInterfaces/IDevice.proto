@@ -13,12 +13,18 @@
 syntax = "proto3";
 
 import public "google/protobuf/empty.proto";
-import public "Messages.proto";
+import public "Device.proto";
 
 package cqp.remote;
 
 message RawKeys {
     repeated bytes keyData = 1;
+}
+
+message SessionDetailsTo {
+    SessionDetails details = 1;
+    /// The address for the device to pair with
+    string peerAddress = 2;
 }
 
 /**
@@ -122,7 +128,7 @@ service IDevice
     * @param response A stream of keys as they are created
     * @return status
     */
-    rpc RunSession(SessionDetails) returns (google.protobuf.Empty);
+    rpc RunSession(SessionDetailsTo) returns (google.protobuf.Empty);
 
     /**
      * @brief RunSession

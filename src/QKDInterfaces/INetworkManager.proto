@@ -24,6 +24,7 @@ service INetworkManager {
     /**
     * @brief RegisterSite
     *   Register a site with the Quantum path algorithm, detailing how the site can be connected
+    *  This mat be re-called to update the statea of an already registered site.
     * @param request The details of the site registering
     * @return status
     */

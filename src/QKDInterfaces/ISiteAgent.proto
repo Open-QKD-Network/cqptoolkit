@@ -14,6 +14,8 @@ syntax = "proto3";
 import public "google/protobuf/empty.proto";
 import public "Site.proto";
 import public "Keys.proto";
+import public "Device.proto";
+
 
 package cqp.remote;
 
@@ -76,7 +78,7 @@ service ISiteAgent
     */
     rpc GetSiteDetails(google.protobuf.Empty) returns (Site);
 
-    rpc RegisterDevice(Device) returns (google.protobuf.Empty);
+    rpc RegisterDevice(DeviceConfig) returns (google.protobuf.Empty);
 
-    rpc UnregisterDevice(Device) returns (google.protobuf.Empty);
+    rpc UnregisterDevice(DeviceID) returns (google.protobuf.Empty);
 }

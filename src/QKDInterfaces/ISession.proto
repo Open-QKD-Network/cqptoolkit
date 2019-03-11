@@ -12,9 +12,14 @@
 
 syntax = "proto3";
 import public "google/protobuf/empty.proto";
-import public "Messages.proto";
+import public "Device.proto";
 
 package cqp.remote;
+
+message SessionDetailsFrom {
+    SessionDetails details = 1;
+    string initiatorAddress = 2;
+}
 
 /**
  * @brief The ISift class
@@ -29,7 +34,7 @@ service ISession {
     * @param request Session details to start the session
     * @return status
     */
-    rpc SessionStarting(SessionDetails) returns (google.protobuf.Empty);
+    rpc SessionStarting(SessionDetailsFrom) returns (google.protobuf.Empty);
 
     /**
     * The key generation process should be stopped

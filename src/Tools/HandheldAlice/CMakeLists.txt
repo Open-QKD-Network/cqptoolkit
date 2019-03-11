@@ -13,10 +13,16 @@ cmake_minimum_required (VERSION 3.7.2)
 project(HandheldAlice CXX)
 include(CommonSetup)
 
+# add the proto files from the QKDInterfaces project
+get_target_property(QKDInterfaces_SOURCE_DIR QKDInterfaces SOURCE_DIR)
+LIST(APPEND PROTOBUF_IMPORT_DIRS ${QKDInterfaces_SOURCE_DIR})
 ADD_GRPC_FILES()
 
-# MAke standard program which uses the CQP Toolkit
+# Make standard program which uses the CQP Toolkit
 CQP_EXE_PROJECT()
+
+get_target_property(QKDInterfaces_BINARY_DIR QKDInterfaces BINARY_DIR)
+target_include_directories(${PROJECT_NAME} PRIVATE "${QKDInterfaces_BINARY_DIR}")
 
 # for static linking
 #target_link_libraries(${PROJECT_NAME} PRIVATE
