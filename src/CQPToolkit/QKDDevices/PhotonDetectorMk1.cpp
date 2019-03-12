@@ -16,7 +16,6 @@
 #include "Drivers/Serial.h"          // for Serial
 #include "Drivers/UsbTagger.h"       // for UsbTagger, UsbTaggerList
 #include "Drivers/Usb.h"       // for UsbTagger, UsbTaggerList
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "CQPToolkit/Alignment/DetectionReciever.h"
 #include "ErrorCorrection/ErrorCorrection.h"
 #include "PrivacyAmp/PrivacyAmplify.h"
@@ -81,22 +80,6 @@ namespace cqp
         }
     };
 
-    void PhotonDetectorMk1::RegisterWithFactory()
-    {
-        // tell the factory how to create this device by specifying a lambda function
-
-        DeviceFactory::RegisterDriver(DriverName, remote::Side::Bob, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
-        {
-            // TODO: sync this with the GetAddress
-            std::string serialDev;
-            std::string usbDev;
-            URI addrUri(address);
-            addrUri.GetFirstParameter(UsbTagger::Parameters::serial, serialDev);
-            addrUri.GetFirstParameter(UsbTagger::Parameters::usbserial, usbDev);
-            return std::make_shared<PhotonDetectorMk1>(creds, serialDev, usbDev);
-        });
-    }
-
     PhotonDetectorMk1::PhotonDetectorMk1(std::shared_ptr<grpc::ChannelCredentials> creds, const std::string& controlName, const std::string& usbSerialNumber) :
         processing{std::make_unique<ProcessingChain>()},
         driver{std::make_shared<UsbTagger>(controlName, usbSerialNumber)}
@@ -129,10 +112,9 @@ namespace cqp
         return DriverName;
     }
 
-    bool PhotonDetectorMk1::Initialise(remote::DeviceConfig& parameters)
+    bool PhotonDetectorMk1::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        bool result = driver->Initialise(parameters);
-        result &= processing->align->SetParameters(parameters);
+        bool result = driver->Initialise();
 
         return result;
     }
@@ -156,9 +138,9 @@ namespace cqp
         return processing->keyConverter.get();
     }
 
-    cqp::remote::Device PhotonDetectorMk1::GetDeviceDetails()
+    cqp::remote::DeviceConfig PhotonDetectorMk1::GetDeviceDetails()
     {
-        remote::Device result;
+        remote::DeviceConfig result;
         // TODO
         //result.set_id(myPortName);
         result.set_side(remote::Side_Type::Side_Type_Bob);

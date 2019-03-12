@@ -48,7 +48,6 @@ namespace align {
         grpc::Status DiscardTransmissions(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) override;
         ///@}
 
-        bool SetParameters(remote::DeviceConfig& parameters);
     protected:
         /// The data to process
         EmitterReportList receivedData;

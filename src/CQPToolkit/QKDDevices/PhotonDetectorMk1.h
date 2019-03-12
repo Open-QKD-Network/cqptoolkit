@@ -33,9 +33,6 @@ namespace cqp
     {
     public:
 
-        /// tell the factory how to create these devices
-        static void RegisterWithFactory();
-
         /**
          * @brief PhotonDetectorMk1
          * Create a deivce using strings
@@ -65,7 +62,7 @@ namespace cqp
         std::string GetDriverName() const override;
 
         /// @copydoc IQKDDevice::Initialise
-        bool Initialise(remote::DeviceConfig& parameters) override;
+        bool Initialise(const remote::SessionDetails& sessionDetails) override;
         /// @copydoc IQKDDevice::GetAddress
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::GetSessionController
@@ -73,7 +70,7 @@ namespace cqp
         /// @copydoc IQKDDevice::GetKeyPublisher
         KeyPublisher* GetKeyPublisher() override;
         /// @copydoc IQKDDevice::GetDeviceDetails
-        remote::Device GetDeviceDetails() override;
+        remote::DeviceConfig GetDeviceDetails() override;
         /// @copydoc IQKDDevice::GetStatsPublisher
         stats::IStatsPublisher* GetStatsPublisher() override;
         /// @}

@@ -53,7 +53,7 @@ namespace cqp {
             SessionController::EndSession();
         }
 
-        grpc::Status AliceSessionController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetails* request, google::protobuf::Empty* response)
+        grpc::Status AliceSessionController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)
         {
             // The session has been started remotly
             auto result = SessionController::SessionStarting(ctx, request, response);

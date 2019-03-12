@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "ClavisController.h"
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server.h>
@@ -159,7 +158,7 @@ namespace cqp
             LOGTRACE("Called");
             using namespace std;
             ClientContext controllerCtx;
-            remote::SessionDetails request;
+            remote::SessionDetailsFrom request;
             Empty response;
             Status result;
 
@@ -184,7 +183,7 @@ namespace cqp
                     options.mutable_initialsecret()->assign(secret->begin(), secret->end());
                 }
 
-                (*request.mutable_peeraddress()) = myAddress;
+                (*request.mutable_initiatoraddress()) = myAddress;
                 //(*request.mutable_keytoken()) = keyToken;
                 controllerCtx.AddMetadata(wrapperPeerKey, myWrapperDetails.hostname());
 
@@ -220,7 +219,7 @@ namespace cqp
 
                 // launch the clavis driver remotely
                 std::unique_ptr<ClientContext> wrapperCtx(new ClientContext());
-                options.set_lineattenuation(deviceConfig.lineattenuation());
+                options.set_lineattenuation(sessionDetails.lineattenuation());
                 options.set_peerwrapperport(wrapperPort);
 
                 LOGTRACE("Calling wrapper StartQKDSequence");
@@ -260,11 +259,12 @@ namespace cqp
             return result;
         } // StartSession
 
-        grpc::Status ClavisController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetails* request, google::protobuf::Empty*)
+        grpc::Status ClavisController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetailsFrom* request, google::protobuf::Empty*)
         {
             LOGTRACE("Called");
             Status result;
-            pairedControllerUri = request->peeraddress();
+            pairedControllerUri = request->initiatoraddress();
+            sessionDetails = request->details();
             //keyToken = request->keytoken();
 
             if(!wrapper)
@@ -288,7 +288,7 @@ namespace cqp
                     LOGWARN("Initial secret too small");
                     options.mutable_initialsecret()->assign(secret->begin(), secret->end());
                 }
-                options.set_lineattenuation(deviceConfig.lineattenuation());
+                options.set_lineattenuation(sessionDetails.lineattenuation());
                 for(const auto& param : ctx->client_metadata())
                 {
                     if(param.first == wrapperPeerKey)
@@ -349,9 +349,9 @@ namespace cqp
             return myWrapperDetails.side();
         }
 
-        bool ClavisController::Initialise(remote::DeviceConfig& parameters)
+        bool ClavisController::Initialise(const remote::SessionDetails& session)
         {
-            deviceConfig = parameters;
+            sessionDetails = session;
             return true;
         } // RegisterServices
 

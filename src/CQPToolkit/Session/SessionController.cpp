@@ -53,10 +53,10 @@ namespace cqp
             if(otherController)
             {
                 ClientContext ctx;
-                remote::SessionDetails request;
+                remote::SessionDetailsFrom request;
                 Empty response;
 
-                request.set_peeraddress(myAddress);
+                request.set_initiatoraddress(myAddress);
 
                 // send the command to the other side
                 result = otherController->SessionStarting(&ctx, request, &response);
@@ -131,11 +131,14 @@ namespace cqp
             } // if server
         } // ~SessionController
 
-        Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetails*, Empty*)
+        Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetailsFrom* sessionDetails, Empty*)
         {
             // The session has been started remotly
             Status result;
+            twoWayComm->Connect(sessionDetails->initiatoraddress());
+            twoWayComm->WaitForClient();
             auto channel = twoWayComm->GetClient();
+
             if(channel)
             {
                 for(auto& dependant : remoteComms)

@@ -18,6 +18,7 @@
 #include "Algorithms/Util/Provider.h"
 #include <grpc++/channel.h>
 #include <thread>
+#include "QKDInterfaces/Device.pb.h"
 
 namespace cqp
 {
@@ -59,7 +60,7 @@ namespace cqp
             /// @copydoc cqp::remote::ISession::SessionStarting
             /// @param context Connection details from the server
             grpc::Status SessionStarting(grpc::ServerContext* context,
-                                         const remote::SessionDetails* request,
+                                         const remote::SessionDetailsFrom* request,
                                          google::protobuf::Empty*) override;
 
             /// @copydoc cqp::remote::ISession::SessionEnding
@@ -77,7 +78,7 @@ namespace cqp
              */
             remote::Side::Type GetSide();
 
-            bool Initialise(remote::DeviceConfig& parameters);
+            bool Initialise(const remote::SessionDetails& session);
         protected:
 
             /**
@@ -110,7 +111,7 @@ namespace cqp
             PublicKeyService* pubKeyServ = nullptr;
             /// Our authentication token for getting shared secrets
             std::string keyToken;
-            remote::DeviceConfig deviceConfig;
+            remote::SessionDetails sessionDetails;
         };// ClavisController
     }
 

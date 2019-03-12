@@ -11,7 +11,6 @@
 */
 #include "DummyQKD.h"
 #include <utility>                                    // for move
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"         // for DeviceFactory
 #include "CQPToolkit/Session/AliceSessionController.h"
 #include "Interfaces/IQKDDevice.h"                    // for IQKDDevice, IQK...
 #include "Session/SessionController.h"                // for SessionController
@@ -25,6 +24,7 @@
 #include "CQPToolkit/Simulation/DummyTransmitter.h"
 #include "CQPToolkit/Simulation/DummyTimeTagger.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "DeviceUtils.h"
 
 namespace cqp
 {
@@ -120,21 +120,8 @@ namespace cqp
         std::shared_ptr<stats::ReportServer> reportServer;
     };
 
-    void DummyQKD::RegisterWithFactory()
-    {
-        // tell the factory how to create a DummyQKD by specifying a lambda function
-        // this driver can do both sides
-        for(auto side : {remote::Side::Alice, remote::Side::Bob})
-        {
-            DeviceFactory::RegisterDriver(DriverName, side, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
-            {
-                return std::make_shared<DummyQKD>(address, creds, bytesPerKey);
-            });
-        }
-    }
-
     DummyQKD::DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey) :
-        DummyQKD(DeviceFactory::GetSide(URI(address)), creds, bytesPerKey)
+        DummyQKD(DeviceUtils::GetSide(address), creds, bytesPerKey)
     {
         myAddress = address;
     }
@@ -169,7 +156,7 @@ namespace cqp
         return myAddress;
     }
 
-    bool cqp::DummyQKD::Initialise(cqp::remote::DeviceConfig&)
+    bool cqp::DummyQKD::Initialise(const remote::SessionDetails& sessionDetails)
     {
         return true;
     }
@@ -179,15 +166,15 @@ namespace cqp
         return processing->controller.get();
     }
 
-    remote::Device DummyQKD::GetDeviceDetails()
+    remote::DeviceConfig DummyQKD::GetDeviceDetails()
     {
-        remote::Device result;
+        remote::DeviceConfig result;
         URI addrUri(myAddress);
 
-        result.set_id(DeviceFactory::GetDeviceIdentifier(addrUri));
+        result.set_id(DeviceUtils::GetDeviceIdentifier(addrUri));
         std::string sideName;
         addrUri.GetFirstParameter(IQKDDevice::Parmeters::side, sideName);
-        result.set_side(DeviceFactory::GetSide(addrUri));
+        result.set_side(DeviceUtils::GetSide(addrUri));
         addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchName, *result.mutable_switchname());
         addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchPort, *result.mutable_switchport());
         result.set_kind(addrUri.GetScheme());

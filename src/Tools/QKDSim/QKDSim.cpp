@@ -16,9 +16,9 @@
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include "KeyManagement/Sites/SiteAgent.h"
 #include "CQPToolkit/QKDDevices/DummyQKD.h"
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "Algorithms/Util/FileIO.h"
+#include "CQPToolkit/QKDDevices/DeviceUtils.h"
 
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>
@@ -145,29 +145,13 @@ QKDSim::QKDSim()
     definedArguments.AddOption("", "v", "Increase output")
     .Callback(std::bind(&QKDSim::HandleVerbose, this, _1));
 
-
-    // Site agent drivers
-    DummyQKD::RegisterWithFactory();
-    // ^^^^^^ Add new drivers here ^^^^^^^^^
-
 }
 
 void QKDSim::DisplayHelp(const CommandArgs::Option&)
 {
     using namespace std;
-    const vector<string> drivers = DeviceFactory::GetKnownDrivers();
-    string driverNames;
-    for(const auto& driver : drivers)
-    {
-        if(!driverNames.empty())
-        {
-            driverNames += ", ";
-        }
-        driverNames += driver;
-    }
 
-    definedArguments.PrintHelp(std::cout, "Creates CQP Site Agents for managing QKD systems.\nCopyright Bristol University. All rights reserved.",
-                               "Drivers: " + driverNames);
+    definedArguments.PrintHelp(std::cout, "Creates CQP Site Agents for managing QKD systems.\nCopyright Bristol University. All rights reserved.");
     definedArguments.StopOptionsProcessing();
     stopExecution = true;
 }
@@ -248,9 +232,9 @@ int QKDSim::Main(const std::vector<std::string> &args)
 
                 remote::HopPair* hop1 = request.add_hops();
                 hop1->mutable_first()->set_site(siteAgent->GetConnectionAddress());
-                hop1->mutable_first()->set_deviceid(DeviceFactory::GetDeviceIdentifier(siteSettings.deviceurls(0)));
+                hop1->mutable_first()->set_deviceid(DeviceUtils::GetDeviceIdentifier(siteSettings.deviceurls(0)));
                 hop1->mutable_second()->set_site(definedArguments.GetStringProp(Names::connect)); // otherSite;
-                hop1->mutable_second()->set_deviceid(DeviceFactory::GetDeviceIdentifier(siteSettings.deviceurls(1)));
+                hop1->mutable_second()->set_deviceid(DeviceUtils::GetDeviceIdentifier(siteSettings.deviceurls(1)));
 
                 grpc::Status result = LogStatus(
                                           siteStub->StartNode(&ctx, request, &response));

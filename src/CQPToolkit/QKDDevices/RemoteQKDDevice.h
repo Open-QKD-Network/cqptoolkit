@@ -16,6 +16,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <vector>
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp {
 
@@ -24,20 +25,19 @@ namespace cqp {
         class DeviceConfig;
     }
 
-    class RemoteQKDDevice :
+    class CQPTOOLKIT_EXPORT RemoteQKDDevice :
             public virtual IKeyCallback,
             public remote::IDevice::Service
     {
     public:
         RemoteQKDDevice(std::shared_ptr<IQKDDevice> device,
-                        const cqp::remote::DeviceConfig& config,
                         std::shared_ptr<grpc::ServerCredentials> creds = grpc::InsecureServerCredentials());
 
         ///@{
         /// @name remote::IDevice interface
 
         /// @copydoc remote::IDevice::RunSession
-        grpc::Status RunSession(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*) override;
+        grpc::Status RunSession(grpc::ServerContext* context, const remote::SessionDetailsTo* request, google::protobuf::Empty*) override;
         /// @copydoc remote::IDevice::WaitForSession
         grpc::Status WaitForSession(grpc::ServerContext* context, const google::protobuf::Empty*, ::grpc::ServerWriter<remote::RawKeys>* writer) override;
         /// @copydoc remote::IDevice::GetLinkStatus
@@ -51,11 +51,12 @@ namespace cqp {
         /// @copydoc IKeyCallback::OnKeyGeneration
         void OnKeyGeneration(std::unique_ptr<KeyList> keyData) override;
         ///@}
+
+        grpc::Status RegisterWithSiteAgent(const std::string& address);
     protected: // members
         std::shared_ptr<IQKDDevice> device;
-        std::unique_ptr<remote::DeviceConfig> config;
         std::shared_ptr<grpc::ServerCredentials> creds;
-
+        URI sessionAddress;
         using KeyListList = std::vector<std::unique_ptr<KeyList>>;
         KeyListList recievedKeys;
         std::condition_variable recievedKeysCv;

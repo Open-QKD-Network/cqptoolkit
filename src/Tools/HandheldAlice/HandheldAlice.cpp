@@ -14,12 +14,14 @@
 #include "Algorithms/Logging/ConsoleLogger.h"
 #include <iostream>
 #include "Algorithms/Util/Strings.h"
-#include <grpc++/server_builder.h>
+#include <grpcpp/server_builder.h>
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Interfaces/ISessionController.h"
 #include "CQPToolkit/Session/AliceSessionController.h"
 #include "Algorithms/Util/FileIO.h"
+#include "CQPToolkit/QKDDevices/RemoteQKDDevice.h"
+#include "Algorithms/Net/DNS.h"
 
 using namespace cqp;
 
@@ -32,7 +34,6 @@ struct Names
     static CONSTSTRING tls = "tls";
     static CONSTSTRING keyServer = "key-serv";
     static CONSTSTRING sessionAddr = "session-addr";
-    static CONSTSTRING sessionPort = "session-port";
     static CONSTSTRING device = "device";
     static CONSTSTRING usbDevice = "usb-device";
     static CONSTSTRING configFile = "config";
@@ -65,11 +66,9 @@ HandheldAlice::HandheldAlice()
     .Callback(std::bind(&HandheldAlice::HandleVerbose, this, _1));
 
 
-    definedArguments.AddOption(Names::keyServer, "k", "Listen address for serving keys")
+    definedArguments.AddOption(Names::keyServer, "k", "Listen address (host and port) for serving keys")
     .Bind();
-    definedArguments.AddOption(Names::sessionAddr, "", "Bind address for internal communication")
-    .Bind();
-    definedArguments.AddOption(Names::sessionPort, "", "Port for internal communication")
+    definedArguments.AddOption(Names::sessionAddr, "", "Bind address (host and port) for internal communication")
     .Bind();
     definedArguments.AddOption(Names::device, "d", "The serial device to use, otherwise the first serial device will be used")
     .Bind();
@@ -84,9 +83,8 @@ HandheldAlice::HandheldAlice()
     .Bind();
 
     // set sensible default values for config items
-    config.set_sessionport(0);
-    config.set_sessionaddress("0.0.0.0");
-    config.set_keylistenaddress("localhost:0");
+    config.mutable_deviceparams()->set_sessionaddress(std::string(net::AnyAddress) + ":0");
+    config.mutable_deviceparams()->set_controladdress(std::string(net::AnyAddress) + ":0");
 }
 
 void HandheldAlice::DisplayHelp(const CommandArgs::Option&)
@@ -147,18 +145,10 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
         } // if tls set
 
         definedArguments.GetProp(Names::connect, *config.mutable_bobaddress());
-        definedArguments.GetProp(Names::keyServer, *config.mutable_keylistenaddress());
-        definedArguments.GetProp(Names::sessionAddr, *config.mutable_sessionaddress());
+        definedArguments.GetProp(Names::keyServer, *config.mutable_deviceparams()->mutable_controladdress());
+        definedArguments.GetProp(Names::sessionAddr, *config.mutable_deviceparams()->mutable_sessionaddress());
         definedArguments.GetProp(Names::device, *config.mutable_devicename());
         definedArguments.GetProp(Names::usbDevice, *config.mutable_usbdevicename());
-
-        {/* temp scope */
-            uint32_t temp;
-            if(definedArguments.GetProp(Names::sessionPort, temp))
-            {
-                config.set_sessionport(temp);
-            }
-        }/* temp scope */
 
         // any changes to config need to be applied by now
         if(definedArguments.HasProp(Names::writeConfig))
@@ -178,38 +168,34 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
             }
         } // if write config file
 
-        driver = make_shared<LEDAliceMk1>(LoadChannelCredentials(creds), config.devicename(), config.usbdevicename());
+        auto channelCreds = LoadChannelCredentials(creds);
+        auto serverCreds = LoadServerCredentials(creds);
+        driver = make_shared<LEDAliceMk1>(channelCreds, config.devicename(), config.usbdevicename());
 
         if(driver)
         {
+            cqp::RemoteQKDDevice adaptor(driver, serverCreds);
             // TODO: move this into the config message for the whole program
-            remote::DeviceConfig deviceConfig;
-            driver->Initialise(deviceConfig);
+            remote::SessionDetails sessionDetails;
+
+            driver->Initialise(sessionDetails);
             // create the servers
+            URI sessionURI(config.deviceparams().sessionaddress());
             auto sessionStatus = driver->GetSessionController()->StartServerAndConnect(config.bobaddress(),
                                                                   definedArguments.GetStringProp(Names::sessionAddr),
-                                                                  static_cast<uint16_t>(config.sessionport()),
-                                                                  LoadServerCredentials(creds));
+                                                                  sessionURI.GetPort()
+                                                                  );
 
             LogStatus(sessionStatus);
             if(sessionStatus.ok())
             {
-                keystore = make_unique<keygen::KeyStore>(config.keylistenaddress(), LoadChannelCredentials(creds), config.bobaddress());
+                grpc::ServerBuilder devServBuilder;
 
-                grpc::ServerBuilder keyServBuilder;
+                devServBuilder.AddListeningPort(*config.mutable_deviceparams()->mutable_controladdress(), serverCreds);
+                devServBuilder.RegisterService(&adaptor);
 
-                keyServBuilder.AddListeningPort(*config.mutable_keylistenaddress(), LoadServerCredentials(creds));
-                keyServBuilder.RegisterService(this);
+                deviceServer = devServBuilder.BuildAndStart();
 
-                keyServer = keyServBuilder.BuildAndStart();
-
-                // TODO
-                sessionStatus = LogStatus(driver->GetSessionController()->StartSession());
-                if(!sessionStatus.ok())
-                {
-                    exitCode = ExitCodes::FailedToStartSession;
-                    stopExecution = true;
-                }
             } else {
                 exitCode = ExitCodes::FailedToConnect;
                 stopExecution = true;
@@ -223,8 +209,8 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
         AddSignalHandler(SIGTERM, [this](int signum) {
             StopProcessing(signum);
         });
-        // Wait for something to stop the session
-        driver->GetSessionController()->WaitForEndOfSession();
+        // Wait for something to stop the driver
+        deviceServer->Wait();
     }
     return exitCode;
 }
@@ -234,53 +220,6 @@ void HandheldAlice::StopProcessing(int)
     // The program is terminating,
     // stop the session
     driver->GetSessionController()->EndSession();
-}
-
-grpc::Status HandheldAlice::GetKeyStores(grpc::ServerContext*, const google::protobuf::Empty*, remote::SiteList* response)
-{
-    response->add_urls(config.bobaddress());
-    return grpc::Status();
-}
-
-grpc::Status HandheldAlice::GetSharedKey(grpc::ServerContext*, const remote::KeyRequest* request, remote::SharedKey* response)
-{
-    grpc::Status result;
-    if(request->siteto() == config.bobaddress())
-    {
-        // there is a keystore
-        KeyID keyId = 0;
-        PSK keyValue;
-
-        // grpc proto syntax version 3: us oneof to do optional parameters
-        if(request->opt_case() == remote::KeyRequest::OptCase::kKeyId)
-        {
-            // the request has included a keyid, get an existing key
-            keyId = request->keyid();
-            result = keystore->GetExistingKey(keyId, keyValue);
-        }
-        else
-        {
-            // get an unused key
-            if(!keystore->GetNewKey(keyId, keyValue))
-            {
-                result = grpc::Status(grpc::StatusCode::RESOURCE_EXHAUSTED, "No key available");
-            }
-        } // if keyid specified
-
-        if(result.ok())
-        {
-            // store the data in the outgoing variable
-            response->set_keyid(keyId);
-            response->mutable_keyvalue()->assign(keyValue.begin(), keyValue.end());
-
-            // store a url on how to access the key
-            response->set_url(KeyToPKCS11(keyId, config.bobaddress()));
-        }
-    } else {
-        result = grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "Invalid destination");
-    }
-
-    return result;
 }
 
 CQP_MAIN(HandheldAlice)

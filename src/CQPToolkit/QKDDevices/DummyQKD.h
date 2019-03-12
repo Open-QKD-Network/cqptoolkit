@@ -37,9 +37,6 @@ namespace cqp
         /// Driver name
         static constexpr const char* DriverName = "dummyqkd";
 
-        /// tell the factory how to create these devices
-        static void RegisterWithFactory();
-
         /**
          * @brief DummyQKD
          * Constructor
@@ -77,13 +74,13 @@ namespace cqp
         URI GetAddress() const override;
 
         /// @copydoc cqp::IQKDDevice::Initialise
-        bool Initialise(remote::DeviceConfig&) override;
+        bool Initialise(const remote::SessionDetails& sessionDetails) override;
 
         /// @copydoc cqp::IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
 
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
-        remote::Device GetDeviceDetails() override;
+        remote::DeviceConfig GetDeviceDetails() override;
 
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
         KeyPublisher* GetKeyPublisher() override;
@@ -91,6 +88,7 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::GetStatsPublisher
         stats::IStatsPublisher* GetStatsPublisher() override;
         ///@}
+
     protected: // members
         /// randomness
         RandomNumber rng;

@@ -18,8 +18,8 @@
 #include "CQPToolkit/Session/AliceSessionController.h"
 #include "CQPToolkit/Drivers/LEDDriver.h"
 #include "CQPToolkit/Drivers/Usb.h"
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "QKDInterfaces/Device.pb.h"
 
 namespace cqp
 {
@@ -106,30 +106,14 @@ namespace cqp
 
     LEDAliceMk1::~LEDAliceMk1() = default;
 
-    void LEDAliceMk1::RegisterWithFactory()
-    {
-        // tell the factory how to create this device by specifying a lambda function
-
-        DeviceFactory::RegisterDriver(DriverName, remote::Side::Bob, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
-        {
-            // TODO: sync this with the GetAddress
-            std::string serialDev;
-            std::string usbDev;
-            URI addrUri(address);
-            addrUri.GetFirstParameter(LEDDriver::Parameters::serial, serialDev);
-            addrUri.GetFirstParameter(LEDDriver::Parameters::usbserial, usbDev);
-            return std::make_shared<LEDAliceMk1>(creds, serialDev, usbDev);
-        });
-    }
-
     std::string LEDAliceMk1::GetDriverName() const
     {
         return DriverName;
     }
 
-    remote::Device LEDAliceMk1::GetDeviceDetails()
+    remote::DeviceConfig LEDAliceMk1::GetDeviceDetails()
     {
-        remote::Device result;
+        remote::DeviceConfig result;
         // TODO
         //result.set_id(myPortName);
         result.set_side(remote::Side_Type::Side_Type_Alice);
@@ -146,10 +130,9 @@ namespace cqp
         return result;
     }
 
-    bool LEDAliceMk1::Initialise(remote::DeviceConfig& parameters)
+    bool LEDAliceMk1::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        bool result = driver->Initialise(parameters);
-        result &= processing->align->SetParameters(parameters);
+        bool result = driver->Initialise();
         return result;
     }
 

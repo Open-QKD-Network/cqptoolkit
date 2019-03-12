@@ -16,14 +16,15 @@
 #include "Algorithms/Util/Provider.h"
 #include "Algorithms/Util/IEvent.h"
 #include <memory>
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace cqp
 {
     namespace remote
     {
-        class Device;
         class SiteAgentReport;
         class DeviceConfig;
+        class SessionDetails;
     }
 
     namespace stats
@@ -38,7 +39,9 @@ namespace cqp
 
     }
 
+    class ISessionController;
     class IKeyCallback;
+
     /// Manages Key callbacks
     /// @see Provider
     using KeyPublisher = Provider<IKeyCallback>;
@@ -61,10 +64,10 @@ namespace cqp
         virtual URI GetAddress() const = 0;
 
         /// Establish communications with the device and configure it for the specifed parameters
-        /// Th parameters should be adjusted to reflect the actial values used where default/invalid values are provided
-        /// @param[in,out] parameters The system settings to use when configuring the device.
+        /// The parameters should be adjusted to reflect the actial values used where default/invalid values are provided
+        /// @param[in] sessionDetails The session specific parameters
         /// @return true if the device was successfully setup
-        virtual bool Initialise(remote::DeviceConfig& parameters) = 0;
+        virtual bool Initialise(const remote::SessionDetails& sessionDetails) = 0;
 
         /**
          * @brief GetSessionController
@@ -82,7 +85,7 @@ namespace cqp
          * @brief GetDeviceDetails
          * @return Details for registration
          */
-        virtual remote::Device GetDeviceDetails() = 0;
+        virtual remote::DeviceConfig GetDeviceDetails() = 0;
 
         /**
          * @brief GetStatsPublisher

@@ -13,28 +13,29 @@
 #include "CQPToolkit/Interfaces/IQKDDevice.h"
 #include "CQPToolkit/Interfaces/ISessionController.h"
 #include "QKDInterfaces/Device.pb.h"
+#include <grpcpp/create_channel.h>
+#include "QKDInterfaces/ISiteAgent.grpc.pb.h"
+#include "Algorithms/Net/DNS.h"
 
 namespace cqp {
     using grpc::Status;
     using grpc::StatusCode;
 
     RemoteQKDDevice::RemoteQKDDevice(std::shared_ptr<IQKDDevice> device,
-                                     const remote::DeviceConfig& config,
                                      std::shared_ptr<grpc::ServerCredentials> creds) :
         device(device),
-        config(std::make_unique<remote::DeviceConfig>(config)),
         creds(creds)
     {
 
     }
 
-    grpc::Status RemoteQKDDevice::RunSession(grpc::ServerContext*, const remote::SessionDetails* request, google::protobuf::Empty*)
+    grpc::Status RemoteQKDDevice::RunSession(grpc::ServerContext*, const remote::SessionDetailsTo* request, google::protobuf::Empty*)
     {
         Status result;
         ISessionController* session = nullptr;
         if(device)
         {
-            session = device ->GetSessionController();
+            session = device->GetSessionController();
         }
 
         if(session)
@@ -45,6 +46,13 @@ namespace cqp {
             result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
         }
 
+        // prepare the device
+        if(device->Initialise(request->details()))
+        {
+
+        } else {
+            result = Status(StatusCode::FAILED_PRECONDITION, "Initialisation failed");
+        }
         return result;
     }
 
@@ -53,27 +61,30 @@ namespace cqp {
     {
         Status result;
         ISessionController* session = nullptr;
+        remote::DeviceConfig config;
+
         if(device)
         {
-            session = device ->GetSessionController();
+            session = device->GetSessionController();
+            config = device->GetDeviceDetails();
         }
 
         if(session)
         {
-            // prepare the device
-            if(device->Initialise(*config))
+            // start the session
+            sessionAddress = config.sessionaddress();
+            if(sessionAddress.GetHost().empty())
             {
-                // start the session
-                uint16_t listenPort = static_cast<uint16_t>(config->portnumber());
-                result = session->StartServer(config->hostname(), listenPort, creds);
+                sessionAddress.SetHost(net::AnyAddress);
+            }
+            uint16_t listenPort = sessionAddress.GetPort();
+            result = session->StartServer(sessionAddress.GetHost(), listenPort, creds);
+            sessionAddress.SetPort(listenPort);
 
-                // nothing to do but wait for the session to start
-                if(result.ok())
-                {
-                    ProcessKeys(writer);
-                }
-            } else {
-                result = Status(StatusCode::FAILED_PRECONDITION, "Initialisation failed");
+            // nothing to do but wait for the session to start
+            if(result.ok())
+            {
+                ProcessKeys(writer);
             }
         } else {
             result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
@@ -113,6 +124,16 @@ namespace cqp {
         }/*lock scope*/
 
         recievedKeysCv.notify_one();
+    }
+
+    grpc::Status RemoteQKDDevice::RegisterWithSiteAgent(const std::string& address)
+    {
+        auto channel = grpc::CreateChannel(address, grpc::InsecureChannelCredentials());
+        auto siteAgent = remote::ISiteAgent::NewStub(channel);
+        grpc::ClientContext ctx;
+        google::protobuf::Empty response;
+        auto config = device->GetDeviceDetails();
+        return siteAgent->RegisterDevice(&ctx, config, &response);
     }
 
     void RemoteQKDDevice::ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer)

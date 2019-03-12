@@ -56,9 +56,6 @@ namespace cqp
         /// Destructor
         virtual ~LEDAliceMk1() override;
 
-        /// Link to the device factory for automatic creation
-        static void RegisterWithFactory();
-
         /// @name IQKDDevice interface
         ///@{
 
@@ -71,12 +68,12 @@ namespace cqp
         virtual std::string GetDriverName() const override;
 
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
-        remote::Device GetDeviceDetails() override;
+        remote::DeviceConfig GetDeviceDetails() override;
 
         /// @copydoc cqp::IQKDDevice::GetAddress
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::Initialise
-        virtual bool Initialise(remote::DeviceConfig& parameters) override;
+        virtual bool Initialise(const remote::SessionDetails& sessionDetails) override;
         /// @copydoc IQKDDevice::GetStatsPublisher
         stats::IStatsPublisher* GetStatsPublisher() override;
         ///@}

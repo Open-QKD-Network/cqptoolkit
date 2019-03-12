@@ -59,9 +59,6 @@ namespace cqp
          */
         ClavisProxy(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
 
-        /// tell the factory how to create these devices
-        static void RegisterWithFactory();
-
         // IQKDDevice interface
     public:
         /// @{
@@ -74,13 +71,13 @@ namespace cqp
         URI GetAddress() const override;
 
         /// @copydoc cqp::IQKDDevice::Initialise
-        bool Initialise(remote::DeviceConfig& parameters) override;
+        bool Initialise(const remote::SessionDetails& sessionDetails) override;
 
         /// @copydoc cqp::IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
 
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
-        remote::Device GetDeviceDetails() override;
+        cqp::remote::DeviceConfig GetDeviceDetails() override;
 
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
         KeyPublisher*GetKeyPublisher() override;
