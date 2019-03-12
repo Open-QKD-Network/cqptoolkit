@@ -45,6 +45,11 @@ namespace cqp
          */
         ALGORITHMS_EXPORT bool ResolveAddress(const std::string& hostname, IPAddress& ip, bool preferIPv6 = false) noexcept;
 
+#if defined(NO_IPV6)
+        constexpr const char* AnyAddress = "0.0.0.0";
+#else
+        constexpr const char* AnyAddress = "[::]";
+#endif
     } // namespace net
 } // namespace cqp
 

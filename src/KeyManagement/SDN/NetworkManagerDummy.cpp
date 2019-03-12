@@ -12,6 +12,7 @@
 #include "NetworkManagerDummy.h"
 #include <grpc++/server_builder.h>
 #include <grpc++/server.h>
+#include "Algorithms/Net/DNS.h"
 
 namespace cqp
 {
@@ -39,7 +40,7 @@ namespace cqp
 
         grpc::ServerBuilder builder;
 
-        builder.AddListeningPort("0.0.0.0:" + std::to_string(port), creds, &port);
+        builder.AddListeningPort(std::string(net::AnyAddress) + ":" + std::to_string(port), creds, &port);
         builder.RegisterService(this);
 
         server = builder.BuildAndStart();

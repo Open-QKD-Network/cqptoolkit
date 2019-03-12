@@ -109,7 +109,7 @@ int QTunnelServer::Main(const std::vector<std::string>& args)
             // setting this too low causes large number of thread creation+deletions, default = 2
             builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, 50);
 
-            builder.AddListeningPort("0.0.0.0:" + std::to_string(listenPort), LoadServerCredentials(controllerSettings.credentials()), &listenPort);
+            builder.AddListeningPort(std::string(net::AnyAddress) + ":" + std::to_string(listenPort), LoadServerCredentials(controllerSettings.credentials()), &listenPort);
 
             LOGTRACE("Registering services");
             // Register services

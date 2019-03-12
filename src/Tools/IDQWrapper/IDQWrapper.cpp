@@ -339,7 +339,7 @@ int IDQWrapper::Main(const std::vector<std::string>& args)
         definedArguments.GetProp(Names::port, portNumber);
 
         grpc::ServerBuilder builder;
-        builder.AddListeningPort("0.0.0.0:" + std::to_string(portNumber), LoadServerCredentials(creds), &portNumber);
+        builder.AddListeningPort(std::string(net::AnyAddress) + ":" + std::to_string(portNumber), LoadServerCredentials(creds), &portNumber);
 
         LOGTRACE("Registering services");
         // Register services
