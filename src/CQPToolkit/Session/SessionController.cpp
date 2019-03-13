@@ -37,7 +37,7 @@ namespace cqp
 
         } // SessionController
 
-        grpc::Status SessionController::StartSession()
+        grpc::Status SessionController::StartSession(const remote::SessionDetails& sessionDetails)
         {
             Status result;
             // the local system is starting the session
@@ -56,6 +56,7 @@ namespace cqp
                 remote::SessionDetailsFrom request;
                 Empty response;
 
+                (*request.mutable_details()) = sessionDetails;
                 request.set_initiatoraddress(myAddress);
 
                 // send the command to the other side
@@ -231,6 +232,10 @@ namespace cqp
                 if(server)
                 {
                     LOGINFO("Listening on " + myAddress + ":" + std::to_string(listenPort));
+                    if(myAddress.empty() || myAddress == net::AnyAddress)
+                    {
+                        myAddress = net::GetHostname(true);
+                    }
                     twoWayComm->SetServerAddress(myAddress + ":" + std::to_string(listenPort));
 
                     UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);

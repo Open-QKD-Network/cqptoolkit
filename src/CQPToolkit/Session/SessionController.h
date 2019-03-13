@@ -76,7 +76,7 @@ namespace cqp
             }
 
             /// @copydoc ISessionController::StartSession
-            grpc::Status StartSession() override;
+            grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
 
             /// @copydoc ISessionController::EndSession
             void EndSession() override;

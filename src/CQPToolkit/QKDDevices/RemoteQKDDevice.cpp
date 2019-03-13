@@ -16,6 +16,7 @@
 #include <grpcpp/create_channel.h>
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
 #include "Algorithms/Net/DNS.h"
+#include "CQPToolkit/Util/GrpcLogger.h"
 
 namespace cqp {
     using grpc::Status;
@@ -27,17 +28,32 @@ namespace cqp {
         creds(creds)
     {
 
+        remote::DeviceConfig config;
+        auto session = device->GetSessionController();
+        // start the session
+        sessionAddress = config.sessionaddress();
+        auto hostnameTobind = sessionAddress.GetHost();
+        if(hostnameTobind.empty())
+        {
+            hostnameTobind = net::AnyAddress;
+            sessionAddress.SetHost(net::GetHostname());
+        }
+        uint16_t listenPort = sessionAddress.GetPort();
+        LogStatus(session->StartServer(hostnameTobind, listenPort, creds));
+        sessionAddress = session->GetConnectionAddress();
+    }
+
+    RemoteQKDDevice::~RemoteQKDDevice()
+    {
+        shutdown = true;
+        recievedKeysCv.notify_all();
     }
 
     grpc::Status RemoteQKDDevice::RunSession(grpc::ServerContext*, const remote::SessionDetailsTo* request, google::protobuf::Empty*)
     {
         Status result;
-        ISessionController* session = nullptr;
-        if(device)
-        {
-            session = device->GetSessionController();
-        }
 
+        auto session = device->GetSessionController();
         if(session)
         {
             result = session->Connect(request->peeraddress());
@@ -47,9 +63,9 @@ namespace cqp {
         }
 
         // prepare the device
-        if(device->Initialise(request->details()))
+        if(result.ok() && device->Initialise(request->details()))
         {
-
+            session->StartSession(request->details());
         } else {
             result = Status(StatusCode::FAILED_PRECONDITION, "Initialisation failed");
         }
@@ -60,27 +76,11 @@ namespace cqp {
                                                  ::grpc::ServerWriter<remote::RawKeys>* writer)
     {
         Status result;
-        ISessionController* session = nullptr;
-        remote::DeviceConfig config;
 
-        if(device)
-        {
-            session = device->GetSessionController();
-            config = device->GetDeviceDetails();
-        }
+        auto session = device->GetSessionController();
 
         if(session)
         {
-            // start the session
-            sessionAddress = config.sessionaddress();
-            if(sessionAddress.GetHost().empty())
-            {
-                sessionAddress.SetHost(net::AnyAddress);
-            }
-            uint16_t listenPort = sessionAddress.GetPort();
-            result = session->StartServer(sessionAddress.GetHost(), listenPort, creds);
-            sessionAddress.SetPort(listenPort);
-
             // nothing to do but wait for the session to start
             if(result.ok())
             {
@@ -133,7 +133,15 @@ namespace cqp {
         grpc::ClientContext ctx;
         google::protobuf::Empty response;
         auto config = device->GetDeviceDetails();
+        // TODO reconsile the device config type with the need to provide this - the device doesn't inherently know it
+        config.set_controladdress(controlAddress);
         return siteAgent->RegisterDevice(&ctx, config, &response);
+    }
+
+    void RemoteQKDDevice::SetControlAddress(const std::string& address)
+    {
+        // TODO reconsile the device config type with the need to provide this - the device doesn't inherently know it
+        controlAddress = address;
     }
 
     void RemoteQKDDevice::ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer)

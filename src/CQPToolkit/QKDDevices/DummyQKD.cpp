@@ -178,6 +178,7 @@ namespace cqp
         addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchName, *result.mutable_switchname());
         addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchPort, *result.mutable_switchport());
         result.set_kind(addrUri.GetScheme());
+        result.set_sessionaddress(processing->controller->GetConnectionAddress());
 
         return result;
     }

@@ -153,12 +153,11 @@ namespace cqp
             }
         }
 
-        grpc::Status ClavisController::StartSession()
+        grpc::Status ClavisController::StartSession(const remote::SessionDetails& sessionDetails)
         {
             LOGTRACE("Called");
             using namespace std;
             ClientContext controllerCtx;
-            remote::SessionDetailsFrom request;
             Empty response;
             Status result;
 
@@ -183,6 +182,8 @@ namespace cqp
                     options.mutable_initialsecret()->assign(secret->begin(), secret->end());
                 }
 
+                remote::SessionDetailsFrom request;
+                (*request.mutable_details()) = sessionDetails;
                 (*request.mutable_initiatoraddress()) = myAddress;
                 //(*request.mutable_keytoken()) = keyToken;
                 controllerCtx.AddMetadata(wrapperPeerKey, myWrapperDetails.hostname());

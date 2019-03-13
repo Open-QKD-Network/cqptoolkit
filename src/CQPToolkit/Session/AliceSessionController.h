@@ -68,7 +68,7 @@ namespace cqp {
              *     deactivate as
              * @enduml
              */
-            grpc::Status StartSession() override;
+            grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
 

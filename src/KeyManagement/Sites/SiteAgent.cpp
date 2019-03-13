@@ -289,11 +289,9 @@ namespace cqp
             {
                 if(regDevice.id() == deviceId)
                 {
-                    // this is the device we're looking for
-                    localSessionAddress = regDevice.sessionaddress();
-
                     // store the new device and get the iterator to it for later
                     auto localDev = make_shared<DeviceConnection>();
+                    LOGTRACE("Connecting to device control at " + regDevice.controladdress());
                     localDev->channel = grpc::CreateChannel(regDevice.controladdress(), LoadChannelCredentials(myConfig.credentials()));
                     localDev->keySink = keystoreFactory->GetKeyStore(destination);
                     if(localDev->channel->WaitForConnected(chrono::system_clock::now() + chrono::seconds(10)))
@@ -301,6 +299,10 @@ namespace cqp
                         result = Status(StatusCode::UNAVAILABLE, "Failed to connect to " + regDevice.controladdress());
                     }
                     localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev);
+                    // BANG! need to wait for session address
+                    // this is the device we're looking for
+                    localSessionAddress = regDevice.sessionaddress();
+
 
                     devicesInUse.emplace(deviceId, move(localDev));
                     // The session will be start by the right side as it has all the required details
@@ -332,8 +334,8 @@ namespace cqp
             google::protobuf::Empty response;
             // this allows the next session controller to talk to our session controller
             // TODO: should this be part of the interface?
-            ctx.AddMetadata(sessionAddress, localSessionAddress);
-            LOGTRACE("Calling StartNode on peer");
+            ctx.AddMetadata(sessionAddress, localSessionAddress.c_str());
+            LOGTRACE("Calling StartNode on peer " + secondSite);
             // start the next node, passing on the entire path
             result = LogStatus(
                          stub->StartNode(&ctx, *path, &response));
@@ -428,6 +430,7 @@ namespace cqp
                     if(result.ok() && devicesInUse[hop.second().deviceid()])
                     {
                         // setup the second half of the chain
+                        LOGTRACE("Starting session to remote session " + remoteSessionAddress);
                         result = StartSession(devicesInUse[hop.second().deviceid()]->channel, hop.params(), remoteSessionAddress);
                     }
 

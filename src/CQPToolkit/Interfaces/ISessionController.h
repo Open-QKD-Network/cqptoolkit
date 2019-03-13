@@ -25,6 +25,7 @@ namespace cqp
 {
     namespace remote {
         class LinkStatus;
+        class SessionDetails;
     }
 
     /**
@@ -92,7 +93,7 @@ namespace cqp
          * @enduml
          * @return result of command
          */
-        virtual grpc::Status StartSession() = 0;
+        virtual grpc::Status StartSession(const remote::SessionDetails& sessionDetails) = 0;
 
         /**
          * @brief EndSession

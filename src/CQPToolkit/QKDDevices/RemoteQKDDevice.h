@@ -33,6 +33,8 @@ namespace cqp {
         RemoteQKDDevice(std::shared_ptr<IQKDDevice> device,
                         std::shared_ptr<grpc::ServerCredentials> creds = grpc::InsecureServerCredentials());
 
+        ~RemoteQKDDevice() override;
+
         ///@{
         /// @name remote::IDevice interface
 
@@ -53,6 +55,9 @@ namespace cqp {
         ///@}
 
         grpc::Status RegisterWithSiteAgent(const std::string& address);
+
+
+        virtual void SetControlAddress(const std::string& address);
     protected: // members
         std::shared_ptr<IQKDDevice> device;
         std::shared_ptr<grpc::ServerCredentials> creds;
@@ -61,7 +66,8 @@ namespace cqp {
         KeyListList recievedKeys;
         std::condition_variable recievedKeysCv;
         std::mutex recievedKeysMutex;
-        bool shutdown = false;
+        std::atomic_bool shutdown {false};
+        std::string controlAddress;
     protected: // methods
         void ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer);
     };
