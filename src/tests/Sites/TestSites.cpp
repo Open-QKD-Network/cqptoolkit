@@ -21,6 +21,8 @@
 #include "CQPToolkit/QKDDevices/DeviceUtils.h"
 #include "CQPToolkit/QKDDevices/RemoteQKDDevice.h"
 #include "Algorithms/Net/DNS.h"
+#include "KeyManagement/KeyStores/KeyStoreFactory.h"
+#include "KeyManagement/KeyStores/KeyStore.h"
 
 namespace cqp
 {
@@ -51,19 +53,36 @@ namespace cqp
 
                 using namespace std;
                 serverCreds = grpc::InsecureServerCredentials();
+                LOGTRACE("Creating Device");
                 device = make_shared<DummyQKD>(side, grpc::InsecureChannelCredentials());
+                LOGTRACE("Creating adaptor");
                 adaptor = make_shared<RemoteQKDDevice>(device, serverCreds);
                 grpc::ServerBuilder builder;
                 builder.RegisterService(adaptor.get());
                 builder.AddListeningPort(std::string(net::AnyAddress) + ":0", serverCreds, &port);
+                LOGTRACE("Starting server");
                 server = builder.BuildAndStart();
 
-                if(!siteAgentAddress.empty())
+                if(server)
                 {
-                    result = LogStatus(adaptor->RegisterWithSiteAgent(siteAgentAddress));
+                    LOGINFO("Remote device control available on port " + std::to_string(port));
+                    adaptor->SetControlAddress(net::GetHostname(true) + ":" + std::to_string(port));
+                    if(!siteAgentAddress.empty())
+                    {
+                        LOGTRACE("Registering with site agent");
+                        result = LogStatus(adaptor->RegisterWithSiteAgent(siteAgentAddress));
+                    }
+                } else {
+                    LOGERROR("Failed to start server");
                 }
             }
 
+            ~SiteTestCollection()
+            {
+                adaptor.reset();
+                device.reset();
+                server.reset();
+            }
             std::shared_ptr<grpc::ServerCredentials> serverCreds;
             std::shared_ptr<DummyQKD> device;
             std::shared_ptr<RemoteQKDDevice> adaptor;
@@ -117,6 +136,20 @@ namespace cqp
             hop->mutable_second()->set_deviceid(site1alice.device->GetDeviceDetails().id());
 
             ASSERT_TRUE(LogStatus(site2Stub->StartNode(&ctx, request, &response)).ok());
+
+            auto ks1 = site1.agent->GetKeyStoreFactory()->GetKeyStore(site2.agent->GetConnectionAddress());
+            ASSERT_NE(ks1, nullptr);
+            KeyID key1Id;
+            PSK key1Value;
+            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value));
+            ASSERT_GT(0, key1Value.size());
+
+            auto ks2 = site2.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
+            ASSERT_NE(ks1, nullptr);
+            PSK key2Value;
+            ASSERT_TRUE(ks1->GetExistingKey(key1Id, key2Value).ok());
+
+            ASSERT_EQ(key1Value, key2Value);
         }
 
         /**
