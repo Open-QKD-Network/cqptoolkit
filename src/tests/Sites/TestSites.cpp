@@ -124,10 +124,9 @@ namespace cqp
 
             LOGINFO("Connecting to " + site2.agent->GetConnectionAddress());
             auto channel = grpc::CreateChannel(site2.agent->GetConnectionAddress(), grpc::InsecureChannelCredentials());
-            grpc::ClientContext ctx;
             auto site2Stub = remote::ISiteAgent::NewStub(channel);
+
             remote::PhysicalPath request;
-            google::protobuf::Empty response;
 
             auto hop = request.add_hops();
             hop->mutable_first()->set_site(site2.agent->GetConnectionAddress());
@@ -135,21 +134,37 @@ namespace cqp
             hop->mutable_second()->set_site(site1.agent->GetConnectionAddress());
             hop->mutable_second()->set_deviceid(site1alice.device->GetDeviceDetails().id());
 
-            ASSERT_TRUE(LogStatus(site2Stub->StartNode(&ctx, request, &response)).ok());
+            {
+                grpc::ClientContext ctx;
+                google::protobuf::Empty response;
+
+                ASSERT_TRUE(LogStatus(site2Stub->StartNode(&ctx, request, &response)).ok());
+            }
 
             auto ks1 = site1.agent->GetKeyStoreFactory()->GetKeyStore(site2.agent->GetConnectionAddress());
             ASSERT_NE(ks1, nullptr);
             KeyID key1Id;
             PSK key1Value;
             ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value));
-            ASSERT_GT(0, key1Value.size());
+            ASSERT_GT(key1Value.size(), 0);
 
             auto ks2 = site2.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
             ASSERT_NE(ks1, nullptr);
             PSK key2Value;
-            ASSERT_TRUE(ks1->GetExistingKey(key1Id, key2Value).ok());
+            ASSERT_TRUE(ks2->GetExistingKey(key1Id, key2Value).ok());
 
             ASSERT_EQ(key1Value, key2Value);
+
+            {
+                grpc::ClientContext ctx;
+                google::protobuf::Empty response;
+                // bring the system down
+                ASSERT_TRUE(LogStatus(site2Stub->EndKeyExchange(&ctx, request, &response)).ok());
+            }
+
+            // this should cause the device to be unregistered
+            site1alice.adaptor.reset();
+            site2bob.adaptor.reset();
         }
 
         /**

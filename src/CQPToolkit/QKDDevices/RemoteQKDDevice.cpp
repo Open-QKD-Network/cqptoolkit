@@ -81,11 +81,9 @@ namespace cqp {
 
         if(session)
         {
-            // nothing to do but wait for the session to start
-            if(result.ok())
-            {
-                ProcessKeys(writer);
-            }
+            // Wait for keys to arrive and pass them on
+            // nothing will happen until RunSession is called on one side
+            ProcessKeys(writer);
         } else {
             result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
         }
@@ -144,61 +142,67 @@ namespace cqp {
         controlAddress = address;
     }
 
-    void RemoteQKDDevice::ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer)
+    grpc::Status RemoteQKDDevice::ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer)
     {
         using namespace std;
+        grpc::Status result;
         auto keyPub = device->GetKeyPublisher();
         if(keyPub)
         {
             keyPub->Attach(this);
-        }
 
-        // send the key to the caller
-        do{
-            KeyListList tempKeys;
+            // send the key to the caller
+            do{
+                KeyListList tempKeys;
 
-            {/* lock scope*/
-                unique_lock<mutex> lock(recievedKeysMutex);
-                recievedKeysCv.wait(lock, [&](){
-                    return !recievedKeys.empty() || shutdown;
-                });
+                {/* lock scope*/
+                    unique_lock<mutex> lock(recievedKeysMutex);
+                    recievedKeysCv.wait(lock, [&](){
+                        return !recievedKeys.empty() || shutdown;
+                    });
 
-                if(!recievedKeys.empty())
-                {
-                    tempKeys.resize(recievedKeys.size());
-                    // move the data to our scope to allow the callback to carry on filling it up.
-                    move(recievedKeys.begin(), recievedKeys.end(), tempKeys.begin());
-                    recievedKeys.clear();
-                }
-            }/* lock scope*/
-
-            if(!shutdown)
-            {
-                remote::RawKeys message;
-
-                int totalNumKeys = 0u;
-                // count the keys to reserve space
-                for(const auto& keylist : tempKeys)
-                {
-                    totalNumKeys += keylist->size();
-                }
-                message.mutable_keydata()->Reserve(totalNumKeys);
-
-                for(const auto& list : tempKeys)
-                {
-                    for(const auto& key : *list)
+                    if(!recievedKeys.empty())
                     {
-                        message.add_keydata(key.data(), key.size());
+                        tempKeys.resize(recievedKeys.size());
+                        // move the data to our scope to allow the callback to carry on filling it up.
+                        move(recievedKeys.begin(), recievedKeys.end(), tempKeys.begin());
+                        recievedKeys.clear();
                     }
-                }
+                }/* lock scope*/
 
-                // send the data
-                writer->Write(message);
-            }
+                if(!shutdown)
+                {
+                    remote::RawKeys message;
+
+                    int totalNumKeys = 0u;
+                    // count the keys to reserve space
+                    for(const auto& keylist : tempKeys)
+                    {
+                        totalNumKeys += keylist->size();
+                    }
+                    message.mutable_keydata()->Reserve(totalNumKeys);
+
+                    for(const auto& list : tempKeys)
+                    {
+                        for(const auto& key : *list)
+                        {
+                            message.add_keydata(key.data(), key.size());
+                        }
+                    }
+
+                    // send the data
+                    writer->Write(message);
+                } // if !shutdown
+            } // do
+            while(!shutdown);
+
+            keyPub->Detatch();
+        } // if keyPub
+        else {
+            result = Status(StatusCode::INTERNAL, "Invalid key publisher");
         }
-        while(!shutdown);
 
-        keyPub->Detatch();
+        return result;
     }
 
 } // namespace cqp

@@ -69,7 +69,7 @@ namespace cqp {
         std::atomic_bool shutdown {false};
         std::string controlAddress;
     protected: // methods
-        void ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer);
+        grpc::Status ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer);
     };
 
 } // namespace cqp
