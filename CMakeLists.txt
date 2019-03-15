@@ -347,7 +347,7 @@ if(Doxygen_FOUND)
 
     find_file(PLANTUML_JARFILE
          NAMES plantuml.jar
-         HINTS "/opt/plantuml" "/usr/share/plantuml" ENV PLANTUML_DIR
+         HINTS "/usr/share/java/plantuml" "/opt/plantuml" "/usr/share/plantuml" ENV PLANTUML_DIR
        )
    include(FindPackageHandleStandardArgs)
    find_package_handle_standard_args(
