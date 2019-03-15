@@ -186,6 +186,42 @@ else()
     message(WARNING "Avahi missing")
 endif()
 
+if(NOT TARGET PkgConfig::MsgPack)
+    # use a local copy of msgpack
+    set(MSGPACK_VERSION "1.1.0" CACHE STRING "The version of MsgPack to use")
+
+    if(MSGPACK_VERSION)
+        include(ExternalProject)
+        ExternalProject_Add(
+            ExMsgPack
+            URL "https://github.com/msgpack/msgpack-c/releases/download/cpp-${MSGPACK_VERSION}/msgpack-${MSGPACK_VERSION}.tar.gz"
+            URL_HASH MD5=ac41a64d6415fd184215825048bc4523
+            UPDATE_COMMAND ""
+            CONFIGURE_COMMAND ./configure
+            BUILD_COMMAND make
+            BUILD_IN_SOURCE trie
+            INSTALL_COMMAND ""
+        )
+        # Get the location of the build
+        ExternalProject_Get_Property(ExMsgPack SOURCE_DIR)
+        # create a folder to prevent error messages on first build
+        make_directory("${SOURCE_DIR}/include")
+        # create a target for projects to depend on
+        add_library(PkgConfig::MsgPack STATIC IMPORTED)
+        set_target_properties(PkgConfig::MsgPack PROPERTIES
+            IMPORTED_LOCATION "${SOURCE_DIR}/src/.libs/libmsgpack.a"
+            INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR}/include")
+        add_dependencies(PkgConfig::MsgPack ExMsgPack)
+    else()
+        # for install system packages
+        find_package(MsgPack)
+    endif()
+endif()
+
+if(NOT TARGET PkgConfig::ZeroMQ)
+    find_package(ZeroMQ)
+endif()
+
 if(BUILD_TESTING)
         find_package(GTest QUIET)
         find_package(GMock QUIET)
@@ -352,7 +388,7 @@ if(Doxygen_FOUND)
 
     find_file(PLANTUML_JARFILE
          NAMES plantuml.jar
-         HINTS "/opt/plantuml" "/usr/share/plantuml" ENV PLANTUML_DIR
+         HINTS "/usr/share/java/plantuml" "/opt/plantuml" "/usr/share/plantuml" ENV PLANTUML_DIR
        )
    include(FindPackageHandleStandardArgs)
    find_package_handle_standard_args(

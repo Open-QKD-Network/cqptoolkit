@@ -3,7 +3,7 @@
 * @brief Clavis3Driver
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 19/9/2018
@@ -24,29 +24,7 @@
 #include <google/protobuf/util/json_util.h>
 
 #include <thread>
-
-#include "ZmqStringExchange.hpp"
-#include "CommandCommunicator.hpp"
-#include "Command.hpp"
-#include "SignalCommunicator.hpp"
-#include <Signal.hpp>
-#include "SystemState.hpp"
-#include "IntraProcessMessages.hpp"
-#include "MsgpackSerializer.hpp"
-#include "Commands/GetProtocolVersion.hpp"
-#include "Commands/GetSoftwareVersion.hpp"
-#include "Commands/GetBoardInformation.hpp"
-#include "Commands/UpdateSoftware.hpp"
-#include "Commands/PowerOn.hpp"
-#include "Commands/SetInitialKey.hpp"
-#include "Commands/Zeroize.hpp"
-#include "Commands/PowerOff.hpp"
-#include "Commands/GetRandomNumber.hpp"
-#include "Commands/SubscribeSignal.hpp"
-#include "Commands/UnsubscribeSignal.hpp"
-#include "Commands/UnsubscribeAllSignals.hpp"
-#include "Commands/SetNotificationFrequency.hpp"
-#include "Signals/OnSystemState_Changed.hpp"
+#include "IDQDevices/Clavis3/Clavis3Device.h"
 
 using namespace cqp;
 
@@ -122,6 +100,8 @@ private:
     bool _helpRequested = false;
     /// exit codes for this program
     enum ExitCodes { Ok = 0, ConfigNotFound = 10, InvalidConfig = 11, ServiceCreationFailed = 20, UnknownError = 99 };
+
+    std::unique_ptr<Clavis3Device> device;
 };
 
 Clavis3Driver::Clavis3Driver()
@@ -185,55 +165,7 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
 
     if(!stopExecution)
     {
-
         using namespace std;
-        using namespace zmq;
-        using namespace idq4p::utilities;
-        using namespace idq4p::domainModel;
-        using namespace idq4p::classes;
-        zmq::context_t context (1);
-        zmq::socket_t _qkeMgmtSocket (context, ZMQ_REQ);
-
-        //Serialize request
-        GetBoardInformation requestCommand(1);
-        msgpack::sbuffer requestBuffer;
-        MsgpackSerializer::Serialize<GetBoardInformation>(requestCommand, requestBuffer);
-        // Send request
-        const Command request(CommandId::GetBoardInformation, MessageDirection::Request);
-            Command reply(  CommandId::GetBoardInformation, MessageDirection::Reply);
-        //_ui->WriteLine(UISS << "ManagementChannel: sending '" << request.ToString() << "'.");
-        CommandCommunicator::RequestAndReply(_qkeMgmtSocket, request, reply);
-        //Deserialize reply
-        msgpack::sbuffer replyBuffer;
-        reply.GetBuffer(replyBuffer);
-        GetBoardInformation replyCommand;
-        MsgpackSerializer::Deserialize<GetBoardInformation>(replyBuffer, replyCommand);
-        //_ui->WriteLine(UISS << "ManagementChannel: received '" << reply.ToString() << "' " << replyCommand.ToString() << ".");
-        /*
-        using idq4p::classes::CommandCommunicator;
-        using idq4p::classes::Command;
-
-        //  Prepare our context and socket
-        zmq::context_t context (1);
-        zmq::socket_t socket (context, ZMQ_REQ);
-
-        std::cout << "Connecting to hello world server..." << std::endl;
-        socket.connect ("tcp://localhost:5555");
-
-        //  Do 10 requests, waiting each time for a response
-        for (int request_nbr = 0; request_nbr != 10; request_nbr++) {
-            zmq::message_t request (5);
-            Command cmd;
-            CommandCommunicator::Send(socket, cmd);
-            memcpy (request.data (), "Hello", 5);
-            std::cout << "Sending Hello " << request_nbr << "..." << std::endl;
-            socket.send (request);
-
-            //  Get the reply.
-            zmq::message_t reply;
-            socket.recv (&reply);
-            std::cout << "Received World " << request_nbr << std::endl;
-        }*/
     }
 
     return 0;
