@@ -98,7 +98,9 @@ namespace cqp
          * @return The transfer object, which can be used to canel the action with CancelTransfer()
          * If the result is null the request failed
          */
-        libusb_transfer* StartReadingBulk(uint8_t endPoint, unsigned char* buffer, size_t bufferLength, CallbackFunc callback, void* userData);
+        libusb_transfer* StartReadingBulk(uint8_t endPoint, unsigned char* buffer, size_t bufferLength,
+                                          CallbackFunc callback, void* userData,
+                                          std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
 
         /**
          * Class to pass relevant data to the event listeners
@@ -131,7 +133,9 @@ namespace cqp
          * If the result is null the request failed
          */
         template<typename C>
-        libusb_transfer* StartReadingBulk(uint8_t endPoint, std::unique_ptr<DataBlock> buffer,  void (C::* func)(std::unique_ptr<DataBlock>) , C* obj)
+        libusb_transfer* StartReadingBulk(uint8_t endPoint, std::unique_ptr<DataBlock> buffer,
+                                          void (C::* func)(std::unique_ptr<DataBlock>) , C* obj,
+                                          std::chrono::milliseconds timeout = std::chrono::milliseconds{0})
         {
             ReadEventData<C>* eventData = new ReadEventData<C>();
             const auto bufferSize = buffer->size();
@@ -141,7 +145,7 @@ namespace cqp
             eventData->obj = obj;
             eventData->callback = func;
             // attach the callback to the transfer and issue the request
-            return StartReadingBulk(endPoint, &(*buffer)[0], bufferSize, &Usb::ReadCallback<C>, static_cast<void*>(eventData));
+            return StartReadingBulk(endPoint, &(*eventData->buffer)[0], bufferSize, &Usb::ReadCallback<C>, static_cast<void*>(eventData), timeout);
         }
 
         /**
@@ -200,6 +204,7 @@ namespace cqp
         template<typename C>
         static void ReadCallback(struct ::libusb_transfer *transfer)
         {
+            LOGTRACE("");
             using namespace std;
             // get the caller details from the user data
             auto eventData = reinterpret_cast<ReadEventData<C>*>(GetUserData(transfer));

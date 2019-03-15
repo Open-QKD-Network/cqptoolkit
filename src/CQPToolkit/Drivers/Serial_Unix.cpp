@@ -19,7 +19,7 @@
 #include "CQPToolkit/Drivers/Serial.h"  // for Serial, SerialList, Serial::B...
 #include "Algorithms/Util/FileIO.h"     // for Exists, FindGlob, IsDirectory
 #include "Algorithms/Logging/Logger.h"     // for LOGTRACE
-
+#include <sys/file.h>
 
 namespace cqp
 {
@@ -60,7 +60,7 @@ namespace cqp
 
     Serial::Serial()
     {
-        accessMode = O_RDWR | O_NOCTTY;
+        accessMode = O_RDWR | O_NOCTTY | O_NDELAY;
     }
 
 
@@ -85,13 +85,18 @@ namespace cqp
 
         bool result = IsOpen();
 
-        result &= IsOpen();
+        if(result)
+        {
+            result = flock(fileId, LOCK_EX | LOCK_NB) == 0;
+            result &= Setup();
+        }
         return result;
     }
 
     bool Serial::Close()
     {
         close(fileId);
+        flock(fileId, LOCK_UN);
         fileId = 0;
         return true;
     }
@@ -127,6 +132,11 @@ namespace cqp
         return result;
     }
 
+    void Serial::Flush()
+    {
+        tcflush(fileId ,TCIOFLUSH);
+    }
+
     bool Serial::Setup()
     {
         struct termios serialSettings = {};
@@ -138,7 +148,15 @@ namespace cqp
         serialSettings.c_cflag     &=  static_cast<unsigned int>(~CSIZE);
         serialSettings.c_cflag     |=  CS8;
 
+        if(result == 0)
+        {
+            result = tcsetattr(fileId, TCSANOW, &serialSettings);
+        }
+
         tcflush(fileId, TCIFLUSH);
+        if(result != 0){
+            LOGERROR("Failed to set serial settings");
+        }
 
         return result == 0;
     }
@@ -185,10 +203,10 @@ namespace cqp
                     {
                         break; // for
                     }
-                }
-            }
-        }
-    }
+                } // for files
+            } // for deviceNames
+        } // else
+    } // Detect
 
-}
+} // namespace cqp
 #endif // defined(__unix)

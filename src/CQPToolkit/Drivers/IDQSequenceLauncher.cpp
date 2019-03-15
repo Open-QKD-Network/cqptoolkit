@@ -129,9 +129,28 @@ namespace cqp
         return proc.Running();
     }
 
+    bool IDQSequenceLauncher::WaitForKey()
+    {
+        using namespace std;
+        unique_lock<mutex> lock(keyReadyMutex);
+        // wait for an event
+        keyReadyCv.wait(lock, [&](){
+            return keyAvailable || shutdown;
+        });
+
+        bool result = keyAvailable;
+        // reset for next time
+        keyAvailable = false;
+        return result;
+    }
+
     IDQSequenceLauncher::~IDQSequenceLauncher()
     {
+        shutdown = true;
+
         proc.RequestTermination(true);
+        keyReadyCv.notify_all();
+
         if(procHandler.joinable())
         {
             procHandler.join();
@@ -200,6 +219,11 @@ namespace cqp
         const string lineInfo = "INFO";
         const string lineWarn = "WARN";
         const string lineError = "ERROR";
+        const regex visibilitySystem("VisibilityMeasurement: Visibility of the system: ([0-9.]+)%");
+        const regex qberRx("ErrorCorrectionCascade: QBER: ([0-9.]+)");
+        const regex keySize("PrivacyAmplification: Final key size: ([0-9]+)");
+        const regex lineLength(R"raw(LineMeasurement: Line length:\s+([0-9.]+))raw"); // raw string starts after raw( and ends at )raw
+        const regex secretKeyRate("ThreadPrivacyAmplification: Secret Key Rate = ([0-9.]+)");
 
         try
         {
@@ -209,7 +233,7 @@ namespace cqp
             try
             {
 
-                while (proc.Running())
+                while (proc.Running() && !shutdown)
                 {
                     string line;
                     char lastChar = {};
@@ -226,6 +250,44 @@ namespace cqp
                     if(line.compare(0, lineInfo.length(), lineInfo) == 0)
                     {
                         LOGINFO(line);
+                        try {
+                            smatch matchResult;
+                            if(std::regex_match(line, matchResult, visibilitySystem))
+                            {
+                                const double vis = stod(matchResult[0].str());
+                                stats.Visibility.Update(vis);
+                            }
+                            else if(std::regex_match(line, matchResult, qberRx))
+                            {
+                                const double qber = stod(matchResult[0].str());
+                                stats.Qber.Update(qber);
+                            }
+                            else if(std::regex_match(line, matchResult, keySize))
+                            {
+                                const ulong keySize = stoul(matchResult[0].str());
+                                stats.keySize.Update(keySize);
+                            }
+                            else if(std::regex_match(line, matchResult, lineLength))
+                            {
+                                const ulong linelength = stoul(matchResult[0].str());
+                                stats.lineLength.Update(linelength);
+                            }
+                            else if(std::regex_match(line, matchResult, secretKeyRate))
+                            {
+                                const double keyRate = stod(matchResult[0].str()); // bits per second
+                                stats.keyRate.Update(keyRate);
+
+                                { /*lockscope*/
+                                    // trigger the host to collect key from the device
+                                    unique_lock<mutex> lock(keyReadyMutex);
+                                    keyAvailable = true;
+                                } /*lockscope*/
+                                keyReadyCv.notify_one();
+                            }
+                        } catch (const exception& e) {
+                            LOGERROR(e.what());
+                        }
+
                     }
                     else if(line.compare(0, lineWarn.length(), lineWarn) == 0)
                     {

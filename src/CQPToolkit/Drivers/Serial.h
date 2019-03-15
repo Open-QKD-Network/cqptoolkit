@@ -165,6 +165,7 @@ namespace cqp
         /// @return True on success with the number of bytes read in num
         bool Read(char* buffer, uint32_t& num);
 
+        void Flush();
     protected:
         /// The name of the port being used
         /// @note under windows this takes the for "\\.\COM{n}"

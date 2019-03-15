@@ -13,6 +13,8 @@
 #include "Version.h"
 #include "Algorithms/Logging/Logger.h"
 #include <iostream>
+#include <execinfo.h>
+#include <unistd.h>
 
 namespace cqp
 {
@@ -24,6 +26,8 @@ namespace cqp
         using std::placeholders::_1;
         definedArguments.AddOption("version", "", "Print the version of this program")
         .Callback(std::bind(&Application::HandleVersion, this, _1));
+        // add a default handler for segfaults
+        std::signal(SIGSEGV, SignalHandler);
     }
 
     int Application::Main(const std::vector<std::string>& args)
@@ -71,6 +75,17 @@ namespace cqp
             {
                 LOGERROR(e.what());
             }
+        }
+
+        if(signum == SIGSEGV)
+        {
+            const int maxTraces = 20;
+            void *trace[maxTraces];
+            int traceSize;
+            traceSize = backtrace(trace, maxTraces);
+            LOGERROR("SIGV Back trace:");
+            backtrace_symbols_fd(trace, traceSize, STDERR_FILENO);
+            exit(-1);
         }
     }
 
