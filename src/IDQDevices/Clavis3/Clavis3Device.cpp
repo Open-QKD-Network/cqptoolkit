@@ -14,8 +14,9 @@
 
 namespace cqp
 {
-    Clavis3Device::Clavis3Device(const std::string& hostname) :
-        pImpl{std::make_unique<Clavis3Device::Impl>(hostname)}
+    Clavis3Device::Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds) :
+        session::SessionController {creds, {}, {}},
+            pImpl{std::make_unique<Clavis3Device::Impl>(hostname)}
     {
     }
 
@@ -31,11 +32,13 @@ namespace cqp
         pImpl->Request_GetSoftwareVersion();
         pImpl->Request_GetBoardInformation();
 
+        side = pImpl->GetSide();
+
         pImpl->Request_UpdateSoftware();
         pImpl->Request_Zeroize();
+        // This will move once the new session control changes are merged
         pImpl->Request_SetInitialKey({0x1u,0x2u,0x3u,0x4u,0x5u,0x6u,0x7u,0x8u,0x9u,0xAu,0xBu,0xCu,0xDu,0xEu,0xFu});
         pImpl->Request_GetRandomNumber();
-        pImpl->Request_PowerOn();
 
         return true;
     }
@@ -45,36 +48,27 @@ namespace cqp
         return this;
     }
 
-    grpc::Status Clavis3Device::StartServer(const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds)
-    {
-    }
-
-    grpc::Status Clavis3Device::StartServerAndConnect(cqp::URI otherController, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds)
-    {
-    }
-
-    std::string Clavis3Device::GetConnectionAddress() const
-    {
-    }
-
     grpc::Status Clavis3Device::StartSession()
     {
+        auto result = SessionController::StartSession();
+        if(result.ok())
+        {
+            pImpl->Request_PowerOn();
+        }
+        return result;
     }
 
     void Clavis3Device::EndSession()
     {
-    }
-
-    void Clavis3Device::WaitForEndOfSession()
-    {
+        pImpl->Request_PowerOff();
+        SessionController::EndSession();
     }
 
     void Clavis3Device::PassOnKeys()
     {
-        KeyID id;
         auto keys = std::make_unique<KeyList>();
         keys->resize(1);
-        if(pImpl->ReadKey(id, (*keys)[0]))
+        if(pImpl->ReadKey((*keys)[0]))
         {
             //Emit<&IKeyCallback::OnKeyGeneration>(move(keys));
             if(listener)

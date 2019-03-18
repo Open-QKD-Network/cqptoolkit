@@ -15,17 +15,19 @@
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "CQPToolkit/Interfaces/ISessionController.h"
 #include "IDQDevices/idqdevices_export.h"
+#include "CQPToolkit/Session/SessionController.h"
+#include "QKDInterfaces/Site.pb.h"
 
 namespace cqp
 {
 
     class IDQDEVICES_EXPORT Clavis3Device :
         public virtual IQKDDevice,
-        public virtual ISessionController,
+        public session::SessionController,
         public IKeyPublisher
     {
     public:
-        Clavis3Device(const std::string& hostname);
+        Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds);
         ~Clavis3Device() override;
 
         ///@{
@@ -39,20 +41,20 @@ namespace cqp
         std::vector<stats::StatCollection*> GetStats() override;
         ///@}
 
-        // ISessionController interface
-    public:
-        grpc::Status StartServer(const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
-        grpc::Status StartServerAndConnect(URI otherController, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
-        std::string GetConnectionAddress() const override;
+        ///@{
+        /// @name ISessionController interface
+
         grpc::Status StartSession() override;
         void EndSession() override;
-        void WaitForEndOfSession() override;
+        ///@}
+
     protected: // methods
         void PassOnKeys();
     protected: // members
         class Impl;
         std::unique_ptr<Impl> pImpl;
-
+        remote::Side::Type side;
+        std::shared_ptr<grpc::ChannelCredentials> creds;
     };
 
 } // namespace cqp

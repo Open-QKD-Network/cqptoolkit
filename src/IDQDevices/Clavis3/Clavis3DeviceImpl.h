@@ -15,6 +15,7 @@
 #include "SystemState.hpp"
 #include <atomic>
 #include <thread>
+#include "QKDInterfaces/Site.pb.h"
 
 namespace cqp
 {
@@ -47,7 +48,10 @@ namespace cqp
 
         void SubscribeToStateChange();
 
-        bool ReadKey(KeyID& id, PSK& keyValue);
+        bool ReadKey(PSK& keyValue);
+
+        remote::Side::Type GetSide();
+
     protected: // methods
 
         void ReadSignalSocket();

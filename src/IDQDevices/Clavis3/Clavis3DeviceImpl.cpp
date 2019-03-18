@@ -38,6 +38,8 @@
 #include "ZmqClassExchange.hpp"
 #include "QuantumKey.hpp"
 
+//#include "Algorithms/Util/Hash.h"
+
 namespace cqp
 {
 
@@ -241,7 +243,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    bool Clavis3Device::Impl::ReadKey(KeyID& id, PSK& keyValue)
+    bool Clavis3Device::Impl::ReadKey(PSK& keyValue)
     {
         using namespace idq4p::classes;
         using namespace idq4p::domainModel;
@@ -255,8 +257,8 @@ namespace cqp
             ZmqClassExchange::Receive<QuantumKey>(keySocket, key);
 
             LOGINFO("KeyChannel: received '" + key.ToString() + "'");
-            UUID temp(key.GetId());
-            id = temp.Hash();
+
+            //id = FNV1aHash(key.GetId());
             keyValue = key.GetKeyValue();
             result = true;
         }
