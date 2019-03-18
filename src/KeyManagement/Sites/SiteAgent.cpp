@@ -3,7 +3,7 @@
 * @brief SiteAgent
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 15/1/2018
@@ -65,12 +65,14 @@ namespace cqp
                 google::protobuf::Empty response;
                 grpc::ClientContext ctx;
 
-                {/*lock scope*/
+                {
+                    /*lock scope*/
                     unique_lock<mutex> lock(siteDetailsMutex);
                     if(registerResult.ok())
                     {
                         // we've registered - wait for any change in the details
-                        siteDetailsChanged.wait(lock, [&](){
+                        siteDetailsChanged.wait(lock, [&]()
+                        {
                             google::protobuf::util::MessageDifferencer diff;
                             return !diff.Equals(siteDetails, siteDetailsCopy) || shutdown;
                         });
@@ -92,7 +94,8 @@ namespace cqp
                         netmanChannel->WaitForConnected(chrono::system_clock::now() +
                                                         chrono::seconds(3));
                     }
-                } else
+                }
+                else
                 {
                     // register if the last attempt failed or the site details have changed
                     registerResult = LogStatus(
@@ -101,7 +104,9 @@ namespace cqp
 
             }
             while(!shutdown);
-        } else {
+        }
+        else
+        {
             LOGERROR("Invalid setup");
         }
     }
@@ -116,7 +121,7 @@ namespace cqp
         }
 
         keystoreFactory.reset(new keygen::KeyStoreFactory(LoadChannelCredentials(config.credentials()),
-                                                          keygen::BackingStoreFactory::CreateBackingStore(myConfig.backingstoreurl())));
+                              keygen::BackingStoreFactory::CreateBackingStore(myConfig.backingstoreurl())));
         reportServer.reset(new stats::ReportServer());
         reportServer->AddAdditionalProperties("siteName", config.name());
 
@@ -234,17 +239,23 @@ namespace cqp
         return result;
     } // RegisterWithDiscovery
 
-    void SiteAgent::ProcessKeys(std::shared_ptr<DeviceConnection> connection)
+    void SiteAgent::ProcessKeys(std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey)
     {
         using namespace std;
         auto deviceStub = remote::IDevice::NewStub(connection->channel);
 
         if(deviceStub && connection->keySink)
         {
-            google::protobuf::Empty request;
+            remote::LocalSettings request;
             remote::RawKeys incommingKeys;
+            request.set_initialkey(initialKey->data(), initialKey->size());
 
             auto reader = deviceStub->WaitForSession(&connection->context, request);
+
+            // TODO this isn't enough to ensure the memory is clean.
+            request.clear_initialkey();
+            initialKey->clear();
+            initialKey.reset();
 
             while(reader && reader->Read(&incommingKeys))
             {
@@ -266,12 +277,14 @@ namespace cqp
 
             LogStatus(reader->Finish());
 
-        } else {
+        }
+        else
+        {
             LOGERROR("Faild to WaitForSession, invalid setup");
         }
     }
 
-    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, std::string& localSessionAddress)
+    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, std::string& localSessionAddress, remote::SessionDetails& params)
     {
         using namespace std;
         using namespace grpc;
@@ -298,7 +311,44 @@ namespace cqp
                     {
                         result = Status(StatusCode::UNAVAILABLE, "Failed to connect to " + regDevice.controladdress());
                     }
-                    localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev);
+
+                    auto initialPsk = std::make_unique<PSK>();
+
+                    // find a key to use for bootstrapping
+                    // First try our own key store.
+                    if(params.initialkeyid() == 0)
+                    {
+                        KeyID newId;
+                        if(localDev->keySink->GetNewKey(newId, *initialPsk))
+                        {
+                            // set the key ID so that it is passed to the other site
+                            params.set_initialkeyid(newId);
+                        }
+                        else
+                        {
+                            // If theres no key to hand, try the fallback
+                            if(!myConfig.fallbackkey().empty())
+                            {
+                                LOGWARN("Using fallback key to bootstrap device");
+                                initialPsk->resize(myConfig.fallbackkey().size());
+                                initialPsk->assign(myConfig.fallbackkey().begin(), myConfig.fallbackkey().end());
+                            }
+                            else
+                            {
+                                LOGWARN("No key available for bootstrap. Ether populate the keystores or provide a fallback key in the configuration.");
+                            }
+                        }
+                    }
+                    else
+                    {
+// we should be able to get the key from our local key store
+                        if(!LogStatus(localDev->keySink->GetExistingKey(params.initialkeyid(), *initialPsk)).ok())
+                        {
+                            LOGERROR("Failded to get existing key " + std::to_string(params.initialkeyid()));
+                        }
+                    }
+
+                    localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
                     // BANG! need to wait for session address
                     // this is the device we're looking for
                     localSessionAddress = regDevice.sessionaddress();
@@ -311,7 +361,8 @@ namespace cqp
                 }
             }
         }
-        else {
+        else
+        {
             LOGTRACE("Hop already active");
         }
 
@@ -319,7 +370,7 @@ namespace cqp
     } // PrepHop
 
     grpc::Status SiteAgent::ForwardOnStartNode(const remote::PhysicalPath* path, const std::string& secondSite,
-                                               const std::string& localSessionAddress)
+            const std::string& localSessionAddress)
     {
         using namespace std;
         using namespace grpc;
@@ -370,7 +421,7 @@ namespace cqp
 
     } // StartRightSide
 
-    grpc::Status SiteAgent::StartNode(grpc::ServerContext* ctx, const remote::HopPair& hop, const remote::PhysicalPath& myPath)
+    grpc::Status SiteAgent::StartNode(grpc::ServerContext* ctx, remote::HopPair& hop, remote::PhysicalPath& myPath)
     {
         LOGTRACE("Looking at hop from " + hop.first().site() + " to " + hop.second().site());
 
@@ -392,12 +443,15 @@ namespace cqp
             {
                 // configure the device and set up the controller
                 std::string localSessionAddress;
-                result = PrepHop(hop.first().deviceid(), hop.second().site(), localSessionAddress);
+                result = PrepHop(hop.first().deviceid(), hop.second().site(), localSessionAddress, *hop.mutable_params());
                 if(result.ok())
                 {
                     result = ForwardOnStartNode(&myPath, hop.second().site(), localSessionAddress);
                 }
-            } else {
+
+            }
+            else
+            {
                 result = Status(grpc::StatusCode::OK, "Already connected");
                 LOGINFO("Already connected to " + hop.first().site());
             }
@@ -426,7 +480,7 @@ namespace cqp
                     // Copy the string using the length defined in the string
                     remoteSessionAddress.assign(metaDataIt->second.begin(), metaDataIt->second.end());
                     // configure the device and set up the controller
-                    Status result = PrepHop(hop.second().deviceid(), hop.first().site(), localSessionAddress);
+                    Status result = PrepHop(hop.second().deviceid(), hop.first().site(), localSessionAddress, *hop.mutable_params());
                     if(result.ok() && devicesInUse[hop.second().deviceid()])
                     {
                         // setup the second half of the chain
@@ -442,7 +496,9 @@ namespace cqp
                     LOGDEBUG("Backwards hop");
                     result = Status(StatusCode::INVALID_ARGUMENT, "Hop appears to be backwards. Called wrong Site?");
                 }
-            } else {
+            }
+            else
+            {
                 result = Status(grpc::StatusCode::OK, "Already connected");
                 LOGINFO("Already connected to " + hop.second().site());
             }
@@ -481,13 +537,15 @@ namespace cqp
             LOGDEBUG(GetConnectionAddress() + " is starting node with: " + pathString);
         }
 
+        auto pathCopy = *path;
+
         // default result
         grpc::Status result = Status(StatusCode::NOT_FOUND, "No hops applicable to this site");
         // walk through each hop in the path
         // path example = [ [a, b], [b, c] ]
-        for(auto& hopPair : path->hops())
+        for(auto& hopPair : *pathCopy.mutable_hops())
         {
-            result = StartNode(ctx, hopPair, *path);
+            result = StartNode(ctx, hopPair, pathCopy);
         } // for pairs
 
 
@@ -579,7 +637,8 @@ namespace cqp
                     if(net::ResolveAddress(addrUri.GetHost(), addrIp))
                     {
                         const auto hostIps = net::GetHostIPs();
-                        result = std::any_of(hostIps.begin(), hostIps.end(), [&addrIp](auto myIp) {
+                        result = std::any_of(hostIps.begin(), hostIps.end(), [&addrIp](auto myIp)
+                        {
                             return myIp == addrIp;
                         });
                     } // if resolve
@@ -650,7 +709,8 @@ namespace cqp
     {
         using namespace std;
 
-        {/*lock scope*/
+        {
+            /*lock scope*/
             lock_guard<mutex> lock(siteDetailsMutex);
             (*siteDetails.add_devices()) = *request;
 
@@ -669,7 +729,8 @@ namespace cqp
         using namespace std;
         Status result = Status(StatusCode::NOT_FOUND, "Unknown device " + request->id());
 
-        {/*lock scope*/
+        {
+            /*lock scope*/
             lock_guard<mutex> lock(siteDetailsMutex);
             for(int index = 0; index < siteDetails.devices().size(); index++)
             {

@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Usb Tagger
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -29,7 +29,8 @@ namespace cqp
 
     namespace stats
     {
-        class IStatsReportCallback {
+        class IStatsReportCallback
+        {
         public:
             virtual void StatsReport(const remote::SiteAgentReport& report) = 0;
             virtual ~IStatsReportCallback() = default;
@@ -68,6 +69,12 @@ namespace cqp
         /// @param[in] sessionDetails The session specific parameters
         /// @return true if the device was successfully setup
         virtual bool Initialise(const remote::SessionDetails& sessionDetails) = 0;
+
+        /**
+         * @brief SetInitialKey
+         * @param initailKey The key for initial authentication
+         */
+        virtual void SetInitialKey(std::unique_ptr<PSK> initailKey) = 0;
 
         /**
          * @brief GetSessionController

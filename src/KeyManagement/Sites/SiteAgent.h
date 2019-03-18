@@ -3,7 +3,7 @@
 * @brief SiteAgent
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 15/1/2018
@@ -265,7 +265,7 @@ namespace cqp
          * @param[out] controller The controller to be used to complete the hop setup
          * @return Success
          */
-        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, std::string& localSessionAddress);
+        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, std::string& localSessionAddress, remote::SessionDetails& params);
 
         /**
          * @brief StopNode
@@ -289,9 +289,9 @@ namespace cqp
          */
         void RegisterWithNetMan(std::string netManUri, std::shared_ptr<grpc::ChannelCredentials> creds);
 
-        static void ProcessKeys(std::shared_ptr<DeviceConnection> connection);
+        static void ProcessKeys(std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey);
 
-        grpc::Status StartNode(grpc::ServerContext* ctx, const remote::HopPair& hop, const remote::PhysicalPath& myPath);
+        grpc::Status StartNode(grpc::ServerContext* ctx, remote::HopPair& hop, remote::PhysicalPath& myPath);
     };
 
 }

@@ -125,4 +125,6 @@ message SiteAgentConfig
     string backingStoreUrl = 11;
     /// Static links to create on startup
     repeated PhysicalPath staticHops = 12;
+    /// A key for bootstrapping the system
+    bytes fallbackKey = 13;
 }

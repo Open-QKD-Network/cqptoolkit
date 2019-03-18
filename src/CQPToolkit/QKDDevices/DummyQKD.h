@@ -3,7 +3,7 @@
 * @brief DummyQKD
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 30/1/2018
@@ -66,6 +66,9 @@ namespace cqp
     public:
         /// @{
         /// @name IQKDDevice interface
+
+        /// @copydoc IQKDDevice::SetInitialKey
+        void SetInitialKey(std::unique_ptr<PSK> initialKey) override;
 
         /// @copydoc cqp::IQKDDevice::GetDriverName
         std::string GetDriverName() const override;

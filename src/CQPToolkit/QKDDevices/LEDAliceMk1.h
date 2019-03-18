@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Cheap and cheerful LED driver Mk1
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 22 Sep 2016
@@ -15,7 +15,8 @@
 #include "Algorithms/Datatypes/URI.h"                                // for URI
 #include "Algorithms/Random/RandomNumber.h"
 
-namespace grpc {
+namespace grpc
+{
     class ChannelCredentials;
 }
 
@@ -25,13 +26,14 @@ namespace cqp
     class Usb;
     class ISessionController;
     class LEDDriver;
-    namespace session {
+    namespace session
+    {
         class AliceSessionController;
     }
 
     /// A transmitter which uses both serial and usb deivces to send photons
     class CQPTOOLKIT_EXPORT LEDAliceMk1 :
-            public virtual IQKDDevice
+        public virtual IQKDDevice
     {
     public:
 
@@ -58,6 +60,9 @@ namespace cqp
 
         /// @name IQKDDevice interface
         ///@{
+
+        /// @copydoc IQKDDevice::SetInitialKey
+        void SetInitialKey(std::unique_ptr<PSK> initialKey) override;
 
         /// @copydoc IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;

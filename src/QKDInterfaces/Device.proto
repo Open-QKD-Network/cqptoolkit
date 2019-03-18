@@ -75,7 +75,8 @@ message SessionDetails {
     double lineAttenuation = 2;
     uint64 photonsPerBurst = 3;
     uint32 repitionRate = 4;
-
+    /// Which key to use for initial authentication/bootstrap
+    uint64 initialKeyId = 5;
 };
 
 /// The condition of a link

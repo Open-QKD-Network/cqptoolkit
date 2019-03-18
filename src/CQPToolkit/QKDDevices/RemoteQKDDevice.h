@@ -18,16 +18,18 @@
 #include <vector>
 #include "CQPToolkit/cqptoolkit_export.h"
 
-namespace cqp {
+namespace cqp
+{
 
     class IQKDDevice;
-    namespace remote {
+    namespace remote
+    {
         class DeviceConfig;
     }
 
     class CQPTOOLKIT_EXPORT RemoteQKDDevice :
-            public virtual IKeyCallback,
-            public remote::IDevice::Service
+        public virtual IKeyCallback,
+        public remote::IDevice::Service
     {
     public:
         RemoteQKDDevice(std::shared_ptr<IQKDDevice> device,
@@ -41,7 +43,7 @@ namespace cqp {
         /// @copydoc remote::IDevice::RunSession
         grpc::Status RunSession(grpc::ServerContext* context, const remote::SessionDetailsTo* request, google::protobuf::Empty*) override;
         /// @copydoc remote::IDevice::WaitForSession
-        grpc::Status WaitForSession(grpc::ServerContext* context, const google::protobuf::Empty*, ::grpc::ServerWriter<remote::RawKeys>* writer) override;
+        grpc::Status WaitForSession(grpc::ServerContext* context, const remote::LocalSettings*settings, ::grpc::ServerWriter<remote::RawKeys>* writer) override;
         /// @copydoc remote::IDevice::GetLinkStatus
         grpc::Status GetLinkStatus(grpc::ServerContext* context, const google::protobuf::Empty*, ::grpc::ServerWriter<remote::LinkStatus>* writer) override;
 

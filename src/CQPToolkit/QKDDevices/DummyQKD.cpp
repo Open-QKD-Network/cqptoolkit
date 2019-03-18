@@ -3,7 +3,7 @@
 * @brief DummyQKD
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 30/1/2018
@@ -38,10 +38,10 @@ namespace cqp
         ProcessingChain(std::shared_ptr<grpc::ChannelCredentials> creds,
                         IRandom* rng, remote::Side::Type side) :
             alignment(std::make_shared<align::NullAlignment>()),
-          ec(std::make_shared<ec::ErrorCorrection>()),
-          privacy(std::make_shared<privacy::PrivacyAmplify>()),
-          keyConverter(std::make_shared<keygen::KeyConverter>()),
-          reportServer(std::make_shared<stats::ReportServer>())
+            ec(std::make_shared<ec::ErrorCorrection>()),
+            privacy(std::make_shared<privacy::PrivacyAmplify>()),
+            keyConverter(std::make_shared<keygen::KeyConverter>()),
+            reportServer(std::make_shared<stats::ReportServer>())
         {
             using namespace std;
             session::SessionController::RemoteCommsList remotes;
@@ -53,36 +53,36 @@ namespace cqp
             switch (side)
             {
             case remote::Side::Alice:
-                {
-                    photonSource = make_shared<sim::DummyTransmitter>(rng);
-                    photonSource->Attach(alignment.get());
-                    remotes.push_back(photonSource);
-                    photonSource->stats.Add(reportServer.get());
+            {
+                photonSource = make_shared<sim::DummyTransmitter>(rng);
+                photonSource->Attach(alignment.get());
+                remotes.push_back(photonSource);
+                photonSource->stats.Add(reportServer.get());
 
-                    auto transmitter = std::make_shared<sift::Transmitter>();
-                    sifter = transmitter;
-                    remotes.push_back(transmitter);
+                auto transmitter = std::make_shared<sift::Transmitter>();
+                sifter = transmitter;
+                remotes.push_back(transmitter);
 
-                    controller = make_shared<session::AliceSessionController>(creds, services, remotes, photonSource, reportServer);
-                }
+                controller = make_shared<session::AliceSessionController>(creds, services, remotes, photonSource, reportServer);
+            }
 
-                break;
+            break;
             case remote::Side::Bob:
-                {
-                    timeTagger = make_shared<sim::DummyTimeTagger>(rng);
-                    timeTagger->Attach(alignment.get());
-                    services.push_back(static_cast<remote::IDetector::Service*>(timeTagger.get()));
-                    services.push_back(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
+            {
+                timeTagger = make_shared<sim::DummyTimeTagger>(rng);
+                timeTagger->Attach(alignment.get());
+                services.push_back(static_cast<remote::IDetector::Service*>(timeTagger.get()));
+                services.push_back(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
 
-                    timeTagger->stats.Add(reportServer.get());
+                timeTagger->stats.Add(reportServer.get());
 
-                    auto receiver = std::make_shared<sift::Receiver>();
-                    sifter = receiver;
-                    services.push_back(receiver.get());
+                auto receiver = std::make_shared<sift::Receiver>();
+                sifter = receiver;
+                services.push_back(receiver.get());
 
-                    controller = make_shared<session::SessionController>(creds, services, remotes, reportServer);
-                }
-                break;
+                controller = make_shared<session::SessionController>(creds, services, remotes, reportServer);
+            }
+            break;
             default:
                 LOGERROR("Invalid device side");
                 break;
@@ -124,6 +124,11 @@ namespace cqp
         DummyQKD(DeviceUtils::GetSide(address), creds, bytesPerKey)
     {
         myAddress = address;
+    }
+
+    void DummyQKD::SetInitialKey(std::unique_ptr<PSK> initialKey)
+    {
+        // TODO
     }
 
     DummyQKD::~DummyQKD() = default;

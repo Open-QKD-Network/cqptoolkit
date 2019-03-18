@@ -18,7 +18,8 @@
 #include "Algorithms/Net/DNS.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 
-namespace cqp {
+namespace cqp
+{
     using grpc::Status;
     using grpc::StatusCode;
 
@@ -58,7 +59,9 @@ namespace cqp {
         {
             result = session->Connect(request->peeraddress());
 
-        } else {
+        }
+        else
+        {
             result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
         }
 
@@ -66,16 +69,23 @@ namespace cqp {
         if(result.ok() && device->Initialise(request->details()))
         {
             session->StartSession(request->details());
-        } else {
+        }
+        else
+        {
             result = Status(StatusCode::FAILED_PRECONDITION, "Initialisation failed");
         }
         return result;
     }
 
-    grpc::Status RemoteQKDDevice::WaitForSession(grpc::ServerContext*, const google::protobuf::Empty*,
-                                                 ::grpc::ServerWriter<remote::RawKeys>* writer)
+    grpc::Status RemoteQKDDevice::WaitForSession(grpc::ServerContext*, const remote::LocalSettings* settings,
+            ::grpc::ServerWriter<remote::RawKeys>* writer)
     {
         Status result;
+
+        auto initialKey = std::make_unique<PSK>();
+        initialKey->resize(settings->initialkey().size());
+        initialKey->assign(settings->initialkey().begin(), settings->initialkey().end());
+        device->SetInitialKey(move(initialKey));
 
         auto session = device->GetSessionController();
 
@@ -84,7 +94,9 @@ namespace cqp {
             // Wait for keys to arrive and pass them on
             // nothing will happen until RunSession is called on one side
             ProcessKeys(writer);
-        } else {
+        }
+        else
+        {
             result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
         }
 
@@ -92,7 +104,7 @@ namespace cqp {
     }
 
     grpc::Status RemoteQKDDevice::GetLinkStatus(grpc::ServerContext* context, const google::protobuf::Empty*,
-                                                ::grpc::ServerWriter<remote::LinkStatus>* writer)
+            ::grpc::ServerWriter<remote::LinkStatus>* writer)
     {
 
         Status result;
@@ -105,7 +117,9 @@ namespace cqp {
         if(session)
         {
             result = session->GetLinkStatus(context, writer);
-        } else {
+        }
+        else
+        {
             result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
         }
 
@@ -115,7 +129,8 @@ namespace cqp {
     void RemoteQKDDevice::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
     {
         using namespace std;
-        {/*lock scope*/
+        {
+            /*lock scope*/
             lock_guard<mutex> lock(recievedKeysMutex);
             recievedKeys.emplace_back(move(keyData));
 
@@ -152,12 +167,15 @@ namespace cqp {
             keyPub->Attach(this);
 
             // send the key to the caller
-            do{
+            do
+            {
                 KeyListList tempKeys;
 
-                {/* lock scope*/
+                {
+                    /* lock scope*/
                     unique_lock<mutex> lock(recievedKeysMutex);
-                    recievedKeysCv.wait(lock, [&](){
+                    recievedKeysCv.wait(lock, [&]()
+                    {
                         return !recievedKeys.empty() || shutdown;
                     });
 
@@ -198,7 +216,8 @@ namespace cqp {
 
             keyPub->Detatch();
         } // if keyPub
-        else {
+        else
+        {
             result = Status(StatusCode::INTERNAL, "Invalid key publisher");
         }
 

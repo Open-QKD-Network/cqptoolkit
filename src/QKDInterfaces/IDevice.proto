@@ -21,6 +21,12 @@ message RawKeys {
     repeated bytes keyData = 1;
 }
 
+/// Settings which are shared between the device controller and the local device
+message LocalSettings {
+    /// The key to provide initial authentication of the other side
+    bytes initialKey = 1;
+}
+
 message SessionDetailsTo {
     SessionDetails details = 1;
     /// The address for the device to pair with
@@ -136,7 +142,7 @@ service IDevice
      * @param response A stream of keys as they are created
      * @return status
      */
-    rpc WaitForSession(google.protobuf.Empty) returns (stream RawKeys);
+    rpc WaitForSession(LocalSettings) returns (stream RawKeys);
 
     /**
     * Receive updates on the state of key generation between this site and site

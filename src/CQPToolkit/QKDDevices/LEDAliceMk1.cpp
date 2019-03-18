@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Cheap and cheerful LED driver Mk1
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 22 Sep 2016
@@ -33,7 +33,8 @@ namespace cqp
 
     const std::string LEDAliceMk1::DriverName = "LEDAliceMk1";
 
-    class LEDAliceMk1::ProcessingChain {
+    class LEDAliceMk1::ProcessingChain
+    {
     public:
         ProcessingChain()
         {
@@ -71,7 +72,8 @@ namespace cqp
 
         session::SessionController::Services GetServices() const
         {
-            session::SessionController::Services services {
+            session::SessionController::Services services
+            {
                 align.get(),
                 ec.get(),
                 privacy.get(),
@@ -84,8 +86,8 @@ namespace cqp
 
     LEDAliceMk1::LEDAliceMk1(std::shared_ptr<grpc::ChannelCredentials> creds,
                              const std::string& controlName, const std::string& usbSerialNumber) :
-      processing{std::make_unique<ProcessingChain>()},
-      driver{std::make_shared<LEDDriver>(&rng, controlName, usbSerialNumber)}
+        processing{std::make_unique<ProcessingChain>()},
+        driver{std::make_shared<LEDDriver>(&rng, controlName, usbSerialNumber)}
     {
         // create the session controller
         sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver, processing->reportServer);
@@ -102,6 +104,11 @@ namespace cqp
         sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver, processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
+    }
+
+    void LEDAliceMk1::SetInitialKey(std::unique_ptr<PSK> initialKey)
+    {
+        // TODO
     }
 
     LEDAliceMk1::~LEDAliceMk1() = default;
