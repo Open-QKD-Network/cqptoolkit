@@ -17,6 +17,14 @@
 #include <thread>
 #include "QKDInterfaces/Site.pb.h"
 
+namespace idq4p
+{
+    namespace classes
+    {
+        class GetBoardInformation;
+    }
+}
+
 namespace cqp
 {
 
@@ -34,7 +42,7 @@ namespace cqp
 
         void Request_SetInitialKey(DataBlock key);
 
-        void Request_GetRandomNumber();
+        void GetRandomNumber(std::vector<uint8_t>& out);
 
         void Request_GetProtocolVersion();
 
@@ -70,6 +78,18 @@ namespace cqp
         std::atomic_bool shutdown {false};
         std::atomic<idq4p::domainModel::SystemState> state;
         std::thread signalReader;
+        std::unique_ptr<idq4p::classes::GetBoardInformation> boardInfo;
+
+        /// Mapping of the board id
+        /// Taken from protocol defintion pdf version 0.11.0
+        enum class BoardID : int32_t
+        {
+            QkeComE = 1,
+            QkeHost = 2,
+            QkeAlice = 3,
+            QkeBob = 4,
+            QkeFpga = 5
+        };
     };
 
 }

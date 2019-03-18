@@ -109,9 +109,9 @@ namespace cqp
         //Deserialize reply
         msgpack::sbuffer replyBuffer;
         reply.GetBuffer(replyBuffer);
-        GetBoardInformation replyCommand;
-        MsgpackSerializer::Deserialize<GetBoardInformation>(replyBuffer, replyCommand);
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        boardInfo = std::make_unique<GetBoardInformation>();
+        MsgpackSerializer::Deserialize<GetBoardInformation>(replyBuffer, *boardInfo);
+        LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + boardInfo->ToString() + ".");
     }
 
     void cqp::Clavis3Device::Impl::Request_GetSoftwareVersion()
@@ -170,7 +170,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
     }
 
-    void Clavis3Device::Impl::Request_GetRandomNumber()
+    void Clavis3Device::Impl::GetRandomNumber(std::vector<uint8_t>& out)
     {
         using idq4p::classes::GetRandomNumber;
         // Send request
@@ -187,6 +187,7 @@ namespace cqp
         GetRandomNumber replyCommand;
         MsgpackSerializer::Deserialize<GetRandomNumber>(replyBuffer, replyCommand);
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        out = replyCommand.GetNumber();
     }
 
     void cqp::Clavis3Device::Impl::Request_Zeroize()
@@ -270,6 +271,29 @@ namespace cqp
         {
             LOGERROR(e.what());
         }
+        return result;
+    }
+
+    remote::Side::Type Clavis3Device::Impl::GetSide()
+    {
+        remote::Side::Type result = remote::Side_Type::Side_Type_Any;
+        if(!boardInfo)
+        {
+            Request_GetBoardInformation();
+        }
+
+        switch (static_cast<BoardID>(boardInfo->GetBoardId()))
+        {
+        case BoardID::QkeBob:
+            result = remote::Side_Type::Side_Type_Bob;
+            break;
+        case BoardID::QkeAlice:
+            result = remote::Side_Type::Side_Type_Alice;
+            break;
+        default:
+            LOGERROR("Unknown board type: " + std::to_string(boardInfo->GetBoardId()));
+        }
+
         return result;
     }
 

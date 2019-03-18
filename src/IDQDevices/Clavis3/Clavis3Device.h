@@ -48,13 +48,18 @@ namespace cqp
         void EndSession() override;
         ///@}
 
+        ///@{
+        /// @name ISession interface
+        grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty* response) override;
+        grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty* request, google::protobuf::Empty* response) override;
+        ///@}
     protected: // methods
         void PassOnKeys();
     protected: // members
         class Impl;
         std::unique_ptr<Impl> pImpl;
-        remote::Side::Type side;
         std::shared_ptr<grpc::ChannelCredentials> creds;
+
     };
 
 } // namespace cqp
