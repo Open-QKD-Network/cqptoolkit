@@ -14,7 +14,8 @@
 #include "Algorithms/Util/Strings.h"
 #include "CQPToolkit/Interfaces/IQKDDevice.h"
 
-namespace cqp {
+namespace cqp
+{
 
     remote::Side::Type DeviceUtils::GetSide(const URI& address)
     {
@@ -26,7 +27,8 @@ namespace cqp {
             if(sideStr == "alice")
             {
                 result = remote::Side::Type::Side_Type_Alice;
-            } else if(sideStr == "bob")
+            }
+            else if(sideStr == "bob")
             {
                 result = remote::Side::Type::Side_Type_Bob;
             }
@@ -41,15 +43,46 @@ namespace cqp {
         string side;
         size_t bytesPerKey = DefaultBytesPerKey;
 
-        url.GetFirstParameter(IQKDDevice::Parmeters::switchPort, switchPort);
-        url.GetFirstParameter(IQKDDevice::Parmeters::side, side);
-        url.GetFirstParameter(IQKDDevice::Parmeters::keybytes, bytesPerKey);
+        url.GetFirstParameter(IQKDDevice::Parameters::switchPort, switchPort);
+        url.GetFirstParameter(IQKDDevice::Parameters::side, side);
+        url.GetFirstParameter(IQKDDevice::Parameters::keybytes, bytesPerKey);
 
         std::string result = url.GetScheme() + "_" +
                              url.GetHost() + "_" +
                              std::to_string(url.GetPort()) + "_" +
                              switchPort + "_" + std::to_string(bytesPerKey) + "_" +
                              side;
+
+        return result;
+    }
+
+    URI DeviceUtils::ConfigToUri(const remote::DeviceConfig& config)
+    {
+        URI result;
+        switch (config.side())
+        {
+        case remote::Side::Alice:
+            result.SetParameter(IQKDDevice::Parameters::side, IQKDDevice::Parameters::SideValues::alice);
+            break;
+        case remote::Side::Bob:
+            result.SetParameter(IQKDDevice::Parameters::side, IQKDDevice::Parameters::SideValues::bob);
+            break;
+        default:
+            LOGERROR("Invalid device side");
+            break;
+        }
+        if(!config.switchname().empty())
+        {
+            result.SetParameter(IQKDDevice::Parameters::switchName, config.switchname());
+        }
+        if(!config.switchport().empty())
+        {
+            result.SetParameter(IQKDDevice::Parameters::switchPort, config.switchport());
+        }
+        if(config.bytesperkey() != 0)
+        {
+            result.SetParameter(IQKDDevice::Parameters::keybytes, std::to_string(config.bytesperkey()));
+        }
 
         return result;
     }

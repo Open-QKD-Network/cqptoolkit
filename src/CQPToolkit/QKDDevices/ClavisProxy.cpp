@@ -57,8 +57,8 @@ namespace cqp
 
         result.set_id(DeviceUtils::GetDeviceIdentifier(addrUri));
         result.set_side(controller->GetSide());
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchName, *result.mutable_switchname());
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchPort, *result.mutable_switchport());
+        addrUri.GetFirstParameter(IQKDDevice::Parameters::switchName, *result.mutable_switchname());
+        addrUri.GetFirstParameter(IQKDDevice::Parameters::switchPort, *result.mutable_switchport());
         result.set_kind(addrUri.GetScheme());
 
         return result;

@@ -78,7 +78,7 @@ service ISiteAgent
     */
     rpc GetSiteDetails(google.protobuf.Empty) returns (Site);
 
-    rpc RegisterDevice(DeviceConfig) returns (google.protobuf.Empty);
+    rpc RegisterDevice(ControlDetails) returns (google.protobuf.Empty);
 
     rpc UnregisterDevice(DeviceID) returns (google.protobuf.Empty);
 }

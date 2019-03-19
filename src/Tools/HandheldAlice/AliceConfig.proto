@@ -23,5 +23,5 @@ message AliceConfig {
     /// usb device name
     string usbDeviceName = 3;
     // TODO:
-    remote.DeviceConfig deviceParams = 4;
+    remote.ControlDetails controlDetails = 4;
 }

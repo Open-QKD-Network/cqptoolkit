@@ -300,7 +300,7 @@ namespace cqp
             // not currently in use, find it in the registered devices list
             for(const auto& regDevice : siteDetails.devices())
             {
-                if(regDevice.id() == deviceId)
+                if(regDevice.config().id() == deviceId)
                 {
                     // store the new device and get the iterator to it for later
                     auto localDev = make_shared<DeviceConnection>();
@@ -351,7 +351,7 @@ namespace cqp
                     localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
                     // BANG! need to wait for session address
                     // this is the device we're looking for
-                    localSessionAddress = regDevice.sessionaddress();
+                    localSessionAddress = regDevice.config().sessionaddress();
 
 
                     devicesInUse.emplace(deviceId, move(localDev));
@@ -705,8 +705,9 @@ namespace cqp
         return result;
     }// GetSiteChannel
 
-    grpc::Status SiteAgent::RegisterDevice(grpc::ServerContext*, const remote::DeviceConfig* request, google::protobuf::Empty*)
+    grpc::Status SiteAgent::RegisterDevice(grpc::ServerContext*, const remote::ControlDetails* request, google::protobuf::Empty*)
     {
+        LOGDEBUG("Device registering: " + request->config().id());
         using namespace std;
 
         {
@@ -716,6 +717,21 @@ namespace cqp
 
         }/*lock scope*/
 
+        string sideString;
+        switch (request->config().side())
+        {
+        case remote::Side_Type::Side_Type_Alice:
+            sideString = "Alice";
+            break;
+        case remote::Side_Type::Side_Type_Bob:
+            sideString = "Bob";
+            break;
+        default:
+            sideString = "Any";
+            break;
+        }
+        LOGINFO("New " + sideString + " device: " + request->config().id() + " at '" + request->controladdress() + "' on switch '" +
+                request->config().switchname() + "' port '" + request->config().switchport() + "'");
         // TODO: fix static hops
 
         // tell everyone we changed the site details
@@ -726,6 +742,7 @@ namespace cqp
 
     grpc::Status SiteAgent::UnregisterDevice(grpc::ServerContext*, const remote::DeviceID* request, google::protobuf::Empty*)
     {
+        LOGDEBUG("Device unregistering: " + request->id());
         using namespace std;
         Status result = Status(StatusCode::NOT_FOUND, "Unknown device " + request->id());
 
@@ -734,7 +751,7 @@ namespace cqp
             lock_guard<mutex> lock(siteDetailsMutex);
             for(int index = 0; index < siteDetails.devices().size(); index++)
             {
-                if(siteDetails.devices(index).id() == request->id())
+                if(siteDetails.devices(index).config().id() == request->id())
                 {
                     siteDetails.mutable_devices()->erase(siteDetails.mutable_devices()->begin() + index);
                     result = Status();

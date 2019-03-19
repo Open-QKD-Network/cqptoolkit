@@ -44,7 +44,7 @@ namespace cqp
          * @param creds credentials to use when talking to peer
          * @param bytesPerKey
          */
-        DummyQKD(const remote::Side::Type& side, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
+        DummyQKD(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds);
 
         /**
          * @brief DummyQKD
@@ -53,7 +53,7 @@ namespace cqp
          * @param creds credentials to use when talking to peer
          * @param bytesPerKey
          */
-        DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
+        DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds);
 
         /**
          * @brief ~DummyQKD
@@ -102,8 +102,7 @@ namespace cqp
         /// handles postprocessing
         std::unique_ptr<ProcessingChain> processing;
 
-        /// The address to use to contact this
-        std::string myAddress;
+        remote::DeviceConfig config;
     };
 
 } // namespace cqp

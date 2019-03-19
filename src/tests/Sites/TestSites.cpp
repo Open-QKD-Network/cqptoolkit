@@ -54,7 +54,9 @@ namespace cqp
                 using namespace std;
                 serverCreds = grpc::InsecureServerCredentials();
                 LOGTRACE("Creating Device");
-                device = make_shared<DummyQKD>(side, grpc::InsecureChannelCredentials());
+                remote::DeviceConfig config;
+                config.set_side(side);
+                device = make_shared<DummyQKD>(config, grpc::InsecureChannelCredentials());
                 LOGTRACE("Creating adaptor");
                 adaptor = make_shared<RemoteQKDDevice>(device, serverCreds);
                 grpc::ServerBuilder builder;
@@ -66,13 +68,15 @@ namespace cqp
                 if(server)
                 {
                     LOGINFO("Remote device control available on port " + std::to_string(port));
-                    adaptor->SetControlAddress(net::GetHostname(true) + ":" + std::to_string(port));
+                    adaptor->StartControlServer(net::GetHostname(true) + ":" + std::to_string(port));
                     if(!siteAgentAddress.empty())
                     {
                         LOGTRACE("Registering with site agent");
                         result = LogStatus(adaptor->RegisterWithSiteAgent(siteAgentAddress));
                     }
-                } else {
+                }
+                else
+                {
                     LOGERROR("Failed to start server");
                 }
             }
@@ -149,7 +153,7 @@ namespace cqp
             ASSERT_GT(key1Value.size(), 0);
 
             auto ks2 = site2.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
-            ASSERT_NE(ks1, nullptr);
+            ASSERT_NE(ks2, nullptr);
             PSK key2Value;
             ASSERT_TRUE(ks2->GetExistingKey(key1Id, key2Value).ok());
 
@@ -174,191 +178,75 @@ namespace cqp
         TEST(SiteTest, MultiHop)
         {
             using namespace std;
-            using namespace grpc;
-            mutex stepMutex;
-            condition_variable stepCv;
 
-            DefaultLogger().SetOutputLevel(LogLevel::Trace);
-            auto serverCreds = grpc::InsecureServerCredentials();
+            SiteAgentBuilder site1("Site1", 8001);
+            // create site 1's device
+            SiteTestCollection site1alice(remote::Side::Alice, site1.agent->GetConnectionAddress());
+            ASSERT_TRUE(site1alice.result.ok());
 
-            MyNetMan netman;
-            int netmanPort = 0;
-            netman.StartServer(netmanPort, grpc::InsecureServerCredentials());
+            SiteAgentBuilder site2("Site2", 8002);
+            SiteTestCollection site2alice(remote::Side::Alice, site2.agent->GetConnectionAddress());
+            SiteTestCollection site2bob(remote::Side::Bob, site2.agent->GetConnectionAddress());
+            ASSERT_TRUE(site2alice.result.ok());
+            ASSERT_TRUE(site2bob.result.ok());
 
-            ASSERT_NE(netmanPort, 0) << "Failed to start netman";
+            SiteAgentBuilder site3("Site3", 8003);
+            SiteTestCollection site3bob(remote::Side::Bob, site2.agent->GetConnectionAddress());
+            ASSERT_TRUE(site2bob.result.ok());
 
-            // setup default settings
-            remote::SiteAgentConfig config1;
-            config1.set_name("Site1");
-            config1.set_netmanuri("localhost:" + std::to_string(netmanPort));
-            // devices for both directions
-            config1.mutable_deviceurls()->Add("dummyqkd:///?side=alice&switchname=1234&switchport=1a");
-            config1.mutable_deviceurls()->Add("dummyqkd:///?side=bob&switchname=1234&switchport=1b");
-            config1.set_listenport(8001);
+            // setup complete
 
-            // copy the config to the other settings
-            remote::SiteAgentConfig config2(config1);
-            config2.set_name("Site2");
-            config2.set_listenport(8002);
+            LOGINFO("Connecting to " + site2.agent->GetConnectionAddress());
+            auto site1Channel = grpc::CreateChannel(site1.agent->GetConnectionAddress(), grpc::InsecureChannelCredentials());
+            auto site1Stub = remote::ISiteAgent::NewStub(site1Channel);
 
-            // copy the config to the other settings
-            remote::SiteAgentConfig config3(config1);
-            config3.set_name("Site3");
-            config3.set_listenport(8003);
+            remote::PhysicalPath request;
 
-            std::vector<remote::Site> registeredSites;
+            auto hop1 = request.add_hops();
+            hop1->mutable_first()->set_site(site1.agent->GetConnectionAddress());
+            hop1->mutable_first()->set_deviceid(site1alice.device->GetDeviceDetails().id());
+            hop1->mutable_second()->set_site(site2.agent->GetConnectionAddress());
+            hop1->mutable_second()->set_deviceid(site2bob.device->GetDeviceDetails().id());
 
-            // expecting a registration
-            EXPECT_CALL(netman, OnRegistered(_)).WillRepeatedly(Invoke([&](const remote::Site* site)
-            {
-                LOGDEBUG("Register called for " + site->url());
-                registeredSites.push_back(*site);
-                stepCv.notify_one();
-                return grpc::Status();
-            }));
-
-            // create the site agents
-            SiteAgent site1(config1);
-
-            LOGINFO("Site1 = " + site1.GetConnectionAddress());
-
-            // create site one's device
-            auto site1dev1 = make_shared<DummyQKD>(remote::Side::Alice, grpc::InsecureChannelCredentials());
-            remote::DeviceConfig deviceConfig;
-            remote::SessionDetails sessionDetails;
-            RemoteQKDDevice adaptor1(site1dev1, serverCreds);
+            auto hop2 = request.add_hops();
+            hop2->mutable_first()->set_site(site2.agent->GetConnectionAddress());
+            hop2->mutable_first()->set_deviceid(site2alice.device->GetDeviceDetails().id());
+            hop2->mutable_second()->set_site(site3.agent->GetConnectionAddress());
+            hop2->mutable_second()->set_deviceid(site3bob.device->GetDeviceDetails().id());
 
             {
-                unique_lock<mutex> lock(stepMutex);
-                stepCv.wait(lock);
-            }
-            ASSERT_EQ(registeredSites.size(), 1) << "Registration 1 failed";
-
-            SiteAgent site2(config2);
-            LOGINFO("Site2 = " + site2.GetConnectionAddress());
-
-            {
-                unique_lock<mutex> lock(stepMutex);
-                stepCv.wait(lock);
-            }
-            ASSERT_EQ(registeredSites.size(), 2) << "Registration 2 failed";
-
-            {
-                LOGINFO("Connecting to " + site2.GetConnectionAddress());
-                auto channel = grpc::CreateChannel(site2.GetConnectionAddress(), grpc::InsecureChannelCredentials());
                 grpc::ClientContext ctx;
-                auto site2Stub = remote::ISiteAgent::NewStub(channel);
-                remote::PhysicalPath request;
                 google::protobuf::Empty response;
 
-                auto hop = request.mutable_hops()->Add();
-                // specify the hop from site 1 alice to site 2 bob
-                // To create a curve ball later, start it backwards send 2-1 to 2.
-                // When 1 - 2, 2 - 3 is sent later, it should be able to cope
-                hop->mutable_first()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config2.deviceurls(1)));
-                hop->mutable_first()->set_site(site2.GetConnectionAddress());
-
-                hop->mutable_second()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config1.deviceurls(0)));
-                hop->mutable_second()->set_site(site1.GetConnectionAddress());
-
-                LOGTRACE("Calling StartNode 2 - 1 on 2");
-                ASSERT_TRUE(LogStatus(site2Stub->StartNode(&ctx, request, &response)).ok());
-            }
-            LOGTRACE("Register 2 Finished");
-
-            SiteAgent site3(config3);
-            LOGINFO("Site3 = " + site3.GetConnectionAddress());
-
-            {
-                unique_lock<mutex> lock(stepMutex);
-                stepCv.wait(lock);
-            }
-            ASSERT_EQ(registeredSites.size(), 3) << "Registration 2 failed";
-
-            {
-                auto channel = grpc::CreateChannel(site1.GetConnectionAddress(), grpc::InsecureChannelCredentials());
-                grpc::ClientContext ctx;
-                auto site1Stub = remote::ISiteAgent::NewStub(channel);
-                remote::PhysicalPath request;
-                google::protobuf::Empty response;
-
-                auto hop1 = request.mutable_hops()->Add();
-                // specify the hop from site 1 alice to site 2 bob
-                hop1->mutable_first()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config1.deviceurls(0)));
-                hop1->mutable_first()->set_site(site1.GetConnectionAddress());
-
-                hop1->mutable_second()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config2.deviceurls(1)));
-                hop1->mutable_second()->set_site(site2.GetConnectionAddress());
-
-                auto hop2 = request.mutable_hops()->Add();
-                // specify the hop from site 1 alice to site 2 bob
-                hop2->mutable_first()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config2.deviceurls(0)));
-                hop2->mutable_first()->set_site(site2.GetConnectionAddress());
-
-                hop2->mutable_second()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config3.deviceurls(1)));
-                hop2->mutable_second()->set_site(site3.GetConnectionAddress());
-
-                LOGTRACE("Calling StartNode 1 - 2, 2 - 3");
                 ASSERT_TRUE(LogStatus(site1Stub->StartNode(&ctx, request, &response)).ok());
             }
-            LOGTRACE("Register 3 finished");
 
-            for(const std::string& from :
-                    {
-                        site1.GetConnectionAddress(), site2.GetConnectionAddress(), site3.GetConnectionAddress()
-                    })
-            {
-                auto channel = grpc::CreateChannel(from, grpc::InsecureChannelCredentials());
-                auto site1Stub = remote::IKey::NewStub(channel);
-                grpc::ClientContext ctx;
-                google::protobuf::Empty request;
-                remote::SiteList response;
-                LOGTRACE("Getting list of key stores from " + from);
-                ASSERT_TRUE(site1Stub->GetKeyStores(&ctx, request, &response).ok()) << "Failed to get keystores from " + from;
-                ASSERT_EQ(response.urls().size(), 2) << "Wrong number of key stores from " + from;
-                ASSERT_NE(response.urls(0), response.urls(1)) << "Same keystore twice from " + from;
+            auto ks1 = site1.agent->GetKeyStoreFactory()->GetKeyStore(site3.agent->GetConnectionAddress());
+            ASSERT_NE(ks1, nullptr);
+            KeyID key1Id;
+            PSK key1Value;
+            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value));
+            ASSERT_GT(key1Value.size(), 0);
 
-                // try and get a key from each destination
-                for(const auto& ksAddr : response.urls())
-                {
-                    LOGDEBUG("Getting key from " + from + " to " + ksAddr);
-                    grpc::ClientContext keyCtx;
-                    remote::KeyRequest keyRequest;
-                    remote::SharedKey keyResponse;
-                    keyRequest.set_siteto(ksAddr);
-                    ASSERT_TRUE(site1Stub->GetSharedKey(&keyCtx, keyRequest, &keyResponse).ok()) << "Failed to get shared key from " + from + " to " + ksAddr;
-                    ASSERT_GT(keyResponse.keyid(), 0) << "Invalid key id from " + from + " to " + ksAddr;
-                    ASSERT_GT(keyResponse.keyvalue().size(), 0) << "Invalid key size from " + from + " to " + ksAddr;
-                    LOGINFO("Success from " + from + " to " + ksAddr);
-                }
-            }
+            auto ks3 = site3.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
+            ASSERT_NE(ks3, nullptr);
+            PSK key3Value;
+            ASSERT_TRUE(ks3->GetExistingKey(key1Id, key3Value).ok());
+
+            ASSERT_EQ(key1Value, key3Value);
 
             {
-                LOGTRACE("Stopping site 1-2, 2-3...");
-                auto channel = grpc::CreateChannel(site1.GetConnectionAddress(), grpc::InsecureChannelCredentials());
                 grpc::ClientContext ctx;
-                auto site1Stub = remote::ISiteAgent::NewStub(channel);
-                remote::PhysicalPath request;
                 google::protobuf::Empty response;
-
-                auto hop1 = request.mutable_hops()->Add();
-                // specify the hop from site 1 alice to site 2 bob
-                hop1->mutable_first()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config1.deviceurls(0)));
-                hop1->mutable_first()->set_site(site1.GetConnectionAddress());
-
-                hop1->mutable_second()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config2.deviceurls(1)));
-                hop1->mutable_second()->set_site(site2.GetConnectionAddress());
-
-                auto hop2 = request.mutable_hops()->Add();
-                // specify the hop from site 1 alice to site 2 bob
-                hop2->mutable_first()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config2.deviceurls(1)));
-                hop2->mutable_first()->set_site(site2.GetConnectionAddress());
-
-                hop2->mutable_second()->set_deviceid(DeviceUtils::GetDeviceIdentifier(config3.deviceurls(0)));
-                hop2->mutable_second()->set_site(site3.GetConnectionAddress());
-
+                // bring the system down
                 ASSERT_TRUE(LogStatus(site1Stub->EndKeyExchange(&ctx, request, &response)).ok());
             }
+
+            // this should cause the device to be unregistered
+            site1alice.adaptor.reset();
+            site2alice.adaptor.reset();
+            site2bob.adaptor.reset();
+            site3bob.adaptor.reset();
 
         }
     } // namespace tests

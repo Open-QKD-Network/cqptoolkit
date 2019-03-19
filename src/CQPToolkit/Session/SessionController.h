@@ -3,7 +3,7 @@
 * @brief SessionController
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/2/2018
@@ -18,7 +18,8 @@
 #include <condition_variable>
 #include "Algorithms/Util/Strings.h"
 
-namespace grpc {
+namespace grpc
+{
     class ChannelCredentials;
 }
 
@@ -32,11 +33,13 @@ namespace cqp
         class TwoWayServerConnector;
     }
 
-    namespace stats {
+    namespace stats
+    {
         class ReportServer;
     }
 
-    namespace session {
+    namespace session
+    {
 
         /**
          * @brief The SessionController class

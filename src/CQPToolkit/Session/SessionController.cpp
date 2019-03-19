@@ -3,7 +3,7 @@
 * @brief SessionController
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/2/2018
@@ -29,6 +29,7 @@ namespace cqp
         SessionController::SessionController(std::shared_ptr<grpc::ChannelCredentials> creds, const Services& services,
                                              const RemoteCommsList& remotes,
                                              std::shared_ptr<stats::ReportServer> theReportServer):
+            myAddress{net::AnyAddress},
             services{services},
             remoteComms{remotes},
             reportServer(theReportServer)
@@ -74,7 +75,9 @@ namespace cqp
                     }
 
                     UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
-                } else {
+                }
+                else
+                {
                     UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
                 }
             } // if(otherController)
@@ -154,7 +157,9 @@ namespace cqp
                 }
 
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
-            } else {
+            }
+            else
+            {
                 result = Status(StatusCode::DEADLINE_EXCEEDED, "Failed to get client channel");
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
             }
@@ -182,7 +187,8 @@ namespace cqp
         void SessionController::UpdateStatus(remote::LinkStatus::State newState, int errorCode)
         {
 
-            {/*lock scope*/
+            {
+                /*lock scope*/
                 std::unique_lock<std::mutex> lock(threadControlMutex);
                 sessionState.set_state(newState);
                 sessionState.set_errorcode(errorCode);
@@ -190,12 +196,12 @@ namespace cqp
             linkStatusCv.notify_all();
         } // SessionEnding
 
-        Status SessionController::StartServer(const std::string& hostname, uint16_t requestedPort, std::shared_ptr<grpc::ServerCredentials> creds)
+        Status SessionController::StartServer(const std::string& address, uint16_t requestedPort, std::shared_ptr<grpc::ServerCredentials> creds)
         {
             Status result;
             if(server == nullptr)
             {
-                if(hostname.empty())
+                if(address.empty())
                 {
                     // FIXME: this may not work in all situations
                     // The call may just have to specify the hostname manually
@@ -203,7 +209,7 @@ namespace cqp
                 } // if(hostname.empty())
                 else
                 {
-                    myAddress = hostname;
+                    myAddress = address;
                 } // else
 
                 if(reportServer)
@@ -279,7 +285,9 @@ namespace cqp
                 {
                     result = LogStatus(Status(StatusCode::DEADLINE_EXCEEDED, "Client connection failed"));
                     UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
-                } else {
+                }
+                else
+                {
                     UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected);
                 }
             } // if(result.ok())
@@ -298,7 +306,8 @@ namespace cqp
             remote::LinkStatus lastState;
             bool keepGoing = true;
 
-            {/*lockscope*/
+            {
+                /*lockscope*/
                 lock_guard<mutex> lock(threadControlMutex);
                 lastState = sessionState;
             }/*lockscope*/
@@ -307,12 +316,14 @@ namespace cqp
 
             while(keepGoing && !context->IsCancelled())
             {
-                {/*lockscope*/
+                {
+                    /*lockscope*/
 
                     unique_lock<mutex> lock(threadControlMutex);
-                    linkStatusCv.wait(lock, [&](){
+                    linkStatusCv.wait(lock, [&]()
+                    {
                         return sessionState.state() != lastState.state() ||
-                                sessionState.errorcode() != lastState.errorcode();
+                               sessionState.errorcode() != lastState.errorcode();
                     });
                     lastState = sessionState;
                 }/*lockscope*/

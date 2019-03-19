@@ -132,8 +132,8 @@ namespace cqp
     {
         URI result = driver->GetAddress();
         result.SetScheme(DriverName);
-        result.SetParameter(IQKDDevice::Parmeters::side, IQKDDevice::Parmeters::SideValues::alice);
-        result.SetParameter(IQKDDevice::Parmeters::keybytes, "16");
+        result.SetParameter(IQKDDevice::Parameters::side, IQKDDevice::Parameters::SideValues::alice);
+        result.SetParameter(IQKDDevice::Parameters::keybytes, "16");
         return result;
     }
 

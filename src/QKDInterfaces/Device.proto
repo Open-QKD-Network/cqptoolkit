@@ -54,10 +54,19 @@ message DeviceConfig {
     string switchPort = 4;
     /// What kind of device is it
     string kind = 5;
-    /// The connection address for controlling the device
-    string controlAddress = 6;
     /// The connection address for session negotiation
-    string sessionAddress = 7;
+    string sessionAddress = 6;
+    /// Number of bytes the key is split into before publishing
+    uint32 bytesPerKey = 7;
+}
+
+message ControlDetails
+{
+    DeviceConfig config = 1;
+    /// The connection address for controlling the device
+    string controlAddress = 2;
+    /// The Site to register with
+    string siteAgentAddress = 3;
 }
 
 // possible parameters

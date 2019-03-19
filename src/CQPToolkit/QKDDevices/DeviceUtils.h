@@ -13,7 +13,8 @@
 #include "CQPToolkit/cqptoolkit_export.h"
 #include "QKDInterfaces/Device.pb.h"
 
-namespace cqp {
+namespace cqp
+{
 
     class URI;
 
@@ -26,6 +27,8 @@ namespace cqp {
         static remote::Side::Type GetSide(const URI& address);
 
         static std::string GetDeviceIdentifier(const URI& url);
+
+        static URI ConfigToUri(const remote::DeviceConfig& config);
     };
 
 } // namespace cqp

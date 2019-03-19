@@ -104,7 +104,7 @@ namespace cqp
         virtual ~IQKDDevice() = default;
 
         /// URI parameter names
-        struct Parmeters
+        struct Parameters
         {
             /// The name of the switch port parameter
             static NAMEDSTRING(switchPort);

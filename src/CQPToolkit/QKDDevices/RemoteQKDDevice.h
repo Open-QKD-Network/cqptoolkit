@@ -58,20 +58,27 @@ namespace cqp
 
         grpc::Status RegisterWithSiteAgent(const std::string& address);
 
+        void UnregisterWithSiteAgent();
 
-        virtual void SetControlAddress(const std::string& address);
+        bool StartControlServer(const std::string& controlAddress, const std::string& siteAgent = "");
+
+        void WaitForServerShutdown();
+
+        void StopServer();
     protected: // members
         std::shared_ptr<IQKDDevice> device;
         std::shared_ptr<grpc::ServerCredentials> creds;
-        URI sessionAddress;
         using KeyListList = std::vector<std::unique_ptr<KeyList>>;
         KeyListList recievedKeys;
         std::condition_variable recievedKeysCv;
         std::mutex recievedKeysMutex;
         std::atomic_bool shutdown {false};
-        std::string controlAddress;
+        std::string qkdDeviceAddress;
+        std::string siteAgentAddress;
+        std::unique_ptr<grpc::Server> deviceServer;
     protected: // methods
         grpc::Status ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer);
+
     };
 
 } // namespace cqp

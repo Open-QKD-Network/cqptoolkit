@@ -45,7 +45,7 @@ message Site {
     /// site address
     string url = 1;
     /// devices attached to the site
-    repeated DeviceConfig devices = 2;
+    repeated ControlDetails devices = 2;
 }
 
 /// An entry point for QKD

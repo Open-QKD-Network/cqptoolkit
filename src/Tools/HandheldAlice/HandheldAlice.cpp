@@ -3,7 +3,7 @@
 * @brief StatsDump
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -83,8 +83,8 @@ HandheldAlice::HandheldAlice()
     .Bind();
 
     // set sensible default values for config items
-    config.mutable_deviceparams()->set_sessionaddress(std::string(net::AnyAddress) + ":0");
-    config.mutable_deviceparams()->set_controladdress(std::string(net::AnyAddress) + ":0");
+    config.mutable_controldetails()->mutable_config()->set_sessionaddress(std::string(net::AnyAddress) + ":0");
+    config.mutable_controldetails()->set_controladdress(std::string(net::AnyAddress) + ":0");
 }
 
 void HandheldAlice::DisplayHelp(const CommandArgs::Option&)
@@ -112,11 +112,15 @@ void HandheldAlice::HandleConfigFile(const CommandArgs::Option& option)
                 // dont need this option if the config file specifies it
                 definedArguments[Names::connect]->set = true;
             }
-        } else {
+        }
+        else
+        {
             LOGERROR("Failed to read "  + option.value);
             exitCode = InvalidConfig;
         }
-    } else {
+    }
+    else
+    {
         LOGERROR("File not found: " + option.value);
         exitCode = ConfigNotFound;
     }
@@ -145,8 +149,8 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
         } // if tls set
 
         definedArguments.GetProp(Names::connect, *config.mutable_bobaddress());
-        definedArguments.GetProp(Names::keyServer, *config.mutable_deviceparams()->mutable_controladdress());
-        definedArguments.GetProp(Names::sessionAddr, *config.mutable_deviceparams()->mutable_sessionaddress());
+        definedArguments.GetProp(Names::keyServer, *config.mutable_controldetails()->mutable_controladdress());
+        definedArguments.GetProp(Names::sessionAddr, *config.mutable_controldetails()->mutable_config()->mutable_sessionaddress());
         definedArguments.GetProp(Names::device, *config.mutable_devicename());
         definedArguments.GetProp(Names::usbDevice, *config.mutable_usbdevicename());
 
@@ -180,23 +184,25 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
 
             driver->Initialise(sessionDetails);
             // create the servers
-            URI sessionURI(config.deviceparams().sessionaddress());
+            URI sessionURI(config.controldetails().config().sessionaddress());
             auto sessionStatus = driver->GetSessionController()->StartServerAndConnect(config.bobaddress(),
-                                                                  definedArguments.GetStringProp(Names::sessionAddr),
-                                                                  sessionURI.GetPort()
-                                                                  );
+                                 definedArguments.GetStringProp(Names::sessionAddr),
+                                 sessionURI.GetPort()
+                                                                                      );
 
             LogStatus(sessionStatus);
             if(sessionStatus.ok())
             {
                 grpc::ServerBuilder devServBuilder;
 
-                devServBuilder.AddListeningPort(*config.mutable_deviceparams()->mutable_controladdress(), serverCreds);
+                devServBuilder.AddListeningPort(*config.mutable_controldetails()->mutable_controladdress(), serverCreds);
                 devServBuilder.RegisterService(&adaptor);
 
                 deviceServer = devServBuilder.BuildAndStart();
 
-            } else {
+            }
+            else
+            {
                 exitCode = ExitCodes::FailedToConnect;
                 stopExecution = true;
             } // if session ok
@@ -206,7 +212,8 @@ int HandheldAlice::Main(const std::vector<std::string>& args)
 
     if(!stopExecution)
     {
-        AddSignalHandler(SIGTERM, [this](int signum) {
+        AddSignalHandler(SIGTERM, [this](int signum)
+        {
             StopProcessing(signum);
         });
         // Wait for something to stop the driver

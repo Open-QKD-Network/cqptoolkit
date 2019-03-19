@@ -120,10 +120,75 @@ namespace cqp
         std::shared_ptr<stats::ReportServer> reportServer;
     };
 
-    DummyQKD::DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey) :
-        DummyQKD(DeviceUtils::GetSide(address), creds, bytesPerKey)
+    DummyQKD::DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds)
     {
-        myAddress = address;
+        const URI addrUri(address);
+        if(addrUri.GetScheme() != DriverName)
+        {
+            LOGWARN("Driver name " + addrUri.GetScheme() + " doesnt match this driver (" + DriverName + ")");
+        }
+
+        for(const auto& param : addrUri.GetQueryParameters())
+        {
+            if(param.first == Parameters::switchPort)
+            {
+                config.set_switchport(param.second);
+            }
+            else if(param.first == Parameters::side)
+            {
+                if(param.second == Parameters::SideValues::alice)
+                {
+                    config.set_side(remote::Side_Type::Side_Type_Alice);
+                }
+                else if(param.second == Parameters::SideValues::bob)
+                {
+                    config.set_side(remote::Side_Type::Side_Type_Bob);
+                }
+                else if(param.second == Parameters::SideValues::any)
+                {
+                    config.set_side(remote::Side_Type::Side_Type_Any);
+                }
+            }
+            else if(param.first == Parameters::switchName)
+            {
+                config.set_switchname(param.second);
+            }
+            else if(param.first == Parameters::keybytes)
+            {
+                try
+                {
+                    config.set_bytesperkey(static_cast<uint32_t>(std::stoi(param.second)));
+                }
+                catch (const std::exception& e)
+                {
+                    LOGERROR(e.what());
+                }
+            }
+            else
+            {
+                LOGWARN("Unknown parameter: " + param.first);
+            }
+        }
+        processing = std::make_unique<ProcessingChain>(creds, &rng, config.side());
+
+        // reset any values that cant be changed
+        config.set_kind(DriverName);
+        if(config.id().empty())
+        {
+            config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
+        }
+    }
+
+    DummyQKD::DummyQKD(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds):
+        processing{std::make_unique<ProcessingChain>(creds, &rng, initialConfig.side())},
+        config{initialConfig}
+    {
+        // reset any values that cant be changed
+        config.set_kind(DriverName);
+        if(config.id().empty())
+        {
+            config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
+        }
     }
 
     void DummyQKD::SetInitialKey(std::unique_ptr<PSK> initialKey)
@@ -133,24 +198,6 @@ namespace cqp
 
     DummyQKD::~DummyQKD() = default;
 
-    DummyQKD::DummyQKD(const remote::Side::Type & side, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey):
-        processing{std::make_unique<ProcessingChain>(creds, &rng, side)}
-    {
-        myAddress = std::string(DriverName) + ":///?side=";
-        switch (side)
-        {
-        case remote::Side::Alice:
-            myAddress += "alice";
-            break;
-        case remote::Side::Bob:
-            myAddress += "bob";
-            break;
-        default:
-            LOGERROR("Invalid device side");
-            break;
-        }
-    }
-
     std::string cqp::DummyQKD::GetDriverName() const
     {
         return DriverName;
@@ -158,7 +205,8 @@ namespace cqp
 
     URI cqp::DummyQKD::GetAddress() const
     {
-        return myAddress;
+        return DeviceUtils::ConfigToUri(config);
+
     }
 
     bool cqp::DummyQKD::Initialise(const remote::SessionDetails& sessionDetails)
@@ -173,19 +221,8 @@ namespace cqp
 
     remote::DeviceConfig DummyQKD::GetDeviceDetails()
     {
-        remote::DeviceConfig result;
-        URI addrUri(myAddress);
-
-        result.set_id(DeviceUtils::GetDeviceIdentifier(addrUri));
-        std::string sideName;
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::side, sideName);
-        result.set_side(DeviceUtils::GetSide(addrUri));
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchName, *result.mutable_switchname());
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchPort, *result.mutable_switchport());
-        result.set_kind(addrUri.GetScheme());
-        result.set_sessionaddress(processing->controller->GetConnectionAddress());
-
-        return result;
+        config.set_sessionaddress(processing->controller->GetConnectionAddress());
+        return config;
     }
 
     stats::IStatsPublisher* DummyQKD::GetStatsPublisher()

@@ -17,6 +17,7 @@
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
 #include "Algorithms/Net/DNS.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
+#include <thread>
 
 namespace cqp
 {
@@ -28,26 +29,15 @@ namespace cqp
         device(device),
         creds(creds)
     {
-
-        remote::DeviceConfig config;
-        auto session = device->GetSessionController();
-        // start the session
-        sessionAddress = config.sessionaddress();
-        auto hostnameTobind = sessionAddress.GetHost();
-        if(hostnameTobind.empty())
-        {
-            hostnameTobind = net::AnyAddress;
-            sessionAddress.SetHost(net::GetHostname());
-        }
-        uint16_t listenPort = sessionAddress.GetPort();
-        LogStatus(session->StartServer(hostnameTobind, listenPort, creds));
-        sessionAddress = session->GetConnectionAddress();
     }
 
     RemoteQKDDevice::~RemoteQKDDevice()
     {
         shutdown = true;
         recievedKeysCv.notify_all();
+        UnregisterWithSiteAgent();
+        deviceServer.reset();
+        device.reset();
     }
 
     grpc::Status RemoteQKDDevice::RunSession(grpc::ServerContext*, const remote::SessionDetailsTo* request, google::protobuf::Empty*)
@@ -58,7 +48,6 @@ namespace cqp
         if(session)
         {
             result = session->Connect(request->peeraddress());
-
         }
         else
         {
@@ -145,16 +134,106 @@ namespace cqp
         auto siteAgent = remote::ISiteAgent::NewStub(channel);
         grpc::ClientContext ctx;
         google::protobuf::Empty response;
-        auto config = device->GetDeviceDetails();
-        // TODO reconsile the device config type with the need to provide this - the device doesn't inherently know it
-        config.set_controladdress(controlAddress);
-        return siteAgent->RegisterDevice(&ctx, config, &response);
+
+        remote::ControlDetails request;
+        (*request.mutable_config()) = device->GetDeviceDetails();
+        request.set_controladdress(qkdDeviceAddress);
+        auto result = siteAgent->RegisterDevice(&ctx, request, &response);
+
+        if(result.ok())
+        {
+            siteAgentAddress = address;
+        }
+
+        return result;
     }
 
-    void RemoteQKDDevice::SetControlAddress(const std::string& address)
+    void RemoteQKDDevice::UnregisterWithSiteAgent()
+    {
+        if(!siteAgentAddress.empty())
+        {
+            auto channel = grpc::CreateChannel(siteAgentAddress, grpc::InsecureChannelCredentials());
+            auto siteAgent = remote::ISiteAgent::NewStub(channel);
+            grpc::ClientContext ctx;
+            google::protobuf::Empty response;
+            remote::DeviceID id;
+            id.set_id(device->GetDeviceDetails().id());
+
+            LogStatus(siteAgent->UnregisterDevice(&ctx, id, &response));
+            siteAgentAddress.clear();
+        }
+    }
+
+    bool RemoteQKDDevice::StartControlServer(const std::string& controlAddress, const std::string& siteAgent)
     {
         // TODO reconsile the device config type with the need to provide this - the device doesn't inherently know it
-        controlAddress = address;
+        qkdDeviceAddress = controlAddress;
+        siteAgentAddress = siteAgent;
+        auto config = device->GetDeviceDetails();
+
+        auto session = device->GetSessionController();
+        // start the session server
+        URI sessionAddress = config.sessionaddress();
+        auto hostnameTobind = sessionAddress.GetHost();
+        if(hostnameTobind.empty())
+        {
+            hostnameTobind = net::AnyAddress;
+            sessionAddress.SetHost(net::GetHostname());
+        }
+        // start listening for session control on the provided address
+        LogStatus(session->StartServer(hostnameTobind, sessionAddress.GetPort(), creds));
+        // get the actual address for others to use for connections
+        (*config.mutable_sessionaddress()) = session->GetConnectionAddress();
+
+        // now start the IDevice server
+        grpc::ServerBuilder devServBuilder;
+        int listenPort {0};
+        devServBuilder.AddListeningPort(controlAddress, creds, &listenPort);
+        devServBuilder.RegisterService(this);
+
+        deviceServer = devServBuilder.BuildAndStart();
+
+        URI controlURI{controlAddress};
+        controlURI.SetPort(listenPort);
+        if(controlURI.GetHost().empty() || controlURI.GetHost() == net::AnyAddress)
+        {
+            controlURI.SetHost(net::GetHostname());
+        }
+        qkdDeviceAddress = controlURI.ToString();
+        LOGINFO("Control interface available on " + qkdDeviceAddress);
+
+        if(!siteAgentAddress.empty())
+        {
+            grpc::Status regResult;
+            do
+            {
+                LOGINFO("Registering with site agent " + siteAgentAddress);
+                regResult = LogStatus(RegisterWithSiteAgent(siteAgentAddress));
+                if(!regResult.ok())
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(10));
+                }
+            }
+            while(!regResult.ok());
+        }
+
+        return deviceServer != nullptr;
+    }
+
+    void RemoteQKDDevice::WaitForServerShutdown()
+    {
+        if(deviceServer)
+        {
+            deviceServer->Wait();
+        }
+    }
+
+    void RemoteQKDDevice::StopServer()
+    {
+        if(deviceServer)
+        {
+            deviceServer->Shutdown();
+        }
     }
 
     grpc::Status RemoteQKDDevice::ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer)
