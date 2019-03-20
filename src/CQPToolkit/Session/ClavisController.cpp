@@ -3,7 +3,7 @@
 * @brief ClavisController
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/2/2018
@@ -18,10 +18,12 @@
 #include <grpc++/security/credentials.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/QKDDevices/ClavisProxy.h"
+#include "CQPToolkit/Drivers/Clavis.h"
 #include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "QKDInterfaces/IReporting.grpc.pb.h"
 #include <future>
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "CQPToolkit/Drivers/IDQSequenceLauncher.h"
 
 namespace cqp
 {
@@ -32,47 +34,31 @@ namespace cqp
         using grpc::StatusCode;
         using grpc::ClientContext;
 
-        const int wrapperPort = 7000;
-        CONSTSTRING wrapperPeerKey = "peer";
-
-        ClavisController::ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds,
-                                           std::shared_ptr<stats::ReportServer> theReportServer) :
-            SessionController(creds, {}, {}, theReportServer),
-            pubKeyServ{new PublicKeyService()}
+        ClavisController::ClavisController( std::shared_ptr<grpc::ChannelCredentials> creds,
+                                            std::shared_ptr<stats::ReportServer> theReportServer) :
+            SessionController(creds,
         {
-            URI addressUri(address);
-            channel = grpc::CreateChannel(addressUri.GetHostAndPort(), creds);
-            wrapper = remote::IIDQWrapper::NewStub(channel);
-            if(wrapper)
+            static_cast<remote::IIDQWrapper::Service*>(this)
+        }, {}, theReportServer)
+        {
+            LOGTRACE("Getting details from launcher");
+            auto devSide = IDQSequenceLauncher::DeviceFound();
+
+            if(devSide != IDQSequenceLauncher::DeviceType::None)
             {
-                grpc::ClientContext ctx;
-                google::protobuf::Empty request;
-
-                LOGTRACE("Getting details from wrapper");
-                Status detailsResult = LogStatus(
-                                           wrapper->GetDetails(&ctx, request, &myWrapperDetails));
-
-                if(detailsResult.ok())
+                side = remote::Side_Type::Side_Type_Alice;
+                std::string sideStr ="Alice";
+                if(devSide == IDQSequenceLauncher::DeviceType::Bob)
                 {
-                    std::string side ="Alice";
-                    if(myWrapperDetails.side() == remote::Side_Type::Side_Type_Bob)
-                    {
-                        side = "Bob";
-                    }
+                    side = remote::Side_Type::Side_Type_Bob;
+                    sideStr = "Bob";
+                }
 
-                    LOGINFO("Connected to " + side + " wrapper on: " + addressUri.GetHostAndPort() +
-                            " with internal address: " +
-                            myWrapperDetails.hostname() + ":" + std::to_string(myWrapperDetails.portnumber()));
-                }
-                else
-                {
-                    myWrapperDetails.Clear();
-                    wrapper.reset(nullptr);
-                }
+                LOGINFO("Connected to " + sideStr);
             }
             else
             {
-                LOGERROR("Invalid wrapper address");
+                LOGERROR("No device found.");
             }
         }
 
@@ -81,28 +67,40 @@ namespace cqp
             EndSession();
         }
 
-        void ClavisController::ReadKey(std::unique_ptr<grpc::ClientReader<remote::SharedKey>> reader, std::unique_ptr<ClientContext>)
+        void ClavisController::ReadKey()
         {
             using namespace std;
             try
             {
                 KeyList toEmit;
+                remote::KeyIdValueList idList;
                 mutex emitMutex;
 
                 LOGTRACE("Waiting for key from wrapper");
+
+                PSK keyValue;
+                KeyID keyId;
+                // connect to the other controller
+                auto peer = remote::IIDQWrapper::NewStub(this->twoWayComm->GetClient());
+
+                grpc::ClientContext ctx;
+                google::protobuf::Empty response;
+                auto keyIdWriter = peer->UseKeyID(&ctx, &response);
+
                 auto readerSubTask = std::async([&]()
                 {
-                    remote::SharedKey incomming;
-                    while(keepGoing && reader && reader->Read(&incomming))
+                    while(keepGoing && launcher->WaitForKey() && device->GetNewKey(keyValue, keyId))
                     {
                         LOGTRACE("Got key from wrapper");
 
                         {
                             unique_lock<mutex> lock(emitMutex);
-                            toEmit.push_back(PSK(incomming.keyvalue().begin(), incomming.keyvalue().end()));
+                            toEmit.push_back(keyValue);
+                            idList.add_keyid(keyId);
                         }
 
-                        incomming.Clear();
+                        keyValue.clear();
+                        keyId = 0;
                     }
                 });
 
@@ -110,10 +108,19 @@ namespace cqp
                 {
                     if(!toEmit.empty())
                     {
-                        LOGTRACE("Sending " + to_string(toEmit.size()) + " keys.");
                         unique_lock<mutex> lock(emitMutex);
+                        LOGTRACE("Sending " + to_string(toEmit.size()) + " keys.");
+                        if(keyIdWriter->Write(idList))
+                        {
+                            Emit(&IKeyCallback::OnKeyGeneration, std::make_unique<KeyList>(toEmit));
+                            toEmit.clear();
+                        }
+                        else
+                        {
+                            keepGoing = false;
+                            LOGINFO("Key id link closed");
+                        }
 
-                        Emit(&IKeyCallback::OnKeyGeneration, std::make_unique<KeyList>(toEmit));
                     }
                     this_thread::sleep_for(chrono::milliseconds(10));
                 }
@@ -121,10 +128,6 @@ namespace cqp
 
                 // control reaches here when both the task has finished and all keys have been sent
 
-                if(reader)
-                {
-                    reader->Finish();
-                }
                 LOGTRACE("Finished");
             }
             catch (const std::exception& e)
@@ -133,192 +136,80 @@ namespace cqp
             }
         }
 
-        void ClavisController::CollectStats()
-        {
-            using namespace std;
-            auto statsSource = remote::IReporting::NewStub(channel);
-            grpc::ClientContext ctx;
-            remote::ReportingFilter filter;
-            filter.set_listisexclude(true);
-
-            if(statsSource)
-            {
-                auto reader = statsSource->GetStatistics(&ctx, filter);
-                remote::SiteAgentReport report;
-                while(reader && reader->Read(&report))
-                {
-                    // feed the data back to the site agent
-                    reportServer->StatsReport(report);
-                }
-            }
-        }
-
         grpc::Status ClavisController::StartSession(const remote::SessionDetails& sessionDetails)
         {
             LOGTRACE("Called");
-            using namespace std;
-            ClientContext controllerCtx;
-            Empty response;
-            Status result;
 
-            if(!wrapper)
+            // start the bob driver before telling alice to start
+            if(side == remote::Side_Type::Side_Type_Bob)
             {
-                result = Status(StatusCode::RESOURCE_EXHAUSTED, "No wrapper to connect to");
-                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected, result.error_code());
+                LOGTRACE("Launching bob process...");
+                launcher = std::make_unique<IDQSequenceLauncher>(*authKey,
+                           pairedControllerUri,
+                           sessionDetails.lineattenuation());
             }
-            else
+
+            auto result = SessionController::StartSession(sessionDetails);
+
+            using namespace std;
+
+            if(side == remote::Side_Type::Side_Type_Alice)
             {
-                twoWayComm->WaitForClient();
+                LOGTRACE("Launching alice process...");
+                launcher = std::make_unique<IDQSequenceLauncher>(*authKey,
+                           pairedControllerUri,
+                           sessionDetails.lineattenuation());
+            } // device == alice
 
-                remote::IDQStartOptions options;
-                auto secret = pubKeyServ->GetSharedSecret(keyToken);
-                if(secret->SizeInBytes() >= ClavisProxy::InitialSecretKeyBytes)
-                {
-                    options.mutable_initialsecret()->assign(secret->begin(), secret->begin() + ClavisProxy::InitialSecretKeyBytes);
-                }
-                else
-                {
-                    LOGWARN("Initial secret too small");
-                    options.mutable_initialsecret()->assign(secret->begin(), secret->end());
-                }
+            LOGTRACE("Starting Clavis driver");
+            // start communicating with the device
+            device.reset(new Clavis("localhost", side == remote::Side_Type::Side_Type_Alice));
+            // publish stats from the device
+            launcher->stats.Add(reportServer.get());
 
-                remote::SessionDetailsFrom request;
-                (*request.mutable_details()) = sessionDetails;
-                (*request.mutable_initiatoraddress()) = myAddress;
-                //(*request.mutable_keytoken()) = keyToken;
-                controllerCtx.AddMetadata(wrapperPeerKey, myWrapperDetails.hostname());
+            device->SetRequestRetryLimit(3);
 
-                if(myWrapperDetails.side() == remote::Side_Type::Side_Type_Alice)
-                {
-                    // get the other side to launch bob first,
-                    // the IDQ alice program expects bob to be running
-
-                    LOGTRACE("Calling SessionStarting on other controller");
-
-                    auto channel = twoWayComm->WaitForClient();
-                    std::unique_ptr<remote::ISession::Stub> otherController;
-                    if(channel)
-                    {
-                        otherController = remote::ISession::NewStub(channel);
-                    } // if channel
-
-                    if(otherController)
-                    {
-                        result = otherController->SessionStarting(&controllerCtx, request, &response);
-
-                        for(const auto& param : controllerCtx.GetServerTrailingMetadata())
-                        {
-                            if(param.first == wrapperPeerKey)
-                            {
-                                options.set_peerhostname(std::string(param.second.begin(), param.second.end()));
-                                LOGDEBUG("Peer hostname:" + options.peerhostname());
-                            } // if wrapper peer key
-                        } // for params
-                    } // if otherController
-
-                } // if side == alice
-
-                // launch the clavis driver remotely
-                std::unique_ptr<ClientContext> wrapperCtx(new ClientContext());
-                options.set_lineattenuation(sessionDetails.lineattenuation());
-                options.set_peerwrapperport(wrapperPort);
-
-                LOGTRACE("Calling wrapper StartQKDSequence");
-                auto reader = wrapper->StartQKDSequence(wrapperCtx.get(), options);
-                // this will block until the IDQ program is ready
-                LOGTRACE("Waiting for metadata from wrapper");
-                reader->WaitForInitialMetadata();
-
+            if(side == remote::Side_Type::Side_Type_Alice)
+            {
                 keepGoing = true;
                 LOGTRACE("Starting ReadKey Thread");
-                readThread = std::thread(&ClavisController::ReadKey, this, std::move(reader), std::move(wrapperCtx));
-                LOGTRACE("Starting CollectStats Thread");
-                statsThread = std::thread(&ClavisController::CollectStats, this);
+                readThread = std::thread(&ClavisController::ReadKey, this);
+            } // device == alice
 
-                if(myWrapperDetails.side() != remote::Side_Type::Side_Type_Alice)
-                {
-                    // Now that we've launched bob
-                    // tell the other side to start alice
-                    LOGTRACE("Calling SessionStarting on peer");
+            UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted, result.error_code());
 
-                    auto channel = twoWayComm->WaitForClient();
-                    std::unique_ptr<remote::ISession::Stub> otherController;
-                    if(channel)
-                    {
-                        otherController = remote::ISession::NewStub(channel);
-                    } // if channel
-
-                    if(otherController)
-                    {
-                        result = otherController->SessionStarting(&controllerCtx, request, &response);
-                    } // if otherController
-                } // if side != Alice
-
-                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted, result.error_code());
-            } // if wrapper
             LOGTRACE("Finished");
             return result;
         } // StartSession
 
-        grpc::Status ClavisController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetailsFrom* request, google::protobuf::Empty*)
+        grpc::Status ClavisController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)
         {
             LOGTRACE("Called");
-            Status result;
-            pairedControllerUri = request->initiatoraddress();
-            sessionDetails = request->details();
-            //keyToken = request->keytoken();
+            auto result = SessionController::SessionStarting(ctx, request, response);
 
-            if(!wrapper)
+            if(result.ok())
             {
-                result = Status(StatusCode::RESOURCE_EXHAUSTED, "No wrapper to connect to");
-                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected, result.error_code());
-            }
-            else
-            {
-                // launch the clavis driver remotely
-                std::unique_ptr<ClientContext> wrapperCtx(new ClientContext());
-                remote::IDQStartOptions options;
+                pairedControllerUri = request->initiatoraddress();
+                //keyToken = request->keytoken();
 
-                auto secret = pubKeyServ->GetSharedSecret(keyToken);
-                if(secret->SizeInBytes() >= ClavisProxy::InitialSecretKeyBytes)
-                {
-                    options.mutable_initialsecret()->assign(secret->begin(), secret->begin() + ClavisProxy::InitialSecretKeyBytes);
-                }
-                else
-                {
-                    LOGWARN("Initial secret too small");
-                    options.mutable_initialsecret()->assign(secret->begin(), secret->end());
-                }
-                options.set_lineattenuation(sessionDetails.lineattenuation());
-                for(const auto& param : ctx->client_metadata())
-                {
-                    if(param.first == wrapperPeerKey)
-                    {
-                        options.set_peerhostname(std::string(param.second.begin(), param.second.end()));
-                        LOGDEBUG("Peer hostname:" + options.peerhostname());
-                    }
-                }
-                options.set_peerwrapperport(wrapperPort);
+                LOGTRACE("Launching bob process...");
+                launcher = std::make_unique<IDQSequenceLauncher>(*authKey, pairedControllerUri, request->details().lineattenuation());
+                LOGTRACE("Starting Clavis driver");
+                // start communicating with the device
+                device.reset(new Clavis("localhost", side == remote::Side_Type::Side_Type_Alice));
+                // publish stats from the device
+                launcher->stats.Add(reportServer.get());
 
-                LOGTRACE("Calling wrapper StartQKDSequence");
-                auto reader = wrapper->StartQKDSequence(wrapperCtx.get(), options);
-                if(reader)
-                {
-                    LOGTRACE("Waiting for metadata from wrapper");
-                    // this will block until the IDQ program is ready
-                    reader->WaitForInitialMetadata();
+                device->SetRequestRetryLimit(3);
 
+                if(side == remote::Side_Type::Side_Type_Alice)
+                {
+                    keepGoing = true;
                     LOGTRACE("Starting ReadKey Thread");
-                    readThread = std::thread(&ClavisController::ReadKey, this, std::move(reader), std::move(wrapperCtx));
+                    readThread = std::thread(&ClavisController::ReadKey, this);
+                } // device == alice
 
-                    ctx->AddTrailingMetadata(wrapperPeerKey, myWrapperDetails.hostname());
-                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
-                } else {
-                    result = Status(StatusCode::ABORTED, "Invalid reader");
-                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
-                }
-            } // if wrapper
-
+            }
             LOGTRACE("Finished");
             return result;
         }
@@ -326,6 +217,8 @@ namespace cqp
         void ClavisController::EndSession()
         {
             keepGoing = false;
+            launcher.reset();
+            device.reset();
             if(readThread.joinable())
             {
                 readThread.join();
@@ -347,14 +240,50 @@ namespace cqp
 
         remote::Side::Type ClavisController::GetSide()
         {
-            return myWrapperDetails.side();
+            return side;
         }
 
-        bool ClavisController::Initialise(const remote::SessionDetails& session)
+        bool ClavisController::Initialise( std::unique_ptr<PSK> initialKey)
         {
-            sessionDetails = session;
+            authKey = move(initialKey);
             return true;
         } // RegisterServices
 
+        Status ClavisController::UseKeyID(grpc::ServerContext*,
+                                          ::grpc::ServerReader<remote::KeyIdValueList>* reader, google::protobuf::Empty*)
+        {
+            Status result;
+
+            if(side == remote::Side_Type::Side_Type_Bob)
+            {
+                if(device)
+                {
+                    remote::KeyIdValueList keys;
+                    while(reader->Read(&keys))
+                    {
+                        KeyList toEmit;
+                        toEmit.reserve(keys.keyid().size());
+
+                        for (const auto& keyId : keys.keyid())
+                        {
+                            toEmit.emplace_back(PSK());
+                            device->GetExistingKey(toEmit.back(), keyId);
+                        }
+
+                        Emit(&IKeyCallback::OnKeyGeneration, std::make_unique<KeyList>(toEmit));
+                        toEmit.clear();
+                    }
+                }
+                else
+                {
+                    result = Status(StatusCode::UNAVAILABLE, "No device configured");
+                }
+            }
+            else
+            {
+                result = Status(StatusCode::DO_NOT_USE, "Should only be called on Bob");
+            }
+            return result;
+        }
     } // namespace session
 } // namespace cqp

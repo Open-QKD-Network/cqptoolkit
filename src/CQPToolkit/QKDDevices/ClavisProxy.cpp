@@ -3,7 +3,7 @@
 * @brief ClavisProxy
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 16/4/2018
@@ -22,12 +22,18 @@ namespace cqp
 {
     class ISessionController;
 
-    ClavisProxy::ClavisProxy(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t):
-        myAddress(address),
+    ClavisProxy::ClavisProxy(const remote::DeviceConfig& initialConfig,
+                             std::shared_ptr<grpc::ChannelCredentials> creds, size_t):
+        config(initialConfig),
         reportServer(std::make_shared<stats::ReportServer>())
     {
         LOGTRACE("Creating controller");
-        controller.reset(new session::ClavisController(address, creds, reportServer));
+        config.set_kind(DriverName);
+        if(config.id().empty())
+        {
+            config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
+        }
+        controller.reset(new session::ClavisController(creds, reportServer));
     }
 
     std::string ClavisProxy::GetDriverName() const
@@ -37,12 +43,12 @@ namespace cqp
 
     URI ClavisProxy::GetAddress() const
     {
-        return myAddress;
+        return DeviceUtils::ConfigToUri(config);
     }
 
     bool ClavisProxy::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        return controller->Initialise(sessionDetails);
+        return controller->Initialise(move(authKey));
     }
 
     ISessionController*ClavisProxy::GetSessionController()
@@ -52,16 +58,9 @@ namespace cqp
 
     remote::DeviceConfig ClavisProxy::GetDeviceDetails()
     {
-        remote::DeviceConfig result;
-        URI addrUri(myAddress);
-
-        result.set_id(DeviceUtils::GetDeviceIdentifier(addrUri));
-        result.set_side(controller->GetSide());
-        addrUri.GetFirstParameter(IQKDDevice::Parameters::switchName, *result.mutable_switchname());
-        addrUri.GetFirstParameter(IQKDDevice::Parameters::switchPort, *result.mutable_switchport());
-        result.set_kind(addrUri.GetScheme());
-
-        return result;
+        config.set_sessionaddress(controller->GetConnectionAddress());
+        config.set_side(controller->GetSide());
+        return config;
     }
 
     KeyPublisher* ClavisProxy::GetKeyPublisher()
@@ -74,5 +73,11 @@ namespace cqp
         return reportServer.get();
     }
 
+    void ClavisProxy::SetInitialKey(std::unique_ptr<PSK> initailKey)
+    {
+        authKey = move(initailKey);
+    }
+
 } // namespace cqp
+
 
