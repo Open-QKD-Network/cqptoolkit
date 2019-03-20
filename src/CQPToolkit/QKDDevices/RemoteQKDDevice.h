@@ -65,6 +65,11 @@ namespace cqp
         void WaitForServerShutdown();
 
         void StopServer();
+
+        std::string GetControlAddress()
+        {
+            return qkdDeviceAddress;
+        }
     protected: // members
         std::shared_ptr<IQKDDevice> device;
         std::shared_ptr<grpc::ServerCredentials> creds;

@@ -59,21 +59,10 @@ namespace cqp
                 device = make_shared<DummyQKD>(config, grpc::InsecureChannelCredentials());
                 LOGTRACE("Creating adaptor");
                 adaptor = make_shared<RemoteQKDDevice>(device, serverCreds);
-                grpc::ServerBuilder builder;
-                builder.RegisterService(adaptor.get());
-                builder.AddListeningPort(std::string(net::AnyAddress) + ":0", serverCreds, &port);
-                LOGTRACE("Starting server");
-                server = builder.BuildAndStart();
-
-                if(server)
+                if(adaptor->StartControlServer("localhost:0", siteAgentAddress))
                 {
-                    LOGINFO("Remote device control available on port " + std::to_string(port));
-                    adaptor->StartControlServer(net::GetHostname(true) + ":" + std::to_string(port));
-                    if(!siteAgentAddress.empty())
-                    {
-                        LOGTRACE("Registering with site agent");
-                        result = LogStatus(adaptor->RegisterWithSiteAgent(siteAgentAddress));
-                    }
+                    controlAddr = adaptor->GetControlAddress();
+                    LOGINFO("Remote device control available on port " + std::to_string(controlAddr.GetPort()));
                 }
                 else
                 {
@@ -92,7 +81,7 @@ namespace cqp
             std::shared_ptr<RemoteQKDDevice> adaptor;
             remote::SessionDetails sessionDetails;
             std::unique_ptr<grpc::Server> server;
-            int port = 0;
+            URI controlAddr;
             grpc::Status result;
         };
 
@@ -103,6 +92,7 @@ namespace cqp
                 using namespace std;
                 config.set_name(name);
                 config.set_listenport(port);
+                config.set_fallbackkey("abcdefgijklmnopq");
                 agent = make_shared<SiteAgent>(config);
             }
 
@@ -149,7 +139,7 @@ namespace cqp
             ASSERT_NE(ks1, nullptr);
             KeyID key1Id;
             PSK key1Value;
-            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value));
+            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value, true));
             ASSERT_GT(key1Value.size(), 0);
 
             auto ks2 = site2.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
@@ -191,12 +181,12 @@ namespace cqp
             ASSERT_TRUE(site2bob.result.ok());
 
             SiteAgentBuilder site3("Site3", 8003);
-            SiteTestCollection site3bob(remote::Side::Bob, site2.agent->GetConnectionAddress());
-            ASSERT_TRUE(site2bob.result.ok());
+            SiteTestCollection site3bob(remote::Side::Bob, site3.agent->GetConnectionAddress());
+            ASSERT_TRUE(site3bob.result.ok());
 
             // setup complete
 
-            LOGINFO("Connecting to " + site2.agent->GetConnectionAddress());
+            LOGINFO("Connecting to " + site1.agent->GetConnectionAddress());
             auto site1Channel = grpc::CreateChannel(site1.agent->GetConnectionAddress(), grpc::InsecureChannelCredentials());
             auto site1Stub = remote::ISiteAgent::NewStub(site1Channel);
 
@@ -225,7 +215,7 @@ namespace cqp
             ASSERT_NE(ks1, nullptr);
             KeyID key1Id;
             PSK key1Value;
-            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value));
+            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value, true));
             ASSERT_GT(key1Value.size(), 0);
 
             auto ks3 = site3.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());

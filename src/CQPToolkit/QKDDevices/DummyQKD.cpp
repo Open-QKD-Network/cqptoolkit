@@ -98,6 +98,13 @@ namespace cqp
             ec->stats.Add(reportServer.get());
             privacy->stats.Add(reportServer.get());
         }
+
+        ~ProcessingChain()
+        {
+            controller->EndSession();
+
+        }
+
         /// aligns detections
         std::shared_ptr<align::NullAlignment> alignment;
         /// sifts alignments

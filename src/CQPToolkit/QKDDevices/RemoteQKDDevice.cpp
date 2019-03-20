@@ -230,6 +230,8 @@ namespace cqp
 
     void RemoteQKDDevice::StopServer()
     {
+        shutdown =true;
+        recievedKeysCv.notify_all();
         if(deviceServer)
         {
             deviceServer->Shutdown();

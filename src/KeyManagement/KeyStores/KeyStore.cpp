@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Key storage
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -53,6 +53,9 @@ namespace cqp
         KeyStore::~KeyStore()
         {
             FlushCache();
+            shutdown = true;
+            allKeys_cv.notify_all();
+
         } // KeyStore
 
         grpc::Status KeyStore::GetExistingKey(const KeyID& identity, PSK& output)
@@ -62,19 +65,22 @@ namespace cqp
             std::unique_lock<std::mutex> lock(allKeys_lock);
             bool waitResult = allKeys_cv.wait_for(lock, waitTimeout, [&]
             {
-                bool result = false;
-                auto internal = reservedKeys.find(identity);
+                bool result = shutdown;
+                if(!shutdown)
+                {
+                    auto internal = reservedKeys.find(identity);
 
-                if(internal != reservedKeys.end())
-                {
-                    output = internal->second;
-                    reservedKeys.erase(internal);
-                    result = true;
-                }
-                else if(backingStore != nullptr)
-                {
-                    // try the backing store
-                    result = backingStore->RemoveKey(mySiteTo, identity, output);
+                    if(internal != reservedKeys.end())
+                    {
+                        output = internal->second;
+                        reservedKeys.erase(internal);
+                        result = true;
+                    }
+                    else if(backingStore != nullptr)
+                    {
+                        // try the backing store
+                        result = backingStore->RemoveKey(mySiteTo, identity, output);
+                    }
                 }
                 return result;
             });
@@ -87,11 +93,11 @@ namespace cqp
             return result;
         } // GetExistingKey
 
-        bool KeyStore::GetNewKey(KeyID& identity, PSK& output)
+        bool KeyStore::GetNewKey(KeyID& identity, PSK& output, bool waitForKey)
         {
             // see if we've already got some key
             // if there's no path, wait until key arrives
-            bool result = GetNewDirectKey(identity, output, myPath.empty());
+            bool result = GetNewDirectKey(identity, output, myPath.empty() && waitForKey);
 
             if(!result && !myPath.empty())
             {
@@ -173,7 +179,7 @@ namespace cqp
                 {
                     result = allKeys_cv.wait_for(lock, waitTimeout, [&]
                     {
-                        return ReserveNewKey(lock, keyID);
+                        return shutdown || ReserveNewKey(lock, keyID);
                     });
                 }
                 else
@@ -220,19 +226,23 @@ namespace cqp
                         std::unique_lock<std::mutex> lock(allKeys_lock);
                         bool result = allKeys_cv.wait_for(lock, waitTimeout, [&]
                         {
-                            KeyMap::iterator keyFound = unusedKeys.find(response.keyid());
-                            if(keyFound != unusedKeys.end())
+                            bool result = shutdown;
+                            if(!shutdown)
                             {
-                                // The key has arrived on our side so use it.
-                                identity = keyFound->first;
-                                output = keyFound->second;
-                                // remove the key from the list
-                                unusedKeys.erase(keyFound);
-                                result = true;
-                            }
-                            else if(backingStore != nullptr)
-                            {
-                                result = backingStore->RemoveKey(mySiteTo, response.keyid(), output);
+                                KeyMap::iterator keyFound = unusedKeys.find(response.keyid());
+                                if(keyFound != unusedKeys.end())
+                                {
+                                    // The key has arrived on our side so use it.
+                                    identity = keyFound->first;
+                                    output = keyFound->second;
+                                    // remove the key from the list
+                                    unusedKeys.erase(keyFound);
+                                    result = true;
+                                }
+                                else if(backingStore != nullptr)
+                                {
+                                    result = backingStore->RemoveKey(mySiteTo, response.keyid(), output);
+                                }
                             }
                             return result;
                         });
@@ -338,7 +348,7 @@ namespace cqp
                 {
                     // now there is a placeholder in reserved, it wont be sent to the backing store
                     reservedIt = reservedKeys.find(identity);
-                    return reservedIt != reservedKeys.end();
+                    return shutdown || reservedIt != reservedKeys.end();
                 });
 
                 if(keyFound)
@@ -360,7 +370,7 @@ namespace cqp
                 bool keyFound = allKeys_cv.wait_for(lock, waitTimeout, [&]
                 {
                     // this will move the key to the reserved list
-                    return ReserveNewKey(lock, alternative);
+                    return shutdown || ReserveNewKey(lock, alternative);
                 });
 
                 if(keyFound)

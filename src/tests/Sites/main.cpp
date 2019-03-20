@@ -15,7 +15,7 @@
 int main(int argc, char **argv)
 {
     cqp::ConsoleLogger::Enable();
-    cqp::DefaultLogger().SetOutputLevel(cqp::LogLevel::Trace);
+    cqp::DefaultLogger().SetOutputLevel(cqp::LogLevel::Debug);
     ::testing::InitGoogleTest(&argc, argv);
     int ret = RUN_ALL_TESTS();
     return ret;

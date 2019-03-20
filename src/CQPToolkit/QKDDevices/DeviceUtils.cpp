@@ -59,6 +59,8 @@ namespace cqp
     URI DeviceUtils::ConfigToUri(const remote::DeviceConfig& config)
     {
         URI result;
+        result.SetScheme(config.kind());
+
         switch (config.side())
         {
         case remote::Side::Alice:

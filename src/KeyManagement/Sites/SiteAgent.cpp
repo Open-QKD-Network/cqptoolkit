@@ -617,6 +617,10 @@ namespace cqp
             }
             devicesInUse.erase(device);
         }
+        else
+        {
+            result = Status(StatusCode::INVALID_ARGUMENT, "Unknown device");
+        }
 
         return result;
     }
