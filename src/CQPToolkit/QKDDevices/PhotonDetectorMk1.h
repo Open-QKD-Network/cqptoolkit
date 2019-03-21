@@ -74,7 +74,7 @@ namespace cqp
         /// @copydoc IQKDDevice::GetDeviceDetails
         remote::DeviceConfig GetDeviceDetails() override;
         /// @copydoc IQKDDevice::GetStatsPublisher
-        stats::IStatsPublisher* GetStatsPublisher() override;
+        std::vector<grpc::Service*> GetServices() override;
         /// @copydoc IQKDDevice::SetInitialKey
         void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
         /// @}

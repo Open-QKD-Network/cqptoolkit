@@ -88,8 +88,8 @@ namespace cqp
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
         KeyPublisher* GetKeyPublisher() override;
 
-        /// @copydoc cqp::IQKDDevice::GetStatsPublisher
-        stats::IStatsPublisher* GetStatsPublisher() override;
+        /// @copydoc cqp::IQKDDevice::GetServices
+        std::vector<grpc::Service*> GetServices() override;
         ///@}
 
     protected: // members

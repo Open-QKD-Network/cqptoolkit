@@ -75,8 +75,8 @@ namespace cqp
 
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
         KeyPublisher*GetKeyPublisher() override;
-        /// @copydoc IQKDDevice::GetStatsPublisher
-        stats::IStatsPublisher* GetStatsPublisher() override;
+        /// @copydoc IQKDDevice::GetServices
+        std::vector<grpc::Service*> GetServices() override;
 
         void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
         ///@}

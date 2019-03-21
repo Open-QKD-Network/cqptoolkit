@@ -18,6 +18,11 @@
 #include <memory>
 #include "CQPToolkit/cqptoolkit_export.h"
 
+namespace grpc
+{
+    class Service;
+}
+
 namespace cqp
 {
     namespace remote
@@ -95,10 +100,10 @@ namespace cqp
         virtual remote::DeviceConfig GetDeviceDetails() = 0;
 
         /**
-         * @brief GetStatsPublisher
-         * @return The producer of device statistics
+         * @brief GetServices
+         * @return A list of services provided by the driver
          */
-        virtual stats::IStatsPublisher* GetStatsPublisher() = 0;
+        virtual std::vector<grpc::Service*> GetServices() = 0;
 
         /// virtual destructor
         virtual ~IQKDDevice() = default;

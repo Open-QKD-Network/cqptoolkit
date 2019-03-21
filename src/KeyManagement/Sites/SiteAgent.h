@@ -292,6 +292,7 @@ namespace cqp
         static void ProcessKeys(std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey);
 
         grpc::Status StartNode(grpc::ServerContext* ctx, remote::HopPair& hop, remote::PhysicalPath& myPath);
+
     };
 
 }

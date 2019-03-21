@@ -68,9 +68,9 @@ namespace cqp
         return controller.get();
     }
 
-    stats::IStatsPublisher* ClavisProxy::GetStatsPublisher()
+    std::vector<grpc::Service*> ClavisProxy::GetServices()
     {
-        return reportServer.get();
+        return { reportServer.get() };
     }
 
     void ClavisProxy::SetInitialKey(std::unique_ptr<PSK> initailKey)

@@ -231,9 +231,9 @@ namespace cqp
         return config;
     }
 
-    stats::IStatsPublisher* DummyQKD::GetStatsPublisher()
+    std::vector<grpc::Service*> DummyQKD::GetServices()
     {
-        return processing->reportServer.get();
+        return {processing->reportServer.get()};
     }
 
     KeyPublisher* DummyQKD::GetKeyPublisher()

@@ -190,6 +190,11 @@ namespace cqp
         int listenPort {0};
         devServBuilder.AddListeningPort(controlAddress, creds, &listenPort);
         devServBuilder.RegisterService(this);
+        // attach any other services which the device provides
+        for(auto service : device->GetServices())
+        {
+            devServBuilder.RegisterService(service);
+        }
 
         deviceServer = devServBuilder.BuildAndStart();
 

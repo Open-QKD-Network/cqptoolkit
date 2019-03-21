@@ -736,7 +736,6 @@ namespace cqp
         }
         LOGINFO("New " + sideString + " device: " + request->config().id() + " at '" + request->controladdress() + "' on switch '" +
                 request->config().switchname() + "' port '" + request->config().switchport() + "'");
-        // TODO: fix static hops
 
         // tell everyone we changed the site details
         siteDetailsChanged.notify_all();

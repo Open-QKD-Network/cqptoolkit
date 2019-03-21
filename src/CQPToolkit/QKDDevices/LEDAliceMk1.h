@@ -80,7 +80,7 @@ namespace cqp
         /// @copydoc IQKDDevice::Initialise
         virtual bool Initialise(const remote::SessionDetails& sessionDetails) override;
         /// @copydoc IQKDDevice::GetStatsPublisher
-        stats::IStatsPublisher* GetStatsPublisher() override;
+        std::vector<grpc::Service*> GetServices() override;
         ///@}
 
     protected: // members

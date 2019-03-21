@@ -152,9 +152,9 @@ namespace cqp
         return result;
     }
 
-    stats::IStatsPublisher* PhotonDetectorMk1::GetStatsPublisher()
+    std::vector<grpc::Service*> PhotonDetectorMk1::GetServices()
     {
-        return processing->reportServer.get();
+        return {processing->reportServer.get()};
     }
 
     void PhotonDetectorMk1::SetInitialKey(std::unique_ptr<PSK> initailKey)

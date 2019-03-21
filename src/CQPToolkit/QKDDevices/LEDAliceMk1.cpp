@@ -143,9 +143,9 @@ namespace cqp
         return result;
     }
 
-    stats::IStatsPublisher*LEDAliceMk1::GetStatsPublisher()
+    std::vector<grpc::Service*> LEDAliceMk1::GetServices()
     {
-        return processing->reportServer.get();
+        return {processing->reportServer.get()};
     }
 
     ISessionController* LEDAliceMk1::GetSessionController()
