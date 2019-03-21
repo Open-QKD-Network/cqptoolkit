@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief DummyQKDConfig
+* @brief Clavis2Config
 *
 * @copyright Copyright (C) University of Bristol 2019
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -15,7 +15,7 @@ import "Device.proto";
 package cqp.config;
 
 /// Alice handheld config
-message DummyQKDConfig {
+message Clavis2Config {
     remote.ControlDetails controlParams = 1;
     string bobAddress = 2;
 }

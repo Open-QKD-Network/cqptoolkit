@@ -23,7 +23,7 @@ namespace cqp
     class ISessionController;
 
     ClavisProxy::ClavisProxy(const remote::DeviceConfig& initialConfig,
-                             std::shared_ptr<grpc::ChannelCredentials> creds, size_t):
+                             std::shared_ptr<grpc::ChannelCredentials> creds):
         config(initialConfig),
         reportServer(std::make_shared<stats::ReportServer>())
     {

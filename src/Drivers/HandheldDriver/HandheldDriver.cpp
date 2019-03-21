@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief Clavis2Driver
+* @brief HandheldDriver
 *
 * @copyright Copyright (C) University of Bristol 2019
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -9,9 +9,9 @@
 * @date 18/3/2019
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
-#include "Clavis2Driver.h"
+#include "HandheldDriver.h"
 #include "CQPToolkit/QKDDevices/RemoteQKDDevice.h"
-#include "CQPToolkit/QKDDevices/ClavisProxy.h"
+#include "CQPToolkit/QKDDevices/LEDAliceMk1.h"
 #include "Algorithms/Util/FileIO.h"
 #include "Algorithms/Logging/ConsoleLogger.h"
 #include "Algorithms/Net/DNS.h"
@@ -21,13 +21,16 @@
 using namespace cqp;
 using namespace std;
 
-struct Clavis2Driver::Clavis2Names
+struct HandheldDriver::HandheldNames
 {
+    static CONSTSTRING device = "device";
+    static CONSTSTRING usbDevice = "usb-device";
     static CONSTSTRING manual = "manual";
     static CONSTSTRING writeConfig = "write-config";
 };
 
-Clavis2Driver::Clavis2Driver()
+HandheldDriver::HandheldDriver() :
+    DriverApplication()
 {
     using std::placeholders::_1;
 
@@ -37,44 +40,51 @@ Clavis2Driver::Clavis2Driver()
     // attach the sub-config to the master config
     config.set_allocated_controlparams(controlDetails);
 
-    definedArguments.AddOption(Clavis2Names::manual, "m", "Manual mode, specify Bobs address to directly connect and start generating key")
+    definedArguments.AddOption(HandheldNames::device, "d", "The serial device to use, otherwise the first serial device will be used")
     .Bind();
-    definedArguments.AddOption(Clavis2Names::writeConfig, "", "Output the resulting config to a file")
+    definedArguments.AddOption(HandheldNames::usbDevice, "u", "The serial number for the usb device to use, otherwise use the first detected")
+    .Bind();
+    definedArguments.AddOption(HandheldNames::manual, "m", "Manual mode, specify Bobs address to directly connect and start generating key")
+    .Bind();
+    definedArguments.AddOption(HandheldNames::writeConfig, "", "Output the resulting config to a file")
     .Bind();
 
 }
 
-Clavis2Driver::~Clavis2Driver()
+HandheldDriver::~HandheldDriver()
 {
     adaptor.reset();
     device.reset();
 }
 
-void Clavis2Driver::HandleConfigFile(const cqp::CommandArgs::Option& option)
+void HandheldDriver::HandleConfigFile(const cqp::CommandArgs::Option& option)
 {
     ParseConfigFile(option, config);
 
 }
 
-int Clavis2Driver::Main(const std::vector<std::string>& args)
+int HandheldDriver::Main(const std::vector<std::string>& args)
 {
     exitCode = DriverApplication::Main(args);
 
     if(!stopExecution)
     {
-        definedArguments.GetProp(Clavis2Names::manual, *config.mutable_bobaddress());
+        definedArguments.GetProp(HandheldNames::manual, *config.mutable_bobaddress());
+        definedArguments.GetProp(HandheldNames::device, *config.mutable_devicename());
+        definedArguments.GetProp(HandheldNames::usbDevice, *config.mutable_usbdevicename());
 
-        device = make_shared<ClavisProxy>(config.controlparams().config(), channelCreds);
+        // any changes to config need to be applied by now
+        if(definedArguments.HasProp(HandheldNames::writeConfig))
+        {
+            // write out the current settings
+            WriteConfigFile(config, definedArguments.GetStringProp(HandheldNames::writeConfig));
+        } // if write config file
+
+        device = make_shared<LEDAliceMk1>(channelCreds, config.devicename(), config.usbdevicename());
         adaptor = make_unique<RemoteQKDDevice>(device, serverCreds);
 
         // get the real settings which have been corrected by the device driuver
         (*config.mutable_controlparams()->mutable_config()) = device->GetDeviceDetails();
-
-        // any changes to config need to be applied by now
-        if(definedArguments.HasProp(Clavis2Names::writeConfig))
-        {
-            WriteConfigFile(config, definedArguments.GetStringProp(Clavis2Names::writeConfig));
-        } // if write config file
 
         stopExecution = ! adaptor->StartControlServer(config.controlparams().controladdress(), config.controlparams().siteagentaddress());
 
@@ -91,7 +101,7 @@ int Clavis2Driver::Main(const std::vector<std::string>& args)
             StopProcessing(signum);
         });
 
-        if(config.controlparams().config().side() == remote::Side_Type::Side_Type_Alice && !config.bobaddress().empty())
+        if(!config.bobaddress().empty())
         {
             // TODO: get the key and do something with it
             grpc::ServerContext ctx;
@@ -108,10 +118,10 @@ int Clavis2Driver::Main(const std::vector<std::string>& args)
     return exitCode;
 }
 
-void Clavis2Driver::StopProcessing(int)
+void HandheldDriver::StopProcessing(int)
 {
     // The program is terminating,
     adaptor->StopServer();
 }
 
-CQP_MAIN(Clavis2Driver)
+CQP_MAIN(HandheldDriver)

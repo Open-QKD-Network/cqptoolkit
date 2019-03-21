@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "Algorithms/Util/Application.h"
+#include "CQPToolkit/Util/DriverApplication.h"
 #include "Algorithms/Logging/Logger.h"
 #include <memory>
 #include "DummyQKDConfig.pb.h"
@@ -26,7 +26,7 @@ namespace cqp
     class RemoteQKDDevice;
 }
 
-class DummyQKDDriver : public cqp::Application
+class DummyQKDDriver : public cqp::DriverApplication
 {
 public:
     DummyQKDDriver();
@@ -64,7 +64,7 @@ public:
      * @brief HandleQuiet
      * Parse commandline argument
      */
-    void HandleConfigFile(const cqp::CommandArgs::Option& option);
+    void HandleConfigFile(const cqp::CommandArgs::Option& option) override;
 
 protected: // methods
 
@@ -72,8 +72,6 @@ protected: // methods
 
 protected: // members
 
-    /// credentials for making connections
-    cqp::remote::Credentials creds;
 
     /// exit codes for this program
     enum ExitCodes { Ok = 0,
@@ -84,7 +82,6 @@ protected: // members
                    };
 
     std::shared_ptr<cqp::DummyQKD> device;
-    std::unique_ptr<cqp::RemoteQKDDevice> adaptor;
     cqp::config::DummyQKDConfig config;
-    struct CommandlineNames;
+    struct DummyNames;
 };

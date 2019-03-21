@@ -51,7 +51,7 @@ namespace cqp
          * @param creds
          * @param bytesPerKey
          */
-        ClavisProxy(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
+        ClavisProxy(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds);
 
         // IQKDDevice interface
     public:

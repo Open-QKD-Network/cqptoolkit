@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief DummyQKDConfig
+* @brief HandheldConfig
 *
 * @copyright Copyright (C) University of Bristol 2019
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -15,7 +15,12 @@ import "Device.proto";
 package cqp.config;
 
 /// Alice handheld config
-message DummyQKDConfig {
-    remote.ControlDetails controlParams = 1;
-    string bobAddress = 2;
+message HandheldConfig {
+    /// how to connect to bob
+    string bobaddress = 1;
+    /// serial device name
+    string deviceName = 2;
+    /// usb device name
+    string usbDeviceName = 3;
+    remote.ControlDetails controlParams = 4;
 }

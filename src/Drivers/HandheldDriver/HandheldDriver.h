@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief Clavis2Driver
+* @brief HandheldDriver
 *
 * @copyright Copyright (C) University of Bristol 2019
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -12,7 +12,9 @@
 #pragma once
 #include "CQPToolkit/Util/DriverApplication.h"
 #include "Algorithms/Logging/Logger.h"
-#include "Clavis2Config.pb.h"
+#include <memory>
+#include "HandheldConfig.pb.h"
+#include "QKDInterfaces/Site.pb.h"
 
 namespace grpc
 {
@@ -20,43 +22,19 @@ namespace grpc
 }
 namespace cqp
 {
-    class ClavisProxy;
+    class LEDAliceMk1;
     class RemoteQKDDevice;
 }
 
-class Clavis2Driver : public cqp::DriverApplication
+class HandheldDriver : public cqp::DriverApplication
 {
 public:
-    Clavis2Driver();
+    HandheldDriver();
 
-    ~Clavis2Driver() override;
+    ~HandheldDriver() override;
 
     // Application interface
     int Main(const std::vector<std::string>& args) override;
-
-    /**
-     * @brief DisplayHelp
-     * print the help page
-     */
-    void DisplayHelp(const cqp::CommandArgs::Option&);
-
-    /**
-     * @brief HandleVerbose
-     * Parse commandline argument
-     */
-    void HandleVerbose(const cqp::CommandArgs::Option&)
-    {
-        cqp::DefaultLogger().IncOutputLevel();
-    }
-
-    /**
-     * @brief HandleQuiet
-     * Parse commandline argument
-     */
-    void HandleQuiet(const cqp::CommandArgs::Option&)
-    {
-        cqp::DefaultLogger().DecOutputLevel();
-    }
 
     /**
      * @brief HandleQuiet
@@ -78,7 +56,7 @@ protected: // members
                      ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99
                    };
 
-    std::shared_ptr<cqp::ClavisProxy> device;
-    cqp::config::Clavis2Config config;
-    struct Clavis2Names;
+    std::shared_ptr<cqp::LEDAliceMk1> device;
+    cqp::config::HandheldConfig config;
+    struct HandheldNames;
 };

@@ -10,7 +10,7 @@
 ### 
 cmake_minimum_required (VERSION 3.7.2)
 
-project(Clavis2Driver CXX)
+project(HandheldDriver CXX)
 include(CommonSetup)
 
 # add the proto files from the QKDInterfaces project

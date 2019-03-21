@@ -228,7 +228,6 @@ namespace cqp
 
     remote::DeviceConfig DummyQKD::GetDeviceDetails()
     {
-        config.set_sessionaddress(processing->controller->GetConnectionAddress());
         return config;
     }
 
