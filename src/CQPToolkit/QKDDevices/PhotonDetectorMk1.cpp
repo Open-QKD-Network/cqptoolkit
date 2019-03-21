@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Photon Detection
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -31,7 +31,8 @@ namespace cqp
     const std::string PhotonDetectorMk1::DriverName = "Mk1Tagger";
 
 
-    class PhotonDetectorMk1::ProcessingChain {
+    class PhotonDetectorMk1::ProcessingChain
+    {
     public:
         ProcessingChain()
         {
@@ -70,7 +71,8 @@ namespace cqp
 
         session::SessionController::Services GetServices()
         {
-            session::SessionController::Services services {
+            session::SessionController::Services services
+            {
                 ec.get(),
                 privacy.get(),
                 reportServer.get() // allow external clients to get stats
@@ -102,10 +104,12 @@ namespace cqp
 
         // create the session controller
         sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes(),
-                                                                         processing->reportServer);
+                            processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
+
+    PhotonDetectorMk1::~PhotonDetectorMk1() = default;
 
     string PhotonDetectorMk1::GetDriverName() const
     {
@@ -152,4 +156,10 @@ namespace cqp
     {
         return processing->reportServer.get();
     }
+
+    void PhotonDetectorMk1::SetInitialKey(std::unique_ptr<PSK> initailKey)
+    {
+        // TODO
+    }
 } // namespace cqp
+

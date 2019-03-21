@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Photon Detection
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -13,7 +13,8 @@
 #include "CQPToolkit/Interfaces/IQKDDevice.h"             // for IQKDDevice
 #include "Algorithms/Datatypes/URI.h"                                     // for URI
 
-namespace grpc {
+namespace grpc
+{
     class ChannelCredentials;
 }
 
@@ -23,7 +24,8 @@ namespace cqp
     class Usb;
     class Serial;
 
-    namespace session {
+    namespace session
+    {
         class SessionController;
     }
 
@@ -54,7 +56,7 @@ namespace cqp
         /**
          * Destructor
          */
-        ~PhotonDetectorMk1() override = default;
+        ~PhotonDetectorMk1() override;
 
         /// @name IQKDDevice interface
         /// @{
@@ -73,6 +75,8 @@ namespace cqp
         remote::DeviceConfig GetDeviceDetails() override;
         /// @copydoc IQKDDevice::GetStatsPublisher
         stats::IStatsPublisher* GetStatsPublisher() override;
+        /// @copydoc IQKDDevice::SetInitialKey
+        void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
         /// @}
     protected: // members
         /// What this driver is called
@@ -86,7 +90,6 @@ namespace cqp
         std::unique_ptr<session::SessionController> sessionController;
         /// The driver which detects the photons
         std::shared_ptr<UsbTagger> driver;
-
     };
 
 }
