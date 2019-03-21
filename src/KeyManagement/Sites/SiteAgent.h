@@ -170,6 +170,7 @@ namespace cqp
             grpc::ClientContext context;
             std::shared_ptr<keygen::KeyStore> keySink;
             std::thread readerThread;
+            std::thread statsThread;
 
             ~DeviceConnection()
             {
@@ -177,7 +178,13 @@ namespace cqp
                 {
                     readerThread.join();
                 }
+                if(statsThread.joinable())
+                {
+                    statsThread.join();
+                }
             }
+
+            void ReadStats(stats::ReportServer* reportServer);
         };
 
         /// a list of devices being actively used

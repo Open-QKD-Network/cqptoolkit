@@ -349,6 +349,8 @@ namespace cqp
                     }
 
                     localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
+                    // read stats and pass them on
+                    localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get());
                     // BANG! need to wait for session address
                     // this is the device we're looking for
                     localSessionAddress = regDevice.config().sessionaddress();
@@ -780,7 +782,29 @@ namespace cqp
 
             LogStatus(StartNode(&ctx, &staticHop, &response));
         }
-    } // ConnectStaticLinks
+    }
+
+    void SiteAgent::DeviceConnection::ReadStats(stats::ReportServer* reportServer)
+    {
+        using namespace remote;
+        grpc::ClientContext ctx;
+        auto statsStub = IReporting::NewStub(channel);
+        if(statsStub)
+        {
+            ReportingFilter filter;
+            filter.set_listisexclude(true);
+            auto reader = statsStub->GetStatistics(&ctx, filter);
+
+            SiteAgentReport report;
+            // pull stats and pass them on
+            while(reader && reader->Read(&report))
+            {
+                reportServer->StatsReport(report);
+            } // while read
+        } // if stub
+    } // ReadStats
+
+    // ConnectStaticLinks
 } // namespace cqp
 
 
