@@ -58,7 +58,7 @@ namespace cqp
                 Empty response;
 
                 (*request.mutable_details()) = sessionDetails;
-                request.set_initiatoraddress(myAddress);
+                request.set_initiatoraddress(GetConnectionAddress());
 
                 // send the command to the other side
                 result = otherController->SessionStarting(&ctx, request, &response);
