@@ -14,8 +14,10 @@
 #include "QKDInterfaces/IDetector.grpc.pb.h"
 #include "CQPToolkit/Session/TwoWayServerConnector.h"
 
-namespace cqp {
-    namespace session {
+namespace cqp
+{
+    namespace session
+    {
 
         using google::protobuf::Empty;
         using grpc::Status;
@@ -24,9 +26,9 @@ namespace cqp {
         const int AliceSessionController::threadPriority;
 
         AliceSessionController::AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
-                                                       const Services& services,
-                                                       const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source,
-                                                       std::shared_ptr<stats::ReportServer> theReportServer) :
+                const Services& services,
+                const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source,
+                std::shared_ptr<stats::ReportServer> theReportServer) :
             SessionController (creds, services, remotes, theReportServer),
             photonSource{source}
         {
@@ -46,11 +48,14 @@ namespace cqp {
 
         void AliceSessionController::EndSession()
         {
-            // the local system is stopping the session
-            // wait for the transmitter to stop
-            Stop(true);
+            if(this->IsRunning())
+            {
+                // the local system is stopping the session
+                // wait for the transmitter to stop
+                Stop(true);
 
-            SessionController::EndSession();
+                SessionController::EndSession();
+            }
         }
 
         grpc::Status AliceSessionController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)

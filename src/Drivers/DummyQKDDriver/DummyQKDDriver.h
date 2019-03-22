@@ -84,4 +84,5 @@ protected: // members
     std::shared_ptr<cqp::DummyQKD> device;
     cqp::config::DummyQKDConfig config;
     struct DummyNames;
+
 };

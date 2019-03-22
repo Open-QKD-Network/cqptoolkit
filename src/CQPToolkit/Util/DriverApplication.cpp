@@ -160,6 +160,24 @@ namespace cqp
         return exitCode;
     }
 
+    void DriverApplication::WaitForShutdown()
+    {
+        std::unique_lock<std::mutex> lock(shutdownMutex);
+        waitForShutdown.wait(lock, [&]()
+        {
+            return shutdown == true;
+        });
+    }
+
+    void DriverApplication::ShutdownNow()
+    {
+        shutdown = true;
+        adaptor->StopServer();
+        adaptor.reset();
+
+        waitForShutdown.notify_all();
+    }
+
     void DriverApplication::DisplayHelp(const CommandArgs::Option&)
     {
         definedArguments.PrintHelp(std::cout, "Driver for QKD unit using session control and proves key through the IKey interface.\nCopyright Bristol University. All rights reserved.");

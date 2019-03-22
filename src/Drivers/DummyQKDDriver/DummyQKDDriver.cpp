@@ -118,7 +118,7 @@ int DummyQKDDriver::Main(const std::vector<std::string>& args)
         }
 
         // Wait for something to stop the driver
-        adaptor->WaitForServerShutdown();
+        WaitForShutdown();
     }
     return exitCode;
 }
@@ -126,7 +126,8 @@ int DummyQKDDriver::Main(const std::vector<std::string>& args)
 void DummyQKDDriver::StopProcessing(int)
 {
     // The program is terminating,
-    adaptor->StopServer();
+    ShutdownNow();
+    device.reset();
 }
 
 CQP_MAIN(DummyQKDDriver)

@@ -144,6 +144,8 @@ service IDevice
      */
     rpc WaitForSession(LocalSettings) returns (stream RawKeys);
 
+    rpc EndSession(google.protobuf.Empty) returns (google.protobuf.Empty);
+
     /**
     * Receive updates on the state of key generation between this site and site
     * specified in SiteList

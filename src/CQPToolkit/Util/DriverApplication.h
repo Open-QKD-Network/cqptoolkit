@@ -15,6 +15,7 @@
 #include "QKDInterfaces/Site.pb.h"
 #include "Algorithms/Util/Strings.h"
 #include "CQPToolkit/cqptoolkit_export.h"
+#include <condition_variable>
 
 namespace grpc
 {
@@ -61,6 +62,9 @@ namespace cqp
 
         int Main(const std::vector<std::string>& args) override;
 
+        void WaitForShutdown();
+
+        void ShutdownNow();
     protected: // members
         struct CommandlineNames
         {
@@ -92,6 +96,11 @@ namespace cqp
 
         static bool WriteConfigFile(const google::protobuf::Message& config, const std::string& filename);
 
+    private:
+
+        std::atomic_bool shutdown {false};
+        std::mutex shutdownMutex;
+        std::condition_variable waitForShutdown;
     };
 
 } // namespace cqp

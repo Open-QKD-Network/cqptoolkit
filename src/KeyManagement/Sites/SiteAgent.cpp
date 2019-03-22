@@ -190,9 +190,9 @@ namespace cqp
         siteDetailsChanged.notify_all();
 
         // disconnect all session controllers
-        for(auto& device : devicesInUse)
+        for(auto device : devicesInUse)
         {
-            device.second->context.TryCancel();
+            device.second->Stop();
         }
         devicesInUse.clear();
 
@@ -250,7 +250,7 @@ namespace cqp
             remote::RawKeys incommingKeys;
             request.set_initialkey(initialKey->data(), initialKey->size());
 
-            auto reader = deviceStub->WaitForSession(&connection->context, request);
+            auto reader = deviceStub->WaitForSession(&connection->keyReaderContext, request);
 
             // TODO this isn't enough to ensure the memory is clean.
             request.clear_initialkey();
@@ -275,7 +275,7 @@ namespace cqp
                 connection->keySink->OnKeyGeneration(move(keys));
             }
 
-            LogStatus(reader->Finish());
+            reader->Finish();
 
         }
         else
@@ -350,7 +350,7 @@ namespace cqp
 
                     localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
                     // read stats and pass them on
-                    localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get());
+                    localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
                     // BANG! need to wait for session address
                     // this is the device we're looking for
                     localSessionAddress = regDevice.config().sessionaddress();
@@ -514,11 +514,7 @@ namespace cqp
             if(localDev != devicesInUse.end())
             {
                 // something went wrong, return the device
-                localDev->second->context.TryCancel();
-                if(localDev->second->readerThread.joinable())
-                {
-                    localDev->second->readerThread.join();
-                }
+                localDev->second->Stop();
                 devicesInUse.erase(localDev);
             }
         }
@@ -612,11 +608,8 @@ namespace cqp
         auto device = devicesInUse.find(deviceUri);
         if(device != devicesInUse.end())
         {
-            device->second->context.TryCancel();
-            if(device->second->readerThread.joinable())
-            {
-                device->second->readerThread.join();
-            }
+            // stop the process
+            device->second->Stop();
             devicesInUse.erase(device);
         }
         else
@@ -671,20 +664,58 @@ namespace cqp
 
         // stop the session controllers
 
+        bool callNextNode = false;
+
         // walk through each hop in the path
         // path example = [ [a, b], [b, c] ]
         for(const auto& hopPair : path->hops())
         {
+
+
             // if we are the left side of a hop, ie a in [a, b]
             if(AddressIsThisSite(hopPair.first().site()))
             {
                 result = StopNode(hopPair.first().deviceid());
 
+                auto otherSide = otherSites.find(hopPair.second().site());
+                if(otherSide != otherSites.end())
+                {
+                    grpc::ClientContext ctx;
+
+                    auto siteStub = remote::ISiteAgent::NewStub(otherSide->second.channel);
+
+                    google::protobuf::Empty response;
+                    result =  LogStatus(siteStub->EndKeyExchange(&ctx, *path, &response));
+
+                }
+                else
+                {
+                    LOGWARN("Cant find " + hopPair.second().site() + " to stop it");
+                }
             } // if left
             else if(AddressIsThisSite(hopPair.second().site()))
             {
                 result = StopNode(hopPair.second().deviceid());
+                callNextNode = true;
             } // if right
+            else if(callNextNode)
+            {
+                callNextNode = false;
+                auto otherSide = otherSites.find(hopPair.first().site());
+                if(otherSide != otherSites.end())
+                {
+                    grpc::ClientContext ctx;
+
+                    auto siteStub = remote::ISiteAgent::NewStub(otherSide->second.channel);
+
+                    google::protobuf::Empty response;
+                    result =  LogStatus(siteStub->EndKeyExchange(&ctx, *path, &response));
+                }
+                else
+                {
+                    LOGWARN("Cant find " + hopPair.first().site() + " to stop it");
+                }
+            }
         } // for pairs
 
         return result;
@@ -784,23 +815,47 @@ namespace cqp
         }
     }
 
-    void SiteAgent::DeviceConnection::ReadStats(stats::ReportServer* reportServer)
+    void SiteAgent::DeviceConnection::Stop()
+    {
+        keyReaderContext.TryCancel();
+        statsContext.TryCancel();
+
+        auto deviceStub = remote::IDevice::NewStub(channel);
+
+        grpc::ClientContext ctx;
+        google::protobuf::Empty request;
+        google::protobuf::Empty response;
+        LogStatus(deviceStub->EndSession(&ctx, request, &response));
+
+        if(readerThread.joinable())
+        {
+            readerThread.join();
+        }
+        if(statsThread.joinable())
+        {
+            statsThread.join();
+        }
+    }
+
+    void SiteAgent::DeviceConnection::ReadStats(stats::ReportServer* reportServer, std::string siteTo)
     {
         using namespace remote;
-        grpc::ClientContext ctx;
         auto statsStub = IReporting::NewStub(channel);
         if(statsStub)
         {
             ReportingFilter filter;
             filter.set_listisexclude(true);
-            auto reader = statsStub->GetStatistics(&ctx, filter);
+            auto reader = statsStub->GetStatistics(&statsContext, filter);
 
             SiteAgentReport report;
             // pull stats and pass them on
             while(reader && reader->Read(&report))
             {
+                report.mutable_parameters()->insert({"siteTo", siteTo});
                 reportServer->StatsReport(report);
             } // while read
+
+            reader->Finish();
         } // if stub
     } // ReadStats
 

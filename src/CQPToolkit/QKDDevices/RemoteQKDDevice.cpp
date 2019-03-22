@@ -66,10 +66,12 @@ namespace cqp
         return result;
     }
 
-    grpc::Status RemoteQKDDevice::WaitForSession(grpc::ServerContext*, const remote::LocalSettings* settings,
+    grpc::Status RemoteQKDDevice::WaitForSession(grpc::ServerContext* ctx, const remote::LocalSettings* settings,
             ::grpc::ServerWriter<remote::RawKeys>* writer)
     {
         Status result;
+        // reset the shutdown switch
+        shutdown = false;
 
         auto initialKey = std::make_unique<PSK>();
         initialKey->resize(settings->initialkey().size());
@@ -82,7 +84,9 @@ namespace cqp
         {
             // Wait for keys to arrive and pass them on
             // nothing will happen until RunSession is called on one side
-            ProcessKeys(writer);
+            ProcessKeys(ctx, writer);
+            // keys are no longer being requested, stop the session
+            session->EndSession();
         }
         else
         {
@@ -115,6 +119,29 @@ namespace cqp
         return result;
     }
 
+    grpc::Status RemoteQKDDevice::EndSession(grpc::ServerContext*, const google::protobuf::Empty*, google::protobuf::Empty*)
+    {
+        shutdown = true;
+        Status result;
+        ISessionController* session = nullptr;
+        if(device)
+        {
+            session = device ->GetSessionController();
+        }
+
+        if(session)
+        {
+            session->EndSession();
+        }
+        else
+        {
+            result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
+        }
+
+        recievedKeysCv.notify_all();
+        return Status();
+    }
+
     void RemoteQKDDevice::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
     {
         using namespace std;
@@ -137,6 +164,7 @@ namespace cqp
 
         remote::ControlDetails request;
         (*request.mutable_config()) = device->GetDeviceDetails();
+        request.mutable_config()->set_sessionaddress(device->GetSessionController()->GetConnectionAddress());
         request.set_controladdress(qkdDeviceAddress);
         auto result = siteAgent->RegisterDevice(&ctx, request, &response);
 
@@ -239,11 +267,12 @@ namespace cqp
         recievedKeysCv.notify_all();
         if(deviceServer)
         {
-            deviceServer->Shutdown();
+            using namespace std::chrono;
+            deviceServer->Shutdown(system_clock::now() + seconds(2));
         }
     }
 
-    grpc::Status RemoteQKDDevice::ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer)
+    grpc::Status RemoteQKDDevice::ProcessKeys(grpc::ServerContext* ctx, ::grpc::ServerWriter<remote::RawKeys>* writer)
     {
         using namespace std;
         grpc::Status result;
@@ -262,6 +291,10 @@ namespace cqp
                     unique_lock<mutex> lock(recievedKeysMutex);
                     recievedKeysCv.wait(lock, [&]()
                     {
+                        if(ctx->IsCancelled())
+                        {
+                            shutdown = true;
+                        }
                         return !recievedKeys.empty() || shutdown;
                     });
 

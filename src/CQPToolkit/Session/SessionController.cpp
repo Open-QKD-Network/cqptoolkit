@@ -120,7 +120,12 @@ namespace cqp
             }
             twoWayComm->Disconnect();
             pairedControllerUri.clear();
-
+            if(reportServer)
+            {
+                // notify the state change
+                remote::SiteAgentReport report;
+                reportServer->StatsReport(report);
+            }
             UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
         } // EndSession
 
@@ -180,6 +185,12 @@ namespace cqp
             twoWayComm->Disconnect();
             pairedControllerUri.clear();
 
+            if(reportServer)
+            {
+                // notify the state change
+                remote::SiteAgentReport report;
+                reportServer->StatsReport(report);
+            }
             UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
             return Status();
         }
@@ -322,7 +333,8 @@ namespace cqp
                     unique_lock<mutex> lock(threadControlMutex);
                     linkStatusCv.wait(lock, [&]()
                     {
-                        return sessionState.state() != lastState.state() ||
+                        return context->IsCancelled() ||
+                               sessionState.state() != lastState.state() ||
                                sessionState.errorcode() != lastState.errorcode();
                     });
                     lastState = sessionState;

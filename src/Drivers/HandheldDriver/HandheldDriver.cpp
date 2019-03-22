@@ -121,7 +121,8 @@ int HandheldDriver::Main(const std::vector<std::string>& args)
 void HandheldDriver::StopProcessing(int)
 {
     // The program is terminating,
-    adaptor->StopServer();
+    ShutdownNow();
+    device.reset();
 }
 
 CQP_MAIN(HandheldDriver)

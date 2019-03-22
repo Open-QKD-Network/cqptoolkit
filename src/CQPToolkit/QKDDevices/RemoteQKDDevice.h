@@ -46,6 +46,8 @@ namespace cqp
         grpc::Status WaitForSession(grpc::ServerContext* context, const remote::LocalSettings*settings, ::grpc::ServerWriter<remote::RawKeys>* writer) override;
         /// @copydoc remote::IDevice::GetLinkStatus
         grpc::Status GetLinkStatus(grpc::ServerContext* context, const google::protobuf::Empty*, ::grpc::ServerWriter<remote::LinkStatus>* writer) override;
+        /// @copydoc remote::IDevice::EndSession
+        grpc::Status EndSession(grpc::ServerContext*, const google::protobuf::Empty*, google::protobuf::Empty*) override;
 
         ///@}
 
@@ -82,7 +84,7 @@ namespace cqp
         std::string siteAgentAddress;
         std::unique_ptr<grpc::Server> deviceServer;
     protected: // methods
-        grpc::Status ProcessKeys(::grpc::ServerWriter<remote::RawKeys>* writer);
+        grpc::Status ProcessKeys(grpc::ServerContext* ctx, ::grpc::ServerWriter<remote::RawKeys>* writer);
 
     };
 

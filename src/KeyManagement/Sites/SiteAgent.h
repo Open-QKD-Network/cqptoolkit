@@ -167,24 +167,20 @@ namespace cqp
         struct DeviceConnection
         {
             std::shared_ptr<grpc::Channel> channel;
-            grpc::ClientContext context;
+            grpc::ClientContext keyReaderContext;
+            grpc::ClientContext statsContext;
             std::shared_ptr<keygen::KeyStore> keySink;
             std::thread readerThread;
             std::thread statsThread;
 
+            void Stop();
+
             ~DeviceConnection()
             {
-                if(readerThread.joinable())
-                {
-                    readerThread.join();
-                }
-                if(statsThread.joinable())
-                {
-                    statsThread.join();
-                }
+                Stop();
             }
 
-            void ReadStats(stats::ReportServer* reportServer);
+            void ReadStats(stats::ReportServer* reportServer, std::string siteTo);
         };
 
         /// a list of devices being actively used

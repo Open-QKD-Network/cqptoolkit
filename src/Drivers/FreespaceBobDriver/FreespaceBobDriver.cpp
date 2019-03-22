@@ -107,7 +107,8 @@ int FreespaceBobDriver::Main(const std::vector<std::string>& args)
 void FreespaceBobDriver::StopProcessing(int)
 {
     // The program is terminating,
-    adaptor->StopServer();
+    ShutdownNow();
+    device.reset();
 }
 
 CQP_MAIN(FreespaceBobDriver)

@@ -3,7 +3,7 @@
 * @brief SiteAgentRunner
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -107,17 +107,8 @@ void SiteAgentRunner::DisplayHelp(const CommandArgs::Option&)
 {
     using namespace std;
     const std::string header = "Creates CQP Site Agents for managing QKD systems.\nCopyright Bristol University. All rights reserved.";
-    const std::string footer =
-            "Device urls: [driver]://[location[:port]]/[?parameters]]\n"
-            "   The type of location and parameters are driver dependant.\n"
-            "Common parameters:\n"
-            "   Parameter           Values              Description\n"
-            "   side                alice|bob|any       Which kind of device\n"
-            "   switchName          <openflow string>   Connected optical switch\n"
-            "   switchPort          <port id>           Switch connector id\n"
-            "   keybytes            16|32               Bytes per key generated\n";
 
-    definedArguments.PrintHelp(std::cout, header, footer);
+    definedArguments.PrintHelp(std::cout, header);
     definedArguments.StopOptionsProcessing();
     stopExecution = true;
 }
