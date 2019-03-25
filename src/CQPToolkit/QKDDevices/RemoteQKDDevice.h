@@ -27,6 +27,39 @@ namespace cqp
         class DeviceConfig;
     }
 
+    /**
+     * @brief The RemoteQKDDevice class simplifies the interface to the device down to start/stop and Key retreval
+     * @details
+        skinparam package {
+            backgroundColor<<CQPToolkit>> DarkKhaki
+        }
+
+        package "HandeldDriver (Alice)" <<CQPToolkit>> {
+            component RemoteQKDDriver as aliceDrv
+            component LEDDriver as aliceDev
+            aliceDrv .up.> aliceDev
+        }
+        interface "IDevice" as aliceDevice
+        aliceDrv -down- aliceDevice
+
+        package "FreespaceBobDriver (Bob)" <<CQPToolkit>> {
+            component RemoteQKDDriver as bobDrv
+            component Mk1PhotonDetector as bobDev
+            bobDrv .up.> bobDev
+        }
+        interface "IDevice" as bobDevice
+        bobDrv -down- bobDevice
+
+        package ClientApp1 {
+            component KeyReader as kr1
+        }
+        kr1 .up.>aliceDevice
+
+        package ClientApp2 {
+            component KeyReader as kr2
+        }
+        kr2 .up.> bobDevice
+     */
     class CQPTOOLKIT_EXPORT RemoteQKDDevice :
         public virtual IKeyCallback,
         public remote::IDevice::Service
