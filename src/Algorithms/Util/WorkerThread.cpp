@@ -67,33 +67,48 @@ namespace cqp
 
     void WorkerThread::Stop(bool wait)
     {
+        LOGTRACE("Thread Stopping...");
+
         {
-            LOGTRACE("Thread Stopping...");
-            lock_guard<mutex> lock(accessMutex);
-            state = State::Stop;
+            unique_lock<mutex> lock(accessMutex);
+
+            if(state == State::Started && worker.joinable())
+            {
+                // stop parrallel stops from clashing
+                state = State::Stop;
+                // Let the thread read the state
+                lock.unlock();
+                threadConditional.notify_all();
+
+                if(wait)
+                {
+                    worker.join();
+                }
+                else
+                {
+                    worker.detach();
+                }
+
+                // reobtain the lock to complete the process
+                lock.lock();
+                state = State::NotStarted;
+                worker = thread();
+                lock.unlock();
+
+                threadConditional.notify_all();
+
+            }
+            if(state == State::Stop)
+            {
+                // wait for the thread to stop
+                threadConditional.wait(lock, [&]()
+                {
+                    return state == State::NotStarted;
+                });
+            }
         }
 
-        threadConditional.notify_all();
-
-        if (wait )
-        {
-            WorkerThread::Join();
-        }
-        else if(worker.joinable())
-        {
-            worker.detach();
-        }
-        state = State::NotStarted;
         LOGTRACE("Thread Stopped.");
-    }
-
-    void WorkerThread::Join()
-    {
-        if (worker.joinable())
-        {
-            LOGTRACE("Waiting for thread");
-            worker.join();
-        }
     }
 
     bool WorkerThread::IsRunning()

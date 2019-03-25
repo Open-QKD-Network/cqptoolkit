@@ -279,7 +279,7 @@ namespace cqp
             const std::string& nextHopAddress = *(request.sites().urls().begin() + 1);
 
             auto hopKeyStore = keystoreFactory->GetKeyStore(nextHopAddress);
-            result = hopKeyStore->GetNewKey(identity, output);
+            result = hopKeyStore->GetNewKey(identity, output, true);
             if(result)
             {
                 LOGDEBUG("First hop key: id=" + std::to_string(identity) + " value=" + std::to_string(output[0]));

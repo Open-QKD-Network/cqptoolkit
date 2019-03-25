@@ -128,34 +128,37 @@ namespace cqp
             hop->mutable_second()->set_site(site1.agent->GetConnectionAddress());
             hop->mutable_second()->set_deviceid(site1alice.device->GetDeviceDetails().id());
 
+            // start and stop the process twice to check re-starts
+            for(auto count = 0u; count < 2; count++)
             {
-                grpc::ClientContext ctx;
-                google::protobuf::Empty response;
+                {
+                    grpc::ClientContext ctx;
+                    google::protobuf::Empty response;
 
-                ASSERT_TRUE(LogStatus(site2Stub->StartNode(&ctx, request, &response)).ok());
+                    ASSERT_TRUE(LogStatus(site2Stub->StartNode(&ctx, request, &response)).ok());
+                }
+
+                auto ks1 = site1.agent->GetKeyStoreFactory()->GetKeyStore(site2.agent->GetConnectionAddress());
+                ASSERT_NE(ks1, nullptr);
+                KeyID key1Id;
+                PSK key1Value;
+                ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value, true));
+                ASSERT_GT(key1Value.size(), 0);
+
+                auto ks2 = site2.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
+                ASSERT_NE(ks2, nullptr);
+                PSK key2Value;
+                ASSERT_TRUE(ks2->GetExistingKey(key1Id, key2Value).ok());
+
+                ASSERT_EQ(key1Value, key2Value);
+
+                {
+                    grpc::ClientContext ctx;
+                    google::protobuf::Empty response;
+                    // bring the system down
+                    ASSERT_TRUE(LogStatus(site2Stub->EndKeyExchange(&ctx, request, &response)).ok());
+                }
             }
-
-            auto ks1 = site1.agent->GetKeyStoreFactory()->GetKeyStore(site2.agent->GetConnectionAddress());
-            ASSERT_NE(ks1, nullptr);
-            KeyID key1Id;
-            PSK key1Value;
-            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value, true));
-            ASSERT_GT(key1Value.size(), 0);
-
-            auto ks2 = site2.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
-            ASSERT_NE(ks2, nullptr);
-            PSK key2Value;
-            ASSERT_TRUE(ks2->GetExistingKey(key1Id, key2Value).ok());
-
-            ASSERT_EQ(key1Value, key2Value);
-
-            {
-                grpc::ClientContext ctx;
-                google::protobuf::Empty response;
-                // bring the system down
-                ASSERT_TRUE(LogStatus(site2Stub->EndKeyExchange(&ctx, request, &response)).ok());
-            }
-
             // this should cause the device to be unregistered
             site1alice.adaptor.reset();
             site2bob.adaptor.reset();
@@ -204,32 +207,35 @@ namespace cqp
             hop2->mutable_second()->set_site(site3.agent->GetConnectionAddress());
             hop2->mutable_second()->set_deviceid(site3bob.device->GetDeviceDetails().id());
 
+            for(auto count = 0u; count < 2; count++)
             {
-                grpc::ClientContext ctx;
-                google::protobuf::Empty response;
+                {
+                    grpc::ClientContext ctx;
+                    google::protobuf::Empty response;
 
-                ASSERT_TRUE(LogStatus(site1Stub->StartNode(&ctx, request, &response)).ok());
-            }
+                    ASSERT_TRUE(LogStatus(site1Stub->StartNode(&ctx, request, &response)).ok());
+                }
 
-            auto ks1 = site1.agent->GetKeyStoreFactory()->GetKeyStore(site3.agent->GetConnectionAddress());
-            ASSERT_NE(ks1, nullptr);
-            KeyID key1Id;
-            PSK key1Value;
-            ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value, true));
-            ASSERT_GT(key1Value.size(), 0);
+                auto ks1 = site1.agent->GetKeyStoreFactory()->GetKeyStore(site3.agent->GetConnectionAddress());
+                ASSERT_NE(ks1, nullptr);
+                KeyID key1Id;
+                PSK key1Value;
+                ASSERT_TRUE(ks1->GetNewKey(key1Id, key1Value, true));
+                ASSERT_GT(key1Value.size(), 0);
 
-            auto ks3 = site3.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
-            ASSERT_NE(ks3, nullptr);
-            PSK key3Value;
-            ASSERT_TRUE(ks3->GetExistingKey(key1Id, key3Value).ok());
+                auto ks3 = site3.agent->GetKeyStoreFactory()->GetKeyStore(site1.agent->GetConnectionAddress());
+                ASSERT_NE(ks3, nullptr);
+                PSK key3Value;
+                ASSERT_TRUE(ks3->GetExistingKey(key1Id, key3Value).ok());
 
-            ASSERT_EQ(key1Value, key3Value);
+                ASSERT_EQ(key1Value, key3Value);
 
-            {
-                grpc::ClientContext ctx;
-                google::protobuf::Empty response;
-                // bring the system down
-                ASSERT_TRUE(LogStatus(site1Stub->EndKeyExchange(&ctx, request, &response)).ok());
+                {
+                    grpc::ClientContext ctx;
+                    google::protobuf::Empty response;
+                    // bring the system down
+                    ASSERT_TRUE(LogStatus(site1Stub->EndKeyExchange(&ctx, request, &response)).ok());
+                }
             }
 
             // this should cause the device to be unregistered

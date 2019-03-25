@@ -349,7 +349,7 @@ namespace cqp
             else
             {
                 KeyID leftKeyId = 0;
-                if(leftKeyStore->GetNewKey(leftKeyId, leftKey))
+                if(leftKeyStore->GetNewKey(leftKeyId, leftKey, true))
                 {
                     LOGDEBUG("Left Key id=" + to_string(leftKeyId) + " value=" + to_string(leftKey[0]));
                     response->set_leftid(leftKeyId);
@@ -360,7 +360,10 @@ namespace cqp
                 }
             }
 
-            result = rightKeyStore->GetExistingKey(request->rightkeyid(), rightKey);
+            if(result.ok())
+            {
+                result = rightKeyStore->GetExistingKey(request->rightkeyid(), rightKey);
+            }
 
             if(result.ok())
             {

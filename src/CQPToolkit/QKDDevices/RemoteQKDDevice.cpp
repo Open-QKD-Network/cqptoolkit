@@ -36,6 +36,16 @@ namespace cqp
         shutdown = true;
         recievedKeysCv.notify_all();
         UnregisterWithSiteAgent();
+        ISessionController* session = nullptr;
+        if(device)
+        {
+            session = device->GetSessionController();
+        }
+
+        if(session)
+        {
+            session->EndSession();
+        }
         deviceServer.reset();
         device.reset();
     }
@@ -104,7 +114,7 @@ namespace cqp
         ISessionController* session = nullptr;
         if(device)
         {
-            session = device ->GetSessionController();
+            session = device->GetSessionController();
         }
 
         if(session)

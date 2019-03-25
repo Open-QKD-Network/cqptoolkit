@@ -152,7 +152,7 @@ namespace cqp
             {
 
                 unique_lock<mutex> lock(details.reportMutex);
-                details.reportCv.wait(lock, [&]
+                details.reportCv.wait_for(lock, chrono::seconds(1), [&]
                 {
                     return !details.reports.empty() || shutdown || ctx->IsCancelled();
                 });
