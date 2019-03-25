@@ -3,7 +3,7 @@
 * @brief ClavisController
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/2/2018
@@ -12,15 +12,18 @@
 #pragma once
 #include <QKDInterfaces/ISession.grpc.pb.h>
 #include "CQPToolkit/Session/SessionController.h"
-#include "CQPToolkit/Session/PublicKeyService.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "QKDInterfaces/IIDQWrapper.grpc.pb.h"
 #include "Algorithms/Util/Provider.h"
 #include <grpc++/channel.h>
 #include <thread>
+#include "QKDInterfaces/Device.pb.h"
 
 namespace cqp
 {
+    class Clavis;
+    class IDQSequenceLauncher;
+
     namespace session
     {
         /**
@@ -28,7 +31,8 @@ namespace cqp
          * Session controller for Clavis devices
          */
         class CQPTOOLKIT_EXPORT ClavisController :
-                public SessionController, public Provider<IKeyCallback>
+            public SessionController, public Provider<IKeyCallback>,
+            public remote::IIDQWrapper::Service
         {
         public:
             /**
@@ -36,7 +40,7 @@ namespace cqp
              * @param address The uri of the wrapper
              * @param creds credentials to use when connecting to the wrapper
              */
-            ClavisController(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds,
+            ClavisController(std::shared_ptr<grpc::ChannelCredentials> creds,
                              std::shared_ptr<stats::ReportServer> theReportServer);
 
             /// distructor
@@ -46,7 +50,7 @@ namespace cqp
             /// @name ISessionController
 
             /// @copydoc cqp::ISessionController::StartSession
-            grpc::Status StartSession() override;
+            grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
 
             /// @copydoc cqp::ISessionController::EndSession
             void EndSession() override;
@@ -59,17 +63,22 @@ namespace cqp
             /// @copydoc cqp::remote::ISession::SessionStarting
             /// @param context Connection details from the server
             grpc::Status SessionStarting(grpc::ServerContext* context,
-                                         const remote::SessionDetails* request,
+                                         const remote::SessionDetailsFrom* request,
                                          google::protobuf::Empty*) override;
 
             /// @copydoc cqp::remote::ISession::SessionEnding
             /// @param context Connection details from the server
             grpc::Status SessionEnding(
-                    grpc::ServerContext* context,
-                    const google::protobuf::Empty*,
-                    google::protobuf::Empty*) override;
+                grpc::ServerContext* context,
+                const google::protobuf::Empty*,
+                google::protobuf::Empty*) override;
 
             /// @}
+
+            ///@{
+            /// @name IIDQWrapper interface
+            grpc::Status UseKeyID(grpc::ServerContext* context, ::grpc::ServerReader<remote::KeyIdValueList>* reader, google::protobuf::Empty* response) override;
+            ///@}
 
             /**
              * @brief GetSide
@@ -77,7 +86,7 @@ namespace cqp
              */
             remote::Side::Type GetSide();
 
-            bool Initialise(remote::DeviceConfig& parameters);
+            bool Initialise(std::unique_ptr<PSK> initialKey);
         protected:
 
             /**
@@ -86,31 +95,20 @@ namespace cqp
              * @param reader source of key from the wrapper
              * @param wrapperCtx connection context
              */
-            void ReadKey(std::unique_ptr<grpc::ClientReader<remote::SharedKey> > reader, std::unique_ptr<grpc::ClientContext> wrapperCtx);
+            void ReadKey();
 
-            /**
-             * @brief CollectStats
-             * Read stats from the external process
-             */
-            void CollectStats();
+            std::unique_ptr<cqp::Clavis> device;
+            std::unique_ptr<IDQSequenceLauncher> launcher;
 
             /// whether the threads should exit
             bool keepGoing = true;
             /// run the ReadKey call
             std::thread readThread;
-            /// Setting provided by the wrapper
-            remote::WrapperDetails myWrapperDetails;
             /// gets the stats from the device
             std::thread statsThread;
-            /// channel to wrapper
-            std::shared_ptr<grpc::Channel> channel;
-            /// wrapper stub
-            std::unique_ptr<remote::IIDQWrapper::Stub> wrapper;
-            /// Exchange keys with other sites
-            PublicKeyService* pubKeyServ = nullptr;
             /// Our authentication token for getting shared secrets
-            std::string keyToken;
-            remote::DeviceConfig deviceConfig;
+            std::unique_ptr<PSK> authKey;
+            remote::Side::Type side;
         };// ClavisController
     }
 

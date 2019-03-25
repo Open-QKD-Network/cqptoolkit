@@ -95,7 +95,7 @@ namespace cqp
          * @brief Initialise the device
          * @return true on success
          */
-        bool Initialise(remote::DeviceConfig& parameters);
+        bool Initialise();
 
         void SetPhotonsPerBurst(uint64_t numPhotons) {
             photonsPerBurst = numPhotons;

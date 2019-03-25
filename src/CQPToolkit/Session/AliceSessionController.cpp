@@ -14,8 +14,10 @@
 #include "QKDInterfaces/IDetector.grpc.pb.h"
 #include "CQPToolkit/Session/TwoWayServerConnector.h"
 
-namespace cqp {
-    namespace session {
+namespace cqp
+{
+    namespace session
+    {
 
         using google::protobuf::Empty;
         using grpc::Status;
@@ -24,19 +26,19 @@ namespace cqp {
         const int AliceSessionController::threadPriority;
 
         AliceSessionController::AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
-                                                       const Services& services,
-                                                       const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source,
-                                                       std::shared_ptr<stats::ReportServer> theReportServer) :
+                const Services& services,
+                const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source,
+                std::shared_ptr<stats::ReportServer> theReportServer) :
             SessionController (creds, services, remotes, theReportServer),
             photonSource{source}
         {
 
         }
 
-        grpc::Status AliceSessionController::StartSession()
+        grpc::Status AliceSessionController::StartSession(const remote::SessionDetails& sessionDetails)
         {
             // the local system is starting the session
-            auto result = SessionController::StartSession();
+            auto result = SessionController::StartSession(sessionDetails);
             if(result.ok() && photonSource)
             {
                 Start(threadPriority);
@@ -46,14 +48,17 @@ namespace cqp {
 
         void AliceSessionController::EndSession()
         {
-            // the local system is stopping the session
-            // wait for the transmitter to stop
-             Stop(true);
+            if(this->IsRunning())
+            {
+                // the local system is stopping the session
+                // wait for the transmitter to stop
+                Stop(true);
 
-            SessionController::EndSession();
+                SessionController::EndSession();
+            }
         }
 
-        grpc::Status AliceSessionController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetails* request, google::protobuf::Empty* response)
+        grpc::Status AliceSessionController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)
         {
             // The session has been started remotly
             auto result = SessionController::SessionStarting(ctx, request, response);
@@ -71,17 +76,6 @@ namespace cqp {
             Stop(true);
 
             return SessionController::SessionEnding(ctx, request, response);
-        }
-
-        void AliceSessionController::WaitForEndOfSession()
-        {
-            if(this->IsRunning())
-            {
-                std::unique_lock<std::mutex> lock(accessMutex);
-                threadConditional.wait(lock, [&](){
-                    return state == State::Stop;
-                });
-            }
         }
 
         void AliceSessionController::DoWork()

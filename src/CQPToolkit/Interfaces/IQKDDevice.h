@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Usb Tagger
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -13,26 +13,29 @@
 #include <string>
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Datatypes/URI.h"
-#include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "Algorithms/Util/Provider.h"
-#include <memory>
 #include "Algorithms/Util/IEvent.h"
+#include <memory>
+#include "CQPToolkit/cqptoolkit_export.h"
+
+namespace grpc
+{
+    class Service;
+}
 
 namespace cqp
 {
-
-    class ISessionController;
-
     namespace remote
     {
-        class Device;
         class SiteAgentReport;
         class DeviceConfig;
+        class SessionDetails;
     }
 
     namespace stats
     {
-        class IStatsReportCallback {
+        class IStatsReportCallback
+        {
         public:
             virtual void StatsReport(const remote::SiteAgentReport& report) = 0;
             virtual ~IStatsReportCallback() = default;
@@ -42,9 +45,12 @@ namespace cqp
 
     }
 
+    class ISessionController;
+    class IKeyCallback;
+
     /// Manages Key callbacks
     /// @see Provider
-    using IKeyPublisher = Provider<IKeyCallback>;
+    using KeyPublisher = Provider<IKeyCallback>;
 
     /// A generic device driver which can communicate or simulate a piece of hardware.
     class CQPTOOLKIT_EXPORT IQKDDevice
@@ -64,10 +70,16 @@ namespace cqp
         virtual URI GetAddress() const = 0;
 
         /// Establish communications with the device and configure it for the specifed parameters
-        /// Th parameters should be adjusted to reflect the actial values used where default/invalid values are provided
-        /// @param[in,out] parameters The system settings to use when configuring the device.
+        /// The parameters should be adjusted to reflect the actial values used where default/invalid values are provided
+        /// @param[in] sessionDetails The session specific parameters
         /// @return true if the device was successfully setup
-        virtual bool Initialise(remote::DeviceConfig& parameters) = 0;
+        virtual bool Initialise(const remote::SessionDetails& sessionDetails) = 0;
+
+        /**
+         * @brief SetInitialKey
+         * @param initailKey The key for initial authentication
+         */
+        virtual void SetInitialKey(std::unique_ptr<PSK> initailKey) = 0;
 
         /**
          * @brief GetSessionController
@@ -79,25 +91,25 @@ namespace cqp
          * @brief GetKeyPublisher
          * @return The interface which will issue callbacks when key is available
          */
-        virtual IKeyPublisher* GetKeyPublisher() = 0;
+        virtual KeyPublisher* GetKeyPublisher() = 0;
 
         /**
          * @brief GetDeviceDetails
          * @return Details for registration
          */
-        virtual remote::Device GetDeviceDetails() = 0;
+        virtual remote::DeviceConfig GetDeviceDetails() = 0;
 
         /**
-         * @brief GetStatsPublisher
-         * @return The producer of device statistics
+         * @brief GetServices
+         * @return A list of services provided by the driver
          */
-        virtual stats::IStatsPublisher* GetStatsPublisher() = 0;
+        virtual std::vector<grpc::Service*> GetServices() = 0;
 
         /// virtual destructor
         virtual ~IQKDDevice() = default;
 
         /// URI parameter names
-        struct Parmeters
+        struct Parameters
         {
             /// The name of the switch port parameter
             static NAMEDSTRING(switchPort);

@@ -3,7 +3,7 @@
 * @brief ClavisProxy
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 16/4/2018
@@ -23,10 +23,12 @@ namespace grpc
 
 namespace cqp
 {
-    namespace session {
+    namespace session
+    {
         class ClavisController;
     }
-    namespace stats {
+    namespace stats
+    {
         class ReportServer;
     }
     class ISessionController;
@@ -45,22 +47,11 @@ namespace cqp
         static const constexpr size_t InitialSecretKeyBytes = 32;
         /**
          * @brief ClavisProxy
-         * @param address The url of the IDQWrapper instance
-         * @details
-         *  URI fields:
-         *      host = host accessible location of the IIDQWrapper interface, usually localhost
-         *      port = host accessible port of the IIDQWrapper interface
-         *          docker maps port 7000 to this port on the host
-         *      parameters
-         *          side = alice or bob
-         * clavis://localhost:7001/?side=alice
+         * @param initialConfig default settings for the device
          * @param creds
          * @param bytesPerKey
          */
-        ClavisProxy(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
-
-        /// tell the factory how to create these devices
-        static void RegisterWithFactory();
+        ClavisProxy(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds);
 
         // IQKDDevice interface
     public:
@@ -74,27 +65,28 @@ namespace cqp
         URI GetAddress() const override;
 
         /// @copydoc cqp::IQKDDevice::Initialise
-        bool Initialise(remote::DeviceConfig& parameters) override;
+        bool Initialise(const remote::SessionDetails& sessionDetails) override;
 
         /// @copydoc cqp::IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
 
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
-        remote::Device GetDeviceDetails() override;
+        cqp::remote::DeviceConfig GetDeviceDetails() override;
 
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
-        IKeyPublisher*GetKeyPublisher() override;
-        /// @copydoc IQKDDevice::GetStatsPublisher
-        stats::IStatsPublisher* GetStatsPublisher() override;
+        KeyPublisher*GetKeyPublisher() override;
+        /// @copydoc IQKDDevice::GetServices
+        std::vector<grpc::Service*> GetServices() override;
 
+        void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
         ///@}
     protected:
         /// controller which passes key from the wrapper
         std::shared_ptr<session::ClavisController> controller;
-        /// The address of the wrapper
-        std::string myAddress;
+        remote::DeviceConfig config;
 
         std::shared_ptr<stats::ReportServer> reportServer;
+        std::unique_ptr<PSK> authKey;
     };
 
 } // namespace cqp

@@ -3,35 +3,37 @@
 * @brief SiteAgent
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 15/1/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "SiteAgent.h"
-#include "KeyManagement/KeyStores/KeyStoreFactory.h"
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "Algorithms/Logging/Logger.h"
-#include "CQPToolkit/Session/SessionController.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/Interfaces/IQKDDevice.h"
-#include "CQPToolkit/Interfaces/ISessionController.h"
+#include "Algorithms/Statistics/StatisticsLogger.h"
+
+
+#include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include "KeyManagement/KeyStores/KeyStore.h"
+#include "KeyManagement/KeyStores/HSMStore.h"
+#include "KeyManagement/KeyStores/BackingStoreFactory.h"
+
 #include "KeyManagement/Net/ServiceDiscovery.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
-#include "Algorithms/Statistics/StatisticsLogger.h"
 #include "Algorithms/Net/DNS.h"
-#include "KeyManagement/KeyStores/HSMStore.h"
+#include "Algorithms/Util/Env.h"
+
 #include <grpc++/server_builder.h>
 #include <grpc++/server.h>
 #include <grpc++/create_channel.h>
 #include <grpc++/client_context.h>
 #include <grpc++/security/credentials.h>
+#include "QKDInterfaces/Device.pb.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
-#include <thread>
-#include "KeyManagement/KeyStores/BackingStoreFactory.h"
-#include "Algorithms/Util/Env.h"
+#include <google/protobuf/util/message_differencer.h>
+#include <unordered_map>
 
 #if defined(SQLITE3_FOUND)
     #include "KeyManagement/KeyStores/FileStore.h"
@@ -42,19 +44,70 @@ namespace cqp
     using grpc::Status;
     using grpc::StatusCode;
 
-    void SiteAgent::RegisterWithNetMan()
+    void SiteAgent::RegisterWithNetMan(std::string netManUri, std::shared_ptr<grpc::ChannelCredentials> creds)
     {
+        using namespace std;
+
+        LOGINFO("Connecting to Network Manager: " + netManUri);
+        /// channel to the network manager
+        std::shared_ptr<grpc::Channel> netmanChannel = grpc::CreateChannel(netManUri, creds);
+        /// The network manager to register with
+        std::unique_ptr<remote::INetworkManager::Stub> netMan = remote::INetworkManager::NewStub(netmanChannel);
+
         if(server && netMan)
         {
-            grpc::Status registerResult;
+            // keep a copy of what was sent last time
+            remote::Site siteDetailsCopy;
+
+            grpc::Status registerResult = Status(StatusCode::INTERNAL, "");
             do
             {
                 google::protobuf::Empty response;
                 grpc::ClientContext ctx;
-                registerResult = LogStatus(
-                                     netMan->RegisterSite(&ctx, siteDetails, &response), "Failed to register site with Network Manager");
+
+                {
+                    /*lock scope*/
+                    unique_lock<mutex> lock(siteDetailsMutex);
+                    if(registerResult.ok())
+                    {
+                        // we've registered - wait for any change in the details
+                        siteDetailsChanged.wait(lock, [&]()
+                        {
+                            google::protobuf::util::MessageDifferencer diff;
+                            return !diff.Equals(siteDetails, siteDetailsCopy) || shutdown;
+                        });
+                    }
+                    siteDetailsCopy = siteDetails;
+
+                }/*lock scope*/
+
+                if(shutdown)
+                {
+                    remote::SiteAddress siteAddress;
+                    (*siteAddress.mutable_url()) = siteDetails.url();
+                    // register if the last attempt failed or the site details have changed
+                    registerResult = LogStatus(
+                                         netMan->UnregisterSite(&ctx, siteAddress, &response), "Failed to register site with Network Manager");
+
+                    if(!registerResult.ok())
+                    {
+                        netmanChannel->WaitForConnected(chrono::system_clock::now() +
+                                                        chrono::seconds(3));
+                    }
+                }
+                else
+                {
+                    // register if the last attempt failed or the site details have changed
+                    registerResult = LogStatus(
+                                         netMan->RegisterSite(&ctx, siteDetailsCopy, &response), "Failed to register site with Network Manager");
+                }
+
             }
-            while(!registerResult.ok());
+            while(!shutdown);
+        }
+        else
+        {
+            LOGERROR("Invalid setup");
         }
     }
 
@@ -67,42 +120,15 @@ namespace cqp
             LOGINFO("Invalid ID. Setting to " + myConfig.id());
         }
 
-        if(!config.netmanuri().empty())
-        {
-            LOGINFO("Connecting to Network Manager: " + config.netmanuri());
-            netmanChannel = grpc::CreateChannel(config.netmanuri(), LoadChannelCredentials(config.credentials()));
-            netMan = remote::INetworkManager::NewStub(netmanChannel);
-        }
-        deviceFactory.reset(new DeviceFactory(LoadChannelCredentials(config.credentials())));
-
         keystoreFactory.reset(new keygen::KeyStoreFactory(LoadChannelCredentials(config.credentials()),
-                                                          keygen::BackingStoreFactory::CreateBackingStore(myConfig.backingstoreurl())));
+                              keygen::BackingStoreFactory::CreateBackingStore(myConfig.backingstoreurl())));
         reportServer.reset(new stats::ReportServer());
         reportServer->AddAdditionalProperties("siteName", config.name());
 
         // attach the reporting to the device factory so it link them when creating devices
-        deviceFactory->AddReportingCallback(reportServer.get());
         keystoreFactory->AddReportingCallback(reportServer.get());
         // for debug
         //deviceFactory->AddReportingCallback(statsLogger.get());
-
-        // build devices
-        for(const auto& devaddr : myConfig.deviceurls())
-        {
-            LOGTRACE("Configuring device " + devaddr);
-            auto dev = deviceFactory->CreateDevice(devaddr);
-            if(dev == nullptr)
-            {
-                LOGERROR("Invalid device: " + devaddr);
-            }
-            else
-            {
-                // Get the address from the device so that it can fill in any missing details
-                // which might be needed later
-                auto details = siteDetails.mutable_devices()->Add();
-                *details = dev->GetDeviceDetails();
-            }
-        }
 
         // create the server
         grpc::ServerBuilder builder;
@@ -115,7 +141,7 @@ namespace cqp
 
         if(myConfig.bindaddress().empty())
         {
-            builder.AddListeningPort("0.0.0.0:" + std::to_string(myConfig.listenport()),
+            builder.AddListeningPort(std::string(net::AnyAddress) + ":" + std::to_string(myConfig.listenport()),
                                      LoadServerCredentials(config.credentials()), &listenPort);
         }
         else
@@ -126,8 +152,7 @@ namespace cqp
 
 
         // Register services
-        builder.RegisterService(static_cast<remote::ISiteAgent::Service*>(this));
-        builder.RegisterService(static_cast<remote::ISiteDetails::Service*>(this));
+        builder.RegisterService(this);
         builder.RegisterService(static_cast<remote::IKeyFactory::Service*>(keystoreFactory.get()));
         builder.RegisterService(static_cast<remote::IKey::Service*>(keystoreFactory.get()));
         builder.RegisterService(reportServer.get());
@@ -152,35 +177,22 @@ namespace cqp
         // tell the key store factory our address now we have it
         keystoreFactory->SetSiteAddress(GetConnectionAddress());
 
+        if(!config.netmanuri().empty())
+        {
+            netManRegister = std::thread(&SiteAgent::RegisterWithNetMan, this, config.netmanuri(), LoadChannelCredentials(config.credentials()));
+        }
     } // SiteAgent
 
     SiteAgent::~SiteAgent()
     {
-        if(netMan)
-        {
-            // un-register from the network manager
-            google::protobuf::Empty response;
-            remote::SiteAddress siteAddress;
-            (*siteAddress.mutable_url()) = GetConnectionAddress();
-            grpc::ClientContext ctx;
-            grpc::Status result = LogStatus(
-                                      netMan->UnregisterSite(&ctx, siteAddress, &response));
-        }
+        shutdown = true;
+        // trigger the unregistering from the network manager
+        siteDetailsChanged.notify_all();
 
         // disconnect all session controllers
-        for(const auto& dev : devicesInUse)
+        for(auto device : devicesInUse)
         {
-            auto controller = dev.second->GetSessionController();
-            if(controller)
-            {
-                auto pub = dev.second->GetKeyPublisher();
-                if(pub)
-                {
-                    pub->Detatch();
-                }
-                controller->EndSession();
-            }
-            deviceFactory->ReturnDevice(dev.second);
+            device.second->Stop();
         }
         devicesInUse.clear();
 
@@ -188,14 +200,15 @@ namespace cqp
 
         if(reportServer)
         {
-            if(deviceFactory)
-            {
-                deviceFactory->RemoveReportingCallback(reportServer.get());
-            }
             if(keystoreFactory)
             {
                 keystoreFactory->RemoveReportingCallback(reportServer.get());
             }
+        }
+
+        if(netManRegister.joinable())
+        {
+            netManRegister.join();
         }
     } // ~SiteAgent
 
@@ -226,8 +239,52 @@ namespace cqp
         return result;
     } // RegisterWithDiscovery
 
-    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, ISessionController*& controller,
-                                    remote::DeviceConfig& params)
+    void SiteAgent::ProcessKeys(std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey)
+    {
+        using namespace std;
+        auto deviceStub = remote::IDevice::NewStub(connection->channel);
+
+        if(deviceStub && connection->keySink)
+        {
+            remote::LocalSettings request;
+            remote::RawKeys incommingKeys;
+            request.set_initialkey(initialKey->data(), initialKey->size());
+
+            auto reader = deviceStub->WaitForSession(&connection->keyReaderContext, request);
+
+            // TODO this isn't enough to ensure the memory is clean.
+            request.clear_initialkey();
+            initialKey->clear();
+            initialKey.reset();
+
+            while(reader && reader->Read(&incommingKeys))
+            {
+                auto keys = make_unique<KeyList>();
+                keys->reserve(static_cast<size_t>(incommingKeys.keydata().size()));
+                // copy each key to the internal datatype
+                for(const auto& newKey : incommingKeys.keydata())
+                {
+                    // get an iterator in the list of keys
+                    auto dest = keys->emplace(keys->end());
+                    // make space for the key bytes
+                    dest->resize(newKey.size());
+                    // copy the key bytes into the new storage
+                    copy(newKey.begin(), newKey.end(), dest->begin());
+                }
+                // send the keys on
+                connection->keySink->OnKeyGeneration(move(keys));
+            }
+
+            reader->Finish();
+
+        }
+        else
+        {
+            LOGERROR("Faild to WaitForSession, invalid setup");
+        }
+    }
+
+    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, std::string& localSessionAddress, remote::SessionDetails& params)
     {
         using namespace std;
         using namespace grpc;
@@ -235,232 +292,235 @@ namespace cqp
         LOGTRACE("From " + GetConnectionAddress() + " to " + destination + " with device " + deviceId);
 
         // get the device we've been told to use
-        std::shared_ptr<IQKDDevice> localDev = deviceFactory->UseDeviceById(deviceId);
-        if(localDev)
+        auto localDev = devicesInUse.find(deviceId);
+        if(localDev == devicesInUse.end())
         {
-            if(localDev->Initialise(params))
+            result = Status(StatusCode::NOT_FOUND, "Device " + deviceId + " not found");
+            lock_guard<mutex> lock(siteDetailsMutex);
+            // not currently in use, find it in the registered devices list
+            for(const auto& regDevice : siteDetails.devices())
             {
-                controller = localDev->GetSessionController();
-            }
-
-            if(controller)
-            {
-                LOGTRACE("Starting controller");
-                // start the controller so that it can receive connections from the other controller
-                result = LogStatus(
-                             controller->StartServer());
-                if(result.ok())
+                if(regDevice.config().id() == deviceId)
                 {
-                    LOGTRACE("Attaching keystore");
-                    // attach the device key publisher to the key store for this hop
-                    shared_ptr<keygen::KeyStore> ks = keystoreFactory->GetKeyStore(destination);
-                    IKeyPublisher* pub = localDev->GetKeyPublisher();
-                    if(pub)
+                    // store the new device and get the iterator to it for later
+                    auto localDev = make_shared<DeviceConnection>();
+                    LOGTRACE("Connecting to device control at " + regDevice.controladdress());
+                    localDev->channel = grpc::CreateChannel(regDevice.controladdress(), LoadChannelCredentials(myConfig.credentials()));
+                    localDev->keySink = keystoreFactory->GetKeyStore(destination);
+                    if(localDev->channel->WaitForConnected(chrono::system_clock::now() + chrono::seconds(10)))
                     {
-                        LOGTRACE("Adding keystore");
-                        // from know on, any key which is produced by this device will
-                        // be sent to this key store.
-                        pub->Attach(ks.get());
+                        result = Status(StatusCode::UNAVAILABLE, "Failed to connect to " + regDevice.controladdress());
+                    }
+
+                    auto initialPsk = std::make_unique<PSK>();
+
+                    // find a key to use for bootstrapping
+                    // First try our own key store.
+                    if(params.initialkeyid() == 0)
+                    {
+                        KeyID newId;
+                        if(localDev->keySink->GetNewKey(newId, *initialPsk))
+                        {
+                            // set the key ID so that it is passed to the other site
+                            params.set_initialkeyid(newId);
+                        }
+                        else
+                        {
+                            // If theres no key to hand, try the fallback
+                            if(!myConfig.fallbackkey().empty())
+                            {
+                                LOGWARN("Using fallback key to bootstrap device");
+                                initialPsk->resize(myConfig.fallbackkey().size());
+                                initialPsk->assign(myConfig.fallbackkey().begin(), myConfig.fallbackkey().end());
+                            }
+                            else
+                            {
+                                LOGWARN("No key available for bootstrap. Ether populate the keystores or provide a fallback key in the configuration.");
+                            }
+                        }
                     }
                     else
                     {
-                        LOGERROR("Invalid key publisher for " + GetConnectionAddress() + " to " + destination);
-                        result = LogStatus(Status(StatusCode::INTERNAL, "Invalid key publisher"));
+// we should be able to get the key from our local key store
+                        if(!LogStatus(localDev->keySink->GetExistingKey(params.initialkeyid(), *initialPsk)).ok())
+                        {
+                            LOGERROR("Failded to get existing key " + std::to_string(params.initialkeyid()));
+                        }
                     }
-                } else {
-                    LOGERROR("Failed to start session server");
-                    result = LogStatus(Status(StatusCode::INTERNAL, "Failed to start session controller"));
-                } // if StartServer == ok
-            } // if controller
-            else
-            {
-                LOGERROR("Invalid session controller for " + GetConnectionAddress() + " to " + destination);
-                result = LogStatus(Status(StatusCode::INTERNAL, "Invalid session controller"));
-            } // else controller
 
-            if(result.ok())
-            {
-                // mark the device as in use
-                devicesInUse[deviceId] = localDev;
+                    localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
+                    // read stats and pass them on
+                    localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
+                    // BANG! need to wait for session address
+                    // this is the device we're looking for
+                    localSessionAddress = regDevice.config().sessionaddress();
+
+
+                    devicesInUse.emplace(deviceId, move(localDev));
+                    // The session will be start by the right side as it has all the required details
+                    result = Status();
+                    break; // for
+                }
             }
-            else
-            {
-                // something went wrong, return the device
-                deviceFactory->ReturnDevice(localDev);
-            }
-        } // if localDev
+        }
         else
         {
-            LOGTRACE("No unused device available.");
-            auto devIt = devicesInUse.find(deviceId);
-            if(devIt != devicesInUse.end())
-            {
-                LOGTRACE("Hop already active");
-                // this is not an error, we've just already started this connection
-                controller = devIt->second->GetSessionController();
-            } // if(devIt
-            else
-            {
-                result = LogStatus(grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                                                "Unknown device: " + deviceId));
-                LOGERROR("Failed to find local device " + deviceId);
-            } // else devIt
-        }  // else localDev
-
-        if(result.ok())
-        {
-            SendStatusUpdate(destination, remote::LinkStatus_State::LinkStatus_State_Connecting);
+            LOGTRACE("Hop already active");
         }
+
         return result;
     } // PrepHop
 
-    grpc::Status SiteAgent::StartLeftSide(remote::PhysicalPath* path, remote::HopPair& hopPair)
+    grpc::Status SiteAgent::ForwardOnStartNode(const remote::PhysicalPath* path, const std::string& secondSite,
+            const std::string& localSessionAddress)
     {
         using namespace std;
         using namespace grpc;
-        LOGTRACE(GetConnectionAddress());
-        bool alreadyConnected = false;
-        Status result;
-        /*lock scope*/
+        grpc::Status result;
+
+        // create a connection to the other agent
+        std::unique_ptr<remote::ISiteAgent::Stub> stub =
+            remote::ISiteAgent::NewStub(GetSiteChannel(secondSite));
+        if(stub)
         {
-            std::lock_guard<std::mutex> lock(statusCallbackMutex);
-            alreadyConnected = otherSites[hopPair.second().site()].state !=
-                               remote::LinkStatus_State::LinkStatus_State_Inactive;
-        }/*lock scope*/
-
-        ISessionController* controller = nullptr;
-
-        const string& localDeviceId = hopPair.first().deviceid();
-
-        if(alreadyConnected)
-        {
-            result = Status(grpc::StatusCode::OK, "Already connected");
-            LOGINFO("Already connected to " + hopPair.second().site());
-            auto device = devicesInUse.find(localDeviceId);
-            // get the existing controller so we can find it's connection address
-            if(device != devicesInUse.end())
+            ClientContext ctx;
+            google::protobuf::Empty response;
+            // this allows the next session controller to talk to our session controller
+            // TODO: should this be part of the interface?
+            ctx.AddMetadata(sessionAddress, localSessionAddress.c_str());
+            LOGTRACE("Calling StartNode on peer " + secondSite);
+            // start the next node, passing on the entire path
+            result = LogStatus(
+                         stub->StartNode(&ctx, *path, &response));
+            if(!result.ok())
             {
-                controller = device->second->GetSessionController();
+                LOGERROR("Failed to start the other side: " + secondSite);
             }
-        } else
+        } // if stub
+        else
         {
-            // configure the device and set up the controller
-            result = PrepHop(localDeviceId, hopPair.second().site(), controller, *hopPair.mutable_params());
-        }
+            result = LogStatus(Status(StatusCode::UNAVAILABLE, "Cannot contact next hop"));
+        } // else stub
 
-        if(result.ok() && controller)
+        return result;
+    } // StartLeftSide
+
+    grpc::Status SiteAgent::StartSession(std::shared_ptr<grpc::Channel> channel, const remote::SessionDetails& sessionDetails, const std::string& remoteSessionAddress)
+    {
+        using namespace std;
+        using namespace grpc;
+
+        LOGTRACE("Starting session");
+        // start exchanging keys
+        grpc::ClientContext ctx;
+        remote::SessionDetailsTo request;
+        google::protobuf::Empty response;
+        auto deviceStub = remote::IDevice::NewStub(channel);
+
+        (*request.mutable_details()) = sessionDetails;
+        request.set_peeraddress(remoteSessionAddress);
+        return deviceStub->RunSession(&ctx, request, &response);
+
+    } // StartRightSide
+
+    grpc::Status SiteAgent::StartNode(grpc::ServerContext* ctx, remote::HopPair& hop, remote::PhysicalPath& myPath)
+    {
+        LOGTRACE("Looking at hop from " + hop.first().site() + " to " + hop.second().site());
+
+        grpc::Status result;
+        bool alreadyConnected = false;
+
+        // if we are the left side of a hop, ie a in [a, b]
+        if(AddressIsThisSite(hop.first().site()))
         {
-            // create a connection to the other agent
-            std::unique_ptr<remote::ISiteAgent::Stub> stub =
-                remote::ISiteAgent::NewStub(GetSiteChannel(hopPair.second().site()));
-            if(stub)
+            bool alreadyConnected = false;
+            /*lock scope*/
             {
-                ClientContext ctx;
-                google::protobuf::Empty response;
-                // this allows the next session controller to talk to our session controller
-                // TODO: should this be part of the interface?
-                ctx.AddMetadata(sessionAddress, controller->GetConnectionAddress());
-                LOGTRACE("Calling StartNode on peer");
-                // start the next node, passing on the entire path
-                result = LogStatus(
-                             stub->StartNode(&ctx, *path, &response));
-                if(!result.ok())
+                std::lock_guard<std::mutex> lock(statusCallbackMutex);
+                alreadyConnected = otherSites[hop.first().site()].state !=
+                                   remote::LinkStatus_State::LinkStatus_State_Inactive;
+            }/*lock scope*/
+
+            if(!alreadyConnected)
+            {
+                // configure the device and set up the controller
+                std::string localSessionAddress;
+                result = PrepHop(hop.first().deviceid(), hop.second().site(), localSessionAddress, *hop.mutable_params());
+                if(result.ok())
                 {
-                    LOGERROR("Failed to start the other side: " + hopPair.second().site());
+                    result = ForwardOnStartNode(&myPath, hop.second().site(), localSessionAddress);
                 }
-            } // if stub
+
+            }
             else
             {
-                result = LogStatus(Status(StatusCode::UNAVAILABLE, "Cannot contact next hop"));
-            } // else stub
-        } else {
-            LOGERROR("Failed to prepare device and/or controller");
-            result = LogStatus(Status(StatusCode::INTERNAL, "Failed to prepare device and/or controller"));
-        } // if result.ok() && controller
+                result = Status(grpc::StatusCode::OK, "Already connected");
+                LOGINFO("Already connected to " + hop.first().site());
+            }
+
+        } // if left
+        else if(AddressIsThisSite(hop.second().site()))
+        {
+            /*lock scope*/
+            {
+                std::lock_guard<std::mutex> lock(statusCallbackMutex);
+                alreadyConnected = otherSites[hop.second().site()].state !=
+                                   remote::LinkStatus_State::LinkStatus_State_Inactive;
+            }/*lock scope*/
+
+            if(!alreadyConnected)
+            {
+                std::string remoteSessionAddress;
+                // connect the session controller to the previous hop which should already be setup
+                // this address currently comes from "AddMetadata" from the client
+                // TODO: should this be a real interface?
+                auto metaDataIt = ctx->client_metadata().find(sessionAddress);
+                if(metaDataIt != ctx->client_metadata().end())
+                {
+                    std::string localSessionAddress;
+                    // BUG: value is not terminated, so using .data() results in extra data at the end.
+                    // Copy the string using the length defined in the string
+                    remoteSessionAddress.assign(metaDataIt->second.begin(), metaDataIt->second.end());
+                    // configure the device and set up the controller
+                    Status result = PrepHop(hop.second().deviceid(), hop.first().site(), localSessionAddress, *hop.mutable_params());
+                    if(result.ok() && devicesInUse[hop.second().deviceid()])
+                    {
+                        // setup the second half of the chain
+                        LOGTRACE("Starting session to remote session " + remoteSessionAddress);
+                        result = StartSession(devicesInUse[hop.second().deviceid()]->channel, hop.params(), remoteSessionAddress);
+                    }
+
+                }
+                else
+                {
+                    // assume that the caller is not a site agent and has got the hop direction backwards, i.e:
+                    // asking B to setup A->B
+                    LOGDEBUG("Backwards hop");
+                    result = Status(StatusCode::INVALID_ARGUMENT, "Hop appears to be backwards. Called wrong Site?");
+                }
+            }
+            else
+            {
+                result = Status(grpc::StatusCode::OK, "Already connected");
+                LOGINFO("Already connected to " + hop.second().site());
+            }
+        } // if right
 
         // only take down the failed link if its a new link, don't destroy the working link because
         // of a bad request to extend it with a multi-hop link
         if(!alreadyConnected && !result.ok())
         {
-            auto localDev = devicesInUse.find(hopPair.first().deviceid());
+            auto localDev = devicesInUse.find(hop.first().deviceid());
             if(localDev != devicesInUse.end())
             {
                 // something went wrong, return the device
-                deviceFactory->ReturnDevice(localDev->second);
+                localDev->second->Stop();
                 devicesInUse.erase(localDev);
             }
-
-            auto kp = localDev->second->GetKeyPublisher();
-            if(kp)
-            {
-                // disconnect the key store from the publisher
-                kp->Detatch();
-            }
-        }
-        return result;
-    } // StartLeftSide
-
-    grpc::Status SiteAgent::StartRightSide(grpc::ServerContext*, remote::HopPair& hopPair, const std::string& remoteSessionAddress)
-    {
-        using namespace std;
-        using namespace grpc;
-        LOGTRACE(GetConnectionAddress());
-        bool alreadyConnected = false;
-        /*lock scope*/
-        {
-            std::lock_guard<std::mutex> lock(statusCallbackMutex);
-            alreadyConnected = otherSites[hopPair.second().site()].state !=
-                               remote::LinkStatus_State::LinkStatus_State_Inactive;
-        }/*lock scope*/
-
-        Status result;
-
-        if(alreadyConnected)
-        {
-            result = Status(grpc::StatusCode::OK, "Already connected");
-            LOGINFO("Already connected to " + hopPair.second().site());
-        } else
-        {
-            ISessionController* controller = nullptr;
-            // configure the device and set up the controller
-            Status result = PrepHop(hopPair.second().deviceid(), hopPair.first().site(), controller, *hopPair.mutable_params());
-
-            otherSites[hopPair.first().site()].channel = nullptr;
-
-            if(result.ok() && controller)
-            {
-                LOGTRACE("Start controller and connecting to peer");
-                // Connect the controller to the left side controller
-                result = LogStatus(
-                             controller->StartServerAndConnect(remoteSessionAddress));
-                if(result.ok())
-                {
-                    LOGTRACE("Starting session");
-                    // start exchanging keys
-                    result = controller->StartSession();
-                }
-            }
-
-            if(!result.ok())
-            {
-                auto localDev = devicesInUse.find(hopPair.second().deviceid());
-                if(localDev != devicesInUse.end())
-                {
-                    // something went wrong, return the device
-                    deviceFactory->ReturnDevice(localDev->second);
-                    devicesInUse.erase(localDev);
-                }
-                auto kp = localDev->second->GetKeyPublisher();
-                if(kp)
-                {
-                    // disconnect the key store from the publisher
-                    kp->Detatch();
-                }
-            }
         }
 
         return result;
-    } // StartRightSide
+    }
 
     grpc::Status SiteAgent::StartNode(grpc::ServerContext* ctx, const remote::PhysicalPath* path, google::protobuf::Empty*)
     {
@@ -475,49 +535,15 @@ namespace cqp
             LOGDEBUG(GetConnectionAddress() + " is starting node with: " + pathString);
         }
 
-        auto myPath = *path;
+        auto pathCopy = *path;
 
         // default result
         grpc::Status result = Status(StatusCode::NOT_FOUND, "No hops applicable to this site");
         // walk through each hop in the path
         // path example = [ [a, b], [b, c] ]
-        for(auto& hopPair : *myPath.mutable_hops())
+        for(auto& hopPair : *pathCopy.mutable_hops())
         {
-            LOGTRACE("Looking at hop from " + hopPair.first().site() + " to " + hopPair.second().site());
-            // if we are the left side of a hop, ie a in [a, b]
-            if(AddressIsThisSite(hopPair.first().site()))
-            {
-                result = StartLeftSide(&myPath, hopPair);
-
-            } // if left
-            else if(AddressIsThisSite(hopPair.second().site()))
-            {
-
-                std::string remoteSessionAddress;
-                // connect the session controller to the previous hop which should already be setup
-                // this address currently comes from "AddMetadata" from the client
-                // TODO: should this be a real interface?
-                auto metaDataIt = ctx->client_metadata().find(sessionAddress);
-                if(metaDataIt != ctx->client_metadata().end())
-                {
-                    // BUG: value is not terminated, so using .data() results in extra data at the end.
-                    // Copy the string using the length defined in the string
-                    remoteSessionAddress.assign(metaDataIt->second.begin(), metaDataIt->second.end());
-                    // setup the second half of the chain
-                    result = StartRightSide(ctx, hopPair, remoteSessionAddress);
-                }
-                else
-                {
-                    // assume that the caller is not a site agent and has got the hop direction backwards, i.e:
-                    // asking B to setup A->B
-                    LOGDEBUG("Reversing backwards hop");
-                    remote::HopPair reversedHop;
-                    *reversedHop.mutable_first() = hopPair.second();
-                    *reversedHop.mutable_second() = hopPair.first();
-                    // carry on with the hops reversed
-                    result = StartLeftSide(&myPath, reversedHop);
-                }
-            } // if right
+            result = StartNode(ctx, hopPair, pathCopy);
         } // for pairs
 
 
@@ -570,12 +596,7 @@ namespace cqp
 
         if(result.ok())
         {
-            SendStatusUpdate(dest, remote::LinkStatus_State::LinkStatus_State_ConnectionEstablished);
             LOGINFO("Node setup complete");
-        }
-        else
-        {
-            SendStatusUpdate(dest, remote::LinkStatus_State::LinkStatus_State_Inactive, result);
         }
         return result;
     } // StartNode
@@ -587,38 +608,16 @@ namespace cqp
         auto device = devicesInUse.find(deviceUri);
         if(device != devicesInUse.end())
         {
-            auto controller = device->second->GetSessionController();
-            if(controller)
-            {
-                auto pub = device->second->GetKeyPublisher();
-                if(pub)
-                {
-                    // disconnect the device from the keystore
-                    pub->Detatch();
-                }
-                controller->EndSession();
-            }
-
-            deviceFactory->ReturnDevice(device->second);
+            // stop the process
+            device->second->Stop();
             devicesInUse.erase(device);
+        }
+        else
+        {
+            result = Status(StatusCode::INVALID_ARGUMENT, "Unknown device");
         }
 
         return result;
-    }
-
-    void SiteAgent::SendStatusUpdate(const std::string& destination, remote::LinkStatus_State state, grpc::Status status)
-    {
-        remote::LinkStatus statusUpdate;
-        statusUpdate.set_siteto(destination);
-        statusUpdate.set_state(state);
-        statusUpdate.set_errorcode(static_cast<uint64_t>(status.error_code()));
-
-        std::lock_guard<std::mutex> lock(statusCallbackMutex);
-        otherSites[destination].state = state;
-        for(const auto& cb : statusCallbacks)
-        {
-            cb.second(statusUpdate);
-        }
     }
 
     bool SiteAgent::AddressIsThisSite(const std::string& address)
@@ -637,7 +636,8 @@ namespace cqp
                     if(net::ResolveAddress(addrUri.GetHost(), addrIp))
                     {
                         const auto hostIps = net::GetHostIPs();
-                        result = std::any_of(hostIps.begin(), hostIps.end(), [&addrIp](auto myIp) {
+                        result = std::any_of(hostIps.begin(), hostIps.end(), [&addrIp](auto myIp)
+                        {
                             return myIp == addrIp;
                         });
                     } // if resolve
@@ -664,22 +664,58 @@ namespace cqp
 
         // stop the session controllers
 
+        bool callNextNode = false;
+
         // walk through each hop in the path
         // path example = [ [a, b], [b, c] ]
         for(const auto& hopPair : path->hops())
         {
+
+
             // if we are the left side of a hop, ie a in [a, b]
             if(AddressIsThisSite(hopPair.first().site()))
             {
                 result = StopNode(hopPair.first().deviceid());
-                SendStatusUpdate(hopPair.first().site(), remote::LinkStatus_State::LinkStatus_State_Inactive);
 
+                auto otherSide = otherSites.find(hopPair.second().site());
+                if(otherSide != otherSites.end())
+                {
+                    grpc::ClientContext ctx;
+
+                    auto siteStub = remote::ISiteAgent::NewStub(otherSide->second.channel);
+
+                    google::protobuf::Empty response;
+                    result =  LogStatus(siteStub->EndKeyExchange(&ctx, *path, &response));
+
+                }
+                else
+                {
+                    LOGWARN("Cant find " + hopPair.second().site() + " to stop it");
+                }
             } // if left
             else if(AddressIsThisSite(hopPair.second().site()))
             {
                 result = StopNode(hopPair.second().deviceid());
-                SendStatusUpdate(hopPair.second().site(), remote::LinkStatus_State::LinkStatus_State_Inactive);
+                callNextNode = true;
             } // if right
+            else if(callNextNode)
+            {
+                callNextNode = false;
+                auto otherSide = otherSites.find(hopPair.first().site());
+                if(otherSide != otherSites.end())
+                {
+                    grpc::ClientContext ctx;
+
+                    auto siteStub = remote::ISiteAgent::NewStub(otherSide->second.channel);
+
+                    google::protobuf::Empty response;
+                    result =  LogStatus(siteStub->EndKeyExchange(&ctx, *path, &response));
+                }
+                else
+                {
+                    LOGWARN("Cant find " + hopPair.first().site() + " to stop it");
+                }
+            }
         } // for pairs
 
         return result;
@@ -706,55 +742,64 @@ namespace cqp
         return result;
     }// GetSiteChannel
 
-    grpc::Status SiteAgent::GetLinkStatus(grpc::ServerContext* ctx, const google::protobuf::Empty*, ::grpc::ServerWriter<cqp::remote::LinkStatus>* writer)
+    grpc::Status SiteAgent::RegisterDevice(grpc::ServerContext*, const remote::ControlDetails* request, google::protobuf::Empty*)
     {
-        using namespace cqp::remote;
-        grpc::Status result;
-        bool keepGoing = true;
-        uint64_t myFuncIndex = 0;
+        LOGDEBUG("Device registering: " + request->config().id());
+        using namespace std;
 
-
-        /*lock scope*/
         {
-            std::lock_guard<std::mutex> lock(statusCallbackMutex);
-            myFuncIndex = statusCounter++;
-            statusCallbacks[myFuncIndex] = [&](const cqp::remote::LinkStatus& newStatus)
-            {
-                try
-                {
-                    keepGoing = writer->Write(newStatus);
-                }
-                catch (const std::exception& e)
-                {
-                    keepGoing = false;
-                    LOGERROR(e.what());
-                }
-            };
-
-            // send current state
-            for(const auto& site : otherSites)
-            {
-                cqp::remote::LinkStatus status;
-                status.set_siteto(site.first);
-                status.set_state(site.second.state);
-                writer->Write(status);
-            } // for pairs
+            /*lock scope*/
+            lock_guard<mutex> lock(siteDetailsMutex);
+            (*siteDetails.add_devices()) = *request;
 
         }/*lock scope*/
 
-        while(!ctx->IsCancelled() && keepGoing)
+        string sideString;
+        switch (request->config().side())
         {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        };
+        case remote::Side_Type::Side_Type_Alice:
+            sideString = "Alice";
+            break;
+        case remote::Side_Type::Side_Type_Bob:
+            sideString = "Bob";
+            break;
+        default:
+            sideString = "Any";
+            break;
+        }
+        LOGINFO("New " + sideString + " device: " + request->config().id() + " at '" + request->controladdress() + "' on switch '" +
+                request->config().switchname() + "' port '" + request->config().switchport() + "'");
 
-        /*lock scope*/
+        // tell everyone we changed the site details
+        siteDetailsChanged.notify_all();
+
+        return Status();
+    }
+
+    grpc::Status SiteAgent::UnregisterDevice(grpc::ServerContext*, const remote::DeviceID* request, google::protobuf::Empty*)
+    {
+        LOGDEBUG("Device unregistering: " + request->id());
+        using namespace std;
+        Status result = Status(StatusCode::NOT_FOUND, "Unknown device " + request->id());
+
         {
-            std::lock_guard<std::mutex> lock(statusCallbackMutex);
-            statusCallbacks.erase(myFuncIndex);
+            /*lock scope*/
+            lock_guard<mutex> lock(siteDetailsMutex);
+            for(int index = 0; index < siteDetails.devices().size(); index++)
+            {
+                if(siteDetails.devices(index).config().id() == request->id())
+                {
+                    siteDetails.mutable_devices()->erase(siteDetails.mutable_devices()->begin() + index);
+                    result = Status();
+                    break; // for
+                }
+            }
         }/*lock scope*/
+        // tell everyone we changed the site details
+        siteDetailsChanged.notify_all();
 
         return result;
-    } // GetLinkStatus
+    }
 
     void SiteAgent::ConnectStaticLinks()
     {
@@ -768,7 +813,53 @@ namespace cqp
 
             LogStatus(StartNode(&ctx, &staticHop, &response));
         }
-    } // ConnectStaticLinks
+    }
+
+    void SiteAgent::DeviceConnection::Stop()
+    {
+        keyReaderContext.TryCancel();
+        statsContext.TryCancel();
+
+        auto deviceStub = remote::IDevice::NewStub(channel);
+
+        grpc::ClientContext ctx;
+        google::protobuf::Empty request;
+        google::protobuf::Empty response;
+        LogStatus(deviceStub->EndSession(&ctx, request, &response));
+
+        if(readerThread.joinable())
+        {
+            readerThread.join();
+        }
+        if(statsThread.joinable())
+        {
+            statsThread.join();
+        }
+    }
+
+    void SiteAgent::DeviceConnection::ReadStats(stats::ReportServer* reportServer, std::string siteTo)
+    {
+        using namespace remote;
+        auto statsStub = IReporting::NewStub(channel);
+        if(statsStub)
+        {
+            ReportingFilter filter;
+            filter.set_listisexclude(true);
+            auto reader = statsStub->GetStatistics(&statsContext, filter);
+
+            SiteAgentReport report;
+            // pull stats and pass them on
+            while(reader && reader->Read(&report))
+            {
+                report.mutable_parameters()->insert({"siteTo", siteTo});
+                reportServer->StatsReport(report);
+            } // while read
+
+            reader->Finish();
+        } // if stub
+    } // ReadStats
+
+    // ConnectStaticLinks
 } // namespace cqp
 
 

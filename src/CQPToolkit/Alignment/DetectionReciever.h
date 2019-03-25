@@ -105,7 +105,6 @@ namespace align {
          */
         void DoWork() override;
 
-        bool SetParameters(remote::DeviceConfig& parameters);
     protected:
         /// storage for incoming data
         ProtocolDetectionReportList receivedData;

@@ -3,7 +3,7 @@
 * @brief Stat
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/3/2018
@@ -66,16 +66,19 @@ namespace cqp
         void ProcessingWorker::Worker()
         {
             using namespace std;
-            try{
+            try
+            {
                 ObjectList processList;
 
                 while(!stopProcessing)
                 {
-                    /*lock scope*/{
+                    /*lock scope*/
+                    {
 
                         unique_lock<mutex> lock(processMutex);
-                        processCv.wait(lock, [&](){
-                            return !waitingObjects.empty() || stopProcessing;
+                        processCv.wait(lock, [&]()
+                        {
+                            return (!waitingObjects.empty()) || stopProcessing;
                         });
 
                         if(!waitingObjects.empty())
@@ -87,13 +90,15 @@ namespace cqp
 
                     if(!stopProcessing)
                     {
-                        for(auto obj : processList) {
+                        for(auto obj : processList)
+                        {
                             obj->ProcessStats();
                         }
                         processList.clear();
                     }
                 }
-            } catch(const std::exception& e)
+            }
+            catch(const std::exception& e)
             {
                 LOGERROR(e.what());
             }

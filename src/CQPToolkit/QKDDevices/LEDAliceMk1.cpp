@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Cheap and cheerful LED driver Mk1
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 22 Sep 2016
@@ -18,8 +18,8 @@
 #include "CQPToolkit/Session/AliceSessionController.h"
 #include "CQPToolkit/Drivers/LEDDriver.h"
 #include "CQPToolkit/Drivers/Usb.h"
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "QKDInterfaces/Device.pb.h"
 
 namespace cqp
 {
@@ -33,7 +33,8 @@ namespace cqp
 
     const std::string LEDAliceMk1::DriverName = "LEDAliceMk1";
 
-    class LEDAliceMk1::ProcessingChain {
+    class LEDAliceMk1::ProcessingChain
+    {
     public:
         ProcessingChain()
         {
@@ -71,7 +72,8 @@ namespace cqp
 
         session::SessionController::Services GetServices() const
         {
-            session::SessionController::Services services {
+            session::SessionController::Services services
+            {
                 align.get(),
                 ec.get(),
                 privacy.get(),
@@ -84,8 +86,8 @@ namespace cqp
 
     LEDAliceMk1::LEDAliceMk1(std::shared_ptr<grpc::ChannelCredentials> creds,
                              const std::string& controlName, const std::string& usbSerialNumber) :
-      processing{std::make_unique<ProcessingChain>()},
-      driver{std::make_shared<LEDDriver>(&rng, controlName, usbSerialNumber)}
+        processing{std::make_unique<ProcessingChain>()},
+        driver{std::make_shared<LEDDriver>(&rng, controlName, usbSerialNumber)}
     {
         // create the session controller
         sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver, processing->reportServer);
@@ -104,32 +106,21 @@ namespace cqp
         driver->Attach(processing->align.get());
     }
 
-    LEDAliceMk1::~LEDAliceMk1() = default;
-
-    void LEDAliceMk1::RegisterWithFactory()
+    void LEDAliceMk1::SetInitialKey(std::unique_ptr<PSK> initialKey)
     {
-        // tell the factory how to create this device by specifying a lambda function
-
-        DeviceFactory::RegisterDriver(DriverName, remote::Side::Bob, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
-        {
-            // TODO: sync this with the GetAddress
-            std::string serialDev;
-            std::string usbDev;
-            URI addrUri(address);
-            addrUri.GetFirstParameter(LEDDriver::Parameters::serial, serialDev);
-            addrUri.GetFirstParameter(LEDDriver::Parameters::usbserial, usbDev);
-            return std::make_shared<LEDAliceMk1>(creds, serialDev, usbDev);
-        });
+        // TODO
     }
+
+    LEDAliceMk1::~LEDAliceMk1() = default;
 
     std::string LEDAliceMk1::GetDriverName() const
     {
         return DriverName;
     }
 
-    remote::Device LEDAliceMk1::GetDeviceDetails()
+    remote::DeviceConfig LEDAliceMk1::GetDeviceDetails()
     {
-        remote::Device result;
+        remote::DeviceConfig result;
         // TODO
         //result.set_id(myPortName);
         result.set_side(remote::Side_Type::Side_Type_Alice);
@@ -141,21 +132,20 @@ namespace cqp
     {
         URI result = driver->GetAddress();
         result.SetScheme(DriverName);
-        result.SetParameter(IQKDDevice::Parmeters::side, IQKDDevice::Parmeters::SideValues::alice);
-        result.SetParameter(IQKDDevice::Parmeters::keybytes, "16");
+        result.SetParameter(IQKDDevice::Parameters::side, IQKDDevice::Parameters::SideValues::alice);
+        result.SetParameter(IQKDDevice::Parameters::keybytes, "16");
         return result;
     }
 
-    bool LEDAliceMk1::Initialise(remote::DeviceConfig& parameters)
+    bool LEDAliceMk1::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        bool result = driver->Initialise(parameters);
-        result &= processing->align->SetParameters(parameters);
+        bool result = driver->Initialise();
         return result;
     }
 
-    stats::IStatsPublisher*LEDAliceMk1::GetStatsPublisher()
+    std::vector<grpc::Service*> LEDAliceMk1::GetServices()
     {
-        return processing->reportServer.get();
+        return {processing->reportServer.get()};
     }
 
     ISessionController* LEDAliceMk1::GetSessionController()
@@ -163,7 +153,7 @@ namespace cqp
         return sessionController.get();
     }
 
-    IKeyPublisher*cqp::LEDAliceMk1::GetKeyPublisher()
+    KeyPublisher*cqp::LEDAliceMk1::GetKeyPublisher()
     {
         return processing->keyConverter.get();
     }

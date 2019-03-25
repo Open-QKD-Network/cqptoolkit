@@ -1,5 +1,5 @@
 ### @file
-### @brief CQP Toolkit - Tools - Alice
+### @brief CQP Toolkit - Tools
 ### 
 ### @copyright Copyright (C) University of Bristol 2016
 ###    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
@@ -8,15 +8,13 @@
 ### @date 04 April 2016
 ### @author Richard Collins <richard.collins@bristol.ac.uk>
 ### 
-# See: https://cognitivewaves.wordpress.com/cmake-and-visual-studio/
 
-cmake_minimum_required (VERSION 3.7.2)
-# Define a project to add to the build
-project(IDQKeyExtraction CXX)
-# Setup some standard variables based on the build system
+project(Drivers)
+
+# Perform some standard setup steps like detecting the platform.
 include(CommonSetup)
 
-# MAke standard program which uses the CQP Toolkit
-CQP_EXE_PROJECT()
-target_link_libraries(${PROJECT_NAME}  PRIVATE
-    CQPToolkit_Shared)
+# projects below here will be put into this package
+SET_COMPONENT_NAME("Drivers" CQP_INSTALL_COMPONENT)
+
+ADD_ALL_SUBDIRS()

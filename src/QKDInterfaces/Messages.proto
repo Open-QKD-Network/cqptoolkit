@@ -44,24 +44,3 @@ message SharedKey {
     /// may contain the pkcs#11 url which defines how the key can be retrieved
     string url = 3;
 }
-
-/// The condition of a link
-message LinkStatus {
-    /// Endpoint for the status update
-    string siteTo = 1;
-    /// The condition of the link
-    enum State {
-        /// There is no connection to the site specified
-        Inactive = 0;
-        /// Attempting to connect to the remote system
-        Connecting = 1;
-        /// The two nodes are exchanging raw key
-        ConnectionEstablished = 2;
-    };
-    /// The current state of the link
-    State state = 2;
-
-    /// An error code associated with the change in state
-    /// this is mapped from grpc::StatusCode
-    uint64 errorCode = 3;
-}

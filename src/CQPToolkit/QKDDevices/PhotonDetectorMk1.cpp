@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Photon Detection
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -16,7 +16,6 @@
 #include "Drivers/Serial.h"          // for Serial
 #include "Drivers/UsbTagger.h"       // for UsbTagger, UsbTaggerList
 #include "Drivers/Usb.h"       // for UsbTagger, UsbTaggerList
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"
 #include "CQPToolkit/Alignment/DetectionReciever.h"
 #include "ErrorCorrection/ErrorCorrection.h"
 #include "PrivacyAmp/PrivacyAmplify.h"
@@ -32,7 +31,8 @@ namespace cqp
     const std::string PhotonDetectorMk1::DriverName = "Mk1Tagger";
 
 
-    class PhotonDetectorMk1::ProcessingChain {
+    class PhotonDetectorMk1::ProcessingChain
+    {
     public:
         ProcessingChain()
         {
@@ -71,7 +71,8 @@ namespace cqp
 
         session::SessionController::Services GetServices()
         {
-            session::SessionController::Services services {
+            session::SessionController::Services services
+            {
                 ec.get(),
                 privacy.get(),
                 reportServer.get() // allow external clients to get stats
@@ -80,22 +81,6 @@ namespace cqp
             return services;
         }
     };
-
-    void PhotonDetectorMk1::RegisterWithFactory()
-    {
-        // tell the factory how to create this device by specifying a lambda function
-
-        DeviceFactory::RegisterDriver(DriverName, remote::Side::Bob, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
-        {
-            // TODO: sync this with the GetAddress
-            std::string serialDev;
-            std::string usbDev;
-            URI addrUri(address);
-            addrUri.GetFirstParameter(UsbTagger::Parameters::serial, serialDev);
-            addrUri.GetFirstParameter(UsbTagger::Parameters::usbserial, usbDev);
-            return std::make_shared<PhotonDetectorMk1>(creds, serialDev, usbDev);
-        });
-    }
 
     PhotonDetectorMk1::PhotonDetectorMk1(std::shared_ptr<grpc::ChannelCredentials> creds, const std::string& controlName, const std::string& usbSerialNumber) :
         processing{std::make_unique<ProcessingChain>()},
@@ -119,20 +104,21 @@ namespace cqp
 
         // create the session controller
         sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes(),
-                                                                         processing->reportServer);
+                            processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
+
+    PhotonDetectorMk1::~PhotonDetectorMk1() = default;
 
     string PhotonDetectorMk1::GetDriverName() const
     {
         return DriverName;
     }
 
-    bool PhotonDetectorMk1::Initialise(remote::DeviceConfig& parameters)
+    bool PhotonDetectorMk1::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        bool result = driver->Initialise(parameters);
-        result &= processing->align->SetParameters(parameters);
+        bool result = driver->Initialise();
 
         return result;
     }
@@ -141,8 +127,8 @@ namespace cqp
     {
         URI result = driver->GetAddress();
         result.SetScheme(DriverName);
-        result.SetParameter(IQKDDevice::Parmeters::side, IQKDDevice::Parmeters::SideValues::bob);
-        result.SetParameter(IQKDDevice::Parmeters::keybytes, "16");
+        result.SetParameter(IQKDDevice::Parameters::side, IQKDDevice::Parameters::SideValues::bob);
+        result.SetParameter(IQKDDevice::Parameters::keybytes, "16");
         return result;
     }
 
@@ -151,14 +137,14 @@ namespace cqp
         return sessionController.get();
     }
 
-    cqp::IKeyPublisher* PhotonDetectorMk1::GetKeyPublisher()
+    cqp::KeyPublisher* PhotonDetectorMk1::GetKeyPublisher()
     {
         return processing->keyConverter.get();
     }
 
-    cqp::remote::Device PhotonDetectorMk1::GetDeviceDetails()
+    cqp::remote::DeviceConfig PhotonDetectorMk1::GetDeviceDetails()
     {
-        remote::Device result;
+        remote::DeviceConfig result;
         // TODO
         //result.set_id(myPortName);
         result.set_side(remote::Side_Type::Side_Type_Bob);
@@ -166,8 +152,14 @@ namespace cqp
         return result;
     }
 
-    stats::IStatsPublisher* PhotonDetectorMk1::GetStatsPublisher()
+    std::vector<grpc::Service*> PhotonDetectorMk1::GetServices()
     {
-        return processing->reportServer.get();
+        return {processing->reportServer.get()};
+    }
+
+    void PhotonDetectorMk1::SetInitialKey(std::unique_ptr<PSK> initailKey)
+    {
+        // TODO
     }
 } // namespace cqp
+

@@ -197,11 +197,11 @@ If your project file has deep folder structure (this is a bug), it can be improv
 
 ## Running
 
-The system as many facets but a good starting point is `QKDSim` which will perform all the handshaking and session setup and exchange key by simulating the QKD processes. All tools should show a help message when `-h` is passed as an argument.
+The system as many facets but a good starting point is `DummyQKDDriver` which will perform all the handshaking and session setup and exchange key by simulating the QKD processes. All tools should show a help message when `-h` is passed as an argument.
 The simulator runs as a client and server, start one instance then connect the second to the first. 
 
 ```bash
-QKDSim -p 8000 -v
+DummyQKDDriver -k 0.0.0.0:8000
 ```
 
 Shows:

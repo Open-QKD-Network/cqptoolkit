@@ -102,7 +102,9 @@ void SiteAgentCtlGui::AddSite(const std::string& address)
             if(!getResult.ok())
             {
                 QMessageBox::warning(this, tr("Failed to Get site details"), tr(getResult.error_message().c_str()));
-            } else {
+            }
+            else
+            {
                 QTreeWidgetItem* existingSite = nullptr;
                 auto foundSites = ui->siteTree->findItems(QString::fromStdString(siteDetails.url()), Qt::MatchFlag::MatchExactly);
                 if(!foundSites.empty())
@@ -121,7 +123,7 @@ void SiteAgentCtlGui::AddSite(const std::string& address)
                     QTreeWidgetItem* deviceItem = nullptr;
                     for(auto index = 0; index < existingSite->childCount(); index++)
                     {
-                        if(existingSite->child(index)->text(0).toStdString() == device.id())
+                        if(existingSite->child(index)->text(0).toStdString() == device.config().id())
                         {
                             deviceItem = existingSite->child(index);
                             break; // for
@@ -133,26 +135,29 @@ void SiteAgentCtlGui::AddSite(const std::string& address)
                         deviceItem = new QTreeWidgetItem(existingSite);
                     } // if no device
 
-                    deviceItem->setText(0, QString::fromStdString(device.id()));
-                    deviceItem->setText(1, QString::fromStdString(device.kind()));
-                    switch (device.side()) {
-                        case cqp::remote::Side_Type::Side_Type_Alice:
-                            deviceItem->setText(2, "Alice");
-                            break;
-                        case cqp::remote::Side_Type::Side_Type_Bob:
-                            deviceItem->setText(2, "Bob");
-                            break;
-                        case cqp::remote::Side_Type::Side_Type_Any:
-                            deviceItem->setText(2, "Any");
-                            break;
-                        default:
-                            break;
+                    deviceItem->setText(0, QString::fromStdString(device.config().id()));
+                    deviceItem->setText(1, QString::fromStdString(device.config().kind()));
+                    switch (device.config().side())
+                    {
+                    case cqp::remote::Side_Type::Side_Type_Alice:
+                        deviceItem->setText(2, "Alice");
+                        break;
+                    case cqp::remote::Side_Type::Side_Type_Bob:
+                        deviceItem->setText(2, "Bob");
+                        break;
+                    case cqp::remote::Side_Type::Side_Type_Any:
+                        deviceItem->setText(2, "Any");
+                        break;
+                    default:
+                        break;
                     }
-                    deviceItem->setText(3, QString::fromStdString(device.switchname()));
-                    deviceItem->setText(4, QString::fromStdString(device.switchport()));
+                    deviceItem->setText(3, QString::fromStdString(device.config().switchname()));
+                    deviceItem->setText(4, QString::fromStdString(device.config().switchport()));
                 } // devices
             }
-        } else {
+        }
+        else
+        {
             QMessageBox::warning(this, tr("Failed to connect"), QString::fromStdString("Failed to connect to " + address));
 
         }
@@ -164,8 +169,8 @@ void SiteAgentCtlGui::on_addSite_clicked()
 {
     bool ok = false;
     QString address = QInputDialog::getText(this, tr("Add Site Agent"),
-                                         tr("Address:"), QLineEdit::Normal,
-                                         "", &ok);
+                                            tr("Address:"), QLineEdit::Normal,
+                                            "", &ok);
     if (ok && !address.isEmpty())
     {
         AddSite(address.toStdString());
@@ -205,7 +210,9 @@ void SiteAgentCtlGui::on_siteTree_itemClicked(QTreeWidgetItem *item, int)
         ui->devSwitchName->setText(item->text(3));
         ui->devSwitchPort->setText(item->text(4));
 
-    } else {
+    }
+    else
+    {
         ui->addDeviceFrom->setEnabled(false);
         ui->addDeviceTo->setEnabled(false);
         ui->devId->setText("");

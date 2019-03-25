@@ -17,15 +17,13 @@
 #include "CQPToolkit/QKDDevices/LEDAliceMk1.h"
 #include <grpc++/server.h>
 #include "Algorithms/Random/RandomNumber.h"
-#include "KeyManagement/KeyStores/KeyStore.h"
-#include "QKDInterfaces/IKey.grpc.pb.h"
 #include "AliceConfig.pb.h"
 
 /**
  * @brief The SiteAgentRunner class
  * Outputs statistics in csv format
  */
-class HandheldAlice : public cqp::Application, public cqp::remote::IKey::Service
+class HandheldAlice : public cqp::Application
 {
 public:
     HandheldAlice();
@@ -81,12 +79,8 @@ protected:
     void StopProcessing(int);
 protected: // members
     std::shared_ptr<cqp::LEDAliceMk1> driver;
-    std::unique_ptr<grpc::Server> keyServer;
-    std::unique_ptr<cqp::keygen::KeyStore> keystore;
+    std::unique_ptr<grpc::Server> deviceServer;
 
     cqp::config::AliceConfig config;
-    // Service interface
-public:
-    grpc::Status GetKeyStores(grpc::ServerContext*, const google::protobuf::Empty*, cqp::remote::SiteList* response) override;
-    grpc::Status GetSharedKey(grpc::ServerContext* context, const cqp::remote::KeyRequest* request, cqp::remote::SharedKey* response) override;
+
 };

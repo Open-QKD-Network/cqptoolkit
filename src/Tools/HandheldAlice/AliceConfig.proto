@@ -11,23 +11,17 @@
 */
 
 syntax = "proto3";
-
+import "Device.proto";
 package cqp.config;
 
 /// Alice handheld config
 message AliceConfig {
     /// how to connect to bob
     string bobaddress = 1;
-    /// The listen address for providing keys
-    string keyListenAddress = 2;
-    /// Bind address for session communication
-    string sessionAddress = 3;
-    /// port numer for session communication
-    uint32 sessionPort = 4;
     /// serial device name
-    string deviceName = 5;
+    string deviceName = 2;
     /// usb device name
-    string usbDeviceName = 6;
+    string usbDeviceName = 3;
     // TODO:
-    //DeviceConfig params = 7;
+    remote.ControlDetails controlDetails = 4;
 }

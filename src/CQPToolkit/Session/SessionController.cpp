@@ -3,7 +3,7 @@
 * @brief SessionController
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/2/2018
@@ -29,6 +29,7 @@ namespace cqp
         SessionController::SessionController(std::shared_ptr<grpc::ChannelCredentials> creds, const Services& services,
                                              const RemoteCommsList& remotes,
                                              std::shared_ptr<stats::ReportServer> theReportServer):
+            myAddress{net::AnyAddress},
             services{services},
             remoteComms{remotes},
             reportServer(theReportServer)
@@ -37,7 +38,7 @@ namespace cqp
 
         } // SessionController
 
-        grpc::Status SessionController::StartSession()
+        grpc::Status SessionController::StartSession(const remote::SessionDetails& sessionDetails)
         {
             Status result;
             // the local system is starting the session
@@ -49,13 +50,15 @@ namespace cqp
             {
                 otherController = remote::ISession::NewStub(channel);
             }
+
             if(otherController)
             {
                 ClientContext ctx;
-                remote::SessionDetails request;
+                remote::SessionDetailsFrom request;
                 Empty response;
 
-                request.set_peeraddress(myAddress);
+                (*request.mutable_details()) = sessionDetails;
+                request.set_initiatoraddress(GetConnectionAddress());
 
                 // send the command to the other side
                 result = otherController->SessionStarting(&ctx, request, &response);
@@ -70,11 +73,18 @@ namespace cqp
                     {
                         reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "true");
                     }
+
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
+                }
+                else
+                {
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
                 }
             } // if(otherController)
             else
             {
                 result = Status(StatusCode::FAILED_PRECONDITION, "invalid remote session controller");
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
             } // else
             return result;
         } // StartSession
@@ -110,6 +120,13 @@ namespace cqp
             }
             twoWayComm->Disconnect();
             pairedControllerUri.clear();
+            if(reportServer)
+            {
+                // notify the state change
+                remote::SiteAgentReport report;
+                reportServer->StatsReport(report);
+            }
+            UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
         } // EndSession
 
         SessionController::~SessionController()
@@ -119,14 +136,18 @@ namespace cqp
             {
                 server->Shutdown();
                 server = nullptr;
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Inactive);
             } // if server
         } // ~SessionController
 
-        Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetails*, Empty*)
+        Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetailsFrom* sessionDetails, Empty*)
         {
             // The session has been started remotly
             Status result;
+            twoWayComm->Connect(sessionDetails->initiatoraddress());
+            twoWayComm->WaitForClient();
             auto channel = twoWayComm->GetClient();
+
             if(channel)
             {
                 for(auto& dependant : remoteComms)
@@ -139,8 +160,13 @@ namespace cqp
                     reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "true");
                     reportServer->AddAdditionalProperties(PropertyNames::to, twoWayComm->GetClientAddress());
                 }
-            } else {
+
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
+            }
+            else
+            {
                 result = Status(StatusCode::DEADLINE_EXCEEDED, "Failed to get client channel");
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
             }
             return result;
         } // SessionStarting
@@ -158,15 +184,35 @@ namespace cqp
             }
             twoWayComm->Disconnect();
             pairedControllerUri.clear();
+
+            if(reportServer)
+            {
+                // notify the state change
+                remote::SiteAgentReport report;
+                reportServer->StatsReport(report);
+            }
+            UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
             return Status();
+        }
+
+        void SessionController::UpdateStatus(remote::LinkStatus::State newState, int errorCode)
+        {
+
+            {
+                /*lock scope*/
+                std::unique_lock<std::mutex> lock(threadControlMutex);
+                sessionState.set_state(newState);
+                sessionState.set_errorcode(errorCode);
+            }/*lock scope*/
+            linkStatusCv.notify_all();
         } // SessionEnding
 
-        Status SessionController::StartServer(const std::string& hostname, uint16_t requestedPort, std::shared_ptr<grpc::ServerCredentials> creds)
+        Status SessionController::StartServer(const std::string& address, uint16_t requestedPort, std::shared_ptr<grpc::ServerCredentials> creds)
         {
             Status result;
             if(server == nullptr)
             {
-                if(hostname.empty())
+                if(address.empty())
                 {
                     // FIXME: this may not work in all situations
                     // The call may just have to specify the hostname manually
@@ -174,7 +220,7 @@ namespace cqp
                 } // if(hostname.empty())
                 else
                 {
-                    myAddress = hostname;
+                    myAddress = address;
                 } // else
 
                 if(reportServer)
@@ -203,11 +249,18 @@ namespace cqp
                 if(server)
                 {
                     LOGINFO("Listening on " + myAddress + ":" + std::to_string(listenPort));
+                    if(myAddress.empty() || myAddress == net::AnyAddress)
+                    {
+                        myAddress = net::GetHostname(true);
+                    }
                     twoWayComm->SetServerAddress(myAddress + ":" + std::to_string(listenPort));
+
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
                 } // if(server)
                 else
                 {
                     result = Status(StatusCode::INVALID_ARGUMENT, "Failed to create server");
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Inactive, result.error_code());
                 } // else
             }
             return result;
@@ -218,37 +271,80 @@ namespace cqp
             Status result = StartServer(hostname, listenPort, creds);
             if(result.ok())
             {
-                using namespace std;
-                pairedControllerUri = otherControllerURI;
-
-                if(reportServer)
-                {
-                    reportServer->AddAdditionalProperties(PropertyNames::to, pairedControllerUri);
-                }
-
-                // get a two way connection going
-                Status result = LogStatus(
-                                    twoWayComm->Connect(otherControllerURI));
-                if(result.ok())
-                {
-                    if(!twoWayComm->WaitForClient())
-                    {
-                        result = LogStatus(Status(StatusCode::INTERNAL, "Client connection failed"));
-                    }
-                } // if(result.ok())
+                result = Connect(otherControllerURI);
 
             } // if(result.ok())
             return result;
-        } // WaitForEndOfSession
+        }
 
-
-        void SessionController::WaitForEndOfSession()
+        grpc::Status SessionController::Connect(URI otherController)
         {
             using namespace std;
-            unique_lock<mutex> lock(threadControlMutex);
-            threadControlCv.wait(lock, [&](){
-                return sessionEnded;
-            });
-        } // WaitForEndOfSession
+            pairedControllerUri = otherController;
+
+            if(reportServer)
+            {
+                reportServer->AddAdditionalProperties(PropertyNames::to, pairedControllerUri);
+            }
+
+            // get a two way connection going
+            Status result = LogStatus(
+                                twoWayComm->Connect(otherController));
+            if(result.ok())
+            {
+                if(!twoWayComm->WaitForClient())
+                {
+                    result = LogStatus(Status(StatusCode::DEADLINE_EXCEEDED, "Client connection failed"));
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
+                }
+                else
+                {
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected);
+                }
+            } // if(result.ok())
+            else
+            {
+                result = Status(StatusCode::NOT_FOUND, "Failed to connect");
+                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
+            } // else
+            return result;
+        }
+
+        grpc::Status SessionController::GetLinkStatus(grpc::ServerContext* context, ::grpc::ServerWriter<remote::LinkStatus>* writer)
+        {
+            grpc::Status result;
+            using namespace std;
+            remote::LinkStatus lastState;
+            bool keepGoing = true;
+
+            {
+                /*lockscope*/
+                lock_guard<mutex> lock(threadControlMutex);
+                lastState = sessionState;
+            }/*lockscope*/
+            // send the current state
+            keepGoing = writer->Write(lastState);
+
+            while(keepGoing && !context->IsCancelled())
+            {
+                {
+                    /*lockscope*/
+
+                    unique_lock<mutex> lock(threadControlMutex);
+                    linkStatusCv.wait(lock, [&]()
+                    {
+                        return context->IsCancelled() ||
+                               sessionState.state() != lastState.state() ||
+                               sessionState.errorcode() != lastState.errorcode();
+                    });
+                    lastState = sessionState;
+                }/*lockscope*/
+
+                keepGoing = writer->Write(lastState);
+            } // while
+
+            return result;
+        } // Connect
+
     } // namespace session
 } // namespace cqp

@@ -151,11 +151,5 @@ namespace align {
         } // while keepGoing
     }
 
-    bool DetectionReciever::SetParameters(remote::DeviceConfig& parameters)
-    {
-        // TODO
-        return true;
-    }
-
 } // namespace align
 } // namespace cqp

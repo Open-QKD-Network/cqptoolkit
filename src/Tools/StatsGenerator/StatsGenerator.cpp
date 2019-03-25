@@ -27,6 +27,7 @@
 #include "CQPToolkit/Session/Stats.h"
 #include <algorithm>
 #include "Algorithms/Util/Strings.h"
+#include "Algorithms/Net/DNS.h"
 
 using namespace cqp;
 
@@ -163,7 +164,7 @@ int StatsGenerator::Main(const std::vector<std::string>& args)
 
         // server setup
 
-        std::string myAddress = "0.0.0.0";
+        std::string myAddress = net::AnyAddress;
         int listenPort = 0;
         definedArguments.GetProp(Names::port, listenPort);
 

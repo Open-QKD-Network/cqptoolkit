@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Key storage
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -54,7 +54,7 @@ namespace cqp
             grpc::Status GetExistingKey(const KeyID& identity, PSK& output) override;
 
             /// @copydoc IKeyStore::GetNewKey
-            bool GetNewKey(KeyID& identity, PSK& output) override;
+            bool GetNewKey(KeyID& identity, PSK& output, bool waitForKey = false) override;
 
             /// @copydoc IKeyStore::MarkKeyInUse
             grpc::Status MarkKeyInUse(const KeyID& identity, KeyID& alternative) override;
@@ -144,7 +144,7 @@ namespace cqp
             Statistics stats;
         protected:// members
             /// When trying to find a key, the operation will fail after this timeout
-            std::chrono::milliseconds waitTimeout = std::chrono::seconds(10);
+            std::chrono::milliseconds waitTimeout = std::chrono::seconds(30);
             /// Stores both key value and authentication requirements
             struct AuthPSK
             {
@@ -180,6 +180,8 @@ namespace cqp
             uint64_t cacheThreashold = 10;
             /// a counter for assigning incoming keys an id
             std::atomic_uint64_t nextKeyId {1};
+            /// for stopping internal threads
+            std::atomic_bool shutdown { false};
         protected: // methods
 
             /**

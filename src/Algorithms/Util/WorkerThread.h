@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Worker thread helper
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -52,9 +52,6 @@ namespace cqp
         /// @details The WorkerThread::DoWork() call must provide a means of being interrupted if this is not going to block.
         /// @param[in] wait If the thread is running and this is true, the call will not return until the worker thread completes.
         virtual void Stop(bool wait = false);
-        /// Wait for the work thread to be stopped
-        /// Blocks until Stop() is called
-        virtual void Join();
 
         /// Check if the work thread is currently running
         /// @return true if the state is Started

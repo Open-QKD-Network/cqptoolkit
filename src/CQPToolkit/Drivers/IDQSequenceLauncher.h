@@ -3,7 +3,7 @@
 * @brief IDQSequenceLauncher
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 27/3/2017
@@ -150,7 +150,7 @@ namespace cqp
         /// flag for detecting when key has arrived
         bool keyAvailable = false;
         /// allows locked threads to exit gracefully
-        bool shutdown = false;
+        std::atomic_bool shutdown {false};
     };
 
 }

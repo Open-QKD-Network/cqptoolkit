@@ -3,7 +3,7 @@
 * @brief ReportServer
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 23/2/2018
@@ -122,12 +122,13 @@ namespace cqp
 
             // wait for all the listeners to quit
             std::unique_lock<std::mutex> lock(listenersMutex);
-            listenerCv.wait(lock, [&](){
+            listenerCv.wait(lock, [&]()
+            {
                 return remoteListeners.empty();
             });
         }
 
-        Status ReportServer::GetStatistics(grpc::ServerContext*,
+        Status ReportServer::GetStatistics(grpc::ServerContext* ctx,
                                            const remote::ReportingFilter* request,
                                            ::grpc::ServerWriter<remote::SiteAgentReport>* writer)
         {
@@ -147,13 +148,13 @@ namespace cqp
             Reportlistener& details = remoteListeners[listenerId];
 
             bool keepWriting = true;
-            while(keepWriting && !shutdown)
+            while(keepWriting && !shutdown && !ctx->IsCancelled())
             {
 
                 unique_lock<mutex> lock(details.reportMutex);
-                details.reportCv.wait(lock, [&]
+                details.reportCv.wait_for(lock, chrono::seconds(1), [&]
                 {
-                    return !details.reports.empty() || shutdown;
+                    return !details.reports.empty() || shutdown || ctx->IsCancelled();
                 });
 
                 if(!details.reports.empty())

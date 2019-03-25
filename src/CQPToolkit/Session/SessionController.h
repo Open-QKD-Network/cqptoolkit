@@ -3,7 +3,7 @@
 * @brief SessionController
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/2/2018
@@ -18,7 +18,8 @@
 #include <condition_variable>
 #include "Algorithms/Util/Strings.h"
 
-namespace grpc {
+namespace grpc
+{
     class ChannelCredentials;
 }
 
@@ -32,11 +33,13 @@ namespace cqp
         class TwoWayServerConnector;
     }
 
-    namespace stats {
+    namespace stats
+    {
         class ReportServer;
     }
 
-    namespace session {
+    namespace session
+    {
 
         /**
          * @brief The SessionController class
@@ -76,7 +79,7 @@ namespace cqp
             }
 
             /// @copydoc ISessionController::StartSession
-            grpc::Status StartSession() override;
+            grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
 
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
@@ -86,8 +89,11 @@ namespace cqp
             /// @copydoc ISessionController::StartServerAndConnect
             grpc::Status StartServerAndConnect(URI otherController, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds) override;
 
-            /// @copydoc ISessionController::WaitForEndOfSession
-            void WaitForEndOfSession() override;
+            /// @copydoc ISessionController::StartServerAndConnect
+            grpc::Status Connect(URI otherController) override;
+
+            /// @copydoc ISessionController::GetLinkStatus
+            grpc::Status GetLinkStatus(grpc::ServerContext* context, ::grpc::ServerWriter<remote::LinkStatus>* writer) override;
             ///@}
 
             ///@{
@@ -95,7 +101,7 @@ namespace cqp
 
             /// @copydoc remote::ISession::SessionStarting
             /// @param context Connection details from the server
-            grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*) override;
+            grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetailsFrom* request, google::protobuf::Empty*) override;
             /// @copydoc remote::ISession::SessionEnding
             /// @param context Connection details from the server
             grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
@@ -107,6 +113,9 @@ namespace cqp
                 static CONSTSTRING from = "from";
                 static CONSTSTRING to = "to";
             };
+
+        protected: // methods
+            void UpdateStatus(remote::LinkStatus::State newState, int errorCode = grpc::StatusCode::OK);
 
         protected: // members
 
@@ -128,9 +137,9 @@ namespace cqp
             /// mutex for waiting for session end
             std::mutex threadControlMutex;
             /// cv for waiting for end of session
-            std::condition_variable threadControlCv;
+            std::condition_variable linkStatusCv;
             /// track the session state
-            bool sessionEnded = true;
+            remote::LinkStatus sessionState;
             /// Collects data from all the stat producers
             std::shared_ptr<stats::ReportServer> reportServer;
         }; // class SessionController

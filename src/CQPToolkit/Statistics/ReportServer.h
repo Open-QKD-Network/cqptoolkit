@@ -3,7 +3,7 @@
 * @brief ReportServer
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 23/2/2018
@@ -109,7 +109,7 @@ namespace cqp
             /// Properties to append to reports before they are sent
             KeyValue additional;
             /// should the thread exit
-            bool shutdown = false;
+            std::atomic_bool shutdown {false};
         protected: // methods
 
             /**

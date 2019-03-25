@@ -25,12 +25,6 @@ class SiteAgentRunner : public cqp::Application
 public:
     SiteAgentRunner();
 
-    /**
-     * @brief HandleDevice
-     * @param option
-     */
-    void HandleDevice(const cqp::CommandArgs::Option& option);
-
     /// print the help page
     void DisplayHelp(const cqp::CommandArgs::Option&);
 
@@ -52,12 +46,6 @@ public:
         cqp::DefaultLogger().DecOutputLevel();
     }
 
-    /**
-     * @brief RunTests
-     * @param siteSettings
-     */
-    void RunTests(cqp::remote::SiteAgentConfig& siteSettings);
-
 protected:
     /**
      * @brief Main
@@ -68,8 +56,6 @@ protected:
 
     /// agents managed by this site
     std::vector<cqp::SiteAgent*> siteAgents;
-    /// devices connected to this site
-    std::vector<std::string> deviceAddresses;
     /// for detecting other sites
     std::unique_ptr<cqp::net::ServiceDiscovery> sd;
     /// exit codes for this program

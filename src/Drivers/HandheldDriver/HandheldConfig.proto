@@ -1,0 +1,26 @@
+/*!
+* @file
+* @brief HandheldConfig
+*
+* @copyright Copyright (C) University of Bristol 2019
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+*    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*    See LICENSE file for details.
+* @date 18/04/2019
+* @author Richard Collins <richard.collins@bristol.ac.uk>
+*/
+
+syntax = "proto3";
+import "Device.proto";
+package cqp.config;
+
+/// Alice handheld config
+message HandheldConfig {
+    /// how to connect to bob
+    string bobaddress = 1;
+    /// serial device name
+    string deviceName = 2;
+    /// usb device name
+    string usbDeviceName = 3;
+    remote.ControlDetails controlParams = 4;
+}

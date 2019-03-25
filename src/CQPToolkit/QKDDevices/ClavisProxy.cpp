@@ -3,7 +3,7 @@
 * @brief ClavisProxy
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 16/4/2018
@@ -12,34 +12,28 @@
 #include "ClavisProxy.h"
 #include <grpcpp/impl/codegen/status_code_enum.h>  // for StatusCode
 #include <utility>                                 // for move
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"      // for DeviceFactory
 #include "CQPToolkit/Session/ClavisController.h"   // for ClavisController
 #include "CQPToolkit/Interfaces/IQKDDevice.h"                 // for IQKDDevice, IQKDDe...
 #include "Algorithms/Logging/Logger.h"                           // for LOGTRACE
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "DeviceUtils.h"
 
 namespace cqp
 {
     class ISessionController;
 
-    ClavisProxy::ClavisProxy(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t):
-        myAddress(address),
+    ClavisProxy::ClavisProxy(const remote::DeviceConfig& initialConfig,
+                             std::shared_ptr<grpc::ChannelCredentials> creds):
+        config(initialConfig),
         reportServer(std::make_shared<stats::ReportServer>())
     {
         LOGTRACE("Creating controller");
-        controller.reset(new session::ClavisController(address, creds, reportServer));
-    }
-
-    void ClavisProxy::RegisterWithFactory()
-    {
-        // tell the factory how to create a DummyQKD by specifying a lambda function
-        for(auto side : {remote::Side::Alice, remote::Side::Bob})
+        config.set_kind(DriverName);
+        if(config.id().empty())
         {
-            DeviceFactory::RegisterDriver(DriverName, side, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
-            {
-                return std::shared_ptr<IQKDDevice>(new ClavisProxy(address, creds, bytesPerKey));
-            });
+            config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
         }
+        controller.reset(new session::ClavisController(creds, reportServer));
     }
 
     std::string ClavisProxy::GetDriverName() const
@@ -49,12 +43,12 @@ namespace cqp
 
     URI ClavisProxy::GetAddress() const
     {
-        return myAddress;
+        return DeviceUtils::ConfigToUri(config);
     }
 
-    bool ClavisProxy::Initialise(remote::DeviceConfig& parameters)
+    bool ClavisProxy::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        return controller->Initialise(parameters);
+        return controller->Initialise(move(authKey));
     }
 
     ISessionController*ClavisProxy::GetSessionController()
@@ -62,29 +56,28 @@ namespace cqp
         return controller.get();
     }
 
-    remote::Device ClavisProxy::GetDeviceDetails()
+    remote::DeviceConfig ClavisProxy::GetDeviceDetails()
     {
-        remote::Device result;
-        URI addrUri(myAddress);
-
-        result.set_id(DeviceFactory::GetDeviceIdentifier(addrUri));
-        result.set_side(controller->GetSide());
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchName, *result.mutable_switchname());
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchPort, *result.mutable_switchport());
-        result.set_kind(addrUri.GetScheme());
-
-        return result;
+        config.set_sessionaddress(controller->GetConnectionAddress());
+        config.set_side(controller->GetSide());
+        return config;
     }
 
-    IKeyPublisher* ClavisProxy::GetKeyPublisher()
+    KeyPublisher* ClavisProxy::GetKeyPublisher()
     {
         return controller.get();
     }
 
-    stats::IStatsPublisher* ClavisProxy::GetStatsPublisher()
+    std::vector<grpc::Service*> ClavisProxy::GetServices()
     {
-        return reportServer.get();
+        return { reportServer.get() };
+    }
+
+    void ClavisProxy::SetInitialKey(std::unique_ptr<PSK> initailKey)
+    {
+        authKey = move(initailKey);
     }
 
 } // namespace cqp
+
 

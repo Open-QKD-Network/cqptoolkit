@@ -64,7 +64,7 @@ namespace cqp
          * @brief Initialise the device
          * @return true on success
          */
-        bool Initialise(remote::DeviceConfig& parameters);
+        bool Initialise();
 
         /**
          * @brief GetAddress
