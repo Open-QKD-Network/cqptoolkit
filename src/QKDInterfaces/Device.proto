@@ -13,11 +13,60 @@
 syntax = "proto3";
 import public "google/protobuf/empty.proto";
 
-package cqp.config;
+package cqp.remote;
 
 message Pair {
     string name = 1;
     string value = 2;
+}
+
+/** Defines which side of a pair of devices
+*/
+message Side {
+    /** Encapsulated type for scoping
+    */
+    enum Type {
+        Alice = 0;
+        Bob = 1;
+        /// For device independent QKD
+        Any = 2;
+    }
+    /// Value
+    Type value = 1;
+}
+
+/// An identifier for the device, unique to the site
+message DeviceID {
+/// An identifier for the device, unique to the site
+    string id = 1;
+}
+
+/// Define a device
+message DeviceConfig {
+    /// An identifier for the device, unique to the site
+    string id = 1;
+    /// Which side of a pair the device belongs to
+    Side.Type side = 2;
+    /// The openflow name of the switching device the QKD device is connected to
+    /// e.g: openflow:1234
+    string switchName = 3;
+    /// The physical port the device is connected to
+    string switchPort = 4;
+    /// What kind of device is it
+    string kind = 5;
+    /// The connection address for session negotiation
+    string sessionAddress = 6;
+    /// Number of bytes the key is split into before publishing
+    uint32 bytesPerKey = 7;
+}
+
+message ControlDetails
+{
+    DeviceConfig config = 1;
+    /// The connection address for controlling the device
+    string controlAddress = 2;
+    /// The Site to register with
+    string siteAgentAddress = 3;
 }
 
 // possible parameters
@@ -28,11 +77,36 @@ message Pair {
 // photon state purity
 
 /// values which describe the optical link
-message DeviceConfig {
+message SessionDetails {
     /// arbritary parameters
     repeated Pair parameters = 1;
     /// The loss in dB for this link
     double lineAttenuation = 2;
     uint64 photonsPerBurst = 3;
     uint32 repitionRate = 4;
+    /// Which key to use for initial authentication/bootstrap
+    uint64 initialKeyId = 5;
 };
+
+/// The condition of a link
+message LinkStatus {
+    /// The condition of the link
+    enum State {
+        /// There is no connection to the site specified
+        Inactive = 0;
+        /// The session controller can be connected to
+        Listening = 1;
+        /// Connected to the remote system
+        Connected = 2;
+        /// The are connected and waiting for the session to start
+        Ready = 3;
+        /// The two nodes are exchanging raw key
+        SessionStarted = 4;
+    };
+    /// The current state of the link
+    State state = 1;
+
+    /// An error code associated with the change in state
+    /// this is mapped from grpc::StatusCode
+    int64 errorCode = 2;
+}

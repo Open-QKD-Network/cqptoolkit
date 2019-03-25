@@ -24,6 +24,7 @@ service INetworkManager {
     /**
     * @brief RegisterSite
     *   Register a site with the Quantum path algorithm, detailing how the site can be connected
+    *  This mat be re-called to update the statea of an already registered site.
     * @param request The details of the site registering
     * @return status
     */
@@ -36,13 +37,5 @@ service INetworkManager {
     * @return status
     */
     rpc UnregisterSite(SiteAddress) returns (google.protobuf.Empty);
-
-    /**
-    * @brief UnregisterSite
-    *   Notify the server that the site can no longer be contacted.
-    * @param request The address of the site to unregister
-    * @return status
-    */
-    rpc UpdateStatistics(SiteAgentReport) returns (google.protobuf.Empty);
 
 }

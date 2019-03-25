@@ -33,10 +33,7 @@ namespace cqp
             SequenceNumber id = 0;
             std::unique_ptr<DataBlock> corrected(new DataBlock);
             // publish the corrected data
-            if(listener)
-            {
-                listener->OnCorrected(id, move(corrected));
-            }
+            Emit(&IErrorCorrectCallback::OnCorrected, id, move(corrected));
 
             // example stat publish
             stats.TimeTaken.Update(high_resolution_clock::now() - timerStart);
@@ -54,11 +51,8 @@ namespace cqp
             std::unique_ptr<DataBlock> corrected(new DataBlock);
             corrected->resize(siftedData->size());
             std::copy(siftedData->begin(), siftedData->end(), corrected->begin());
+            Emit(&IErrorCorrectCallback::OnCorrected, id, move(corrected));
 
-            if(listener)
-            {
-                listener->OnCorrected(id, move(corrected));
-            }
             ecSeqId++;
         } // OnSifted
 

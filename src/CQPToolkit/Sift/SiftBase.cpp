@@ -114,11 +114,8 @@ namespace cqp
             const auto bytesProduced = siftedData->size();
             const auto qubitsDisgarded = bitsCollected - siftedData->NumBits();
 
-            if(listener)
-            {
-                double securityParameter = 0.0; // TODO
-                listener->OnSifted(siftedSequence, securityParameter, move(siftedData));
-            }
+            double securityParameter = 0.0; // TODO
+            Emit(&ISiftedCallback::OnSifted, siftedSequence, securityParameter, move(siftedData));
 
             siftedSequence++;
 

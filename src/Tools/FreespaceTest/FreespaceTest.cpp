@@ -124,8 +124,6 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
             StopProcessing(signum);
         });
 
-        config::DeviceConfig params;
-
         if(definedArguments.HasProp(Names::alice))
         {
             LOGINFO("Running in Alice mode. Output will contain random bytes transmitted");
@@ -150,7 +148,7 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
                     leds->SetPhotonsPerBurst(numPhotons);
                 }
                 leds->Attach(this);
-                if(leds->Initialise(params))
+                if(leds->Initialise())
                 {
                     leds->StartFrame();
                     leds->Fire();
@@ -183,7 +181,7 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
             if(tagger)
             {
                 tagger->Attach(this);
-                if(tagger->Initialise(params))
+                if(tagger->Initialise())
                 {
                     LOGINFO("Detecting...");
                     google::protobuf::Timestamp request;

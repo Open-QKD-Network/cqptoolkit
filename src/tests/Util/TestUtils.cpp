@@ -22,6 +22,7 @@
 #include "Algorithms/Logging/ConsoleLogger.h"
 #include "Algorithms/Util/FileIO.h"
 #include "Algorithms/Util/Hash.h"
+#include "Algorithms/Util/Env.h"
 
 namespace cqp
 {
@@ -283,7 +284,7 @@ namespace cqp
 
         TEST(UtilsTest, Environment)
         {
-            ASSERT_NE(cqp::fs::GetApplicationName(), "");
+            ASSERT_NE(cqp::ApplicationName(), "");
             ASSERT_NE(fs::GetCurrentPath(), "");
             ASSERT_NE(fs::GetHomeFolder(), "");
             ASSERT_NE(fs::GetCurrentPath(), "");

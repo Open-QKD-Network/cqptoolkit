@@ -21,7 +21,7 @@ struct libusb_transfer;
 
 namespace cqp
 {
-    namespace config {
+    namespace remote {
         class DeviceConfig;
     }
     class Usb;
@@ -64,7 +64,7 @@ namespace cqp
          * @brief Initialise the device
          * @return true on success
          */
-        bool Initialise(config::DeviceConfig& parameters);
+        bool Initialise();
 
         /**
          * @brief GetAddress

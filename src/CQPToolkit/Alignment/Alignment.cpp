@@ -21,7 +21,7 @@ namespace cqp
 
         void Alignment::SendResults(const QubitList& emissions, double securityParameter)
         {
-            if(listener)
+            if(HaveListener())
             {
                 auto siftedData = std::make_unique<JaggedDataBlock>();
                 // calculate the number of bits in the current system.
@@ -55,7 +55,8 @@ namespace cqp
                     siftedData->bitsInLastByte = offset;
                 } // if(offset != 0)
 
-                listener->OnSifted(seq++, securityParameter, move(siftedData));
+                Emit(&ISiftedCallback::OnSifted, seq, securityParameter, move(siftedData));
+                seq++;
             }
         }
 

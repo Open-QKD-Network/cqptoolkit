@@ -3,7 +3,7 @@
 * @brief ReportServer
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 23/2/2018
@@ -80,10 +80,10 @@ namespace cqp
             return result;
         }
 
-        void ReportServer::QueueReport(const remote::SiteAgentReport& report)
+        void ReportServer::StatsReport(const remote::SiteAgentReport& report)
         {
             std::lock_guard<std::mutex> lock(listenersMutex);
-            for(auto& listener : listeners)
+            for(auto& listener : remoteListeners)
             {
                 if(ShouldSendStat(&listener.second.filter, listener.second.lastUpdate, report))
                 {
@@ -91,14 +91,44 @@ namespace cqp
                     {
                         std::lock_guard<std::mutex> lock(listener.second.reportMutex);
                         listener.second.reports.push(report);
+                        // add our aditional properties
+                        for(const auto& prop : additional)
+                        {
+                            (*listener.second.reports.back().mutable_parameters())[prop.first] = prop.second;
+                        }
                     }/*lock scope*/
 
                     listener.second.reportCv.notify_one();
                 } // if SendStat
             } // for listeners
+
+            // send update to locally attached listeners
+            Emit(report);
         }
 
-        Status ReportServer::GetStatistics(grpc::ServerContext*,
+        void ReportServer::AddAdditionalProperties(const std::string& key, const std::string& value)
+        {
+            additional[key] = value;
+        }
+
+        ReportServer::~ReportServer()
+        {
+            shutdown = true;
+            for(auto& listener : remoteListeners)
+            {
+                // release the reading thread so it can check the status of shutdown
+                listener.second.reportCv.notify_all();
+            }
+
+            // wait for all the listeners to quit
+            std::unique_lock<std::mutex> lock(listenersMutex);
+            listenerCv.wait(lock, [&]()
+            {
+                return remoteListeners.empty();
+            });
+        }
+
+        Status ReportServer::GetStatistics(grpc::ServerContext* ctx,
                                            const remote::ReportingFilter* request,
                                            ::grpc::ServerWriter<remote::SiteAgentReport>* writer)
         {
@@ -112,24 +142,24 @@ namespace cqp
                 lock_guard<mutex> listenerLock(listenersMutex);
                 // prep our listener settings
                 listenerId = nextListenerId++;
-                listeners[listenerId].filter = *request;
+                remoteListeners[listenerId].filter = *request;
             }/*lock scope*/
 
-            Reportlistener& details = listeners[listenerId];
+            Reportlistener& details = remoteListeners[listenerId];
 
             bool keepWriting = true;
-            while(keepWriting)
+            while(keepWriting && !shutdown && !ctx->IsCancelled())
             {
 
                 unique_lock<mutex> lock(details.reportMutex);
-                bool dataReady = details.reportCv.wait_for(lock, waitTimeout, [&]
+                details.reportCv.wait_for(lock, chrono::seconds(1), [&]
                 {
-                    return !details.reports.empty();
+                    return !details.reports.empty() || shutdown || ctx->IsCancelled();
                 });
 
-                if(dataReady)
+                if(!details.reports.empty())
                 {
-                    while(keepWriting && !details.reports.empty())
+                    while(keepWriting && !details.reports.empty() && !shutdown)
                     {
                         keepWriting = writer->Write(details.reports.front());
                         details.reports.pop();
@@ -142,8 +172,10 @@ namespace cqp
             {
                 lock_guard<mutex> listenerLock(listenersMutex);
                 // remove our listener settings
-                listeners.erase(listenerId);
+                remoteListeners.erase(listenerId);
             }/*lock scope*/
+            // tell anyone waiting that we have removed a listener
+            listenerCv.notify_all();
 
             return result;
         }
@@ -222,7 +254,7 @@ namespace cqp
                 break;
             } // switch units
 
-            QueueReport(report);
+            StatsReport(report);
         } // GetStatistics
     } // namespace stats
 } // namespace cqp

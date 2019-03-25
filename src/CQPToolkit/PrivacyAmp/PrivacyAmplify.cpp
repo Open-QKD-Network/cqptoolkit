@@ -38,10 +38,7 @@ namespace cqp
             incommingData.clear();
             LOGTRACE("Publishing key");
             const auto numKeys = keys->size();
-            if(listener)
-            {
-                listener->OnKeyGeneration(move(keys));
-            }
+            Emit(&IKeyCallback::OnKeyGeneration, move(keys));
 
             stats.timeTaken.Update(high_resolution_clock::now() - timerStart);
             stats.keysEmitted.Update(numKeys);

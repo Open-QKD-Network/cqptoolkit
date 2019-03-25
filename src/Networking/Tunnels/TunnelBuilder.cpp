@@ -53,6 +53,7 @@ using cqp::remote::tunnels::TunnelEndDetails;
 #include <grpc++/server_builder.h>
 #include "Algorithms/Datatypes/Units.h"
 #include "Algorithms/Util/Strings.h"
+#include "Algorithms/Net/DNS.h"
 
 #include <thread>
 using grpc::Status;
@@ -143,7 +144,7 @@ namespace cqp
             // setting this too low causes large number of thread creation+deletions, default = 2
             builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, 50);
 
-            builder.AddListeningPort("0.0.0.0:" + std::to_string(transferListenPort), creds, &transferListenPort);
+            builder.AddListeningPort(std::string(net::AnyAddress) + ":" + std::to_string(transferListenPort), creds, &transferListenPort);
 
             LOGTRACE("Registering services");
             // Register services

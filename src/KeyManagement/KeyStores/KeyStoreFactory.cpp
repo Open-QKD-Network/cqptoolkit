@@ -3,7 +3,7 @@
 * @brief KeyStoreFactory
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 12/12/2017
@@ -45,7 +45,10 @@ namespace cqp
             {
                 // this might be us with a different ip
                 std::vector<net::IPAddress> hostIPs = net::GetHostIPs();
-                if(std::any_of(hostIPs.begin(), hostIPs.end(), [&destIp](auto myIp) { return myIp == destIp; }))
+                if(std::any_of(hostIPs.begin(), hostIPs.end(), [&destIp](auto myIp)
+            {
+                return myIp == destIp;
+            }))
                 {
                     // override the IP to the one we recognise
                     destIp = siteAddress.ip;
@@ -214,69 +217,72 @@ namespace cqp
                 bool leftKeyIDKnown = false;
                 KeyID rightKeyID = 0;
 
-                if(!GetKeyStore(*(siteList.rbegin() + 1))->
-                        GetNewKey(rightKeyID, finalKey))
+                if(GetKeyStore(*(siteList.rbegin() + 1))->GetNewKey(rightKeyID, finalKey, true))
+                {
+
+                    // loop backwards through each site, skip our site and the first site
+                    for(auto middleAddress = siteList.rbegin() + 1; middleAddress != siteList.rend() - 1; middleAddress++)
+                    {
+                        std::string combinedKey;
+                        // The site before the previous site
+                        const auto leftAddress = middleAddress + 1;
+                        const auto rightAddress = middleAddress - 1; // starts as our address
+
+                        if(leftAddress == siteList.rend() - 1)
+                        {
+                            // left address is now alpha, we know this key id
+                            leftKeyID = request->originatingkeyid();
+                            leftKeyIDKnown = true;
+                        }
+                        else
+                        {
+                            leftKeyID = 0;
+                            leftKeyIDKnown = false;
+                        }
+
+                        result = DoCombinedKey(
+                                     *middleAddress,
+                                     *leftAddress,
+                                     leftKeyID,     /*in out*/
+                                     leftKeyIDKnown,
+                                     *rightAddress,
+                                     rightKeyID,
+                                     combinedKey    /*out*/
+                                 );
+                        LOGDEBUG(*leftAddress + "[" + to_string(leftKeyID) + "], " + *rightAddress + "[" + to_string(rightKeyID) + "]" + " = " + to_string(static_cast<unsigned char>(combinedKey[0])));
+
+                        if(result.ok())
+                        {
+                            // shift the key ids
+                            rightKeyID = leftKeyID;
+
+                            // calculate the partial key
+                            finalKey ^= combinedKey;
+                        }
+                        else
+                        {
+                            LOGERROR("Failed to get combined key");
+                            break; // for
+                        }
+                    } // for middle addresses
+
+                    shared_ptr<keygen::KeyStore> finalKeystore = GetKeyStore(*siteList.begin());
+                    if(!finalKeystore->StoreReservedKey(request->originatingkeyid(), finalKey))
+                    {
+                        result = Status(StatusCode::ALREADY_EXISTS, "Originating key ID already exists in key store");
+                    }
+
+                } // if got new key
+                else
                 {
                     LOGERROR("Failed to get a new key");
-                }
-
-
-                // loop backwards through each site, skip our site and the first site
-                for(auto middleAddress = siteList.rbegin() + 1; middleAddress != siteList.rend() - 1; middleAddress++)
-                {
-                    std::string combinedKey;
-                    // The site before the previous site
-                    const auto leftAddress = middleAddress + 1;
-                    const auto rightAddress = middleAddress - 1; // starts as our address
-
-                    if(leftAddress == siteList.rend() - 1)
-                    {
-                        // left address is now alpha, we know this key id
-                        leftKeyID = request->originatingkeyid();
-                        leftKeyIDKnown = true;
-                    }
-                    else
-                    {
-                        leftKeyID = 0;
-                        leftKeyIDKnown = false;
-                    }
-
-                    result = DoCombinedKey(
-                                 *middleAddress,
-                                 *leftAddress,
-                                 leftKeyID,     /*in out*/
-                                 leftKeyIDKnown,
-                                 *rightAddress,
-                                 rightKeyID,
-                                 combinedKey    /*out*/
-                             );
-                    LOGDEBUG(*leftAddress + "[" + to_string(leftKeyID) + "], " + *rightAddress + "[" + to_string(rightKeyID) + "]" + " = " + to_string(static_cast<unsigned char>(combinedKey[0])));
-
-                    if(result.ok())
-                    {
-                        // shift the key ids
-                        rightKeyID = leftKeyID;
-
-                        // calculate the partial key
-                        finalKey ^= combinedKey;
-                    }
-                    else
-                    {
-                        LOGERROR("Failed to get combined key");
-                        break; // for
-                    }
-                }
-
-                shared_ptr<keygen::KeyStore> finalKeystore = GetKeyStore(*siteList.begin());
-                if(!finalKeystore->StoreReservedKey(request->originatingkeyid(), finalKey))
-                {
-                    result = Status(StatusCode::ALREADY_EXISTS, "Originating key ID already exists in key store");
+                    result = Status(StatusCode::RESOURCE_EXHAUSTED, "Failed to get a new key");
                 }
             }
             else
             {
                 result = Status(StatusCode::INVALID_ARGUMENT, "Invalid path");
-            }
+            } // if site path valid
             return result;
         } // BuildXorKey
 
@@ -343,7 +349,7 @@ namespace cqp
             else
             {
                 KeyID leftKeyId = 0;
-                if(leftKeyStore->GetNewKey(leftKeyId, leftKey))
+                if(leftKeyStore->GetNewKey(leftKeyId, leftKey, true))
                 {
                     LOGDEBUG("Left Key id=" + to_string(leftKeyId) + " value=" + to_string(leftKey[0]));
                     response->set_leftid(leftKeyId);
@@ -354,7 +360,10 @@ namespace cqp
                 }
             }
 
-            result = rightKeyStore->GetExistingKey(request->rightkeyid(), rightKey);
+            if(result.ok())
+            {
+                result = rightKeyStore->GetExistingKey(request->rightkeyid(), rightKey);
+            }
 
             if(result.ok())
             {

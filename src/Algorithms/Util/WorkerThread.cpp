@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Worker thread helper
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -57,37 +57,58 @@ namespace cqp
                 SetPriority(nice, policy, realtimePriority);
             }
         }
+        else
+        {
+            LOGWARN("Thread already started");
+        }
+
         // if it's already running, don't do anything.
     }
 
     void WorkerThread::Stop(bool wait)
     {
+        LOGTRACE("Thread Stopping...");
+
         {
-            LOGTRACE("Thread Stopping...");
-            lock_guard<mutex> lock(accessMutex);
-            state = State::Stop;
+            unique_lock<mutex> lock(accessMutex);
+
+            if(state == State::Started && worker.joinable())
+            {
+                // stop parrallel stops from clashing
+                state = State::Stop;
+                // Let the thread read the state
+                lock.unlock();
+                threadConditional.notify_all();
+
+                if(wait)
+                {
+                    worker.join();
+                }
+                else
+                {
+                    worker.detach();
+                }
+
+                // reobtain the lock to complete the process
+                lock.lock();
+                state = State::NotStarted;
+                worker = thread();
+                lock.unlock();
+
+                threadConditional.notify_all();
+
+            }
+            if(state == State::Stop)
+            {
+                // wait for the thread to stop
+                threadConditional.wait(lock, [&]()
+                {
+                    return state == State::NotStarted;
+                });
+            }
         }
 
-        threadConditional.notify_all();
-
-        if (wait )
-        {
-            WorkerThread::Join();
-        }
-        else if(worker.joinable())
-        {
-            worker.detach();
-        }
         LOGTRACE("Thread Stopped.");
-    }
-
-    void WorkerThread::Join()
-    {
-        if (worker.joinable())
-        {
-            LOGTRACE("Waiting for thread");
-            worker.join();
-        }
     }
 
     bool WorkerThread::IsRunning()
@@ -108,6 +129,6 @@ namespace cqp
     bool WorkerThread::ShouldStop()
     {
         lock_guard<mutex> lock(accessMutex);
-        return (state == State::Stop);
+        return (state != State::Started);
     }
 }

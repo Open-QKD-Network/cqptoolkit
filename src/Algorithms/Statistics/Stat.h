@@ -21,6 +21,7 @@
 #include <set>
 #include <atomic>
 #include <queue>
+#include "Algorithms/Statistics/IStatistics.h"
 #include "Algorithms/Util/Event.h"
 
 namespace cqp
@@ -48,6 +49,8 @@ namespace cqp
         };
 
         class ProcessingWorker;
+
+        using KeyValue = std::unordered_map<std::string, std::string>;
 
         /**
          * @brief The StatBase class
@@ -108,7 +111,7 @@ namespace cqp
              * @brief parameters
              * key,value pairs associated with this stat
              */
-            std::unordered_map<std::string, std::string> parameters;
+            KeyValue parameters;
 
         protected:
 
@@ -182,45 +185,12 @@ namespace cqp
             /// The objects which are processed
             ObjectList waitingObjects;
             /// Should the thread exit
-            bool stopProcessing = false;
+            std::atomic_bool stopProcessing {false};
         private:
             /// only instance
             static std::weak_ptr<ProcessingWorker> me;
         };
 
-        /// Forward declaration of Stat
-        template<typename T>
-        class ALGORITHMS_EXPORT Stat;
-
-        /**
-         * Callback interface for receiving stats
-         * @tparam T Datatype which the stat will store
-         */
-        template<typename T>
-        class ALGORITHMS_EXPORT IStatCallback
-        {
-        public:
-            /**
-             * @brief StatUpdated
-             * Notification that a stat has been updated
-             * @param stat The stat which has been updated
-             */
-            virtual void StatUpdated(const Stat<T>* stat) = 0;
-            /// Destructor
-            virtual ~IStatCallback() {}
-        };
-
-        /**
-         * @brief The IAllStatsCallback class
-         * Callback interface for receiving all datatypes
-         */
-        class ALGORITHMS_EXPORT IAllStatsCallback :
-            public virtual IStatCallback<double>,
-            public virtual IStatCallback<long>,
-            public virtual IStatCallback<size_t>
-        {
-
-        };
 
         /// Definition of a statistic
         template<typename T>

@@ -19,7 +19,7 @@
 
 namespace cqp {
 
-    namespace config {
+    namespace remote {
         class DeviceConfig;
     }
 namespace align {
@@ -48,7 +48,6 @@ namespace align {
         grpc::Status DiscardTransmissions(grpc::ServerContext *, const remote::ValidDetections *request, google::protobuf::Empty *) override;
         ///@}
 
-        bool SetParameters(config::DeviceConfig& parameters);
     protected:
         /// The data to process
         EmitterReportList receivedData;

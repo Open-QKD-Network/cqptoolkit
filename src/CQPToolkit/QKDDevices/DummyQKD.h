@@ -3,7 +3,7 @@
 * @brief DummyQKD
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 30/1/2018
@@ -37,9 +37,6 @@ namespace cqp
         /// Driver name
         static constexpr const char* DriverName = "dummyqkd";
 
-        /// tell the factory how to create these devices
-        static void RegisterWithFactory();
-
         /**
          * @brief DummyQKD
          * Constructor
@@ -47,7 +44,7 @@ namespace cqp
          * @param creds credentials to use when talking to peer
          * @param bytesPerKey
          */
-        DummyQKD(const remote::Side::Type& side, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
+        DummyQKD(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds);
 
         /**
          * @brief DummyQKD
@@ -56,7 +53,7 @@ namespace cqp
          * @param creds credentials to use when talking to peer
          * @param bytesPerKey
          */
-        DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey = 16);
+        DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds);
 
         /**
          * @brief ~DummyQKD
@@ -70,6 +67,9 @@ namespace cqp
         /// @{
         /// @name IQKDDevice interface
 
+        /// @copydoc IQKDDevice::SetInitialKey
+        void SetInitialKey(std::unique_ptr<PSK> initialKey) override;
+
         /// @copydoc cqp::IQKDDevice::GetDriverName
         std::string GetDriverName() const override;
 
@@ -77,20 +77,21 @@ namespace cqp
         URI GetAddress() const override;
 
         /// @copydoc cqp::IQKDDevice::Initialise
-        bool Initialise(config::DeviceConfig&) override;
+        bool Initialise(const remote::SessionDetails& sessionDetails) override;
 
         /// @copydoc cqp::IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
 
         /// @copydoc cqp::IQKDDevice::GetDeviceDetails
-        remote::Device GetDeviceDetails() override;
-
-        /// @copydoc cqp::IQKDDevice::GetStats
-        virtual std::vector<stats::StatCollection*> GetStats() override;
+        remote::DeviceConfig GetDeviceDetails() override;
 
         /// @copydoc cqp::IQKDDevice::GetKeyPublisher
-        IKeyPublisher* GetKeyPublisher() override;
+        KeyPublisher* GetKeyPublisher() override;
+
+        /// @copydoc cqp::IQKDDevice::GetServices
+        std::vector<grpc::Service*> GetServices() override;
         ///@}
+
     protected: // members
         /// randomness
         RandomNumber rng;
@@ -101,8 +102,7 @@ namespace cqp
         /// handles postprocessing
         std::unique_ptr<ProcessingChain> processing;
 
-        /// The address to use to contact this
-        std::string myAddress;
+        remote::DeviceConfig config;
     };
 
 } // namespace cqp

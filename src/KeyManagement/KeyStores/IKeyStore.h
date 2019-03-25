@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Key storage
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -35,8 +35,9 @@ namespace cqp
         /// Once a key has been retrieved it cannot not be retrieved again
         /// @param[out] identity The identifier for the key which was retrieved
         /// @param[out] output The key data which was retrieved
+        /// @param[in] waitForKey If true the call will block until a key is available
         /// @return true if a key was returned
-        virtual bool GetNewKey(KeyID& identity, PSK& output) = 0;
+        virtual bool GetNewKey(KeyID& identity, PSK& output, bool waitForKey = false) = 0;
 
         /**
          * @brief MarkKeyInUse

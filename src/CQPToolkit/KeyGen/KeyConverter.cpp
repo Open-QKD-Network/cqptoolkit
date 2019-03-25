@@ -40,7 +40,7 @@ namespace cqp
                 availableBytes.insert(availableBytes.end(), incomming.begin(), incomming.end());
             }
 
-            if(listener)
+            if(HaveListener())
             {
                 PSK::iterator takeFrom = availableBytes.begin();
 
@@ -58,7 +58,7 @@ namespace cqp
 
                 if(!keyToEmit->empty())
                 {
-                    listener->OnKeyGeneration(std::move(keyToEmit));
+                    Emit<std::unique_ptr<KeyList>>(&IKeyCallback::OnKeyGeneration, move(keyToEmit));
                 }
             } else {
                 carryOverBytes.assign(availableBytes.begin(), availableBytes.end());

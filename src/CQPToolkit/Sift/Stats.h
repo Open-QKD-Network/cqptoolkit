@@ -56,14 +56,6 @@ namespace cqp
                 publishTime.Remove(statsCb);
             }
 
-            /// @copydoc stats::StatCollection::AllStats
-            std::vector<stats::StatBase*> AllStats() override
-            {
-                return
-                {
-                    &bytesProduced, &qubitsDisgarded, &comparisonTime, &publishTime
-                };
-            }
         }; // struct Statistics
     } // namespace sift
 } // namespace cqp

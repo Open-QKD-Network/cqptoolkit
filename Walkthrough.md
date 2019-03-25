@@ -151,6 +151,48 @@ GRPC was chosen as the interface middleware due to it's many supported languages
 
     @enduml
 
+### Devices
+
+#### Using a driver to get key
+
+Scenario: There is a driver for your QKD device or you just want to use DummyQKDDriver to get some key. An application can be developed seperatly which uses the IDevice interface.
+@startuml
+
+    skinparam package {
+        backgroundColor<<CQPToolkit>> DarkKhaki
+    }
+
+
+    package "HandeldDriver (Alice)" <<CQPToolkit>> {
+        component RemoteQKDDriver as aliceDrv
+        component LEDDriver as aliceDev
+        aliceDrv .up.> aliceDev
+    }
+    interface "IDevice" as aliceDevice
+    aliceDrv -down- aliceDevice
+
+    package "FreespaceBobDriver (Bob)" <<CQPToolkit>> {
+        component RemoteQKDDriver as bobDrv
+        component Mk1PhotonDetector as bobDev
+        bobDrv .up.> bobDev
+    }
+    interface "IDevice" as bobDevice
+    bobDrv -down- bobDevice
+
+    package ClientApp1 {
+        component KeyReader as kr1
+    }
+    kr1 .up.>aliceDevice
+
+    package ClientApp2 {
+        component KeyReader as kr2
+    }
+    kr2 .up.> bobDevice
+
+@enduml
+
+The two client applications whould use the IDevice interface to connect to their local device driver. One of the applications would then start the session by calling "RunSession" on it's device, passing the address of the other device.
+
 ### Site agent runner
 Site agents control the devices and the sessions which use those devices. The site agents are run at physical locations which are equipped with QKD devices. A configuration file defines which devices are connected and how those devices are optically connected to the network. 
 

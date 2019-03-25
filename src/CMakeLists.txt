@@ -34,6 +34,7 @@ endif(WIN32 AND OSIS64 AND NOT MINGW)
 add_subdirectory(IDQDevices)
 # Add more projects/code
 add_subdirectory(Tools)
+add_subdirectory(Drivers)
 add_subdirectory(UI)
 
 if(BUILD_CQP_EXAMPLES)

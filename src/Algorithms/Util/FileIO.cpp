@@ -112,31 +112,6 @@ namespace cqp
             return browserFound;
         }
 
-
-        std::string GetApplicationName()
-        {
-            std::string result;
-
-#if defined(_WIN32)
-            TCHAR temp[MAX_PATH] {0}; /* FlawFinder: ignore */
-
-            if (GetModuleFileNameA(NULL, temp, sizeof(temp)) <= MAX_PATH)
-            {
-                // GetModuleFileNameA appends a null character
-                result = PathFindFileName(temp);
-            }
-
-#elif defined(__unix__)
-            char path[PATH_MAX] {0}; /* FlawFinder: ignore */
-            if(readlink("/proc/self/exe", path, sizeof(path)) > 0)
-            {
-                path[sizeof(path) - 1] = 0;
-                result = path;
-            }
-#endif
-            return result;
-        }
-
         bool Exists(const std::string& filename)
         {
             bool result = false;

@@ -36,6 +36,7 @@ namespace cqp
                     lock_guard<mutex> lock(cvMutex);
                     // create a channel to the other side
                     clientChannel = CreateChannel(address, clientCreds);
+                    clientAddress = address;
                 }
 
                 LOGINFO("Waiting for connection from " + address + "...");
@@ -83,6 +84,7 @@ namespace cqp
             using namespace std;
             lock_guard<mutex> lock(cvMutex);
             clientChannel = nullptr;
+            clientAddress = "";
             connectToMeCalled = false;
         } // Disconnect
 

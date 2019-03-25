@@ -75,7 +75,7 @@ namespace cqp
             if(result)
             {
                 // pass the random values onto the processing chain
-                listener->OnEmitterReport(move(report));
+                Emit(&IEmitterEventCallback::OnEmitterReport, move(report));
             }
         }
         return result;
@@ -110,7 +110,7 @@ namespace cqp
         return result;
     }
 
-    bool LEDDriver::Initialise(config::DeviceConfig& parameters)
+    bool LEDDriver::Initialise()
     {
         using std::chrono::nanoseconds;
         //std::cout << "\tSending " << Div << ", " << Del << std::endl;

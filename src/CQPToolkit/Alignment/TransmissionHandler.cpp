@@ -139,13 +139,6 @@ namespace align {
         return result;
     }
 
-    bool TransmissionHandler::SetParameters(config::DeviceConfig& parameters)
-    {
-        // TODO:
-        //markerFractionToSend = fraction;
-        return true;
-    }
-
 } // namespace align
 } // namespace cqp
 

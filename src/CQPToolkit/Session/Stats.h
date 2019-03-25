@@ -42,14 +42,6 @@ namespace cqp
                 TimeOpen.Remove(statsCb);
             }
 
-            /// @copydoc stats::StatCollection::AllStats
-            std::vector<stats::StatBase*> AllStats() override
-            {
-                return
-                {
-                    &TimeOpen
-                };
-            }
         }; // struct Statistics
     } // namespace keys
 

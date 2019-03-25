@@ -37,7 +37,8 @@ namespace cqp {
             AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
                                    const Services& services,
                                    const RemoteCommsList& remotes,
-                                   std::shared_ptr<IPhotonGenerator> source);
+                                   std::shared_ptr<IPhotonGenerator> source,
+                                   std::shared_ptr<stats::ReportServer> theReportServer);
 
             ///@{
             /// @name ISessionController interface
@@ -67,11 +68,10 @@ namespace cqp {
              *     deactivate as
              * @enduml
              */
-            grpc::Status StartSession() override;
+            grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
 
-            void WaitForEndOfSession() override;
             /// @}
 
             ///@{
@@ -79,7 +79,7 @@ namespace cqp {
 
             /// @copydoc remote::ISession::SessionStarting
             /// @param context Connection details from the server
-            grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty*) override;
+            grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetailsFrom* request, google::protobuf::Empty*) override;
             /// @copydoc remote::ISession::SessionEnding
             /// @param context Connection details from the server
             grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;

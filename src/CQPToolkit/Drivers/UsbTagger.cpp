@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Usb Tagger
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -106,7 +106,7 @@ namespace cqp
          * @param epoc The time which the transmitter started generating
          * @param newListener The receiver of the detection report
          */
-        void Start(const std::chrono::high_resolution_clock::time_point& epoc, IDetectionEventCallback* newListener);
+        void Start(const std::chrono::high_resolution_clock::time_point& epoc, Provider<IDetectionEventCallback>* provider);
 
 
         void Stop();
@@ -123,7 +123,7 @@ namespace cqp
 
     protected: // members
         /// destination for the final report
-        IDetectionEventCallback* listener = nullptr;
+        Provider<IDetectionEventCallback>* provider = nullptr;
         /// The device to read
         Usb& device;
         /// how channels are mapped to qubits
@@ -133,7 +133,7 @@ namespace cqp
         std::mutex processingQueueMutex;
         std::condition_variable dataReadyCv;
         std::unique_ptr<ProtocolDetectionReport> report;
-        bool shutdown = false;
+        std::atomic_bool shutdown {false};
         bool keepReading = true;
         std::thread processor;
         std::queue<DataBlockPtr> unusedBuffers;
@@ -179,10 +179,10 @@ namespace cqp
         }
     }
 
-    void UsbTagger::DataPusher::Start(const chrono::system_clock::time_point& epoc, IDetectionEventCallback* newListener)
+    void UsbTagger::DataPusher::Start(const chrono::system_clock::time_point& epoc, Provider<IDetectionEventCallback>* provider)
     {
         LOGTRACE("");
-        listener = newListener;
+        provider = provider;
         report = std::make_unique<ProtocolDetectionReport>();
         report->epoc = epoc;
         report->frame = frame;
@@ -198,8 +198,8 @@ namespace cqp
 
         // get a buffer for the data
         activeTransfer = device.StartReadingBulk<DataPusher>(bulkReadRequest, GetBuffer(),
-                                                             &DataPusher::ReadDataAsync, this,
-                                                             std::chrono::seconds(1));
+                         &DataPusher::ReadDataAsync, this,
+                         std::chrono::seconds(1));
     }
 
     void UsbTagger::DataPusher::Stop()
@@ -209,22 +209,28 @@ namespace cqp
         keepReading = false;
 
         // wait for all the data to processed
-        {/*lock scope*/
+        {
+            /*lock scope*/
             unique_lock<mutex> lock(processingQueueMutex);
-            dataReadyCv.wait(lock, [&](){
+            dataReadyCv.wait(lock, [&]()
+            {
                 return processingQueue.empty();
             });
 
-            if(listener)
+            if(provider)
             {
                 if(report)
                 {
                     // send the report to the listener
-                    listener->OnPhotonReport(move(report));
-                } else {
+                    provider->Emit(&IDetectionEventCallback::OnPhotonReport, move(report));
+                }
+                else
+                {
                     LOGERROR("Report is invalid");
                 }
-            } else {
+            }
+            else
+            {
                 LOGERROR("No listener to send frame to");
             }
 
@@ -243,7 +249,8 @@ namespace cqp
     {
         activeTransfer = nullptr;
 
-        {/*lock scope*/
+        {
+            /*lock scope*/
             unique_lock<mutex> lock(processingQueueMutex);
             // move the data onto the processing queue
             processingQueue.push(move(data));
@@ -256,8 +263,8 @@ namespace cqp
         {
             // start off the next transfer
             activeTransfer = device.StartReadingBulk(bulkReadRequest, GetBuffer(),
-                                                     &DataPusher::ReadDataAsync, this,
-                                                     chrono::seconds(1));
+                             &DataPusher::ReadDataAsync, this,
+                             chrono::seconds(1));
         }
     }
 
@@ -270,9 +277,11 @@ namespace cqp
 
         while(!shutdown)
         {
-            {/*lock scope*/
+            {
+                /*lock scope*/
                 unique_lock<mutex> lock(processingQueueMutex);
-                dataReadyCv.wait(lock, [&](){
+                dataReadyCv.wait(lock, [&]()
+                {
                     return !processingQueue.empty() || shutdown;
                 });
 
@@ -298,18 +307,23 @@ namespace cqp
                         if(devReport.LoadRaw(&(*data)[offset]))
                         {
                             if(devReport.messageType == NoxReport::MessageType::Detection &&
-                               devReport.detection.channel < channelMappings.size())
+                                    devReport.detection.channel < channelMappings.size())
                             {
                                 report->detections.push_back({devReport.GetTime(), channelMappings[devReport.detection.channel]});
-                            } else if(devReport.messageType == NoxReport::MessageType::Config){
+                            }
+                            else if(devReport.messageType == NoxReport::MessageType::Config)
+                            {
                                 //LOGINFO("Got Config message");
-                            } else {
+                            }
+                            else
+                            {
                                 LOGERROR("Invalid message");
                             }
                         } // if report valid
 
                     } // for each message
-                } else
+                }
+                else
                 {
                     LOGERROR("Data size invalid");
                 }
@@ -318,7 +332,8 @@ namespace cqp
                 data->clear();
                 ReturnBuffer(move(data));
 
-                {/*lock scope*/
+                {
+                    /*lock scope*/
                     unique_lock<mutex> lock(processingQueueMutex);
                     processingQueue.pop();
                 }/*lock scope*/
@@ -336,13 +351,16 @@ namespace cqp
         using namespace std;
         DataBlockPtr result;
 
-        {/* lock scope*/
+        {
+            /* lock scope*/
             unique_lock<mutex> lock(unusedQueueMutex);
             if(unusedBuffers.empty())
             {
                 // there are no free buffers, make another
                 result = make_unique<DataBlock>(maxBulkRead);
-            } else {
+            }
+            else
+            {
                 result = move(unusedBuffers.front());
                 unusedBuffers.pop();
             }
@@ -360,7 +378,7 @@ namespace cqp
         using namespace std;
         buffer->clear();
         buffer->resize(maxBulkRead);
-        unique_lock<mutex> lock(unusedQueueMutex);        
+        unique_lock<mutex> lock(unusedQueueMutex);
         unusedBuffers.push(move(buffer));
     }
 
@@ -375,10 +393,14 @@ namespace cqp
             if(devices.empty())
             {
                 LOGERROR("No serial device found");
-            } else {
+            }
+            else
+            {
                 configPort = move(devices[0]);
             }
-        } else {
+        }
+        else
+        {
             configPort = std::make_unique<Serial>(controlName, myBaudRate);
         }
 
@@ -387,7 +409,9 @@ namespace cqp
         if(dataPort)
         {
             dataPusher = make_unique<DataPusher>(*dataPort, channelMappings);
-        } else {
+        }
+        else
+        {
             LOGERROR("Invalid USB device");
         }
     }
@@ -415,17 +439,20 @@ namespace cqp
             {
                 buffer->resize(maxBulkRead);
                 dataPort->ReadBulk(*buffer, bulkReadRequest, std::chrono::milliseconds(100));
-            } while(!buffer->empty());
+            }
+            while(!buffer->empty());
             dataPusher->ReturnBuffer(move(buffer));
 
             // TODO: convert the incomming timestamp into an epoc
             // Start reading data from the usb port
             // This may need to come after the 'R'
-            dataPusher->Start(high_resolution_clock::now(), listener);
+            dataPusher->Start(high_resolution_clock::now(), this);
             // Start the detector
             configPort->Write('R');
             configPort->Flush();
-        } else {
+        }
+        else
+        {
             result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid device");
         }
         return result;
@@ -441,13 +468,15 @@ namespace cqp
             configPort->Flush();
             dataPusher->Stop();
             configPort->Close();
-        } else {
+        }
+        else
+        {
             result = grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "Invalid device");
         }
         return result;
     }
 
-    bool UsbTagger::Initialise(config::DeviceConfig& parameters)
+    bool UsbTagger::Initialise()
     {
         LOGTRACE("");
         bool result = true;
@@ -478,7 +507,9 @@ namespace cqp
             {
                 LOGERROR("Failed to open usb device");
             }
-        } else {
+        }
+        else
+        {
             LOGERROR("Invalid serial port");
         }
 

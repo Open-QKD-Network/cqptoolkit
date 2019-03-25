@@ -3,7 +3,7 @@
 * @brief DummyQKD
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 30/1/2018
@@ -11,7 +11,6 @@
 */
 #include "DummyQKD.h"
 #include <utility>                                    // for move
-#include "CQPToolkit/QKDDevices/DeviceFactory.h"         // for DeviceFactory
 #include "CQPToolkit/Session/AliceSessionController.h"
 #include "Interfaces/IQKDDevice.h"                    // for IQKDDevice, IQK...
 #include "Session/SessionController.h"                // for SessionController
@@ -24,6 +23,8 @@
 #include "KeyGen/KeyConverter.h"
 #include "CQPToolkit/Simulation/DummyTransmitter.h"
 #include "CQPToolkit/Simulation/DummyTimeTagger.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
+#include "DeviceUtils.h"
 
 namespace cqp
 {
@@ -37,46 +38,51 @@ namespace cqp
         ProcessingChain(std::shared_ptr<grpc::ChannelCredentials> creds,
                         IRandom* rng, remote::Side::Type side) :
             alignment(std::make_shared<align::NullAlignment>()),
-          ec(std::make_shared<ec::ErrorCorrection>()),
-          privacy(std::make_shared<privacy::PrivacyAmplify>()),
-          keyConverter(std::make_shared<keygen::KeyConverter>())
+            ec(std::make_shared<ec::ErrorCorrection>()),
+            privacy(std::make_shared<privacy::PrivacyAmplify>()),
+            keyConverter(std::make_shared<keygen::KeyConverter>()),
+            reportServer(std::make_shared<stats::ReportServer>())
         {
             using namespace std;
             session::SessionController::RemoteCommsList remotes;
             session::SessionController::Services services;
             remotes.push_back(alignment);
+            services.push_back(reportServer.get());
 
             // create the controller for this device
             switch (side)
             {
             case remote::Side::Alice:
-                {
-                    photonSource = make_shared<sim::DummyTransmitter>(rng);
-                    photonSource->Attach(alignment.get());
-                    remotes.push_back(photonSource);
+            {
+                photonSource = make_shared<sim::DummyTransmitter>(rng);
+                photonSource->Attach(alignment.get());
+                remotes.push_back(photonSource);
+                photonSource->stats.Add(reportServer.get());
 
-                    auto transmitter = std::make_shared<sift::Transmitter>();
-                    sifter = transmitter;
-                    remotes.push_back(transmitter);
+                auto transmitter = std::make_shared<sift::Transmitter>();
+                sifter = transmitter;
+                remotes.push_back(transmitter);
 
-                    controller = make_shared<session::AliceSessionController>(creds, services, remotes, photonSource);
-                }
+                controller = make_shared<session::AliceSessionController>(creds, services, remotes, photonSource, reportServer);
+            }
 
-                break;
+            break;
             case remote::Side::Bob:
-                {
-                    timeTagger = make_shared<sim::DummyTimeTagger>(rng);
-                    timeTagger->Attach(alignment.get());
-                    services.push_back(static_cast<remote::IDetector::Service*>(timeTagger.get()));
-                    services.push_back(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
+            {
+                timeTagger = make_shared<sim::DummyTimeTagger>(rng);
+                timeTagger->Attach(alignment.get());
+                services.push_back(static_cast<remote::IDetector::Service*>(timeTagger.get()));
+                services.push_back(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
 
-                    auto receiver = std::make_shared<sift::Receiver>();
-                    sifter = receiver;
-                    services.push_back(receiver.get());
+                timeTagger->stats.Add(reportServer.get());
 
-                    controller = make_shared<session::SessionController>(creds, services, remotes);
-                }
-                break;
+                auto receiver = std::make_shared<sift::Receiver>();
+                sifter = receiver;
+                services.push_back(receiver.get());
+
+                controller = make_shared<session::SessionController>(creds, services, remotes, reportServer);
+            }
+            break;
             default:
                 LOGERROR("Invalid device side");
                 break;
@@ -86,7 +92,19 @@ namespace cqp
             sifter->Attach(ec.get());
             ec->Attach(privacy.get());
             privacy->Attach(keyConverter.get());
+
+            // send stats to our report server
+            sifter->stats.Add(reportServer.get());
+            ec->stats.Add(reportServer.get());
+            privacy->stats.Add(reportServer.get());
         }
+
+        ~ProcessingChain()
+        {
+            controller->EndSession();
+
+        }
+
         /// aligns detections
         std::shared_ptr<align::NullAlignment> alignment;
         /// sifts alignments
@@ -106,46 +124,86 @@ namespace cqp
 
         std::shared_ptr<session::SessionController> controller = nullptr;
 
+        std::shared_ptr<stats::ReportServer> reportServer;
     };
 
-    void DummyQKD::RegisterWithFactory()
+    DummyQKD::DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds)
     {
-        // tell the factory how to create a DummyQKD by specifying a lambda function
-        // this driver can do both sides
-        for(auto side : {remote::Side::Alice, remote::Side::Bob})
+        const URI addrUri(address);
+        if(addrUri.GetScheme() != DriverName)
         {
-            DeviceFactory::RegisterDriver(DriverName, side, [](const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey)
+            LOGWARN("Driver name " + addrUri.GetScheme() + " doesnt match this driver (" + DriverName + ")");
+        }
+
+        for(const auto& param : addrUri.GetQueryParameters())
+        {
+            if(param.first == Parameters::switchPort)
             {
-                return std::make_shared<DummyQKD>(address, creds, bytesPerKey);
-            });
+                config.set_switchport(param.second);
+            }
+            else if(param.first == Parameters::side)
+            {
+                if(param.second == Parameters::SideValues::alice)
+                {
+                    config.set_side(remote::Side_Type::Side_Type_Alice);
+                }
+                else if(param.second == Parameters::SideValues::bob)
+                {
+                    config.set_side(remote::Side_Type::Side_Type_Bob);
+                }
+                else if(param.second == Parameters::SideValues::any)
+                {
+                    config.set_side(remote::Side_Type::Side_Type_Any);
+                }
+            }
+            else if(param.first == Parameters::switchName)
+            {
+                config.set_switchname(param.second);
+            }
+            else if(param.first == Parameters::keybytes)
+            {
+                try
+                {
+                    config.set_bytesperkey(static_cast<uint32_t>(std::stoi(param.second)));
+                }
+                catch (const std::exception& e)
+                {
+                    LOGERROR(e.what());
+                }
+            }
+            else
+            {
+                LOGWARN("Unknown parameter: " + param.first);
+            }
+        }
+        processing = std::make_unique<ProcessingChain>(creds, &rng, config.side());
+
+        // reset any values that cant be changed
+        config.set_kind(DriverName);
+        if(config.id().empty())
+        {
+            config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
         }
     }
 
-    DummyQKD::DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey) :
-        DummyQKD(DeviceFactory::GetSide(URI(address)), creds, bytesPerKey)
+    DummyQKD::DummyQKD(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds):
+        processing{std::make_unique<ProcessingChain>(creds, &rng, initialConfig.side())},
+        config{initialConfig}
     {
-        myAddress = address;
+        // reset any values that cant be changed
+        config.set_kind(DriverName);
+        if(config.id().empty())
+        {
+            config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
+        }
+    }
+
+    void DummyQKD::SetInitialKey(std::unique_ptr<PSK> initialKey)
+    {
+        // TODO
     }
 
     DummyQKD::~DummyQKD() = default;
-
-    DummyQKD::DummyQKD(const remote::Side::Type & side, std::shared_ptr<grpc::ChannelCredentials> creds, size_t bytesPerKey):
-        processing{std::make_unique<ProcessingChain>(creds, &rng, side)}
-    {
-        myAddress = std::string(DriverName) + ":///?side=";
-        switch (side)
-        {
-        case remote::Side::Alice:
-            myAddress += "alice";
-            break;
-        case remote::Side::Bob:
-            myAddress += "bob";
-            break;
-        default:
-            LOGERROR("Invalid device side");
-            break;
-        }
-    }
 
     std::string cqp::DummyQKD::GetDriverName() const
     {
@@ -154,10 +212,11 @@ namespace cqp
 
     URI cqp::DummyQKD::GetAddress() const
     {
-        return myAddress;
+        return DeviceUtils::ConfigToUri(config);
+
     }
 
-    bool cqp::DummyQKD::Initialise(cqp::config::DeviceConfig&)
+    bool cqp::DummyQKD::Initialise(const remote::SessionDetails& sessionDetails)
     {
         return true;
     }
@@ -167,41 +226,17 @@ namespace cqp
         return processing->controller.get();
     }
 
-    remote::Device DummyQKD::GetDeviceDetails()
+    remote::DeviceConfig DummyQKD::GetDeviceDetails()
     {
-        remote::Device result;
-        URI addrUri(myAddress);
-
-        result.set_id(DeviceFactory::GetDeviceIdentifier(addrUri));
-        std::string sideName;
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::side, sideName);
-        result.set_side(DeviceFactory::GetSide(addrUri));
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchName, *result.mutable_switchname());
-        addrUri.GetFirstParameter(IQKDDevice::Parmeters::switchPort, *result.mutable_switchport());
-        result.set_kind(addrUri.GetScheme());
-
-        return result;
+        return config;
     }
 
-    std::vector<stats::StatCollection*> DummyQKD::GetStats()
+    std::vector<grpc::Service*> DummyQKD::GetServices()
     {
-        std::vector<stats::StatCollection*> results;
-        results.push_back(&processing->ec->stats);
-        results.push_back(&processing->privacy->stats);
-        results.push_back(&processing->sifter->stats);
-
-        if(processing->timeTagger)
-        {
-            results.push_back(&processing->timeTagger->stats);
-        }
-        if(processing->photonSource)
-        {
-            results.push_back(&processing->photonSource->stats);
-        }
-        return results;
+        return {processing->reportServer.get()};
     }
 
-    IKeyPublisher* DummyQKD::GetKeyPublisher()
+    KeyPublisher* DummyQKD::GetKeyPublisher()
     {
         return processing->keyConverter.get();
     }

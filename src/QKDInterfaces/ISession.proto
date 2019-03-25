@@ -12,14 +12,21 @@
 
 syntax = "proto3";
 import public "google/protobuf/empty.proto";
+import public "Device.proto";
 
 package cqp.remote;
+
+message SessionDetailsFrom {
+    SessionDetails details = 1;
+    string initiatorAddress = 2;
+}
 
 /**
  * @brief The ISift class
  * Interface for the communication between Sifting classes
  */
 service ISession {
+
     /**
     * @brief SessionStarting
     * Called by the other session controller, instructing the controller to start
@@ -27,7 +34,7 @@ service ISession {
     * @param request Session details to start the session
     * @return status
     */
-    rpc SessionStarting(SessionDetails) returns (google.protobuf.Empty);
+    rpc SessionStarting(SessionDetailsFrom) returns (google.protobuf.Empty);
 
     /**
     * The key generation process should be stopped
@@ -35,14 +42,4 @@ service ISession {
     */
     rpc SessionEnding(google.protobuf.Empty) returns (google.protobuf.Empty);
 
-}
-
-/**
-* Session details
-*/
-message SessionDetails {
-    /// other side
-    string peerAddress = 1;
-    /// token used to retrieve the intial key
-    string keyToken = 2;
 }

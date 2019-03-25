@@ -70,10 +70,9 @@ namespace cqp
 
             // tell the listeners what we sent.
             const auto qubitsTransmitted = report->emissions.size();
-            if(listener)
-            {
-                listener->OnEmitterReport(move(report));
-            }
+
+            Emit(&IEmitterEventCallback::OnEmitterReport, move(report));
+
             stats.timeTaken.Update(high_resolution_clock::now() - timerStart);
             stats.qubitsTransmitted.Update(qubitsTransmitted);
 

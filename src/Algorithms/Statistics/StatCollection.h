@@ -41,30 +41,9 @@ namespace cqp
              */
             virtual void Remove(IAllStatsCallback* statsCb) = 0;
 
-            /**
-             * @brief SetEndpoints
-             * Set the extra parameters which state which end points the stats belong to
-             * @param from
-             * @param to
-             */
-            void SetEndpoints(const std::string& from, const std::string& to)
-            {
-                for(auto stat : AllStats())
-                {
-                    stat->parameters["from"] = from;
-                    stat->parameters["to"] = to;
-                }
-            }
-
             /// Destructor
-            virtual ~StatCollection() {}
-        protected:
+            virtual ~StatCollection() = default;
 
-            /**
-             * @brief AllStats
-             * @return A list of all stats in the collection
-             */
-            virtual std::vector<StatBase*> AllStats() = 0;
         }; // struct StatCollection
     } // namespace stats
 } // namespace cqp

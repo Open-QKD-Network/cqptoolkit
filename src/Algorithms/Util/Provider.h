@@ -12,6 +12,9 @@
 #pragma once
 #include "Algorithms/Logging/Logger.h"
 #include <functional>
+#include <utility>
+#include <mutex>
+
 namespace cqp {
 
     /**
@@ -31,6 +34,7 @@ namespace cqp {
          */
         virtual void Attach(Listener* newListener)
         {
+            std::unique_lock<std::mutex> lock(listenerMut);
             listener = newListener;
         }
 
@@ -40,32 +44,44 @@ namespace cqp {
          */
         virtual void Detatch()
         {
+            std::unique_lock<std::mutex> lock(listenerMut);
             listener = nullptr;
         }
 
         /**
          * Send the data to the listener
+         * call by passing a function as the first parameter:
+         * @code
+         * Emit(&IInterface::Func, param1, move(uniqueptr));
+         * @endcode
          * @tparam Args The parameters to send to the listener
          * @param args The values to send to the listener
          * @param func The function to call on the listener
          */
         template<typename ...Args>
-        void Emit(void(Listener::*func)(Args...), Args&... args)
+        void Emit(void(Listener::*func)(Args...), Args... args)
         {
             using namespace std;
+            std::unique_lock<std::mutex> lock(listenerMut);
 
             if(listener)
             {
-                (listener->*func)(args...);
+                (listener->*func)(forward<Args>(args)...);
             }
         }
 
+        bool HaveListener()
+        {
+            std::unique_lock<std::mutex> lock(listenerMut);
+            return listener != nullptr;
+        }
     protected:
         /// Constructor
         Provider() {}
-
+    private:
         /// The listener
         Listener* listener = nullptr;
+        std::mutex listenerMut;
     };
 
 } // namespace cqp

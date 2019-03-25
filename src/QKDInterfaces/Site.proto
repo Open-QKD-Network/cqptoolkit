@@ -45,37 +45,7 @@ message Site {
     /// site address
     string url = 1;
     /// devices attached to the site
-    repeated Device devices = 2;
-}
-
-/** Defines which side of a pair of devices
-*/
-message Side {
-    /** Encapsulated type for scoping
-    */
-    enum Type {
-        Alice = 0;
-        Bob = 1;
-        /// For device independent QKD
-        Any = 2;
-    }
-    /// Value
-    Type value = 1;
-}
-
-/// Define a device
-message Device {
-    /// An identifier for the device, unique to the site
-    string id = 1;
-    /// Which side of a pair the device belongs to
-    Side.Type side = 2;
-    /// The openflow name of the switching device the QKD device is connected to
-    /// e.g: openflow:1234
-    string switchName = 3;
-    /// The physical port the device is connected to
-    string switchPort = 4;
-    /// What kind of device is it
-    string kind = 5;
+    repeated ControlDetails devices = 2;
 }
 
 /// An entry point for QKD
@@ -93,7 +63,7 @@ message HopPair {
     /// right side of a connection
     Hop second = 2;
     /// properties for this link
-    config.DeviceConfig params = 3;
+    SessionDetails params = 3;
 };
 
 /// Contact details for a site
@@ -155,4 +125,6 @@ message SiteAgentConfig
     string backingStoreUrl = 11;
     /// Static links to create on startup
     repeated PhysicalPath staticHops = 12;
+    /// A key for bootstrapping the system
+    bytes fallbackKey = 13;
 }
