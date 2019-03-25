@@ -24,34 +24,45 @@ namespace cqp
     class IDQDEVICES_EXPORT Clavis3Device :
         public virtual IQKDDevice,
         public session::SessionController,
-        public IKeyPublisher
+        public KeyPublisher
     {
     public:
-        Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds);
+        Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds, std::shared_ptr<stats::ReportServer> theReportServer);
         ~Clavis3Device() override;
 
         ///@{
         /// @name IQKDDevice interface
+
+        /// @copydoc IQKDDevice::GetDriverName
         std::string GetDriverName() const override;
+        /// @copydoc IQKDDevice::GetAddress
         URI GetAddress() const override;
-        bool Initialise(config::DeviceConfig& parameters) override;
+        /// @copydoc IQKDDevice::Initialise
+        bool Initialise(const remote::SessionDetails& sessionDetails) override;
+        /// @copydoc IQKDDevice::GetSessionController
         ISessionController* GetSessionController() override;
-        IKeyPublisher* GetKeyPublisher() override;
-        remote::Device GetDeviceDetails() override;
-        std::vector<stats::StatCollection*> GetStats() override;
+        /// @copydoc IQKDDevice::GetKeyPublisher
+        KeyPublisher* GetKeyPublisher() override;
+        /// @copydoc IQKDDevice::GetDeviceDetails
+        remote::DeviceConfig GetDeviceDetails() override;
         ///@}
 
         ///@{
         /// @name ISessionController interface
 
-        grpc::Status StartSession() override;
+        /// @copydoc ISessionController::StartSession
+        grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
+        /// @copydoc ISessionController::EndSession
         void EndSession() override;
         ///@}
 
         ///@{
         /// @name ISession interface
-        grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty* response) override;
-        grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty* request, google::protobuf::Empty* response) override;
+
+        /// @copydoc remote::ISession::SessionStarting
+        grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetailsFrom* request, google::protobuf::Empty*) override;
+        /// @copydoc remote::ISession::SessionEnding
+        grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty* request, google::protobuf::Empty*) override;
         ///@}
     protected: // methods
         void PassOnKeys();
@@ -60,6 +71,11 @@ namespace cqp
         std::unique_ptr<Impl> pImpl;
         std::shared_ptr<grpc::ChannelCredentials> creds;
 
+
+        // IQKDDevice interface
+    public:
+        void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
+        std::vector<grpc::Service*> GetServices() override;
     };
 
 } // namespace cqp

@@ -3,7 +3,7 @@
 * @brief TunnelBuilder
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 7/11/2017
@@ -18,7 +18,6 @@
 #include "Algorithms/Logging/Logger.h"
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include "KeyManagement/KeyStores/KeyStore.h"
-#include "CQPToolkit/Drivers/IDQSequenceLauncher.h"
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include "QKDInterfaces/Tunnels.pb.h"
 

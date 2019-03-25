@@ -12,11 +12,11 @@
 #include "ClavisProxy.h"
 #include <grpcpp/impl/codegen/status_code_enum.h>  // for StatusCode
 #include <utility>                                 // for move
-#include "CQPToolkit/Session/ClavisController.h"   // for ClavisController
+#include "IDQDevices/Clavis2/ClavisController.h"   // for ClavisController
 #include "CQPToolkit/Interfaces/IQKDDevice.h"                 // for IQKDDevice, IQKDDe...
 #include "Algorithms/Logging/Logger.h"                           // for LOGTRACE
 #include "CQPToolkit/Statistics/ReportServer.h"
-#include "DeviceUtils.h"
+#include "CQPToolkit/QKDDevices/DeviceUtils.h"
 
 namespace cqp
 {

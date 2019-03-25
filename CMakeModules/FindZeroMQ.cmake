@@ -12,4 +12,7 @@
 find_package(PkgConfig QUIET)
 if(${PKG_CONFIG_FOUND})
         pkg_check_modules(ZeroMQ QUIET libzmq IMPORTED_TARGET)
+        if(TARGET PkgConfig::ZeroMQ)
+            message("ZeroMQ Found: ${ZeroMQ_VERSION}")
+        endif()
 endif(${PKG_CONFIG_FOUND})

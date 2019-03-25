@@ -21,11 +21,12 @@
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Statistics/Stat.h"
 #include "Algorithms/Statistics/StatCollection.h"
+#include "IDQDevices/idqdevices_export.h"
 
 namespace cqp
 {
     /// Start the IDQ driver program for communicating with the Clavis 2
-    class CQPTOOLKIT_EXPORT IDQSequenceLauncher
+    class IDQDEVICES_EXPORT IDQSequenceLauncher
     {
     public:
         /// Size of the PSK used with the clavis

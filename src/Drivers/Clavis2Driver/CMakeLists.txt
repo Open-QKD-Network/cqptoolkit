@@ -36,6 +36,8 @@ get_target_property(QKDInterfaces_BINARY_DIR QKDInterfaces BINARY_DIR)
 target_include_directories(${PROJECT_NAME} PRIVATE "${QKDInterfaces_BINARY_DIR}")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    IDQDevices_Shared
     KeyManagement_Shared
     CQPToolkit_Shared
+    QKDInterfaces_Shared
     )

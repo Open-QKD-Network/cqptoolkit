@@ -14,10 +14,15 @@
 
 namespace cqp
 {
-    Clavis3Device::Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds) :
-        session::SessionController {creds, {}, {}},
+    Clavis3Device::Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds, std::shared_ptr<stats::ReportServer> theReportServer) :
+        session::SessionController {creds, {}, {}, theReportServer},
             pImpl{std::make_unique<Clavis3Device::Impl>(hostname)}
     {
+    }
+
+    Clavis3Device::~Clavis3Device()
+    {
+
     }
 
     std::string Clavis3Device::GetDriverName() const
@@ -25,7 +30,13 @@ namespace cqp
         return "Clavis3";
     }
 
-    bool Clavis3Device::Initialise(config::DeviceConfig& parameters)
+    URI Clavis3Device::GetAddress() const
+    {
+        // TODO
+        return URI();
+    }
+
+    bool Clavis3Device::Initialise(const remote::SessionDetails& sessionDetails)
     {
         pImpl->SubscribeToStateChange();
         pImpl->Request_GetProtocolVersion();
@@ -40,14 +51,26 @@ namespace cqp
         return true;
     }
 
-    IKeyPublisher* Clavis3Device::GetKeyPublisher()
+    ISessionController* Clavis3Device::GetSessionController()
     {
         return this;
     }
 
-    grpc::Status Clavis3Device::StartSession()
+    KeyPublisher* Clavis3Device::GetKeyPublisher()
     {
-        auto result = SessionController::StartSession();
+        return this;
+    }
+
+    remote::DeviceConfig Clavis3Device::GetDeviceDetails()
+    {
+        remote::DeviceConfig result;
+        //TODO
+        return result;
+    }
+
+    grpc::Status Clavis3Device::StartSession(const remote::SessionDetails& sessionDetails)
+    {
+        auto result = SessionController::StartSession(sessionDetails);
         if(result.ok())
         {
             pImpl->Request_PowerOn();
@@ -67,15 +90,11 @@ namespace cqp
         keys->resize(1);
         if(pImpl->ReadKey((*keys)[0]))
         {
-            //Emit<&IKeyCallback::OnKeyGeneration>(move(keys));
-            if(listener)
-            {
-                listener->OnKeyGeneration(move(keys));
-            }
+            Emit(&IKeyCallback::OnKeyGeneration, move(keys));
         }
     }
 
-    grpc::Status Clavis3Device::SessionStarting(grpc::ServerContext* context, const remote::SessionDetails* request, google::protobuf::Empty* response)
+    grpc::Status Clavis3Device::SessionStarting(grpc::ServerContext* context, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)
     {
         auto result = SessionController::SessionStarting(context, request, response);
         if(result.ok())
@@ -93,5 +112,14 @@ namespace cqp
 
         return result;
     }
-} // namespace cqp
 
+    void Clavis3Device::SetInitialKey(std::unique_ptr<PSK> initailKey)
+    {
+    }
+
+    std::vector<grpc::Service*> Clavis3Device::GetServices()
+    {
+        std::vector<grpc::Service*> result;
+        return result;
+    }
+} // namespace cqp

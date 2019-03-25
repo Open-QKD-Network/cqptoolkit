@@ -22,6 +22,8 @@ if(TARGET IDQ4PClasses)
     # Perform some standard setup steps like detecting the platform.
     include(CommonSetup)
 
+    ADD_GRPC_FILES()
+
     CQP_LIBRARY_PROJECT()
 
     target_compile_definitions(IDQDevices PRIVATE MSGPACK_DEFAULT_API_VERSION=1)
@@ -43,4 +45,12 @@ if(TARGET IDQ4PClasses)
         Utilities
         PkgConfig::ZeroMQ
         PkgConfig::MsgPack)
+
+    target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
+        IDQ4PClasses
+        DomainModel
+        Utilities
+        PkgConfig::ZeroMQ
+        PkgConfig::MsgPack)
+
 endif()

@@ -17,13 +17,13 @@
 #include <grpc++/client_context.h>
 #include <grpc++/security/credentials.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "CQPToolkit/QKDDevices/ClavisProxy.h"
-#include "CQPToolkit/Drivers/Clavis.h"
+#include "IDQDevices/Clavis2/ClavisProxy.h"
+#include "IDQDevices/Clavis2/Clavis.h"
 #include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "QKDInterfaces/IReporting.grpc.pb.h"
 #include <future>
 #include "CQPToolkit/Statistics/ReportServer.h"
-#include "CQPToolkit/Drivers/IDQSequenceLauncher.h"
+#include "IDQDevices/Clavis2/IDQSequenceLauncher.h"
 
 namespace cqp
 {

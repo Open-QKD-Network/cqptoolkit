@@ -3,7 +3,7 @@
 * @brief ISessionController
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 6/2/2018
@@ -13,8 +13,10 @@
 #include "Algorithms/Datatypes/Base.h"
 #include "Algorithms/Datatypes/URI.h"
 #include <grpc++/security/server_credentials.h>
+#include "CQPToolkit/cqptoolkit_export.h"
 
-namespace grpc {
+namespace grpc
+{
     class Status;
     template<typename>
     class ServerWriter;
@@ -23,7 +25,8 @@ namespace grpc {
 
 namespace cqp
 {
-    namespace remote {
+    namespace remote
+    {
         class LinkStatus;
         class SessionDetails;
     }

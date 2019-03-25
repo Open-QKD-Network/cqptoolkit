@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - IDQ Clavis Driver
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 16 May 2016
@@ -14,14 +14,14 @@
 #include "Algorithms/Datatypes/URI.h"
 #include <cstdint>
 #include <string>
-#include "CQPToolkit/cqptoolkit_export.h"
+#include "IDQDevices/idqdevices_export.h"
 
 namespace cqp
 {
     class PSK;
 
     /// Provides access to the Clavis devices from ID Quantique
-    class CQPTOOLKIT_EXPORT Clavis
+    class IDQDEVICES_EXPORT Clavis
     {
 
     public:

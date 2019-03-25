@@ -11,7 +11,7 @@
 */
 #include "Clavis2Driver.h"
 #include "CQPToolkit/QKDDevices/RemoteQKDDevice.h"
-#include "CQPToolkit/QKDDevices/ClavisProxy.h"
+#include "IDQDevices/Clavis2/ClavisProxy.h"
 #include "Algorithms/Util/FileIO.h"
 #include "Algorithms/Logging/ConsoleLogger.h"
 #include "Algorithms/Net/DNS.h"

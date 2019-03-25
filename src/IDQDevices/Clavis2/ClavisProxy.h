@@ -16,6 +16,8 @@
 #include "CQPToolkit/Interfaces/IQKDDevice.h"  // for IQKDDevice
 #include "QKDInterfaces/Site.pb.h"             // for Device
 #include "Algorithms/Datatypes/URI.h"                          // for URI
+#include "IDQDevices/idqdevices_export.h"
+
 namespace grpc
 {
     class ChannelCredentials;
@@ -38,7 +40,7 @@ namespace cqp
      * Connects to a clavis device my way of the cqp::IDQWrapper program and
      * cqp::remote::IIDQWrapper interface
      */
-    class CQPTOOLKIT_EXPORT ClavisProxy : public virtual cqp::IQKDDevice
+    class IDQDEVICES_EXPORT ClavisProxy : public virtual cqp::IQKDDevice
     {
     public:
         /// prefix for device uri

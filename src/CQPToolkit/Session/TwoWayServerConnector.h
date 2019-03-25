@@ -3,7 +3,7 @@
 * @brief TwoWayServerConnector
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/2/2018
@@ -12,6 +12,7 @@
 #pragma once
 #include <condition_variable>
 #include <QKDInterfaces/IHello.grpc.pb.h>
+#include "CQPToolkit/cqptoolkit_export.h"
 
 namespace grpc
 {
@@ -29,7 +30,7 @@ namespace cqp
          * Establishes a reverse client connection for a server so that the pair can
          * call each other
          */
-        class TwoWayServerConnector : public remote::IHello::Service
+        class CQPTOOLKIT_EXPORT TwoWayServerConnector : public remote::IHello::Service
         {
         public:
             /**
@@ -89,7 +90,8 @@ namespace cqp
              * Ensure that the client has connected first by calling WaitForClient()
              * @return The address for the client channel
              */
-            std::string GetClientAddress() const {
+            std::string GetClientAddress() const
+            {
                 return clientAddress;
             }
         protected:

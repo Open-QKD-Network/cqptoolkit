@@ -16,6 +16,7 @@
 #include <atomic>
 #include <thread>
 #include "QKDInterfaces/Site.pb.h"
+#include "IDQDevices/idqdevices_export.h"
 
 namespace idq4p
 {

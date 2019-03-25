@@ -13,11 +13,12 @@
 #include <QKDInterfaces/ISession.grpc.pb.h>
 #include "CQPToolkit/Session/SessionController.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
-#include "QKDInterfaces/IIDQWrapper.grpc.pb.h"
+#include "IDQDevices/IIDQWrapper.grpc.pb.h"
 #include "Algorithms/Util/Provider.h"
 #include <grpc++/channel.h>
 #include <thread>
 #include "QKDInterfaces/Device.pb.h"
+#include "IDQDevices/idqdevices_export.h"
 
 namespace cqp
 {
@@ -30,7 +31,7 @@ namespace cqp
          * @brief The ClavisController class
          * Session controller for Clavis devices
          */
-        class CQPTOOLKIT_EXPORT ClavisController :
+        class IDQDEVICES_EXPORT ClavisController :
             public SessionController, public Provider<IKeyCallback>,
             public remote::IIDQWrapper::Service
         {
