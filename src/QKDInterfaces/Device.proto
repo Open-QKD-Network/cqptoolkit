@@ -62,6 +62,7 @@ message DeviceConfig {
 
 message ControlDetails
 {
+    /// Details on how to setup the device
     DeviceConfig config = 1;
     /// The connection address for controlling the device
     string controlAddress = 2;

@@ -3,7 +3,7 @@
 * @brief %{Cpp:License:ClassName}
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 19/7/2017
@@ -40,7 +40,7 @@ namespace cqp
             stats::Stat<size_t> keyUsed {{parent, "Key Used"}, stats::Units::Count};
 
             /// @copydoc stats::StatCollection::Add
-            void Add(stats::IAllStatsCallback* statsCb)
+            void Add(stats::IAllStatsCallback* statsCb) override
             {
                 unusedKeysAvailable.Add(statsCb);
                 reservedKeys.Add(statsCb);
@@ -49,7 +49,7 @@ namespace cqp
             }
 
             /// @copydoc stats::StatCollection::Remove
-            void Remove(stats::IAllStatsCallback* statsCb)
+            void Remove(stats::IAllStatsCallback* statsCb) override
             {
                 unusedKeysAvailable.Remove(statsCb);
                 reservedKeys.Remove(statsCb);
@@ -57,16 +57,6 @@ namespace cqp
                 keyUsed.Remove(statsCb);
             }
 
-            /**
-             * @copydoc stats::StatCollection::AllStats
-             */
-            std::vector<stats::StatBase*> AllStats()
-            {
-                return
-                {
-                    &unusedKeysAvailable, &reservedKeys, &keyGenerated, &keyUsed
-                };
-            }
         }; // struct Statistics
     } // namespace keygen
 } // namespace cqp

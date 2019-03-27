@@ -24,14 +24,6 @@ message EncryptedDataValues {
     bytes payload = 3;
 }
 
-/// A sites public key
-message PublicKey {
-    /// The method used to create the key: RSA, etc.
-    string format = 1;
-    /// The public key
-    bytes keyValue = 2;
-}
-
 /// Message for key id
 message KeyIdValue {
     /// the value
