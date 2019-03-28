@@ -67,9 +67,84 @@ For instructions on running the demos see [Demos](DemoHowto.md)
 
 The in-source documentation has details and examples to help developers, ether build the `doc` target (see below) of visit the [CQPToolkit Documentation](https://qcomms.gitlab.io/cqptoolkit/).
 
-The focal point, in terms of QKD, is the `cqp::IKeyPublisher` interface. This provides an outward facing callback called `cqp::IKeyCallback` which can be implemented by any class which wants to receive ready to use key bytes. This is common to both sides of the connection. These interfaces form part of a standard communication mechanism, implemented by the `cqp::SessionController` classes which can be specialised to provide new features.
+    @startuml
+    title Where to start \n
+
+    skinparam activity {
+      StartColor #EF476F
+      BarColor #FFD166
+      EndColor #EF476F
+      BackgroundColor #06D6A0
+      BorderColor #118AB2
+      FontName Impact
+    }
+
+    start
+    if (Does your QKD device have a driver?) then (No)
+        :You will need to [[./index.html#Drivers create a driver]] which implements the
+        <b>IDriver</b> and <b>IReporting</b> interfaces.;
+        note left
+            This can be done with the help
+            of the library, or independently
+            using any [[https://grpc.io/faq/ language gRPC supports]].
+        end note
+        if (Use the library?) then (Yes)
+            :See the <b>DummyQKDDriver</b> for an example.;
+        else (No)
+        endif
+    else (Yes)
+    endif
+
+    if (Do you want keys for different locations?) then (Sites)
+        :Register your driver with the site agent
+        using the <b>ISiteAgent</b> Interface
+        Keys can be obtained by using the <b>IKey</b> interface;
+
+        if(Do you want keys to be stored/persist between restarts?) then (Yes)
+            if (Do the keys need to be secured?) then (Yes)
+                :Use the HSM storage options;
+                if (Is your HSM supported?) then (No)
+                    :Create a driver that implements
+                    the <b>IBackingStore</b> interface.
+                    Add the driver creation to the
+                    <b>BackingStoreFactory</b>;
+                else (Yes)
+                endif
+            else (No)
+                : When running SiteAgentRunner,
+                use the option ""-b file"" or
+                set ""backingStoreUrl"" to
+                ""file:///filename.db"";
+            endif
+        else (No)
+        endif
+    else (Point-to-Point)
+        :Use the <b>IDevice</b> interface to
+        control the driver for your system.
+        As keys become available they will
+        be sent via the call to <b>WaitForSession</b>.;
+    endif
+
+    if (Do you want to use the key for anything?) then (Yes)
+        :See the [[./index.html#Encryption encryption section]]
+        for an example of using the [[./index.html#Keys IKey interface]];
+    else (No)
+    endif
+    stop
+
+    @enduml
+
+### Drivers
+@section Drivers
+
+### Keys
+@section Keys
+
+### Encryption
+@section Encryption
 
 ### Complete programs
+@section Programs
 
 There are a number of complete programs which use the library:
 
