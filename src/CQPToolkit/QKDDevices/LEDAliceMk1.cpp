@@ -70,17 +70,12 @@ namespace cqp
             return remotes;
         }
 
-        session::SessionController::Services GetServices() const
+        void RegisterServices(grpc::ServerBuilder& builder)
         {
-            session::SessionController::Services services
-            {
-                align.get(),
-                ec.get(),
-                privacy.get(),
-                reportServer.get() // allow external clients to get stats
-            };
-
-            return services;
+            builder.RegisterService(align.get());
+            builder.RegisterService(ec.get());
+            builder.RegisterService(privacy.get());
+            builder.RegisterService(reportServer.get());
         }
     };
 
@@ -90,7 +85,7 @@ namespace cqp
         driver{std::make_shared<LEDDriver>(&rng, controlName, usbSerialNumber)}
     {
         // create the session controller
-        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver, processing->reportServer);
+        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetRemotes(), driver, processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
@@ -101,7 +96,7 @@ namespace cqp
         driver{std::make_shared<LEDDriver>(&rng, move(controlPort), move(dataPort))}
     {
         // create the session controller
-        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetServices(), processing->GetRemotes(), driver, processing->reportServer);
+        sessionController = std::make_unique<session::AliceSessionController>(creds, processing->GetRemotes(), driver, processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
@@ -143,9 +138,9 @@ namespace cqp
         return result;
     }
 
-    std::vector<grpc::Service*> LEDAliceMk1::GetServices()
+    void LEDAliceMk1::RegisterServices(grpc::ServerBuilder &builder)
     {
-        return {processing->reportServer.get()};
+        processing->RegisterServices(builder);
     }
 
     ISessionController* LEDAliceMk1::GetSessionController()

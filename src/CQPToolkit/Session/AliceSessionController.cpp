@@ -12,7 +12,6 @@
 #include "CQPToolkit/Session/AliceSessionController.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "QKDInterfaces/IDetector.grpc.pb.h"
-#include "CQPToolkit/Session/TwoWayServerConnector.h"
 
 namespace cqp
 {
@@ -26,16 +25,15 @@ namespace cqp
         const int AliceSessionController::threadPriority;
 
         AliceSessionController::AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
-                const Services& services,
                 const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source,
                 std::shared_ptr<stats::ReportServer> theReportServer) :
-            SessionController (creds, services, remotes, theReportServer),
+            SessionController (creds, remotes, theReportServer),
             photonSource{source}
         {
 
         }
 
-        grpc::Status AliceSessionController::StartSession(const remote::SessionDetails& sessionDetails)
+        grpc::Status AliceSessionController::StartSession(const remote::SessionDetailsFrom& sessionDetails)
         {
             // the local system is starting the session
             auto result = SessionController::StartSession(sessionDetails);
@@ -82,7 +80,7 @@ namespace cqp
         {
             google::protobuf::Timestamp detectorRequest;
             Empty detectorResponse;
-            auto detector = remote::IDetector::NewStub(twoWayComm->GetClient());
+            auto detector = remote::IDetector::NewStub(otherControllerChannel);
 
             while(!ShouldStop())
             {

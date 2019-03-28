@@ -234,7 +234,7 @@ namespace cqp
          * deactivate SiteAgent
          * @enduml
          */
-        grpc::Status ForwardOnStartNode(const remote::PhysicalPath* path, const std::string& secondSite, const std::string& localSessionAddress);
+        grpc::Status ForwardOnStartNode(const remote::PhysicalPath* path, const std::string& secondSite);
         /**
          * @brief StartRightSide
          * Start the node
@@ -268,7 +268,7 @@ namespace cqp
          * @param[out] controller The controller to be used to complete the hop setup
          * @return Success
          */
-        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, std::string& localSessionAddress, remote::SessionDetails& params);
+        grpc::Status PrepHop(const std::string& deviceId, const std::string& destination, remote::SessionDetails& params);
 
         /**
          * @brief StopNode
@@ -296,6 +296,7 @@ namespace cqp
 
         grpc::Status StartNode(grpc::ServerContext* ctx, remote::HopPair& hop, remote::PhysicalPath& myPath);
 
+        static const remote::ControlDetails* FindDeviceDetails(const remote::Site& siteDetails, const std::string& deviceId);
     };
 
 }

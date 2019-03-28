@@ -284,7 +284,22 @@ namespace cqp
         }
     }
 
-    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, std::string& localSessionAddress, remote::SessionDetails& params)
+    const remote::ControlDetails* SiteAgent::FindDeviceDetails(const remote::Site& siteDetails, const std::string& deviceId)
+    {
+        const remote::ControlDetails* result = nullptr;
+
+        for(const auto& dev : siteDetails.devices())
+        {
+            if(dev.config().id() == deviceId)
+            {
+                result = &dev;
+                break; // for
+            }
+        }
+        return result;
+    }
+
+    grpc::Status SiteAgent::PrepHop(const std::string& deviceId, const std::string& destination, remote::SessionDetails& params)
     {
         using namespace std;
         using namespace grpc;
@@ -351,10 +366,6 @@ namespace cqp
                     localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
                     // read stats and pass them on
                     localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
-                    // BANG! need to wait for session address
-                    // this is the device we're looking for
-                    localSessionAddress = regDevice.config().sessionaddress();
-
 
                     devicesInUse.emplace(deviceId, move(localDev));
                     // The session will be start by the right side as it has all the required details
@@ -371,8 +382,7 @@ namespace cqp
         return result;
     } // PrepHop
 
-    grpc::Status SiteAgent::ForwardOnStartNode(const remote::PhysicalPath* path, const std::string& secondSite,
-            const std::string& localSessionAddress)
+    grpc::Status SiteAgent::ForwardOnStartNode(const remote::PhysicalPath* path, const std::string& secondSite)
     {
         using namespace std;
         using namespace grpc;
@@ -385,9 +395,6 @@ namespace cqp
         {
             ClientContext ctx;
             google::protobuf::Empty response;
-            // this allows the next session controller to talk to our session controller
-            // TODO: should this be part of the interface?
-            ctx.AddMetadata(sessionAddress, localSessionAddress.c_str());
             LOGTRACE("Calling StartNode on peer " + secondSite);
             // start the next node, passing on the entire path
             result = LogStatus(
@@ -423,7 +430,7 @@ namespace cqp
 
     } // StartRightSide
 
-    grpc::Status SiteAgent::StartNode(grpc::ServerContext* ctx, remote::HopPair& hop, remote::PhysicalPath& myPath)
+    grpc::Status SiteAgent::StartNode(grpc::ServerContext*, remote::HopPair& hop, remote::PhysicalPath& myPath)
     {
         LOGTRACE("Looking at hop from " + hop.first().site() + " to " + hop.second().site());
 
@@ -444,11 +451,21 @@ namespace cqp
             if(!alreadyConnected)
             {
                 // configure the device and set up the controller
-                std::string localSessionAddress;
-                result = PrepHop(hop.first().deviceid(), hop.second().site(), localSessionAddress, *hop.mutable_params());
+
+                result = PrepHop(hop.first().deviceid(), hop.second().site(), *hop.mutable_params());
                 if(result.ok())
                 {
-                    result = ForwardOnStartNode(&myPath, hop.second().site(), localSessionAddress);
+                    auto devDetails = FindDeviceDetails(siteDetails, hop.first().deviceid());
+                    if(devDetails)
+                    {
+                        // fill in the missing detgails for the local device
+                        hop.mutable_first()->set_deviceaddress(devDetails->controladdress());
+                    }
+                    else
+                    {
+                        LOGERROR("Failed to find device connection address");
+                    }
+                    result = ForwardOnStartNode(&myPath, hop.second().site());
                 }
 
             }
@@ -470,33 +487,15 @@ namespace cqp
 
             if(!alreadyConnected)
             {
-                std::string remoteSessionAddress;
                 // connect the session controller to the previous hop which should already be setup
-                // this address currently comes from "AddMetadata" from the client
-                // TODO: should this be a real interface?
-                auto metaDataIt = ctx->client_metadata().find(sessionAddress);
-                if(metaDataIt != ctx->client_metadata().end())
+                // configure the device and set up the controller
+                Status result = PrepHop(hop.second().deviceid(), hop.first().site(), *hop.mutable_params());
+                if(result.ok() && devicesInUse[hop.second().deviceid()])
                 {
-                    std::string localSessionAddress;
-                    // BUG: value is not terminated, so using .data() results in extra data at the end.
-                    // Copy the string using the length defined in the string
-                    remoteSessionAddress.assign(metaDataIt->second.begin(), metaDataIt->second.end());
-                    // configure the device and set up the controller
-                    Status result = PrepHop(hop.second().deviceid(), hop.first().site(), localSessionAddress, *hop.mutable_params());
-                    if(result.ok() && devicesInUse[hop.second().deviceid()])
-                    {
-                        // setup the second half of the chain
-                        LOGTRACE("Starting session to remote session " + remoteSessionAddress);
-                        result = StartSession(devicesInUse[hop.second().deviceid()]->channel, hop.params(), remoteSessionAddress);
-                    }
-
-                }
-                else
-                {
-                    // assume that the caller is not a site agent and has got the hop direction backwards, i.e:
-                    // asking B to setup A->B
-                    LOGDEBUG("Backwards hop");
-                    result = Status(StatusCode::INVALID_ARGUMENT, "Hop appears to be backwards. Called wrong Site?");
+                    // setup the second half of the chain
+                    LOGTRACE("Starting session with local device: " + hop.second().deviceaddress() + " and remote device: " +
+                             hop.first().deviceaddress());
+                    result = StartSession(devicesInUse[hop.second().deviceid()]->channel, hop.params(), hop.first().deviceaddress());
                 }
             }
             else

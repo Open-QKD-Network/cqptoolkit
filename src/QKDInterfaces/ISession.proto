@@ -16,11 +16,6 @@ import public "Device.proto";
 
 package cqp.remote;
 
-message SessionDetailsFrom {
-    SessionDetails details = 1;
-    string initiatorAddress = 2;
-}
-
 /**
  * @brief The ISift class
  * Interface for the communication between Sifting classes

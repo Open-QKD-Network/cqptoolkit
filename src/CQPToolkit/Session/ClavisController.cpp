@@ -19,7 +19,6 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/QKDDevices/ClavisProxy.h"
 #include "CQPToolkit/Drivers/Clavis.h"
-#include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "QKDInterfaces/IReporting.grpc.pb.h"
 #include <future>
 #include "CQPToolkit/Statistics/ReportServer.h"
@@ -37,9 +36,7 @@ namespace cqp
         ClavisController::ClavisController( std::shared_ptr<grpc::ChannelCredentials> creds,
                                             std::shared_ptr<stats::ReportServer> theReportServer) :
             SessionController(creds,
-        {
-            static_cast<remote::IIDQWrapper::Service*>(this)
-        }, {}, theReportServer)
+        {}, theReportServer)
         {
             LOGTRACE("Getting details from launcher");
             auto devSide = IDQSequenceLauncher::DeviceFound();
@@ -81,7 +78,7 @@ namespace cqp
                 PSK keyValue;
                 KeyID keyId;
                 // connect to the other controller
-                auto peer = remote::IIDQWrapper::NewStub(this->twoWayComm->GetClient());
+                auto peer = remote::IIDQWrapper::NewStub(otherControllerChannel);
 
                 grpc::ClientContext ctx;
                 google::protobuf::Empty response;
@@ -136,7 +133,13 @@ namespace cqp
             }
         }
 
-        grpc::Status ClavisController::StartSession(const remote::SessionDetails& sessionDetails)
+        void ClavisController::RegisterServices(grpc::ServerBuilder &builder)
+        {
+            SessionController::RegisterServices(builder);
+            builder.RegisterService(static_cast<remote::IIDQWrapper::Service*>(this));
+        }
+
+        grpc::Status ClavisController::StartSession(const remote::SessionDetailsFrom& sessionDetails)
         {
             LOGTRACE("Called");
 
@@ -146,7 +149,7 @@ namespace cqp
                 LOGTRACE("Launching bob process...");
                 launcher = std::make_unique<IDQSequenceLauncher>(*authKey,
                            pairedControllerUri,
-                           sessionDetails.lineattenuation());
+                           sessionDetails.details().lineattenuation());
             }
 
             auto result = SessionController::StartSession(sessionDetails);
@@ -158,7 +161,7 @@ namespace cqp
                 LOGTRACE("Launching alice process...");
                 launcher = std::make_unique<IDQSequenceLauncher>(*authKey,
                            pairedControllerUri,
-                           sessionDetails.lineattenuation());
+                           sessionDetails.details().lineattenuation());
             } // device == alice
 
             LOGTRACE("Starting Clavis driver");
@@ -189,11 +192,11 @@ namespace cqp
 
             if(result.ok())
             {
-                pairedControllerUri = request->initiatoraddress();
                 //keyToken = request->keytoken();
 
                 LOGTRACE("Launching bob process...");
-                launcher = std::make_unique<IDQSequenceLauncher>(*authKey, pairedControllerUri, request->details().lineattenuation());
+                launcher = std::make_unique<IDQSequenceLauncher>(*authKey, request->initiatoraddress(),
+                           request->details().lineattenuation());
                 LOGTRACE("Starting Clavis driver");
                 // start communicating with the device
                 device.reset(new Clavis("localhost", side == remote::Side_Type::Side_Type_Alice));

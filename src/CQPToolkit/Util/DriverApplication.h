@@ -76,7 +76,6 @@ namespace cqp
             static CONSTSTRING rootCaFile = "rootca";
             static CONSTSTRING tls = "tls";
             static CONSTSTRING controlAddr = "control-addr";
-            static CONSTSTRING sessionAddr = "session-addr";
             static CONSTSTRING switchName = "switch";
             static CONSTSTRING switchPort = "switch-port";
         };

@@ -54,6 +54,8 @@ message Hop {
     string site = 1;
     /// which device to use in the connection
     string deviceId = 2;
+    /// Optional, filled in by the site managing the device
+    string deviceAddress = 3;
 }
 
 /// two points

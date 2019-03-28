@@ -48,8 +48,6 @@ namespace cqp
 
         definedArguments.AddOption(CommandlineNames::controlAddr, "k", "Listen address (host and port) for control interface")
         .Bind();
-        definedArguments.AddOption(CommandlineNames::sessionAddr, "", "Bind address (host and port) for internal communication")
-        .Bind();
 
         definedArguments.AddOption(CommandlineNames::siteAgent, "r", "The address of the site agent to register with")
         .Bind();
@@ -63,7 +61,6 @@ namespace cqp
         .Bind();
 
         // set sensible default values for config items
-        controlDetails->mutable_config()->set_sessionaddress(std::string(net::AnyAddress) + ":0");
         controlDetails->set_controladdress(std::string(net::AnyAddress) + ":0");
     }
 
@@ -147,7 +144,6 @@ namespace cqp
             } // if tls set
 
             definedArguments.GetProp(CommandlineNames::siteAgent, *controlDetails->mutable_siteagentaddress());
-            definedArguments.GetProp(CommandlineNames::sessionAddr, *controlDetails->mutable_config()->mutable_sessionaddress());
             definedArguments.GetProp(CommandlineNames::controlAddr, *controlDetails->mutable_controladdress());
 
             definedArguments.GetProp(CommandlineNames::switchName, *controlDetails->mutable_config()->mutable_switchname());

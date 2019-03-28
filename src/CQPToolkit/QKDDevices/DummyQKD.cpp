@@ -45,9 +45,7 @@ namespace cqp
         {
             using namespace std;
             session::SessionController::RemoteCommsList remotes;
-            session::SessionController::Services services;
             remotes.push_back(alignment);
-            services.push_back(reportServer.get());
 
             // create the controller for this device
             switch (side)
@@ -63,7 +61,7 @@ namespace cqp
                 sifter = transmitter;
                 remotes.push_back(transmitter);
 
-                controller = make_shared<session::AliceSessionController>(creds, services, remotes, photonSource, reportServer);
+                controller = make_shared<session::AliceSessionController>(creds, remotes, photonSource, reportServer);
             }
 
             break;
@@ -71,16 +69,13 @@ namespace cqp
             {
                 timeTagger = make_shared<sim::DummyTimeTagger>(rng);
                 timeTagger->Attach(alignment.get());
-                services.push_back(static_cast<remote::IDetector::Service*>(timeTagger.get()));
-                services.push_back(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
 
                 timeTagger->stats.Add(reportServer.get());
 
-                auto receiver = std::make_shared<sift::Receiver>();
+                receiver = std::make_shared<sift::Receiver>();
                 sifter = receiver;
-                services.push_back(receiver.get());
 
-                controller = make_shared<session::SessionController>(creds, services, remotes, reportServer);
+                controller = make_shared<session::SessionController>(creds, remotes, reportServer);
             }
             break;
             default:
@@ -105,6 +100,20 @@ namespace cqp
 
         }
 
+        void RegisterServices(grpc::ServerBuilder& builder)
+        {
+            builder.RegisterService(reportServer.get());
+            if(timeTagger)
+            {
+                builder.RegisterService(static_cast<remote::IDetector::Service*>(timeTagger.get()));
+                builder.RegisterService(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
+            }
+            if(receiver)
+            {
+                builder.RegisterService(receiver.get());
+            }
+        }
+
         /// aligns detections
         std::shared_ptr<align::NullAlignment> alignment;
         /// sifts alignments
@@ -116,6 +125,7 @@ namespace cqp
         /// prepare keys for the keystore
         std::shared_ptr<keygen::KeyConverter> keyConverter;
 
+        std::shared_ptr<sift::Receiver> receiver;
         /// Produces photons when being alice
         std::shared_ptr<sim::DummyTransmitter> photonSource = nullptr;
 
@@ -231,9 +241,9 @@ namespace cqp
         return config;
     }
 
-    std::vector<grpc::Service*> DummyQKD::GetServices()
+    void DummyQKD::RegisterServices(grpc::ServerBuilder &builder)
     {
-        return {processing->reportServer.get()};
+        processing->RegisterServices(builder);
     }
 
     KeyPublisher* DummyQKD::GetKeyPublisher()

@@ -54,10 +54,8 @@ message DeviceConfig {
     string switchPort = 4;
     /// What kind of device is it
     string kind = 5;
-    /// The connection address for session negotiation
-    string sessionAddress = 6;
     /// Number of bytes the key is split into before publishing
-    uint32 bytesPerKey = 7;
+    uint32 bytesPerKey = 6;
 }
 
 message ControlDetails
@@ -88,6 +86,11 @@ message SessionDetails {
     /// Which key to use for initial authentication/bootstrap
     uint64 initialKeyId = 5;
 };
+
+message SessionDetailsFrom {
+    SessionDetails details = 1;
+    string initiatorAddress = 2;
+}
 
 /// The condition of a link
 message LinkStatus {

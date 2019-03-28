@@ -79,8 +79,8 @@ namespace cqp
         URI GetAddress() const override;
         /// @copydoc IQKDDevice::Initialise
         virtual bool Initialise(const remote::SessionDetails& sessionDetails) override;
-        /// @copydoc IQKDDevice::GetStatsPublisher
-        std::vector<grpc::Service*> GetServices() override;
+        /// @copydoc IQKDDevice::RegisterServices
+        void RegisterServices(grpc::ServerBuilder& builder) override;
         ///@}
 
     protected: // members
