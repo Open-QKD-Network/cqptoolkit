@@ -149,6 +149,12 @@ namespace cqp
                     reportServer->AddAdditionalProperties(PropertyNames::to, sessionDetails->initiatoraddress());
                 }
 
+                // we connect here because this is the first we know that the other side is talking to us.
+                for(auto& dependant : remoteComms)
+                {
+                    dependant->Connect(otherControllerChannel);
+                }
+
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
             }
 
@@ -169,6 +175,12 @@ namespace cqp
                 reportServer->StatsReport(report);
             }
             UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
+
+            for(auto& dependant : remoteComms)
+            {
+                dependant->Disconnect();
+            }
+
             return Status();
         }
 
