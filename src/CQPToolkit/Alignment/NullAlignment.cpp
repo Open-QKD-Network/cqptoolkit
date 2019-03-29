@@ -12,8 +12,10 @@
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 
-namespace cqp {
-    namespace align {
+namespace cqp
+{
+    namespace align
+    {
 
         void NullAlignment::OnPhotonReport(std::unique_ptr<ProtocolDetectionReport> report)
         {
@@ -47,6 +49,28 @@ namespace cqp {
             threadConditional.notify_one();
         }
 
+        void NullAlignment::Connect(std::shared_ptr<grpc::ChannelInterface> channel)
+        {
+            transmitter = channel;
+            seq = 0;
+            while(!receivedData.empty())
+            {
+                receivedData.pop();
+            }
+            Start();
+        }
+
+        void NullAlignment::Disconnect()
+        {
+            Stop(true);
+            transmitter.reset();
+            seq = 0;
+            while(!receivedData.empty())
+            {
+                receivedData.pop();
+            }
+        }
+
         void NullAlignment::DoWork()
         {
             using namespace std;
@@ -54,12 +78,14 @@ namespace cqp {
             {
                 std::unique_ptr<QubitList> report;
 
-                /*lock scope*/{
+                /*lock scope*/
+                {
                     unique_lock<mutex> lock(accessMutex);
                     bool dataReady = false;
-                    threadConditional.wait(lock, [&](){
+                    threadConditional.wait(lock, [&]()
+                    {
                         dataReady = !receivedData.empty();
-                        return dataReady || state == State::Stop;
+                        return dataReady || state != State::Started;
                     });
 
                     if(dataReady)

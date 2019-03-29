@@ -3,7 +3,7 @@
 * @brief SiftBase
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 30/1/2018
@@ -43,6 +43,20 @@ namespace cqp
 
             statesCv.notify_one();
         } //OnAligned
+
+        void SiftBase::Connect(std::shared_ptr<grpc::ChannelInterface>)
+        {
+            std::lock_guard<std::mutex>  lock(statesMutex);
+            collectedStates.clear();
+            siftedSequence = 0;
+        }
+
+        void SiftBase::Disconnect()
+        {
+            std::lock_guard<std::mutex>  lock(statesMutex);
+            collectedStates.clear();
+            siftedSequence = 0;
+        }
 
         void SiftBase::PublishStates(QubitsByFrame::iterator start, QubitsByFrame::iterator end, const remote::AnswersByFrame& answers)
         {

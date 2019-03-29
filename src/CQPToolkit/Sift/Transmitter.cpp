@@ -26,6 +26,8 @@ namespace cqp
 
         void Transmitter::Connect(std::shared_ptr<grpc::ChannelInterface> channel)
         {
+            SiftBase::Connect(channel);
+
             verifier = remote::ISift::NewStub(channel);
 
             if(verifier == nullptr)
@@ -42,6 +44,7 @@ namespace cqp
         {
             Stop(true);
             verifier = nullptr;
+            SiftBase::Disconnect();
         }
 
         Transmitter::~Transmitter()
@@ -126,21 +129,25 @@ namespace cqp
                         ++it;
                     } // while(it != end)
 
-                } // if(result)
-
-                // send the bases to alice
-                if(result && verifier)
-                {
-                    grpc::ClientContext ctx;
-                    result = LogStatus(
-                                 verifier->VerifyBases(&ctx, basis, &answers)).ok();
-
-                    if(result)
+                    // send the bases to alice
+                    if(verifier)
                     {
-                        // Process the results
-                        PublishStates(statesToWorkOn.begin(), statesToWorkOn.end(), answers);
+                        grpc::ClientContext ctx;
+                        result = LogStatus(
+                                     verifier->VerifyBases(&ctx, basis, &answers)).ok();
+
+                        if(result)
+                        {
+                            // Process the results
+                            PublishStates(statesToWorkOn.begin(), statesToWorkOn.end(), answers);
+                        }
+                    } // if
+                    else
+                    {
+                        LOGERROR("Sift: No verifier");
                     }
-                } // if
+
+                } // if(result)
 
             } // while(!ShouldStop())
 

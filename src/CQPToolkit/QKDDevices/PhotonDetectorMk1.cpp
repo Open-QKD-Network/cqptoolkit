@@ -66,6 +66,7 @@ namespace cqp
         {
             session::SessionController::RemoteCommsList remotes;
             remotes.push_back(align);
+            remotes.push_back(ec);
             return remotes;
         }
 

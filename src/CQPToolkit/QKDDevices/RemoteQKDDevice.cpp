@@ -101,6 +101,7 @@ namespace cqp
             ProcessKeys(ctx, writer);
             // keys are no longer being requested, stop the session
             session->EndSession();
+            session->Disconnect();
         }
         else
         {
@@ -146,6 +147,7 @@ namespace cqp
         if(session)
         {
             session->EndSession();
+            session->Disconnect();
         }
         else
         {
@@ -179,6 +181,7 @@ namespace cqp
         remote::ControlDetails request;
         (*request.mutable_config()) = device->GetDeviceDetails();
         request.set_controladdress(qkdDeviceAddress);
+        LOGDEBUG("Registering device " + request.config().id() + " with " + address);
         auto result = siteAgent->RegisterDevice(&ctx, request, &response);
 
         if(result.ok())

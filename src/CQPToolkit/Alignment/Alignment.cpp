@@ -3,7 +3,7 @@
 * @brief Alignment
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 4/7/2017
@@ -16,6 +16,16 @@ namespace cqp
 {
     namespace align
     {
+
+        void Alignment::Connect(std::shared_ptr<grpc::ChannelInterface> channel)
+        {
+
+        }
+
+        void Alignment::Disconnect()
+        {
+            seq = 0;
+        }
 
         Alignment::Alignment() {}
 

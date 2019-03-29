@@ -57,9 +57,8 @@ namespace cqp
                 remotes.push_back(photonSource);
                 photonSource->stats.Add(reportServer.get());
 
-                auto transmitter = std::make_shared<sift::Transmitter>();
-                sifter = transmitter;
-                remotes.push_back(transmitter);
+                sifter = std::make_shared<sift::Transmitter>();
+                remotes.push_back(sifter);
 
                 controller = make_shared<session::AliceSessionController>(creds, remotes, photonSource, reportServer);
             }
@@ -72,8 +71,12 @@ namespace cqp
 
                 timeTagger->stats.Add(reportServer.get());
 
+                remotes.push_back(timeTagger);
+
                 receiver = std::make_shared<sift::Receiver>();
                 sifter = receiver;
+                remotes.push_back(sifter);
+
 
                 controller = make_shared<session::SessionController>(creds, remotes, reportServer);
             }
