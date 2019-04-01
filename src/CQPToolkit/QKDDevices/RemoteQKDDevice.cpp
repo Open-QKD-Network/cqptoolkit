@@ -158,6 +158,22 @@ namespace cqp
         return Status();
     }
 
+    grpc::Status RemoteQKDDevice::GetDetails(grpc::ServerContext*, const google::protobuf::Empty*, remote::ControlDetails* response)
+    {
+        Status result(StatusCode::INTERNAL, "Invalid device");
+        if(device)
+        {
+
+            (*response->mutable_config()) = device->GetDeviceDetails();
+
+            response->set_controladdress(qkdDeviceAddress);
+            response->set_siteagentaddress(siteAgentAddress);
+            result = Status();
+        }
+
+        return result;
+    }
+
     void RemoteQKDDevice::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
     {
         using namespace std;

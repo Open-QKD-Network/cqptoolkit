@@ -48,6 +48,10 @@ message Site {
     repeated ControlDetails devices = 2;
 }
 
+message SiteDetailsList {
+    repeated Site sites = 1;
+}
+
 /// An entry point for QKD
 message Hop {
     /// The address of the site
