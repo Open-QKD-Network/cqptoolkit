@@ -417,7 +417,7 @@ foreach(_xFile ${ExtraFiles})
     configure_file(${_xFile} extra/ COPYONLY)
 endforeach()
 
-if(EXISTS ${CMAKE_SOURCE_DIR}/external/nodeeditor)
+if(EXISTS ${CMAKE_SOURCE_DIR}/external/nodeeditor/CMakeLists.txt)
     add_subdirectory(${CMAKE_SOURCE_DIR}/external/nodeeditor)
 endif()
 # Setup is done, now include the source code to build.
