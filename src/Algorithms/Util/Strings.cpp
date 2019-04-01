@@ -1,7 +1,8 @@
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Logging/Logger.h"
 
-namespace cqp {
+namespace cqp
+{
 
     std::string Join(const std::vector<std::string>& strings, const std::string& delimiter)
     {
@@ -133,4 +134,18 @@ namespace cqp {
 
         return pkcs11Url.ToString();
     }
+
+    std::string ToHexString(const std::string& value)
+    {
+        using namespace std;
+        std::stringstream result;
+
+        result << setw(2) << setfill('0') << uppercase << hex;
+        for(const auto c : value)
+        {
+            result << static_cast<uint8_t>(c);
+        }
+        return result.str();
+    }
+
 } // namespace cqp
