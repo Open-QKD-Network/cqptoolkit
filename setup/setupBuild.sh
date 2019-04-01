@@ -7,7 +7,7 @@
 # 
 
 COMMON_PACKAGES="gcc cmake pkg-config subversion ghostscript"
-UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev texlive-font-utils"
+UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev texlive-font-utils libqt5opengl5-dev qtbase5-dev"
 ARCH_PACKAGES="base-devel libusb crypto++ libcap protobuf git sqlite"
 
 COMMON_TOOLS="git doxygen graphviz astyle "
