@@ -13,7 +13,7 @@ ARCH_PACKAGES="base-devel libusb crypto++ libcap protobuf git sqlite"
 COMMON_TOOLS="git doxygen graphviz astyle "
 
 COMMON_RUNTIME=""
-UBUNTU_RUNTIME="ca-certificates pkg-config libcurl4 libusb-1.0-0 libcrypto++6 libuuid1 libavahi-client3 libqt5widgets5"
+UBUNTU_RUNTIME="ca-certificates pkg-config libcurl4 libusb-1.0-0 libcrypto++6 libuuid1 libavahi-client3 libqt5widgets5 libqt5opengl5"
 ARCH_RUNTIME=""
 SUDO=sudo
 MAKETHREADS=`expr \`grep -c ^processor /proc/cpuinfo\` / 2 + 1`

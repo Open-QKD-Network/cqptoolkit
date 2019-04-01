@@ -6,7 +6,7 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 
-VERSION=3.7.5
+VERSION=3.7.6
 PUSH=false
 RUNTIME=false
 SERV=registry.gitlab.com
