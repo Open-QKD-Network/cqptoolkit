@@ -62,7 +62,8 @@ namespace cqp
                 {
                     if(emissions && !emissions->emissions.empty())
                     {
-                        const auto markersToSend = emissions->emissions.size() / markerFractionToSend;
+                        // find how many markers to send, upto the number available
+                        const auto markersToSend = min(emissions->emissions.size(), request->numofmarkers());
                         while(response->mutable_markers()->size() < markersToSend)
                         {
                             auto index = rng.RandULong() % emissions->emissions.size();

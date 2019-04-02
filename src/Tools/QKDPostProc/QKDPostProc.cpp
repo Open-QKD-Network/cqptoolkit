@@ -3,7 +3,7 @@
 * @brief IDQKeyExtraction
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -65,35 +65,35 @@ QKDPostProc::QKDPostProc()
     .Callback(std::bind(&QKDPostProc::HandleVerbose, this, _1));
 
     definedArguments.AddOption(Names::bobData, "b", "Read Bob Detections from file")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::aliceQubits, "a", "Read transmissions from packed Qubits file")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::slotWidth, "w", "Slot width of transmissions in time*")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::pulseWidth, "j", "Pulse width/Jitter of photon in time*")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::acceptanceRatio, "r", "Value between 0 and 1 for the gating filter")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::windowStart, "i", "Force isolation window start to this detection number")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::windowEnd, "I", "Force isolation window end to this detection number")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::driftPreset, "d", "Force a value for drift in time*")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::driftSamples, "D", "Sample time for calculating drift*")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::filterSigma, "s", "Sigma value for the gaussian filter")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::filterWidth, "g", "Integer width in gaussian filter")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::filterCourseCutoff, "c", "Percentage for first filter pass acceptance")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::filterFineCutoff, "C", "Percentage for last filter pass acceptance")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::filterStride, "S", "Data items to skip when filtering")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::rawOut, "o", "Output final raw qubits to file")
-            .Bind();
+    .Bind();
 }
 
 void QKDPostProc::DisplayHelp(const CommandArgs::Option&)
@@ -104,7 +104,8 @@ void QKDPostProc::DisplayHelp(const CommandArgs::Option&)
     stopExecution = true;
 }
 
-struct RunData {
+struct RunData
+{
     PicoSecondOffset offset;
     uint64_t highestValue = 0;
     size_t highestIndex = 0;
@@ -156,7 +157,9 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
         if(!fs::DataFile::ReadNOXDetections(detectionsFile, detections))
         {
             LOGERROR("Failed to open file: " + detectionsFile);
-        }else {
+        }
+        else
+        {
             // to isolate the transmission
             align::Filter filter(filterSigma, filterWidth, filterCourseThresh, filterFineThresh, filterStride);
             // to find the qubits
@@ -233,39 +236,42 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
             definedArguments.GetProp(Names::aliceQubits, packedFile);
 
 
-            for(std::vector<Qubit> channelMappings : std::vector<std::vector<Qubit>>({
-                /*{ 0, 1, 2, 3 },
-                { 1, 0, 2, 3 },
-                { 2, 0, 1, 3 },
-                { 0, 2, 1, 3 },
-                { 1, 2, 0, 3 },
-                { 2, 1, 0, 3 },
-                { 2, 1, 3, 0 },
-                { 1, 2, 3, 0 },
-                { 3, 2, 1, 0 },
-                { 2, 3, 1, 0 },
-                { 1, 3, 2, 0 },
-                { 3, 1, 2, 0 },
-                { 3, 0, 2, 1 },
-                { 0, 3, 2, 1 },
-                { 2, 3, 0, 1 },
-                { 3, 2, 0, 1 },
-                { 0, 2, 3, 1 },
-                { 2, 0, 3, 1 },
-                { 1, 0, 3, 2 },
-                { 0, 1, 3, 2 },
-                { 3, 1, 0, 2 },
-                { 1, 3, 0, 2 },*/
-                { 0, 3, 1, 2 }//,
-                //{ 3, 0, 1, 2 }
-            }))
-                {
+            for(std::vector<Qubit> channelMappings : std::vector<std::vector<Qubit>>(
+        {
+            /*{ 0, 1, 2, 3 },
+            { 1, 0, 2, 3 },
+            { 2, 0, 1, 3 },
+            { 0, 2, 1, 3 },
+            { 1, 2, 0, 3 },
+            { 2, 1, 0, 3 },
+            { 2, 1, 3, 0 },
+            { 1, 2, 3, 0 },
+            { 3, 2, 1, 0 },
+            { 2, 3, 1, 0 },
+            { 1, 3, 2, 0 },
+            { 3, 1, 2, 0 },
+            { 3, 0, 2, 1 },
+            { 0, 3, 2, 1 },
+            { 2, 3, 0, 1 },
+            { 3, 2, 0, 1 },
+            { 0, 2, 3, 1 },
+            { 2, 0, 3, 1 },
+            { 1, 0, 3, 2 },
+            { 0, 1, 3, 2 },
+            { 3, 1, 0, 2 },
+            { 1, 3, 0, 2 },*/
+            { 0, 3, 1, 2 }//,
+            //{ 3, 0, 1, 2 }
+        }))
+            {
                 QubitList aliceQubits;
                 LOGDEBUG("Loading Alice data file");
                 if(!fs::DataFile::ReadPackedQubits(packedFile, aliceQubits, 0, channelMappings))
                 {
                     LOGERROR("Failed to open transmitter file: " + packedFile);
-                } else {
+                }
+                else
+                {
 
                     align::Offsetting offsetting(10000);
 
@@ -279,9 +285,11 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
 
                     LOGDEBUG("Highest match: " + to_string(highest.value * 100) + "% at " + to_string(highest.offset) +
                              " [ " + to_string(channelMappings[0]) + ", " +
-                            to_string(channelMappings[1]) + ", " +
-                            to_string(channelMappings[2]) + ", " +
-                            to_string(channelMappings[3]) + "]");
+                             to_string(channelMappings[1]) + ", " +
+                             to_string(channelMappings[2]) + ", " +
+                             to_string(channelMappings[3]) + "]");
+
+                    LOGINFO("Num aliceQubits: " + std::to_string(aliceQubits.size()) + ". Num receiverResults: " + std::to_string(receiverResults.size()));
 
                     if(definedArguments.HasProp(Names::rawOut))
                     {
@@ -297,6 +305,7 @@ int QKDPostProc::Main(const std::vector<std::string>& args)
                                 }
                             }
                         }
+
                         fs::DataFile::WriteQubits(validBits, definedArguments.GetStringProp(Names::rawOut));
                     }
 

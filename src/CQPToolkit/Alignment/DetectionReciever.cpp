@@ -63,6 +63,63 @@ namespace cqp
             }
         }
 
+        bool operator ==(remote::Basis::Type left, Basis right)
+        {
+            using  RemoteType = remote::Basis::Type;
+            return (left == RemoteType::Basis_Type_Diagonal && right == Basis::Diagonal) ||
+                   (left == RemoteType::Basis_Type_Circular && right == Basis::Circular) ||
+                   (left == RemoteType::Basis_Type_Retiliniear && right == Basis::Retiliniear);
+        }
+
+        bool DetectionReciever::SiftDetections(Gating::ValidSlots& validSlots,
+                                               const google::protobuf::RepeatedField<int>& basis,
+                                               QubitList& qubits, int_fast32_t offset)
+        {
+            using namespace std;
+            bool result = false;
+
+            if(validSlots.size() <= qubits.size() && basis.size() >= static_cast<long>(validSlots.size()))
+            {
+                size_t outputIndex = 0;
+                // walk through each valid record, removing the qubit elements which ether aren't valid or the basis dont match
+                for(auto validSlotIndex = 0u; validSlotIndex < validSlots.size(); validSlotIndex++)
+                {
+                    // find the qubit index which the current valid index relates to once offset is applied
+                    const auto adjustedSlot = offset + static_cast<ssize_t>(validSlots[validSlotIndex]);
+                    // is the index still valid
+                    if(adjustedSlot >= 0 && static_cast<size_t>(adjustedSlot) < qubits.size())
+                    {
+                        // does our measured basis match the transmitted basis
+                        // **Sifting done here**
+                        const auto& mappedBasis = static_cast<remote::Basis::Type>(basis[static_cast<int>(adjustedSlot)]);
+
+                        if(mappedBasis == QubitHelper::Base(qubits[static_cast<size_t>(adjustedSlot)]))
+                        {
+                            // This qubit was:
+                            //   * Detected
+                            //   * Not considered noise
+                            //   * Measured in the correct basis
+                            qubits[outputIndex] = qubits[static_cast<size_t>(adjustedSlot)];
+                            outputIndex++;
+                        } // if basis match
+                        else
+                        {
+                            // the basis dont match, remove the valid slot
+                            validSlots.erase(validSlots.begin() + validSlotIndex);
+                            // shift the index so we point to the last element, ready for the next iteration
+                            --validSlotIndex;
+                        } // else basis match
+                    } // if index valid
+                } // for valid slots
+
+                // through away the bits on the end
+                qubits.resize(validSlots.size());
+                result = true;
+            } // if lengths valid
+
+            return result;
+        } // FilterDetections
+
         void DetectionReciever::DoWork()
         {
             using namespace std;
@@ -132,9 +189,9 @@ namespace cqp
                             }
                             auto highest = offsetting.HighestValue(markers, validSlots, *results, 0, 1000);
 
-                            if(highest.value > 0.8)
+                            if(highest.value > filterMatchMinimum)
                             {
-                                Gating::FilterDetections(validSlots.cbegin(), validSlots.cend(), *results, highest.offset);
+                                SiftDetections(validSlots, response.basis(), *results, highest.offset);
 
                                 // TODO: calculate security parameter
 

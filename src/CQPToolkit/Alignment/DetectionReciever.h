@@ -21,6 +21,7 @@
 #include <grpc++/channel.h>
 #include "CQPToolkit/Interfaces/IRemoteComms.h"
 #include "Algorithms/Datatypes/Framing.h"
+#include "google/protobuf/repeated_field.h"
 
 namespace cqp
 {
@@ -99,6 +100,24 @@ namespace cqp
             ///@}
 
             /**
+             * @brief FilterDetections
+             * Remove elements from qubits which do not have an index in validSlots, includes basis sifting
+             * validSlots: { 0, 2, 3 }
+             * Qubits:     { 8, 9, 10, 11 }
+             * Result:     { 8, 10, 11 }
+             * @details validSlots will be reduced by the presence of mismatching basis
+             * qubits will be reduced by missmatching basis and alignment offsets
+             * @param[in,out] validSlots The list of indexes to filter the qubits
+             * @param[in] basis The basis which Alice sent.
+             * @param[in,out] qubits A list of qubits which will be reduced to the size of validSlots
+             * @param[in] offset Shift the slot id
+             * @return true on success
+             */
+            static bool SiftDetections(Gating::ValidSlots& validSlots,
+                                       const google::protobuf::RepeatedField<int>& basis,
+                                       QubitList& qubits, int_fast32_t offset = 0);
+
+            /**
              * @brief DoWork
              */
             void DoWork() override;
@@ -116,7 +135,8 @@ namespace cqp
             align::Gating gating;
             /// for calculating drift
             align::Drift drift;
-
+            /// The minimum matching percentage to accept alignment
+            const double filterMatchMinimum = 0.8;
         };
 
     } // namespace align

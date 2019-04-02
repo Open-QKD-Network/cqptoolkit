@@ -21,9 +21,12 @@
 #include "Algorithms/Statistics/Stat.h"
 #include "Algorithms/Statistics/StatCollection.h"
 #include "Algorithms/Alignment/AlignmentTypes.h"
+#include "Algorithms/Logging/Logger.h"
 
-namespace cqp {
-    namespace align {
+namespace cqp
+{
+    namespace align
+    {
 
         /**
          * @brief The Gating class extracts valid qubits from noise.
@@ -159,43 +162,42 @@ namespace cqp {
              * validSlots: { 0, 2, 3 }
              * Qubits:     { 8, 9, 10, 11 }
              * Result:     { 8, 10, 11 }
-             * @param[in] validSlotsBegin The start of a list of indexes to filter the qubits
-             * @param[in] validSlotsEnd The end of a list of indexes to filter the qubits
+             * @details validSlots will be reduced by the presence of mismatching basis
+             * qubits will be reduced by missmatching basis and alignment offsets
+             * @param[in,out] validSlots The list of indexes to filter the qubits
+             * @param[in] basis The basis which Alice sent.
              * @param[in,out] qubits A list of qubits which will be reduced to the size of validSlots
              * @param[in] offset Shift the slot id
              * @return true on success
              */
             template<typename Iter>
-            static bool FilterDetections(Iter validSlotsBegin, Iter validSlotsEnd, QubitList& qubits, int_fast32_t offset = 0)
+            static bool FilterDetections(Iter validSlotsBegin, Iter validSlotsEnd,
+                                         QubitList& qubits)
             {
                 using namespace std;
-                bool result = false;
+                bool result = distance(validSlotsBegin, validSlotsEnd) > 0;
 
-                const size_t validSlotsSize = distance(validSlotsBegin, validSlotsEnd);
-
-                if(validSlotsSize <= qubits.size())
+                auto outputIndex = 0u;
+                for(auto validSlotIt = validSlotsBegin; validSlotIt != validSlotsEnd; validSlotIt++)
                 {
-                    size_t index = 0;
-                    for(auto validSlot = validSlotsBegin; validSlot != validSlotsEnd; validSlot++)
+                    if(*validSlotIt <= qubits.size())
                     {
-                        const auto adjustedSlot = *validSlot + offset;
-                        if(adjustedSlot >= 0 && adjustedSlot < qubits.size())
-                        {
-                            qubits[index] = qubits[adjustedSlot];
-                            index++;
-                        } else {
-                            LOGERROR("Invalid SlotID");
-                        }
+                        qubits[outputIndex] = qubits[*validSlotIt];
+                        outputIndex++;
+                    }
+                    else
+                    {
+                        LOGERROR("Invalid slot id");
+                        result = false;
                     }
 
-                    // through away the bits on the end
-                    qubits.resize(validSlotsSize);
-                    result = true;
-                }
+                } // for each valid slot
+
+                // throw away the remaining qubits
+                qubits.resize(outputIndex);
 
                 return result;
             }
-
 
             /**
              * @brief The Statistics struct
