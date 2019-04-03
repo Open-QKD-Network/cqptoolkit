@@ -26,6 +26,7 @@ namespace grpc
 
 namespace cqp
 {
+    class NetworkManager;
     class IKeyCallback;
     // pre-declarations for limiting build complexity
     namespace keygen
@@ -139,9 +140,6 @@ namespace cqp
         grpc::Status UnregisterDevice(grpc::ServerContext* context, const remote::DeviceID* request, google::protobuf::Empty* response) override;
         ///@}
 
-        /// Start any devices with static links
-        void ConnectStaticLinks();
-
     protected: // members
 
         /// our server
@@ -202,6 +200,8 @@ namespace cqp
         /// counter for giving caller a unique id
         uint64_t statusCounter = 0;
         std::atomic_bool shutdown {false};
+
+        std::unique_ptr<NetworkManager> internalNetMan;
 
     protected: // methods
         /**

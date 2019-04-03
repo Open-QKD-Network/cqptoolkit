@@ -46,6 +46,7 @@ struct Names
     static CONSTSTRING tls = "tls";
     static CONSTSTRING bs = "backingstore";
     static CONSTSTRING bsurl = "bsurl";
+    static CONSTSTRING writeConfig = "write-config";
     struct BackingStores
     {
         static NAMEDSTRING(none);
@@ -63,7 +64,7 @@ SiteAgentRunner::SiteAgentRunner()
 
     GrpcAllowMACOnlyCiphers();
 
-    definedArguments.AddOption(Names::netman, "a", "Address of the Quantum Path Agent")
+    definedArguments.AddOption(Names::netman, "a", "Address of the network manager")
     .Bind();
 
     definedArguments.AddOption(Names::configFile, "c", "load configuration data from a file")
@@ -101,6 +102,7 @@ SiteAgentRunner::SiteAgentRunner()
     definedArguments.AddOption("", "v", "Increase output")
     .Callback(std::bind(&SiteAgentRunner::HandleVerbose, this, _1));
 
+    definedArguments.AddOption(Names::writeConfig, "w", "Write the config to a file").Bind();
 }
 
 void SiteAgentRunner::DisplayHelp(const CommandArgs::Option&)
@@ -169,33 +171,60 @@ int SiteAgentRunner::Main(const std::vector<std::string>& args)
             siteSettings.set_listenport(listenPort);
         }
 
-        siteAgents.push_back(new SiteAgent(siteSettings));
-
-        // Connect static links
-        for(auto sa : siteAgents)
-        {
-            sa->ConnectStaticLinks();
-        }
+        siteAgents.push_back(std::make_unique<SiteAgent>(siteSettings));
 
         if(definedArguments.IsSet(Names::discovery) || siteSettings.useautodiscover())
         {
             sd.reset(new net::ServiceDiscovery());
-            for(auto sa : siteAgents)
+            for(auto& sa : siteAgents)
             {
                 sa->RegisterWithDiscovery(*sd);
             }
         }
 
+        std::string configOutFilename;
+        if(definedArguments.GetProp(Names::writeConfig, configOutFilename))
+        {
+            using namespace google::protobuf;
+            LOGINFO("Writing config to " + configOutFilename);
+            std::string configJson;
+            util::JsonOptions options;
+            options.add_whitespace = true;
+            options.always_print_primitive_fields = true;
+
+            if(LogStatus(util::MessageToJsonString(siteSettings, &configJson, options)).ok())
+            {
+                fs::WriteEntireFile(configOutFilename, configJson);
+            }
+        }
     }
 
-    while(!stopExecution)
+    if(!stopExecution)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+        AddSignalHandler(SIGINT, [this](int signum)
+        {
+            StopProcessing(signum);
+        });
+        AddSignalHandler(SIGTERM, [this](int signum)
+        {
+            StopProcessing(signum);
+        });
 
+        // Wait for something to stop the driver
+        WaitForShutdown();
+    }
     LOGDEBUG("Exiting");
+
+    siteAgents.clear();
 
     return exitCode;
 }
+
+void SiteAgentRunner::StopProcessing(int)
+{
+    // The program is terminating,
+    ShutdownNow();
+}
+
 
 CQP_MAIN(SiteAgentRunner)

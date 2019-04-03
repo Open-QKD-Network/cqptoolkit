@@ -156,22 +156,12 @@ namespace cqp
         return exitCode;
     }
 
-    void DriverApplication::WaitForShutdown()
-    {
-        std::unique_lock<std::mutex> lock(shutdownMutex);
-        waitForShutdown.wait(lock, [&]()
-        {
-            return shutdown == true;
-        });
-    }
-
     void DriverApplication::ShutdownNow()
     {
-        shutdown = true;
         adaptor->StopServer();
         adaptor.reset();
 
-        waitForShutdown.notify_all();
+        Application::ShutdownNow();
     }
 
     void DriverApplication::DisplayHelp(const CommandArgs::Option&)

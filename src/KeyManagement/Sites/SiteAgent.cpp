@@ -35,6 +35,8 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <unordered_map>
 
+#include "KeyManagement/SDN/NetworkManager.h"
+
 #if defined(SQLITE3_FOUND)
     #include "KeyManagement/KeyStores/FileStore.h"
 #endif
@@ -150,6 +152,13 @@ namespace cqp
                                      LoadServerCredentials(config.credentials()), &listenPort);
         }
 
+        // Use the internal network manager if there are static links to manage
+        if(!config.statichops().empty())
+        {
+            LOGINFO("Creating an internal network manager for " + std::to_string(config.statichops().size()) + " static links");
+            internalNetMan = std::make_unique<NetworkManager>(config.statichops(), LoadChannelCredentials(config.credentials()));
+            builder.RegisterService(internalNetMan.get());
+        }
 
         // Register services
         builder.RegisterService(this);
@@ -181,6 +190,13 @@ namespace cqp
         {
             netManRegister = std::thread(&SiteAgent::RegisterWithNetMan, this, config.netmanuri(), LoadChannelCredentials(config.credentials()));
         }
+
+        // register with the internal network manager
+        if(internalNetMan)
+        {
+            LOGINFO("Registering with internal network manager");
+            LogStatus(internalNetMan->RegisterSite(nullptr, &siteDetails, nullptr));
+        }
     } // SiteAgent
 
     SiteAgent::~SiteAgent()
@@ -196,6 +212,20 @@ namespace cqp
         }
         devicesInUse.clear();
 
+        if(netManRegister.joinable())
+        {
+            netManRegister.join();
+        }
+
+        // register with the internal network manager
+        if(internalNetMan)
+        {
+            LOGINFO("Unregistering from internal network manager");
+            remote::SiteAddress request;
+            request.set_url(siteDetails.url());
+            LogStatus(internalNetMan->UnregisterSite(nullptr, &request, nullptr));
+        }
+
         server->Shutdown();
 
         if(reportServer)
@@ -206,10 +236,6 @@ namespace cqp
             }
         }
 
-        if(netManRegister.joinable())
-        {
-            netManRegister.join();
-        }
     } // ~SiteAgent
 
     bool SiteAgent::RegisterWithDiscovery(net::ServiceDiscovery& sd)
@@ -769,6 +795,13 @@ namespace cqp
         LOGINFO("New " + sideString + " device: " + request->config().id() + " at '" + request->controladdress() + "' on switch '" +
                 request->config().switchname() + "' port '" + request->config().switchport() + "'");
 
+        // register with the internal network manager
+        if(internalNetMan)
+        {
+            LOGINFO("Updating internal network manager");
+            LogStatus(internalNetMan->RegisterSite(nullptr, &siteDetails, nullptr));
+        }
+
         // tell everyone we changed the site details
         siteDetailsChanged.notify_all();
 
@@ -794,24 +827,18 @@ namespace cqp
                 }
             }
         }/*lock scope*/
+
+        // register with the internal network manager
+        if(internalNetMan)
+        {
+            LOGINFO("Updating internal network manager");
+            LogStatus(internalNetMan->RegisterSite(nullptr, &siteDetails, nullptr));
+        }
+
         // tell everyone we changed the site details
         siteDetailsChanged.notify_all();
 
         return result;
-    }
-
-    void SiteAgent::ConnectStaticLinks()
-    {
-        using namespace std;
-
-        for(const auto& staticHop : myConfig.statichops())
-        {
-            LOGINFO("Connecting to static peer " + staticHop.hops().rbegin()->second().site());
-            grpc::ServerContext ctx;
-            google::protobuf::Empty response;
-
-            LogStatus(StartNode(&ctx, &staticHop, &response));
-        }
     }
 
     void SiteAgent::DeviceConnection::Stop()
