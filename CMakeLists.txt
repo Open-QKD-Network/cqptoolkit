@@ -187,6 +187,7 @@ else()
 endif()
 
 if(NOT TARGET PkgConfig::MsgPack)
+    message("Building MsgPack locally")
     # use a local copy of msgpack
     set(MSGPACK_VERSION "1.1.0" CACHE STRING "The version of MsgPack to use")
 
@@ -199,7 +200,7 @@ if(NOT TARGET PkgConfig::MsgPack)
             UPDATE_COMMAND ""
             CONFIGURE_COMMAND ./configure
             BUILD_COMMAND make
-            BUILD_IN_SOURCE trie
+            BUILD_IN_SOURCE true
             INSTALL_COMMAND ""
         )
         # Get the location of the build

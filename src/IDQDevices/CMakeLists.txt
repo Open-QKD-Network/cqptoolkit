@@ -14,7 +14,7 @@
 # Changing them in this file wont changed any values already stored in the cache
 
 # See: https://cognitivewaves.wordpress.com/cmake-and-visual-studio/
-cmake_minimum_required (VERSION 3.12.0)
+cmake_minimum_required (VERSION 3.7.2)
 
 project(IDQDevices CXX)
 
@@ -37,20 +37,35 @@ if(TARGET IDQ4PClasses)
 
 endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    CQPToolkit_Shared
-    QKDInterfaces_Shared
-    gRPC::grpc++
-    protobuf::libprotobuf)
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12.0)
 
-if(TARGET IDQ4PClasses)
+    target_link_libraries(${PROJECT_NAME} PUBLIC
+        CQPToolkit_Shared
+        QKDInterfaces_Shared
+        gRPC::grpc++
+        protobuf::libprotobuf)
+
     target_link_libraries(${PROJECT_NAME} PRIVATE
         IDQ4PClasses
         DomainModel
         Utilities
         PkgConfig::ZeroMQ
         PkgConfig::MsgPack)
+else()
+    add_dependencies(${PROJECT_NAME} PkgConfig::ZeroMQ PkgConfig::MsgPack)
+    get_target_property(IDQ4PCLASSES_SOURCE_DIR IDQ4PClasses INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(DOMAINMODEL_SOURCE_DIR DomainModel INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(UTILITIES_SOURCE_DIR Utilities INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(MSGPACK_SOURCE_DIR PkgConfig::MsgPack INTERFACE_INCLUDE_DIRECTORIES)
 
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${IDQ4PCLASSES_SOURCE_DIR}
+        ${DOMAINMODEL_SOURCE_DIR}
+        ${UTILITIES_SOURCE_DIR}
+        ${MSGPACK_SOURCE_DIR})
+endif()
+
+if(TARGET ${PROJECT_NAME}_Shared)
     target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
         IDQ4PClasses
         DomainModel

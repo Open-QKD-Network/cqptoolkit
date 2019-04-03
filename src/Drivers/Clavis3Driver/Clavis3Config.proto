@@ -17,5 +17,4 @@ package cqp.config;
 /// Alice handheld config
 message Clavis3Config {
     remote.ControlDetails controlParams = 1;
-    string bobAddress = 2;
 }
