@@ -56,6 +56,10 @@ namespace cqp
             std::shared_ptr<ManagerData> managerData;
             QFrame* container;
             const std::string managerName;
+
+            // NodeDataModel interface
+        public:
+            bool portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const override;
         };
 
     } // namespace model

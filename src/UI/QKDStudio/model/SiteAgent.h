@@ -84,6 +84,10 @@ namespace cqp
             void OnDisconnect();
             void OnEdit();
             void OnEditFinished(int result);
+
+            // NodeDataModel interface
+        public:
+            bool portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const override;
         };
 
     } // namespace model

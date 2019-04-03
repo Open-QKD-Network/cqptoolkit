@@ -38,6 +38,7 @@ namespace cqp
             auto layout = new QHBoxLayout(topWidget);
             topWidget->setLayout(layout);
             topWidget->setSizePolicy(sizePolicy);
+            topWidget->resize(0,0);
 
             auto connect = new QToolButton(topWidget);
             connect->setIcon(QIcon::fromTheme(QString::fromUtf8("network-connect")));
@@ -144,7 +145,7 @@ namespace cqp
                 switch (portIndex)
                 {
                 case 0:
-                    result = QStringLiteral("Network Manager");
+                    result = QStringLiteral("");
                 }
                 break;
 
@@ -257,5 +258,11 @@ namespace cqp
                 // TODO: trigger redraw
             }
         }
+
+        bool SiteAgent::portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const
+        {
+            return true;
+        }
     } // namespace model
 } // namespace cqp
+

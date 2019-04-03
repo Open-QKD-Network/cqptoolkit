@@ -28,8 +28,10 @@ namespace cqp
         {
             auto label = new QLabel(container);
             auto managerIcon = QPixmap(":/icons/manager");
-            managerIcon.scaledToWidth(64);
+            managerIcon.scaledToWidth(32);
             label->setPixmap(managerIcon);
+            label->resize(32, 32);
+            label->setScaledContents(true);
         }
 
         Manager::~Manager()
@@ -93,7 +95,7 @@ namespace cqp
                 switch (portIndex)
                 {
                 case 0:
-                    result = QStringLiteral("Manager");
+                    result = QStringLiteral("Sites");
                 }
                 break;
 
@@ -130,5 +132,10 @@ namespace cqp
             managerData->address = address;
         }
 
+        bool Manager::portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const
+        {
+            return true;
+        }
     } // namespace model
 } // namespace cqp
+

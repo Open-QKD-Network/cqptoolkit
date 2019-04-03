@@ -23,7 +23,7 @@ namespace cqp
 
         QtNodes::NodeDataType SiteAgentData::type() const
         {
-            return QtNodes::NodeDataType{"SiteNodeData", "Site Agent Data"};
+            return QtNodes::NodeDataType{"SiteNodeData", "Site"};
         }
 
     } // namespace model

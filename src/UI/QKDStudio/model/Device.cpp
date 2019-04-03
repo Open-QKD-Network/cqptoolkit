@@ -35,6 +35,7 @@ namespace cqp
             auto layout = new QHBoxLayout(topWidget);
             topWidget->setLayout(layout);
             topWidget->setSizePolicy(sizePolicy);
+            topWidget->resize(0,0);
 
             auto connectBtn = new QToolButton(topWidget);
             connectBtn->setIcon(QIcon::fromTheme(QString::fromUtf8("network-connect")));
@@ -152,6 +153,13 @@ namespace cqp
                 break;
 
             case QtNodes::PortType::Out:
+                switch (portIndex)
+                {
+                case 0:
+                    result = QStringLiteral("Link");
+                    break;
+                }
+                break;
             case QtNodes::PortType::None:
                 break;
             }

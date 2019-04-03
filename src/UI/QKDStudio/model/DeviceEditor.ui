@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Edit Device</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
