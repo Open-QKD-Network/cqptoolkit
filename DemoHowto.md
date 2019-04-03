@@ -10,11 +10,12 @@ Download the version to install from the [GitLab repository](https://gitlab.com/
 - unzip on the target, eg `7z x CQPToolkit-package_master.zip`
 - install the packages `sudo dpkg -i build/gcc/CQP-*.deb`
     + Dont worry about any "warning: Downgrading..." messages
-- install MATLAB (https://uk.mathworks.com/support.html)
-- install MATLAB Engine API for Python:
-     `cd "matlabroot/extern/engines/python"
-      python setup.py install`
-- install all python modules `sudo python setup.py install`
+- On the Network manager machine
+    + install MATLAB (https://uk.mathworks.com/support.html)
+    + install MATLAB Engine API for Python:
+         `cd "matlabroot/extern/engines/python"
+          python setup.py install`
+    + install all python modules `sudo python setup.py install`
 
 ## Start the network manager
 
@@ -24,46 +25,82 @@ sudo python NetworkManager_server.py
 sudo python NetworkManager.py -p [port_of_source_site_agent] -s [rackname_src.cqp:portname] -d [rackname_dest.cqp:portname]
 ```
 
-## Clavis IDQ Wrapper
-
-use the script in `external/id3100` under the source code to create then launch the wrapper:
-
-```bash
-cd external/id3100
-./buildcontainer.sh
-./runcontainer.sh
-```
-
-The `runcontainer` script will start a wrapper for each comaptible device it finds. The wrapper ports will be mapped sequentially to port 7030 onwards. The order is not gaurenteed so if there is more than one device, find the port mapping with:
-
-    WRAPPER=\`sudo docker ps -f "name=idqcontainer*" --format "{{.ID}}"\`
-    sudo docker inspect --format='peer address: {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}} host port: {{range $p, $conf := .NetworkSettings.Ports}}{{(index $conf 0).HostPort}}{{end}}' $WRAPPER
-
-
-To stop the wrapper (it will continue to run in the background):
-
-    sudo docker stop `sudo docker ps -f "name=idqcontainer*" --format "{{.ID}}"`
-
-
 ## Site agents
 
+An example site config with static hops which will be created when all devices are available:
+
+```json
+{
+ "name": "MainSite",
+ "id": "3c2324b6-966c-474c-b710-8f5d68238126",
+ "netManUri": "",
+ "listenPort": 8000,
+ "credentials": {},
+ "useAutoDiscover": false,
+ "backingStoreUrl": "",
+ "staticHops": [
+    {
+        "hops": [
+            {
+                "first": {
+                    "site": "mightydwt.nohome:8000",
+                    "deviceId": "dummyqkd__0__16_alice"
+                },
+                "second": {
+                    "site": "mightydwt.nohome:8001",
+                    "deviceId": "dummyqkd__0__16_bob"
+                }
+            }
+        ]
+    }
+ ],
+ "fallbackKey": ""
+}
+```
+
+An example site config which registers with a network manager:
+
+```json
+{
+ "name": "SlaveSite",
+ "id": "eb70b211-104d-47ad-8071-d6f78e1e3010",
+ "netManUri": "mainsite:8000",
+ "listenPort": 8001,
+ "credentials": {},
+ "useAutoDiscover": false,
+ "backingStoreUrl": "",
+ "fallbackKey": ""
+}
+```
+
 On each server, start the site agent:
-
-### Dummy driver
-
 ```bash
-SiteAgentRunner -p 7000 -a netmanhost:50051 -d 'dummyqkd:///?side=alice&port=dummy1a' -d 'dummyqkd:///?side=bob&port=dummy1b' -n
+SiteAgentRunner -c siteconfig.json
 ```
 
-### Clavis Driver
+## Drivers
 
-```bash
-SiteAgentRunner -p 7000 -a netmanhost:50051 -d 'clavis://localhost:7030/port=dummy1a' -n
+Start the drivers, any of `DummyQKDDriver`, `Clavis2Driver`, `Clavis3Driver` with the option `-c config.json`.
+See the driver for configuration options.
+And example for DummyQKD:
+
+```json
+{
+ "controlParams": {
+  "config": {
+   "id": "dummyqkd__0__16_bob",
+   "side": "Bob",
+   "switchName": "",
+   "switchPort": "",
+   "kind": "dummyqkd",
+   "bytesPerKey": 0
+  },
+  "controlAddress": "0.0.0.0:0",
+  "siteAgentAddress": "localhost:8001"
+ },
+ "bobAddress": ""
+}
 ```
-
-This will start the site agent on port 8000 and will register with network manager running on port 50051. 
-Change `netmanhost` to the hostname/ip of the network manager.
-The `-d` makes a device available to the site agent to generate key with.
 
 ## Manually connect the site agents
 

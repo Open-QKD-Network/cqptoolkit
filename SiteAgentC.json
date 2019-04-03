@@ -2,10 +2,7 @@
  "name": "SiteC",
  "id": "6e29256b-d5e5-4825-bd18-dfdeeaf8b887",
  "listenPort": 8003,
- "deviceUrls": [
-  "dummyqkd:///?side=bob&port=dummy3a",
-  "dummyqkd:///?side=alice&port=dummy3b"
- ],
- "credentials": {}
+ "credentials": {},
+ "netManUri": "mightdwt:8000"
 }
 
