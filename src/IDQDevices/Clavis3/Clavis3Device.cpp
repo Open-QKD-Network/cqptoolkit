@@ -9,13 +9,16 @@
 * @date 14/3/2019
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
+#if defined(HAVE_IDQ4P)
 #include "Clavis3Device.h"
 #include "Clavis3DeviceImpl.h"
 
 namespace cqp
 {
-    Clavis3Device::Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds, std::shared_ptr<stats::ReportServer> theReportServer) :
-        session::SessionController {creds, {}, {}, theReportServer},
+    Clavis3Device::Clavis3Device(const std::string& hostname,
+                                 std::shared_ptr<grpc::ChannelCredentials> newCreds,
+                                 std::shared_ptr<stats::ReportServer> theReportServer) :
+        session::SessionController {newCreds, {}, theReportServer},
             pImpl{std::make_unique<Clavis3Device::Impl>(hostname)}
     {
     }
@@ -68,7 +71,7 @@ namespace cqp
         return result;
     }
 
-    grpc::Status Clavis3Device::StartSession(const remote::SessionDetails& sessionDetails)
+    grpc::Status Clavis3Device::StartSession(const remote::SessionDetailsFrom& sessionDetails)
     {
         auto result = SessionController::StartSession(sessionDetails);
         if(result.ok())
@@ -115,11 +118,8 @@ namespace cqp
 
     void Clavis3Device::SetInitialKey(std::unique_ptr<PSK> initailKey)
     {
+        pImpl->Request_SetInitialKey(*initailKey);
     }
 
-    std::vector<grpc::Service*> Clavis3Device::GetServices()
-    {
-        std::vector<grpc::Service*> result;
-        return result;
-    }
 } // namespace cqp
+#endif //HAVE_IDQ4P

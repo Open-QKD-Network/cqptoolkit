@@ -19,7 +19,6 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "IDQDevices/Clavis2/ClavisProxy.h"
 #include "IDQDevices/Clavis2/Clavis.h"
-#include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "QKDInterfaces/IReporting.grpc.pb.h"
 #include <future>
 #include "CQPToolkit/Statistics/ReportServer.h"

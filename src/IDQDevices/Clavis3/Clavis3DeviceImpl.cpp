@@ -9,6 +9,8 @@
 * @date 15/3/2019
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
+#if defined(HAVE_IDQ4P)
+
 #include "Clavis3DeviceImpl.h"
 #include <string>
 
@@ -340,3 +342,4 @@ namespace cqp
     } // ReadSignalSocket
 
 } // namespace cqp
+#endif //HAVE_IDQ4P

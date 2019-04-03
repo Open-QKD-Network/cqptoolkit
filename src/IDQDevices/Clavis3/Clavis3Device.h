@@ -10,6 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
+#if defined(HAVE_IDQ4P)
+
 #include <string>
 #include "CQPToolkit/Interfaces/IQKDDevice.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
@@ -51,7 +53,7 @@ namespace cqp
         /// @name ISessionController interface
 
         /// @copydoc ISessionController::StartSession
-        grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
+        grpc::Status StartSession(const remote::SessionDetailsFrom& sessionDetails) override;
         /// @copydoc ISessionController::EndSession
         void EndSession() override;
         ///@}
@@ -75,9 +77,8 @@ namespace cqp
         // IQKDDevice interface
     public:
         void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
-        std::vector<grpc::Service*> GetServices() override;
     };
 
 } // namespace cqp
 
-
+#endif // HAVE_IDQ4P

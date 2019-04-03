@@ -10,6 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
+#if defined(HAVE_IDQ4P)
 #include "Clavis3Device.h"
 #include <zmq.hpp>
 #include "SystemState.hpp"
@@ -94,3 +95,4 @@ namespace cqp
     };
 
 }
+#endif // HAVE_IDQ4P

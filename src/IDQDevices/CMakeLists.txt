@@ -16,15 +16,17 @@
 # See: https://cognitivewaves.wordpress.com/cmake-and-visual-studio/
 cmake_minimum_required (VERSION 3.12.0)
 
+project(IDQDevices CXX)
+
+# Perform some standard setup steps like detecting the platform.
+include(CommonSetup)
+
+ADD_GRPC_FILES()
+
+CQP_LIBRARY_PROJECT()
+
 if(TARGET IDQ4PClasses)
-    project(IDQDevices CXX)
-
-    # Perform some standard setup steps like detecting the platform.
-    include(CommonSetup)
-
-    ADD_GRPC_FILES()
-
-    CQP_LIBRARY_PROJECT()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DHAVE_IDQ4P)
 
     target_compile_definitions(IDQDevices PRIVATE MSGPACK_DEFAULT_API_VERSION=1)
     target_compile_definitions(IDQDevices PRIVATE IDQ4P_DEBUG=true)
@@ -33,12 +35,15 @@ if(TARGET IDQ4PClasses)
     #target_compile_definitions(IDQDevices PRIVATE MSGPACK_USE_DEFINE_MAP=true)
     #target_compile_definitions(IDQDevices PRIVATE MSGPACK_DISABLE_LEGACY_CONVERT=true)
 
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        CQPToolkit_Shared
-        QKDInterfaces_Shared
-        gRPC::grpc++
-        protobuf::libprotobuf)
+endif()
 
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    CQPToolkit_Shared
+    QKDInterfaces_Shared
+    gRPC::grpc++
+    protobuf::libprotobuf)
+
+if(TARGET IDQ4PClasses)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         IDQ4PClasses
         DomainModel
