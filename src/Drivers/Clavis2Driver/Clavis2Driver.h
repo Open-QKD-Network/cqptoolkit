@@ -35,30 +35,6 @@ public:
     int Main(const std::vector<std::string>& args) override;
 
     /**
-     * @brief DisplayHelp
-     * print the help page
-     */
-    void DisplayHelp(const cqp::CommandArgs::Option&);
-
-    /**
-     * @brief HandleVerbose
-     * Parse commandline argument
-     */
-    void HandleVerbose(const cqp::CommandArgs::Option&)
-    {
-        cqp::DefaultLogger().IncOutputLevel();
-    }
-
-    /**
-     * @brief HandleQuiet
-     * Parse commandline argument
-     */
-    void HandleQuiet(const cqp::CommandArgs::Option&)
-    {
-        cqp::DefaultLogger().DecOutputLevel();
-    }
-
-    /**
      * @brief HandleQuiet
      * Parse commandline argument
      */

@@ -15,10 +15,17 @@ if(TARGET IDQ4PClasses)
     project(Clavis3Driver CXX)
     include(CommonSetup)
 
+    # add the proto files from the QKDInterfaces project
+    get_target_property(QKDInterfaces_SOURCE_DIR QKDInterfaces SOURCE_DIR)
+    LIST(APPEND PROTOBUF_IMPORT_DIRS ${QKDInterfaces_SOURCE_DIR})
+    ADD_GRPC_FILES()
+
     # Make standard program which uses the CQP Toolkit
     CQP_EXE_PROJECT()
 
     if(TARGET Clavis3Driver)
+
+        target_compile_definitions(${PROJECT_NAME} PRIVATE -DHAVE_IDQ4P)
 
         target_compile_definitions(Clavis3Driver PRIVATE MSGPACK_DEFAULT_API_VERSION=1)
         target_compile_definitions(Clavis3Driver PRIVATE IDQ4P_DEBUG=true)
@@ -27,9 +34,13 @@ if(TARGET IDQ4PClasses)
         #target_compile_definitions(Clavis3Driver PRIVATE MSGPACK_USE_DEFINE_MAP=true)
         #target_compile_definitions(Clavis3Driver PRIVATE MSGPACK_DISABLE_LEGACY_CONVERT=true)
 
+        get_target_property(QKDInterfaces_BINARY_DIR QKDInterfaces BINARY_DIR)
+        target_include_directories(${PROJECT_NAME} PRIVATE "${QKDInterfaces_BINARY_DIR}")
+
         target_link_libraries(${PROJECT_NAME} PRIVATE
             CQPToolkit_Shared
             QKDInterfaces_Shared
+            IDQDevices_Shared
             IDQ4PClasses
             DomainModel
             Utilities
