@@ -16,8 +16,10 @@
 #include "Algorithms/Alignment/Filter.h"
 #include "Algorithms/Util/Maths.h"
 
-namespace cqp {
-    namespace align {
+namespace cqp
+{
+    namespace align
+    {
 
         Gating::Gating(std::shared_ptr<IRandom> rng,
                        const PicoSeconds& slotWidth, const PicoSeconds& txJitter,
@@ -83,7 +85,8 @@ namespace cqp {
             auto lower = peakIndex;
 
             {
-                auto findLower = std::async(std::launch::async, [&](){
+                auto findLower = std::async(std::launch::async, [&]()
+                {
                     auto nextLower = lower;
                     while(counts[nextLower] > cutoff && nextLower != (peakIndex + 1) % numBins)
                     {
@@ -144,7 +147,8 @@ namespace cqp {
                     {
                         results.push_back(list.second[0]);
                     }
-                    else {
+                    else
+                    {
                         multiSlots++;
                         //LOGDEBUG("Multiple qubits for slot");
                         // pick a qubit at random

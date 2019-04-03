@@ -7,7 +7,9 @@ image: registry.gitlab.com/qcomms/cqptoolkit/buildenv:latest
 #  paths:
 #    - build/gcc
 #  untracked: true
-
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  
 # group jobs into stages
 stages:
   - build

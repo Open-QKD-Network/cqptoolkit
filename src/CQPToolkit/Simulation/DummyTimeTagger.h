@@ -3,7 +3,7 @@
 * @brief DummyTimeTagger
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 18/7/2017
@@ -16,6 +16,7 @@
 #include "QKDInterfaces/IDetector.grpc.pb.h"
 #include "QKDInterfaces/IPhotonSim.grpc.pb.h"
 #include "CQPToolkit/Statistics/Frames.h"
+#include "CQPToolkit/Interfaces/IRemoteComms.h"
 
 namespace cqp
 {
@@ -29,9 +30,10 @@ namespace cqp
          * from the DummyTransmitter
          */
         class CQPTOOLKIT_EXPORT DummyTimeTagger :
-                public remote::IDetector::Service,
+            public remote::IDetector::Service,
             public remote::IPhotonSim::Service,
-            public Provider<IDetectionEventCallback>
+            public Provider<IDetectionEventCallback>,
+            public virtual IRemoteComms
         {
         public:
             /**
@@ -58,6 +60,22 @@ namespace cqp
             /// @copydoc remote::IDetector::StopDetecting
             /// @param context Connection details from the server
             grpc::Status StopDetecting(grpc::ServerContext* context, const google::protobuf::Timestamp* request, google::protobuf::Empty*) override;
+            ///@}
+
+            ///@{
+            /// @name IRemoteComms interface
+
+            /**
+             * @brief Connect
+             * @param channel The IPhotonSim endpoint to send photons to
+             */
+            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override;
+
+            /**
+             * @brief Disconnect
+             */
+            void Disconnect() override;
+
             ///@}
 
             /// Statistics produced by this class

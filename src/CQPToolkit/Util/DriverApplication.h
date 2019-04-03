@@ -11,11 +11,9 @@
 */
 #pragma once
 #include "Algorithms/Util/Application.h"
-#include <memory>
 #include "QKDInterfaces/Site.pb.h"
 #include "Algorithms/Util/Strings.h"
 #include "CQPToolkit/cqptoolkit_export.h"
-#include <condition_variable>
 
 namespace grpc
 {
@@ -62,9 +60,7 @@ namespace cqp
 
         int Main(const std::vector<std::string>& args) override;
 
-        void WaitForShutdown();
-
-        void ShutdownNow();
+        void ShutdownNow() override;
     protected: // members
         struct CommandlineNames
         {
@@ -76,7 +72,6 @@ namespace cqp
             static CONSTSTRING rootCaFile = "rootca";
             static CONSTSTRING tls = "tls";
             static CONSTSTRING controlAddr = "control-addr";
-            static CONSTSTRING sessionAddr = "session-addr";
             static CONSTSTRING switchName = "switch";
             static CONSTSTRING switchPort = "switch-port";
         };
@@ -96,11 +91,6 @@ namespace cqp
 
         static bool WriteConfigFile(const google::protobuf::Message& config, const std::string& filename);
 
-    private:
-
-        std::atomic_bool shutdown {false};
-        std::mutex shutdownMutex;
-        std::condition_variable waitForShutdown;
     };
 
 } // namespace cqp

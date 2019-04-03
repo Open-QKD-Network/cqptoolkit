@@ -2,8 +2,10 @@
 #include <atomic>
 #include <algorithm>
 
-namespace cqp {
-    namespace align {
+namespace cqp
+{
+    namespace align
+    {
 
         Offsetting::Offsetting(size_t samples):
             samples(samples)
@@ -26,10 +28,12 @@ namespace cqp {
             size_t numProcessed = 0;
 
             // action to perform on every iteration, compare the values with an offset
-            auto processLambda = [&](ssize_t offset){
+            auto processLambda = [&](ssize_t offset)
+            {
                 double confidence = CompareValues(markers, validSlots, irregular, offset);
 
-                /*lock scope*/ {
+                /*lock scope*/
+                {
                     std::lock_guard<std::mutex> lock(resultsMutex);
                     numProcessed++;
                     // store the value if it's the highest
@@ -44,7 +48,8 @@ namespace cqp {
             };
 
             // function to return the next number in the sequence
-            auto nextValLambda = [&](ssize_t& nextVal){
+            auto nextValLambda = [&](ssize_t& nextVal)
+            {
                 nextVal = counter.fetch_add(1);
                 return nextVal < to;
             };
@@ -54,7 +59,8 @@ namespace cqp {
 
             // wait for all the values to be processed
             std::unique_lock<std::mutex> lock(resultsMutex);
-            resultsCv.wait(lock, [&](){
+            resultsCv.wait(lock, [&]()
+            {
                 return numProcessed == totalIterations;
             });
 
@@ -76,10 +82,12 @@ namespace cqp {
             size_t numProcessed = 0;
 
             // action to perform on every iteration, compare the values with an offset
-            auto processLambda = [&](ssize_t offset){
+            auto processLambda = [&](ssize_t offset)
+            {
                 double confidence = CompareValues(truth, validSlots, irregular, offset);
 
-                /*lock scope*/ {
+                /*lock scope*/
+                {
                     std::lock_guard<std::mutex> lock(resultsMutex);
                     numProcessed++;
                     // store the value if it's the highest
@@ -94,7 +102,8 @@ namespace cqp {
             };
 
             // function to return the next number in the sequence
-            auto nextValLambda = [&](ssize_t& nextVal){
+            auto nextValLambda = [&](ssize_t& nextVal)
+            {
                 nextVal = counter.fetch_add(1);
                 return nextVal < to;
             };
@@ -104,7 +113,8 @@ namespace cqp {
 
             // wait for all the values to be processed
             std::unique_lock<std::mutex> lock(resultsMutex);
-            resultsCv.wait(lock, [&](){
+            resultsCv.wait(lock, [&]()
+            {
                 return numProcessed == totalIterations;
             });
 
@@ -130,13 +140,13 @@ namespace cqp {
                 const auto& bobQubit = irregular[index];
 
                 if(adjusted >= 0 && adjusted < static_cast<ssize_t>(truth.size()) &&
-                   QubitHelper::Base(aliceQubit) == QubitHelper::Base(bobQubit))
+                        QubitHelper::Base(aliceQubit) == QubitHelper::Base(bobQubit))
                 {
                     // its within the range and the basis sent matches the basis measured
                     basesMatched++;
                     if(aliceQubit == bobQubit)
                     {
-                       validCount++;
+                        validCount++;
                     }
                 }
 
@@ -161,10 +171,10 @@ namespace cqp {
                 const auto adjustedSlot = static_cast<ssize_t>(marker.first) - offset;
                 if(adjustedSlot >= 0)
                 {
-                    // us a binary search to find the value
+                    // use a binary search to find the value
                     const auto bobIndex = lower_bound(validSlots.cbegin(), validSlots.cend(), adjustedSlot);
                     // this may return with a "close" match but not the value we're looking for
-                    if(bobIndex != validSlots.end() && *bobIndex == static_cast<SlotID>(adjustedSlot))
+                    if(bobIndex != validSlots.end() && *bobIndex < irregular.size() && *bobIndex == static_cast<SlotID>(adjustedSlot))
                     {
                         if(QubitHelper::Base(marker.second) == QubitHelper::Base(irregular[*bobIndex]))
                         {

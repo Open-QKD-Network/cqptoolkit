@@ -20,7 +20,7 @@
 
 namespace grpc
 {
-    class Service;
+    class ServerBuilder;
 }
 
 namespace cqp
@@ -100,10 +100,10 @@ namespace cqp
         virtual remote::DeviceConfig GetDeviceDetails() = 0;
 
         /**
-         * @brief GetServices
-         * @return A list of services provided by the driver
+         * @brief RegisterServices
+         * @return Attach driver services to a builder
          */
-        virtual std::vector<grpc::Service*> GetServices() = 0;
+        virtual void RegisterServices(grpc::ServerBuilder& builder) = 0;
 
         /// virtual destructor
         virtual ~IQKDDevice() = default;

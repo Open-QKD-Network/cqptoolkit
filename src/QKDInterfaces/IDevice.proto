@@ -17,7 +17,9 @@ import public "Device.proto";
 
 package cqp.remote;
 
+/// A message containing only key bytes
 message RawKeys {
+    /// raw key data
     repeated bytes keyData = 1;
 }
 
@@ -27,7 +29,9 @@ message LocalSettings {
     bytes initialKey = 1;
 }
 
+/// Session details including details about the destination
 message SessionDetailsTo {
+    /// session details
     SessionDetails details = 1;
     /// The address for the device to pair with
     string peerAddress = 2;
@@ -153,4 +157,6 @@ service IDevice
     * @return status
     */
     rpc GetLinkStatus(google.protobuf.Empty) returns (stream LinkStatus);
+
+    rpc GetDetails(google.protobuf.Empty) returns (ControlDetails);
 }

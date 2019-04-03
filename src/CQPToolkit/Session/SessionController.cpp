@@ -11,7 +11,6 @@
 */
 #include "SessionController.h"
 #include "Algorithms/Logging/Logger.h"
-#include "CQPToolkit/Session/TwoWayServerConnector.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "Algorithms/Random/RandomNumber.h"
 #include "Algorithms/Net/DNS.h"
@@ -26,48 +25,42 @@ namespace cqp
         using grpc::StatusCode;
         using grpc::ClientContext;
 
-        SessionController::SessionController(std::shared_ptr<grpc::ChannelCredentials> creds, const Services& services,
+        SessionController::SessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
                                              const RemoteCommsList& remotes,
                                              std::shared_ptr<stats::ReportServer> theReportServer):
-            myAddress{net::AnyAddress},
-            services{services},
+            creds{creds},
             remoteComms{remotes},
             reportServer(theReportServer)
         {
-            twoWayComm = new net::TwoWayServerConnector(creds);
 
         } // SessionController
 
-        grpc::Status SessionController::StartSession(const remote::SessionDetails& sessionDetails)
+        void SessionController::RegisterServices(grpc::ServerBuilder& builder)
+        {
+            builder.RegisterService(this);
+        }
+
+        grpc::Status SessionController::StartSession(const remote::SessionDetailsFrom& sessionDetails)
         {
             Status result;
             // the local system is starting the session
             // make sure the other side has connected to us
 
-            auto channel = twoWayComm->WaitForClient();
-            std::unique_ptr<remote::ISession::Stub> otherController;
-            if(channel)
-            {
-                otherController = remote::ISession::NewStub(channel);
-            }
+            auto otherController = remote::ISession::NewStub(otherControllerChannel);
 
-            if(otherController)
+            if(otherControllerChannel)
             {
                 ClientContext ctx;
-                remote::SessionDetailsFrom request;
                 Empty response;
 
-                (*request.mutable_details()) = sessionDetails;
-                request.set_initiatoraddress(GetConnectionAddress());
-
                 // send the command to the other side
-                result = otherController->SessionStarting(&ctx, request, &response);
+                result = LogStatus(otherController->SessionStarting(&ctx, sessionDetails, &response));
 
                 if(result.ok())
                 {
                     for(auto& dependant : remoteComms)
                     {
-                        dependant->Connect(channel);
+                        dependant->Connect(otherControllerChannel);
                     }
                     if(reportServer)
                     {
@@ -94,7 +87,6 @@ namespace cqp
             Empty request;
             Empty response;
             ClientContext ctx;
-            auto channel = twoWayComm->GetClient();
 
             if(reportServer)
             {
@@ -102,9 +94,9 @@ namespace cqp
             }
 
             std::unique_ptr<remote::ISession::Stub> otherController;
-            if(channel)
+            if(otherControllerChannel)
             {
-                otherController = remote::ISession::NewStub(channel);
+                otherController = remote::ISession::NewStub(otherControllerChannel);
             }
 
             if(otherController)
@@ -114,12 +106,6 @@ namespace cqp
                     otherController->SessionEnding(&ctx, request, &response));
             } // if otherController
 
-            for(auto& dependant : remoteComms)
-            {
-                dependant->Disconnect();
-            }
-            twoWayComm->Disconnect();
-            pairedControllerUri.clear();
             if(reportServer)
             {
                 // notify the state change
@@ -132,42 +118,46 @@ namespace cqp
         SessionController::~SessionController()
         {
             SessionController::EndSession();
-            if(server)
-            {
-                server->Shutdown();
-                server = nullptr;
-                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Inactive);
-            } // if server
+            Disconnect();
+            UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Inactive);
+
         } // ~SessionController
 
         Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetailsFrom* sessionDetails, Empty*)
         {
+            using namespace std::chrono;
             // The session has been started remotly
             Status result;
-            twoWayComm->Connect(sessionDetails->initiatoraddress());
-            twoWayComm->WaitForClient();
-            auto channel = twoWayComm->GetClient();
 
-            if(channel)
+            // if we havn't got a connection to the caller yet, create one
+            if(!otherControllerChannel)
             {
-                for(auto& dependant : remoteComms)
-                {
-                    dependant->Connect(channel);
-                }
+                otherControllerChannel = grpc::CreateChannel(sessionDetails->initiatoraddress(), creds);
 
+                if(!otherControllerChannel->WaitForConnected(system_clock::now() + seconds(10)))
+                {
+                    result = Status(StatusCode::DEADLINE_EXCEEDED, "Failed to connect to peer");
+                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
+                }
+            }
+
+            if(result.ok())
+            {
                 if(reportServer)
                 {
                     reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "true");
-                    reportServer->AddAdditionalProperties(PropertyNames::to, twoWayComm->GetClientAddress());
+                    reportServer->AddAdditionalProperties(PropertyNames::to, sessionDetails->initiatoraddress());
+                }
+
+                // we connect here because this is the first we know that the other side is talking to us.
+                for(auto& dependant : remoteComms)
+                {
+                    dependant->Connect(otherControllerChannel);
                 }
 
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
             }
-            else
-            {
-                result = Status(StatusCode::DEADLINE_EXCEEDED, "Failed to get client channel");
-                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
-            }
+
             return result;
         } // SessionStarting
 
@@ -178,13 +168,6 @@ namespace cqp
                 reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "false");
             }
 
-            for(auto& dependant : remoteComms)
-            {
-                dependant->Disconnect();
-            }
-            twoWayComm->Disconnect();
-            pairedControllerUri.clear();
-
             if(reportServer)
             {
                 // notify the state change
@@ -192,6 +175,12 @@ namespace cqp
                 reportServer->StatsReport(report);
             }
             UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
+
+            for(auto& dependant : remoteComms)
+            {
+                dependant->Disconnect();
+            }
+
             return Status();
         }
 
@@ -207,107 +196,42 @@ namespace cqp
             linkStatusCv.notify_all();
         } // SessionEnding
 
-        Status SessionController::StartServer(const std::string& address, uint16_t requestedPort, std::shared_ptr<grpc::ServerCredentials> creds)
-        {
-            Status result;
-            if(server == nullptr)
-            {
-                if(address.empty())
-                {
-                    // FIXME: this may not work in all situations
-                    // The call may just have to specify the hostname manually
-                    myAddress = net::GetHostname(); // "localhost";
-                } // if(hostname.empty())
-                else
-                {
-                    myAddress = address;
-                } // else
-
-                if(reportServer)
-                {
-                    reportServer->AddAdditionalProperties(PropertyNames::from, myAddress);
-                }
-                // create our own server which all the steps will use
-                grpc::ServerBuilder builder;
-                // grpc will create worker threads as it needs, idle work threads
-                // will be stopped if there are more than this number running
-                // setting this too low causes large number of thread creation+deletions, default = 2
-                builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, 50);
-                builder.AddListeningPort(myAddress + ":" + std::to_string(requestedPort), creds, &listenPort);
-
-                // register all the classes which provide a remote interface
-                builder.RegisterService(this);
-                builder.RegisterService(twoWayComm);
-                // allow other steps in the process to register with our service
-                for(auto& dependant : services)
-                {
-                    builder.RegisterService(dependant);
-                }
-
-                // star the server
-                server = builder.BuildAndStart();
-                if(server)
-                {
-                    LOGINFO("Listening on " + myAddress + ":" + std::to_string(listenPort));
-                    if(myAddress.empty() || myAddress == net::AnyAddress)
-                    {
-                        myAddress = net::GetHostname(true);
-                    }
-                    twoWayComm->SetServerAddress(myAddress + ":" + std::to_string(listenPort));
-
-                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
-                } // if(server)
-                else
-                {
-                    result = Status(StatusCode::INVALID_ARGUMENT, "Failed to create server");
-                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Inactive, result.error_code());
-                } // else
-            }
-            return result;
-        } // StartServer
-
-        Status SessionController::StartServerAndConnect(cqp::URI otherControllerURI, const std::string& hostname, uint16_t listenPort, std::shared_ptr<grpc::ServerCredentials> creds)
-        {
-            Status result = StartServer(hostname, listenPort, creds);
-            if(result.ok())
-            {
-                result = Connect(otherControllerURI);
-
-            } // if(result.ok())
-            return result;
-        }
-
         grpc::Status SessionController::Connect(URI otherController)
         {
             using namespace std;
+            using namespace std::chrono;
+            grpc::Status result;
+
+            // make sure we're disconnected
+            Disconnect();
             pairedControllerUri = otherController;
+
+            otherControllerChannel = grpc::CreateChannel(otherController, creds);
 
             if(reportServer)
             {
-                reportServer->AddAdditionalProperties(PropertyNames::to, pairedControllerUri);
+                reportServer->AddAdditionalProperties(PropertyNames::to, otherController);
             }
 
-            // get a two way connection going
-            Status result = LogStatus(
-                                twoWayComm->Connect(otherController));
-            if(result.ok())
+            for(auto& dependant : remoteComms)
             {
-                if(!twoWayComm->WaitForClient())
-                {
-                    result = LogStatus(Status(StatusCode::DEADLINE_EXCEEDED, "Client connection failed"));
-                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
-                }
-                else
-                {
-                    UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected);
-                }
-            } // if(result.ok())
-            else
-            {
-                result = Status(StatusCode::NOT_FOUND, "Failed to connect");
-                UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
-            } // else
+                dependant->Connect(otherControllerChannel);
+            }
+            UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Connected);
+
             return result;
+        } // Connect
+
+        void SessionController::Disconnect()
+        {
+
+            for(auto& dependant : remoteComms)
+            {
+                dependant->Disconnect();
+            }
+
+            otherControllerChannel.reset();
+            pairedControllerUri.clear();
         }
 
         grpc::Status SessionController::GetLinkStatus(grpc::ServerContext* context, ::grpc::ServerWriter<remote::LinkStatus>* writer)

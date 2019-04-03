@@ -3,7 +3,7 @@
 * @brief TestKeyMan
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 9/4/2018
@@ -12,7 +12,6 @@
 #include "TestKeyMan.h"
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include "KeyManagement/KeyStores/KeyStore.h"
-#include "CQPToolkit/Session/PublicKeyService.h"
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server.h>
 #include "CQPToolkit/Util/GrpcLogger.h"
@@ -23,32 +22,6 @@ namespace cqp
 {
     namespace tests
     {
-        TEST(KeyMan, PublicKey)
-        {
-            using namespace grpc;
-            using namespace google::protobuf;
-            //DefaultLogger().SetOutputLevel(LogLevel::Trace);
-            ServerBuilder builder;
-            PublicKeyService pubKey1;
-            int portnumber = 0;
-            builder.AddListeningPort("localhost:0", InsecureServerCredentials(), &portnumber);
-            builder.RegisterService(&pubKey1);
-            auto server = builder.BuildAndStart();
-
-
-            auto channel = CreateChannel("localhost:" + std::to_string(portnumber), InsecureChannelCredentials());
-            PublicKeyService pubKey2;
-
-            std::string token2;
-            ASSERT_TRUE(LogStatus(pubKey2.SharePublicKey(channel, token2)).ok());
-            ASSERT_FALSE(token2.empty());
-            auto secret1 = pubKey1.GetSharedSecret(token2);
-            auto secret2 = pubKey2.GetSharedSecret(token2);
-            ASSERT_GT(secret1->size(), 1ul);
-            ASSERT_EQ(secret1->size(), secret2->size());
-            ASSERT_EQ(*secret1, *secret2);
-        }
-
         TEST(KeyMan, FileStore)
         {
             const uint numberOfKeys = 10000;

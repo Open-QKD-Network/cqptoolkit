@@ -3,7 +3,7 @@
 * @brief Application
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 8/3/2018
@@ -57,6 +57,22 @@ namespace cqp
         stopExecution = true;
     }
 
+    void Application::WaitForShutdown()
+    {
+        std::unique_lock<std::mutex> lock(shutdownMutex);
+        waitForShutdown.wait(lock, [&]()
+        {
+            return shutdown == true;
+        });
+    }
+
+    void Application::ShutdownNow()
+    {
+        shutdown = true;
+
+        waitForShutdown.notify_all();
+    }
+
     bool Application::AddSignalHandler(int signum, SignalFunction func)
     {
         signalHandlers[signum] = func;
@@ -69,9 +85,11 @@ namespace cqp
         auto handler = signalHandlers.find(signum);
         if(handler != signalHandlers.end())
         {
-            try{
+            try
+            {
                 handler->second(signum);
-            } catch(const std::exception& e)
+            }
+            catch(const std::exception& e)
             {
                 LOGERROR(e.what());
             }

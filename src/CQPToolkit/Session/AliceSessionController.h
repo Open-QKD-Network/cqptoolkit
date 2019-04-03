@@ -15,14 +15,16 @@
 #include "CQPToolkit/Interfaces/IPhotonGenerator.h"
 #include "Algorithms/Util/WorkerThread.h"
 
-namespace cqp {
-    namespace session {
+namespace cqp
+{
+    namespace session
+    {
 
         /**
          * @brief The AliceSessionController class cooirdinates the session
          */
         class CQPTOOLKIT_EXPORT AliceSessionController : public SessionController,
-                protected WorkerThread
+            protected WorkerThread
         {
         public:
 
@@ -35,7 +37,6 @@ namespace cqp {
              * @param source The object which produces photons
              */
             AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
-                                   const Services& services,
                                    const RemoteCommsList& remotes,
                                    std::shared_ptr<IPhotonGenerator> source,
                                    std::shared_ptr<stats::ReportServer> theReportServer);
@@ -68,7 +69,7 @@ namespace cqp {
              *     deactivate as
              * @enduml
              */
-            grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
+            grpc::Status StartSession(const remote::SessionDetailsFrom& sessionDetails) override;
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
 

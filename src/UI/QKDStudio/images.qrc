@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="manager">images/boss.svg</file>
+        <file alias="site">images/enterprise.svg</file>
+        <file alias="device">images/password.svg</file>
+    </qresource>
+</RCC>

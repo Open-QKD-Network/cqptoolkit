@@ -58,7 +58,6 @@ namespace cqp
 
     remote::DeviceConfig ClavisProxy::GetDeviceDetails()
     {
-        config.set_sessionaddress(controller->GetConnectionAddress());
         config.set_side(controller->GetSide());
         return config;
     }
@@ -68,9 +67,10 @@ namespace cqp
         return controller.get();
     }
 
-    std::vector<grpc::Service*> ClavisProxy::GetServices()
+    /// @copydoc cqp::IQKDDevice::RegisterServices
+    void ClavisProxy::RegisterServices(grpc::ServerBuilder& builder)
     {
-        return { reportServer.get() };
+        builder.RegisterService(reportServer.get());
     }
 
     void ClavisProxy::SetInitialKey(std::unique_ptr<PSK> initailKey)

@@ -3,7 +3,7 @@
 * @brief SiftReceiver
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 26/6/2017
@@ -31,14 +31,16 @@ namespace cqp
             using google::protobuf::RepeatedField;
             using grpc::Status;
             bool dataReady = false;
-            Status result = grpc::Status(grpc::StatusCode::ABORTED, "No data available");
+            Status result = grpc::Status(grpc::StatusCode::ABORTED, "Sift: No data available");
 
             if(!request->basis().empty())
             {
                 // wait for incoming data
-                /*lock scope*/{
+                /*lock scope*/
+                {
                     unique_lock<mutex> lock(statesMutex);
-                    dataReady = statesCv.wait_for(lock, receiveTimeout, [&](){
+                    dataReady = statesCv.wait_for(lock, receiveTimeout, [&]()
+                    {
                         return collectedStates.find(request->basis().begin()->first) != collectedStates.end();
                     });
                 }/*lock scope*/
@@ -78,7 +80,8 @@ namespace cqp
                                 std::transform(theirBasisList.basis().begin(), theirBasisList.basis().end(),
                                                mySeqIt->second->begin(),
                                                myAnswers->begin(),
-                                               [](auto left, auto right){
+                                               [](auto left, auto right)
+                                {
                                     return Basis(left) == QubitHelper::Base(right);
                                 });
 
@@ -86,14 +89,14 @@ namespace cqp
                             else
                             {
                                 LOGERROR("Length mismatch in basis listSift Sequence ID=" + to_string(mySeqIt->first));
-                                result = Status(grpc::StatusCode::OUT_OF_RANGE, "Length mismatch in basis list", "Sequence ID=" + to_string(mySeqIt->first));
+                                result = Status(grpc::StatusCode::OUT_OF_RANGE, "Sift: Length mismatch in basis list", "Sequence ID=" + to_string(mySeqIt->first));
                                 break;
                             } // else
                         } //if(mySeqIt != collectedStates.end())
                         else
                         {
                             LOGERROR("Failed to find state to compare: Sift Sequence ID=" + to_string(theirSeqIt->first));
-                            result = Status(grpc::StatusCode::INVALID_ARGUMENT, "Failed to find state to compare", "Sequence ID=" + to_string(theirSeqIt->first));
+                            result = Status(grpc::StatusCode::INVALID_ARGUMENT, "Sift: Failed to find state to compare", "Sequence ID=" + to_string(theirSeqIt->first));
                             break;
                         } // else
                         ++theirSeqIt;

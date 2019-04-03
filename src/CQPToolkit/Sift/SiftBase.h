@@ -3,7 +3,7 @@
 * @brief SiftBase
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 30/1/2018
@@ -16,6 +16,7 @@
 #include "CQPToolkit/Sift/Stats.h"
 #include "QKDInterfaces/Qubits.pb.h"
 #include "CQPToolkit/cqptoolkit_export.h"
+#include "CQPToolkit/Interfaces/IRemoteComms.h"
 
 namespace cqp
 {
@@ -27,7 +28,8 @@ namespace cqp
          * Common codew for sifting
          */
         class CQPTOOLKIT_EXPORT SiftBase : public virtual IAlignmentCallback,
-                public Provider<ISiftedCallback>
+            public Provider<ISiftedCallback>,
+            public virtual IRemoteComms
         {
         public:
             /**
@@ -43,6 +45,22 @@ namespace cqp
 
             /// @copydoc IAlignmentCallback::OnAligned
             void OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits) override;
+
+            ///@}
+
+            /// @{
+            /// @name IRemoteComms interface
+
+            /**
+             * @brief Connect
+             * @param channel channel to the other sifter
+             */
+            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override;
+
+            /**
+             * @brief Disconnect
+             */
+            void Disconnect() override;
 
             ///@}
 

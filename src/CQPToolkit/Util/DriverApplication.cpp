@@ -48,8 +48,6 @@ namespace cqp
 
         definedArguments.AddOption(CommandlineNames::controlAddr, "k", "Listen address (host and port) for control interface")
         .Bind();
-        definedArguments.AddOption(CommandlineNames::sessionAddr, "", "Bind address (host and port) for internal communication")
-        .Bind();
 
         definedArguments.AddOption(CommandlineNames::siteAgent, "r", "The address of the site agent to register with")
         .Bind();
@@ -63,7 +61,6 @@ namespace cqp
         .Bind();
 
         // set sensible default values for config items
-        controlDetails->mutable_config()->set_sessionaddress(std::string(net::AnyAddress) + ":0");
         controlDetails->set_controladdress(std::string(net::AnyAddress) + ":0");
     }
 
@@ -117,6 +114,7 @@ namespace cqp
         JsonOptions jsonOptions;
         jsonOptions.add_whitespace = true;
         jsonOptions.preserve_proto_field_names = true;
+        jsonOptions.always_print_primitive_fields = true;
         if(LogStatus(MessageToJsonString(config, &configJson, jsonOptions)).ok())
         {
             result = fs::WriteEntireFile(filename, configJson);
@@ -147,7 +145,6 @@ namespace cqp
             } // if tls set
 
             definedArguments.GetProp(CommandlineNames::siteAgent, *controlDetails->mutable_siteagentaddress());
-            definedArguments.GetProp(CommandlineNames::sessionAddr, *controlDetails->mutable_config()->mutable_sessionaddress());
             definedArguments.GetProp(CommandlineNames::controlAddr, *controlDetails->mutable_controladdress());
 
             definedArguments.GetProp(CommandlineNames::switchName, *controlDetails->mutable_config()->mutable_switchname());
@@ -160,22 +157,12 @@ namespace cqp
         return exitCode;
     }
 
-    void DriverApplication::WaitForShutdown()
-    {
-        std::unique_lock<std::mutex> lock(shutdownMutex);
-        waitForShutdown.wait(lock, [&]()
-        {
-            return shutdown == true;
-        });
-    }
-
     void DriverApplication::ShutdownNow()
     {
-        shutdown = true;
         adaptor->StopServer();
         adaptor.reset();
 
-        waitForShutdown.notify_all();
+        Application::ShutdownNow();
     }
 
     void DriverApplication::DisplayHelp(const CommandArgs::Option&)

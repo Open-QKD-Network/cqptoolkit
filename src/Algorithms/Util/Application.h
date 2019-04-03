@@ -15,6 +15,9 @@
 #include "Algorithms/Util/CommandArgs.h"
 #include "Algorithms/algorithms_export.h"
 #include <csignal>
+#include <condition_variable>
+#include <memory>
+#include <atomic>
 
 namespace cqp
 {
@@ -69,6 +72,10 @@ namespace cqp
          * @return True on success
          */
         bool AddSignalHandler(int signum, SignalFunction func);
+
+        virtual void WaitForShutdown();
+
+        virtual void ShutdownNow();
     protected:
         /// command line switches
         CommandArgs definedArguments;
@@ -87,6 +94,13 @@ namespace cqp
          * @param signal The signal being thrown
          */
         static void SignalHandler(int signal);
+
+
+    private:
+
+        std::atomic_bool shutdown {false};
+        std::mutex shutdownMutex;
+        std::condition_variable waitForShutdown;
     };
 
     /// Macro for creating a standard main entry into a program

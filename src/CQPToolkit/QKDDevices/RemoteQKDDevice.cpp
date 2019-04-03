@@ -67,7 +67,11 @@ namespace cqp
         // prepare the device
         if(result.ok() && device->Initialise(request->details()))
         {
-            session->StartSession(request->details());
+            remote::SessionDetailsFrom from;
+            from.set_initiatoraddress(qkdDeviceAddress);
+            (*from.mutable_details()) = request->details();
+
+            session->StartSession(from);
         }
         else
         {
@@ -97,6 +101,7 @@ namespace cqp
             ProcessKeys(ctx, writer);
             // keys are no longer being requested, stop the session
             session->EndSession();
+            session->Disconnect();
         }
         else
         {
@@ -142,6 +147,7 @@ namespace cqp
         if(session)
         {
             session->EndSession();
+            session->Disconnect();
         }
         else
         {
@@ -150,6 +156,22 @@ namespace cqp
 
         recievedKeysCv.notify_all();
         return Status();
+    }
+
+    grpc::Status RemoteQKDDevice::GetDetails(grpc::ServerContext*, const google::protobuf::Empty*, remote::ControlDetails* response)
+    {
+        Status result(StatusCode::INTERNAL, "Invalid device");
+        if(device)
+        {
+
+            (*response->mutable_config()) = device->GetDeviceDetails();
+
+            response->set_controladdress(qkdDeviceAddress);
+            response->set_siteagentaddress(siteAgentAddress);
+            result = Status();
+        }
+
+        return result;
     }
 
     void RemoteQKDDevice::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
@@ -174,8 +196,8 @@ namespace cqp
 
         remote::ControlDetails request;
         (*request.mutable_config()) = device->GetDeviceDetails();
-        request.mutable_config()->set_sessionaddress(device->GetSessionController()->GetConnectionAddress());
         request.set_controladdress(qkdDeviceAddress);
+        LOGDEBUG("Registering device " + request.config().id() + " with " + address);
         auto result = siteAgent->RegisterDevice(&ctx, request, &response);
 
         if(result.ok())
@@ -207,21 +229,9 @@ namespace cqp
         // TODO reconsile the device config type with the need to provide this - the device doesn't inherently know it
         qkdDeviceAddress = controlAddress;
         siteAgentAddress = siteAgent;
-        auto config = device->GetDeviceDetails();
 
+        auto config = device->GetDeviceDetails();
         auto session = device->GetSessionController();
-        // start the session server
-        URI sessionAddress = config.sessionaddress();
-        auto hostnameTobind = sessionAddress.GetHost();
-        if(hostnameTobind.empty())
-        {
-            hostnameTobind = net::AnyAddress;
-            sessionAddress.SetHost(net::GetHostname());
-        }
-        // start listening for session control on the provided address
-        LogStatus(session->StartServer(hostnameTobind, sessionAddress.GetPort(), creds));
-        // get the actual address for others to use for connections
-        (*config.mutable_sessionaddress()) = session->GetConnectionAddress();
 
         // now start the IDevice server
         grpc::ServerBuilder devServBuilder;
@@ -229,10 +239,8 @@ namespace cqp
         devServBuilder.AddListeningPort(controlAddress, creds, &listenPort);
         devServBuilder.RegisterService(this);
         // attach any other services which the device provides
-        for(auto service : device->GetServices())
-        {
-            devServBuilder.RegisterService(service);
-        }
+        device->RegisterServices(devServBuilder);
+        session->RegisterServices(devServBuilder);
 
         deviceServer = devServBuilder.BuildAndStart();
 

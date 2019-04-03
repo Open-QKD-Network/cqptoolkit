@@ -82,6 +82,9 @@ namespace cqp
         /// @copydoc remote::IDevice::EndSession
         grpc::Status EndSession(grpc::ServerContext*, const google::protobuf::Empty*, google::protobuf::Empty*) override;
 
+        /// @copydoc remote::IDevice::GetDetails
+        grpc::Status GetDetails(grpc::ServerContext*, const google::protobuf::Empty*, remote::ControlDetails*response) override;
+
         ///@}
 
         ///@{

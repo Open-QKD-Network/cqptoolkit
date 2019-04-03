@@ -18,19 +18,21 @@
 #include <grpc++/channel.h>
 #include "CQPToolkit/Interfaces/IRemoteComms.h"
 
-namespace cqp {
-    namespace align {
+namespace cqp
+{
+    namespace align
+    {
 
         /**
          * @brief The NullAlignment class
          * Pass through class for alignment, does not perform any actions on the incomming data, simply passes it to the listener
          */
         class CQPTOOLKIT_EXPORT NullAlignment : public Provider<IAlignmentCallback>,
-                /* Interfaces */
-                public virtual IDetectionEventCallback,
-                public virtual IEmitterEventCallback,
-                public virtual IRemoteComms,
-                protected WorkerThread
+        /* Interfaces */
+            public virtual IDetectionEventCallback,
+            public virtual IEmitterEventCallback,
+            public virtual IRemoteComms,
+            protected WorkerThread
         {
         public:
             NullAlignment() = default;
@@ -62,19 +64,12 @@ namespace cqp {
              * @brief Connect Connect to the other side to exchange alignment detail
              * @param channel
              */
-            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override {
-                transmitter = channel;
-                Start();
-            }
+            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override;
 
             /**
              * @brief Disconnect
              */
-            void Disconnect() override
-            {
-                Stop(true);
-                transmitter.reset();
-            }
+            void Disconnect() override;
 
             /// @}
 

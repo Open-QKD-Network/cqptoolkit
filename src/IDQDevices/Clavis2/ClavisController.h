@@ -51,7 +51,7 @@ namespace cqp
             /// @name ISessionController
 
             /// @copydoc cqp::ISessionController::StartSession
-            grpc::Status StartSession(const remote::SessionDetails& sessionDetails) override;
+            grpc::Status StartSession(const remote::SessionDetailsFrom& sessionDetails) override;
 
             /// @copydoc cqp::ISessionController::EndSession
             void EndSession() override;
@@ -60,6 +60,8 @@ namespace cqp
 
             ///@{
             /// @name ISession interface
+
+            void RegisterServices(grpc::ServerBuilder &builder) override;
 
             /// @copydoc cqp::remote::ISession::SessionStarting
             /// @param context Connection details from the server

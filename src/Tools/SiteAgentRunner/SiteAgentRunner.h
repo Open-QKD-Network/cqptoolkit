@@ -3,7 +3,7 @@
 * @brief SiteAgentRunner
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -54,8 +54,10 @@ protected:
      */
     int Main(const std::vector<std::string>& args) override;
 
+    void StopProcessing(int);
+
     /// agents managed by this site
-    std::vector<cqp::SiteAgent*> siteAgents;
+    std::vector<std::unique_ptr<cqp::SiteAgent>> siteAgents;
     /// for detecting other sites
     std::unique_ptr<cqp::net::ServiceDiscovery> sd;
     /// exit codes for this program

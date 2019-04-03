@@ -477,7 +477,7 @@ macro(CQP_QT_PROJECT)
         list(APPEND ${PROJECT_NAME}_SOURCES ${tempSources} ${tempResources})
 
         QT5_ADD_RESOURCES(RESOURCES ${tempResources})
-        #list(APPEND ${PROJECT_NAME}_SOURCES ${RESOURCES})
+        list(APPEND ${PROJECT_NAME}_SOURCES ${RESOURCES})
 
         add_definitions(-DQT_DEPRECATED_WARNINGS)
 

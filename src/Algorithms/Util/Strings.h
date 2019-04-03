@@ -11,18 +11,19 @@
 /// Support for "wide strings" has been removed with great prejudice
 /// see http://utf8everywhere.org/ for rational
 
-namespace cqp {
+namespace cqp
+{
 
     /// @def CONSTSTRING
     /// Macro for defining a constant string
-    #define CONSTSTRING constexpr const char*
+#define CONSTSTRING constexpr const char*
 
     /// @def NAMEDSTRING(Name)
     /// Macro for defining a string who's value is the same as it's name
     /// @param Name The name of the string and it's value
     /// @return Name
-    #define NAMEDSTRING(Name) \
-        CONSTSTRING Name = #Name
+#define NAMEDSTRING(Name) \
+    CONSTSTRING Name = #Name
 
     /// Concatenate the strings optionally separating them with a delimiter
     /// @param strings The strings to concatenate
@@ -147,6 +148,13 @@ namespace cqp {
 
     /**
      * @brief ToHexString
+     * @param value Value to convert to hex
+     * @return The value in uppercase hex, at least 2 characters wide, no prefix
+     */
+    ALGORITHMS_EXPORT std::string ToHexString(const std::string& value);
+
+    /**
+     * @brief ToHexString
      * @tparam T The type of value
      * @param value Value to convert to hex
      * @return The value in uppercase hex, at least 2 characters wide, no prefix
@@ -162,39 +170,44 @@ namespace cqp {
     }
 
     /// Lookup table to go from a hex character to it's number
-    struct CharToIntTable {
+    struct CharToIntTable
+    {
         /// storage for the table
         char tab[256] {0};
 
         /// constructor
-      constexpr CharToIntTable() : tab {} {
-        tab[0u + '1'] = 1;
-        tab[0u + '2'] = 2;
-        tab[0u + '3'] = 3;
-        tab[0u + '4'] = 4;
-        tab[0u + '5'] = 5;
-        tab[0u + '6'] = 6;
-        tab[0u + '7'] = 7;
-        tab[0u + '8'] = 8;
-        tab[0u + '9'] = 9;
-        tab[0u + 'a'] = 10;
-        tab[0u + 'A'] = 10;
-        tab[0u + 'b'] = 11;
-        tab[0u + 'B'] = 11;
-        tab[0u + 'c'] = 12;
-        tab[0u + 'C'] = 12;
-        tab[0u + 'd'] = 13;
-        tab[0u + 'D'] = 13;
-        tab[0u + 'e'] = 14;
-        tab[0u + 'E'] = 14;
-        tab[0u + 'f'] = 15;
-        tab[0u + 'F'] = 15;
-      }
-      /// accessor for looking up a value
-      /// Usage: `escaped = charToIntTable[achar];`
-      /// @param idx The value to look up
-      /// @return mapped value
-      constexpr char operator[](char const idx) const { return tab[static_cast<size_t>(idx)]; }
+        constexpr CharToIntTable() : tab {}
+        {
+            tab[0u + '1'] = 1;
+            tab[0u + '2'] = 2;
+            tab[0u + '3'] = 3;
+            tab[0u + '4'] = 4;
+            tab[0u + '5'] = 5;
+            tab[0u + '6'] = 6;
+            tab[0u + '7'] = 7;
+            tab[0u + '8'] = 8;
+            tab[0u + '9'] = 9;
+            tab[0u + 'a'] = 10;
+            tab[0u + 'A'] = 10;
+            tab[0u + 'b'] = 11;
+            tab[0u + 'B'] = 11;
+            tab[0u + 'c'] = 12;
+            tab[0u + 'C'] = 12;
+            tab[0u + 'd'] = 13;
+            tab[0u + 'D'] = 13;
+            tab[0u + 'e'] = 14;
+            tab[0u + 'E'] = 14;
+            tab[0u + 'f'] = 15;
+            tab[0u + 'F'] = 15;
+        }
+        /// accessor for looking up a value
+        /// Usage: `escaped = charToIntTable[achar];`
+        /// @param idx The value to look up
+        /// @return mapped value
+        constexpr char operator[](char const idx) const
+        {
+            return tab[static_cast<size_t>(idx)];
+        }
 
     }
     /// Lookup table to go from a hex character to it's number

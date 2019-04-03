@@ -3,7 +3,7 @@
 * @brief Alignment
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 4/7/2017
@@ -15,6 +15,7 @@
 #include "Algorithms/Util/Provider.h"                        // for Event, Even...
 #include "CQPToolkit/cqptoolkit_export.h"
 #include "Algorithms/Datatypes/Qubits.h"
+#include "CQPToolkit/Interfaces/IRemoteComms.h"
 
 namespace cqp
 {
@@ -29,9 +30,26 @@ namespace cqp
          * @brief The Alignment class
          * A simple example of aligning time tags as they are received.
          */
-        class CQPTOOLKIT_EXPORT Alignment : public Provider<ISiftedCallback>
+        class CQPTOOLKIT_EXPORT Alignment : public Provider<ISiftedCallback>,
+            public virtual IRemoteComms
         {
         public:
+
+            /// @{
+            /// @name IRemoteComms interface
+
+            /**
+             * @brief Connect
+             * @param channel channel to the other sifter
+             */
+            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override;
+
+            /**
+             * @brief Disconnect
+             */
+            void Disconnect() override;
+
+            ///@}
 
             /// Statistics collected by this class
             Statistics stats;

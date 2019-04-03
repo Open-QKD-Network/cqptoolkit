@@ -66,19 +66,16 @@ namespace cqp
         {
             session::SessionController::RemoteCommsList remotes;
             remotes.push_back(align);
+            remotes.push_back(ec);
             return remotes;
         }
 
-        session::SessionController::Services GetServices()
+        void RegisterServices(grpc::ServerBuilder& builder)
         {
-            session::SessionController::Services services
-            {
-                ec.get(),
-                privacy.get(),
-                reportServer.get() // allow external clients to get stats
-            };
+            builder.RegisterService(ec.get());
+            builder.RegisterService(privacy.get());
+            builder.RegisterService(reportServer.get()); // allow external clients to get stats
 
-            return services;
         }
     };
 
@@ -86,11 +83,8 @@ namespace cqp
         processing{std::make_unique<ProcessingChain>()},
         driver{std::make_shared<UsbTagger>(controlName, usbSerialNumber)}
     {
-        auto services = processing->GetServices();
-        services.push_back(driver.get());
-
         // create the session controller
-        sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes(), processing->reportServer);
+        sessionController = std::make_unique<session::SessionController>(creds, processing->GetRemotes(), processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
     }
@@ -99,11 +93,8 @@ namespace cqp
         processing{std::make_unique<ProcessingChain>()},
         driver{std::make_shared<UsbTagger>(move(serialDev), move(usbDev))}
     {
-        auto services = processing->GetServices();
-        services.push_back(driver.get());
-
         // create the session controller
-        sessionController = std::make_unique<session::SessionController>(creds, services, processing->GetRemotes(),
+        sessionController = std::make_unique<session::SessionController>(creds, processing->GetRemotes(),
                             processing->reportServer);
         // link the output of the photon generator to the post processing
         driver->Attach(processing->align.get());
@@ -152,9 +143,10 @@ namespace cqp
         return result;
     }
 
-    std::vector<grpc::Service*> PhotonDetectorMk1::GetServices()
+    void PhotonDetectorMk1::RegisterServices(grpc::ServerBuilder& builder)
     {
-        return {processing->reportServer.get()};
+        processing->RegisterServices(builder);
+        builder.RegisterService(driver.get());
     }
 
     void PhotonDetectorMk1::SetInitialKey(std::unique_ptr<PSK> initailKey)
