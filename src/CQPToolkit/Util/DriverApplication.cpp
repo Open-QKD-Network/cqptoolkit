@@ -114,6 +114,7 @@ namespace cqp
         JsonOptions jsonOptions;
         jsonOptions.add_whitespace = true;
         jsonOptions.preserve_proto_field_names = true;
+        jsonOptions.always_print_primitive_fields = true;
         if(LogStatus(MessageToJsonString(config, &configJson, jsonOptions)).ok())
         {
             result = fs::WriteEntireFile(filename, configJson);
