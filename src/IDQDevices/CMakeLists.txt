@@ -76,3 +76,5 @@ if(TARGET ${PROJECT_NAME}_Shared AND TARGET IDQ4PClasses)
         PkgConfig::MsgPack)
 
 endif()
+# packaging
+SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "IDQuantique library")
