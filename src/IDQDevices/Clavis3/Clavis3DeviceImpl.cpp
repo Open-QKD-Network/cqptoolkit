@@ -53,12 +53,25 @@ namespace cqp
 
     Clavis3Device::Impl::Impl(const std::string& hostname)
     {
-        mgmtSocket.connect(hostname + ":" + std::to_string(managementPort));
-        signalSocket.connect(hostname + ":" + std::to_string(managementPort));
-        keySocket.connect(hostname + ":" + std::to_string(keyChannelPort));
-        keySocket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-        // create a thread to read and process the signals
-        signalReader = std::thread(&Impl::ReadSignalSocket, this);
+        try
+        {
+            const std::string prefix {"tcp://"};
+
+            LOGTRACE("Connecting to management socket");
+            mgmtSocket.connect(prefix + hostname + ":" + std::to_string(managementPort));
+            LOGTRACE("Connecting to signal socket");
+            signalSocket.connect(prefix + hostname + ":" + std::to_string(managementPort));
+            signalSocket.setsockopt(ZMQ_SUBSCRIBE, "");
+            LOGTRACE("Connecting to key socket");
+            keySocket.connect(prefix + hostname + ":" + std::to_string(keyChannelPort));
+            keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
+            // create a thread to read and process the signals
+            signalReader = std::thread(&Impl::ReadSignalSocket, this);
+        }
+        catch(const std::exception& e)
+        {
+            LOGERROR(e.what());
+        }
     }
 
     cqp::Clavis3Device::Impl::~Impl()

@@ -12,6 +12,7 @@
 #if defined(HAVE_IDQ4P)
 #include "Clavis3Device.h"
 #include "Clavis3DeviceImpl.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 namespace cqp
 {
@@ -121,5 +122,8 @@ namespace cqp
         pImpl->Request_SetInitialKey(*initailKey);
     }
 
+    void Clavis3Device::RegisterServices(grpc::ServerBuilder& builder)
+    {
+    }
 } // namespace cqp
 #endif //HAVE_IDQ4P

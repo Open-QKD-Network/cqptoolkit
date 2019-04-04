@@ -74,8 +74,8 @@ namespace cqp
 
         zmq::context_t context {1};
         zmq::socket_t mgmtSocket{context, ZMQ_REQ};
-        zmq::socket_t signalSocket{context, ZMQ_PAIR};
-        zmq::socket_t keySocket{context, ZMQ_PAIR};
+        zmq::socket_t signalSocket{context, ZMQ_SUB};
+        zmq::socket_t keySocket{context, ZMQ_SUB};
 
         std::atomic_bool shutdown {false};
         std::atomic<idq4p::domainModel::SystemState> state;

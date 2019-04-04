@@ -47,6 +47,10 @@ namespace cqp
         KeyPublisher* GetKeyPublisher() override;
         /// @copydoc IQKDDevice::GetDeviceDetails
         remote::DeviceConfig GetDeviceDetails() override;
+        /// @copydoc IQKDDevice::SetInitialKey
+        void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
+        /// @copydoc IQKDDevice::RegisterServices
+        void RegisterServices(grpc::ServerBuilder& builder) override;
         ///@}
 
         ///@{
@@ -74,9 +78,6 @@ namespace cqp
         std::shared_ptr<grpc::ChannelCredentials> creds;
 
 
-        // IQKDDevice interface
-    public:
-        void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
     };
 
 } // namespace cqp

@@ -10,60 +10,30 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 
+#include "Clavis3Driver.h"
 #include "Algorithms/Logging/ConsoleLogger.h"
-#include "CQPToolkit/Util/DriverApplication.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
-#include "Clavis3Config.pb.h"
 #include "IDQDevices/Clavis3/Clavis3Device.h"
 #include "CQPToolkit/QKDDevices/RemoteQKDDevice.h"
+#include "CQPToolkit/Statistics/ReportServer.h"
 
 using namespace cqp;
 
-/**
- * @brief The ExampleConsoleApp class
- * Simple GUI for driving the QKD software
- */
-class Clavis3Driver : public DriverApplication
-{
-
-    struct Names
-    {
-        static CONSTSTRING manual = "manual";
-    };
-
-public:
-    /// Constructor
-    Clavis3Driver();
-
-    /// Destructor
-    ~Clavis3Driver() override;
-
-    /// The application's main logic.
-    /// Returns an exit code which should be one of the values
-    /// from the ExitCode enumeration.
-    /// @param[in] args Unprocessed command line arguments
-    /// @return success state of the application
-    int Main(const std::vector<std::string>& definedArguments) override;
-
-    void HandleConfigFile(const cqp::CommandArgs::Option& option) override;
-private:
-    /// exit codes for this program
-    enum ExitCodes { Ok = 0, ConfigNotFound = 10, InvalidConfig = 11, ServiceCreationFailed = 20, UnknownError = 99 };
-
-    std::shared_ptr<cqp::Clavis3Device> device;
-    cqp::config::Clavis3Config config;
-};
-
-Clavis3Driver::Clavis3Driver()
+Clavis3Driver::Clavis3Driver() :
+    reportServer{std::make_shared<stats::ReportServer>()}
 {
     using namespace cqp;
     using std::placeholders::_1;
     ConsoleLogger::Enable();
     DefaultLogger().SetOutputLevel(LogLevel::Info);
 
+    definedArguments.AddOption(Names::device, "d", "Device address")
+    .Bind();
     definedArguments.AddOption(Names::manual, "m", "Manual mode, specify Bobs address to directly connect and start generating key")
     .Bind();
 
+    definedArguments.AddOption(Names::writeConfig, "", "Output the resulting config to a file")
+    .Bind();
 }
 
 Clavis3Driver::~Clavis3Driver()
@@ -79,14 +49,74 @@ void Clavis3Driver::HandleConfigFile(const cqp::CommandArgs::Option& option)
 
 int Clavis3Driver::Main(const std::vector<std::string> &args)
 {
-    Application::Main(args);
+    DriverApplication::Main(args);
+    if(!stopExecution)
+    {
+        config.set_allocated_controlparams(controlDetails);
+
+        definedArguments.GetProp(Names::device, *config.mutable_deviceaddress());
+        if(config.deviceaddress().empty())
+        {
+            LOGERROR("Device address required");
+            stopExecution = true;
+            exitCode = ExitCodes::InvalidConfig;
+        }
+    }
 
     if(!stopExecution)
     {
         using namespace std;
+
+        device = make_shared<Clavis3Device>(config.deviceaddress(), channelCreds, reportServer);
+        adaptor = make_unique<RemoteQKDDevice>(device, serverCreds);
+
+        // get the real settings which have been corrected by the device driuver
+        (*config.mutable_controlparams()->mutable_config()) = device->GetDeviceDetails();
+
+        // any changes to config need to be applied by now
+        if(definedArguments.HasProp(Names::writeConfig))
+        {
+            // write out the current settings
+            WriteConfigFile(config, definedArguments.GetStringProp(Names::writeConfig));
+        } // if write config file
+
+        stopExecution = ! adaptor->StartControlServer(config.controlparams().controladdress(), config.controlparams().siteagentaddress());
+
     }
 
-    return 0;
+    if(!stopExecution)
+    {
+        AddSignalHandler(SIGINT, [this](int signum)
+        {
+            StopProcessing(signum);
+        });
+        AddSignalHandler(SIGTERM, [this](int signum)
+        {
+            StopProcessing(signum);
+        });
+
+        if(config.controlparams().config().side() == remote::Side_Type::Side_Type_Alice && !config.bobaddress().empty())
+        {
+            // TODO: get the key and do something with it
+            grpc::ServerContext ctx;
+            remote::SessionDetailsTo request;
+            google::protobuf::Empty response;
+
+            request.set_peeraddress(config.bobaddress());
+            LogStatus(adaptor->RunSession(&ctx, &request, &response));
+        }
+
+        // Wait for something to stop the driver
+        WaitForShutdown();
+    }
+    return exitCode;
+}
+
+void Clavis3Driver::StopProcessing(int)
+{
+    // The program is terminating,
+    ShutdownNow();
+    device.reset();
 }
 
 CQP_MAIN(Clavis3Driver)
