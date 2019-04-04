@@ -6,7 +6,7 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 
-VERSION=3.7.6
+VERSION=3.7.7
 PUSH=false
 RUNTIME=false
 SERV=registry.gitlab.com
@@ -75,6 +75,13 @@ fi
 
 ${SUDO} docker build $OPTS -t "${SERV}/${REPO}/${NAME}:${VERSION}" . && \
 ${SUDO} docker tag "${SERV}/${REPO}/${NAME}:${VERSION}" "${SERV}/${REPO}/${NAME}:latest" || exit 1
+
+# copy out any generated debs
+id=$(${SUDO} docker create "${SERV}/${REPO}/${NAME}:${VERSION}")
+mkdir generated
+${SUDO} docker cp "$id:/setup" ./generated/
+${SUDO} chown -R $USER ./generated
+${SUDO} docker rm -v $id
 
 if [ "${PUSH}" == "true" ]; then
 	${SUDO} docker login "${SERV}"

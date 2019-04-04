@@ -13,10 +13,10 @@ LABEL description="Build environment for the CQPToolkit. \
 Build using:\
 sudo ./makeDocker.sh"
 
-ADD ignoreme *.deb /
-ADD setupBuild.sh /
+COPY ignoreme *.deb /setup/
+COPY setupBuild.sh /setup/
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -yq --no-install-recommends lsb-release
-RUN chmod +x /setupBuild.sh
-RUN /setupBuild.sh -y $opts
+RUN chmod +x /setup/setupBuild.sh
+RUN /setup/setupBuild.sh -y $opts
