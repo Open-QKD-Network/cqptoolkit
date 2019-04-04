@@ -45,13 +45,15 @@ if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12.0)
         gRPC::grpc++
         protobuf::libprotobuf)
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        IDQ4PClasses
-        DomainModel
-        Utilities
-        PkgConfig::ZeroMQ
-        PkgConfig::MsgPack)
-else()
+    if(TARGET IDQ4PClasses)
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+            IDQ4PClasses
+            DomainModel
+            Utilities
+            PkgConfig::ZeroMQ
+            PkgConfig::MsgPack)
+    endif()
+elseif(TARGET IDQ4PClasses)
     add_dependencies(${PROJECT_NAME} PkgConfig::ZeroMQ PkgConfig::MsgPack)
     get_target_property(IDQ4PCLASSES_SOURCE_DIR IDQ4PClasses INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(DOMAINMODEL_SOURCE_DIR DomainModel INTERFACE_INCLUDE_DIRECTORIES)
@@ -65,7 +67,7 @@ else()
         ${MSGPACK_SOURCE_DIR})
 endif()
 
-if(TARGET ${PROJECT_NAME}_Shared)
+if(TARGET ${PROJECT_NAME}_Shared AND TARGET IDQ4PClasses)
     target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
         IDQ4PClasses
         DomainModel
