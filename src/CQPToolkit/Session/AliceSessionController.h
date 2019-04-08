@@ -32,9 +32,9 @@ namespace cqp
              * @brief AliceSessionController
              * Constructor
              * @param creds credentials to use when contacting the peer controller
-             * @param services A list of services to register with builder
              * @param remotes A list of objects which need to know when the sessions start/stop
              * @param source The object which produces photons
+             * @param theReportServer for passing on stats
              */
             AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
                                    const RemoteCommsList& remotes,

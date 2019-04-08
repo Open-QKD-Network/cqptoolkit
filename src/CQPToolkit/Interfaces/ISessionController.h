@@ -40,6 +40,10 @@ namespace cqp
     {
     public:
 
+        /**
+         * @brief RegisterServices
+         * @param builder builder to register with
+         */
         virtual void RegisterServices(grpc::ServerBuilder& builder) = 0;
 
         /**
@@ -50,9 +54,13 @@ namespace cqp
          */
         virtual grpc::Status Connect(URI otherController) = 0;
 
+        /**
+         * @brief Disconnect
+         */
         virtual void Disconnect() = 0;
 
         /// @copydoc remote::IDevice::GetLinkStatus
+        /// @param context server details
         virtual grpc::Status GetLinkStatus(grpc::ServerContext* context, ::grpc::ServerWriter<remote::LinkStatus>* writer) = 0;
 
         /**
@@ -72,6 +80,7 @@ namespace cqp
          *        SeshA -> SeshB : SessionStarting()
          *    deactivate SeshA
          * @enduml
+         * @param sessionDetails settings for the session
          * @return result of command
          */
         virtual grpc::Status StartSession(const remote::SessionDetailsFrom& sessionDetails) = 0;

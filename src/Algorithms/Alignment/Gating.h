@@ -157,6 +157,7 @@ namespace cqp
                              double* peakWidth = nullptr) const;
 
             /**
+             * @tparam Iter Iterator type for valid slots
              * @brief FilterDetections
              * Remove elements from qubits which do not have an index in validSlots
              * validSlots: { 0, 2, 3 }
@@ -164,10 +165,9 @@ namespace cqp
              * Result:     { 8, 10, 11 }
              * @details validSlots will be reduced by the presence of mismatching basis
              * qubits will be reduced by missmatching basis and alignment offsets
-             * @param[in,out] validSlots The list of indexes to filter the qubits
-             * @param[in] basis The basis which Alice sent.
+             * @param[in] validSlotsBegin The list of indexes to filter the qubits start
+             * @param[in] validSlotsEnd The list of indexes to filter the qubits end
              * @param[in,out] qubits A list of qubits which will be reduced to the size of validSlots
-             * @param[in] offset Shift the slot id
              * @return true on success
              */
             template<typename Iter>

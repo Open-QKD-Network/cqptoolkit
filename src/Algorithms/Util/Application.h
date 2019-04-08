@@ -41,7 +41,7 @@ namespace cqp
          * @brief Main
          * Override this to implement your application
          * Up call to it to process the command line arguments.
-         * @param definedArguments command line arguments from main entry
+         * @param args command line arguments from main entry
          * @return application error code, 0 usually means success
          */
         virtual int Main(const std::vector<std::string> &args);
@@ -73,8 +73,14 @@ namespace cqp
          */
         bool AddSignalHandler(int signum, SignalFunction func);
 
+        /**
+         * @brief WaitForShutdown blocks until something stops the application
+         */
         virtual void WaitForShutdown();
 
+        /**
+         * @brief ShutdownNow stops the application
+         */
         virtual void ShutdownNow();
     protected:
         /// command line switches
@@ -98,8 +104,11 @@ namespace cqp
 
     private:
 
+        /// should the application stop
         std::atomic_bool shutdown {false};
+        /// access control for shutdown
         std::mutex shutdownMutex;
+        /// listen for changes to shutdown
         std::condition_variable waitForShutdown;
     };
 

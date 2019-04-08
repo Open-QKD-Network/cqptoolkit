@@ -76,7 +76,7 @@ namespace cqp
         /// @copydoc IQKDDevice::RegisterServices
         void RegisterServices(grpc::ServerBuilder& builder) override;
         /// @copydoc IQKDDevice::SetInitialKey
-        void SetInitialKey(std::unique_ptr<PSK> initailKey) override;
+        void SetInitialKey(std::unique_ptr<PSK> initialKey) override;
         /// @}
     protected: // members
         /// What this driver is called

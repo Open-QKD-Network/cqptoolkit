@@ -18,13 +18,6 @@ namespace cqp
     /// Macro for defining a constant string
 #define CONSTSTRING constexpr const char*
 
-    /// @def NAMEDSTRING(Name)
-    /// Macro for defining a string who's value is the same as it's name
-    /// @param Name The name of the string and it's value
-    /// @return Name
-#define NAMEDSTRING(Name) \
-    CONSTSTRING Name = #Name
-
     /// Concatenate the strings optionally separating them with a delimiter
     /// @param strings The strings to concatenate
     /// @param delimiter Separator between each string

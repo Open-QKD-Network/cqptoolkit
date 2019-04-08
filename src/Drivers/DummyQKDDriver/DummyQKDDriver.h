@@ -26,14 +26,23 @@ namespace cqp
     class RemoteQKDDevice;
 }
 
+/**
+ * @brief The DummyQKDDriver class wraps the DummyQKD driver as an application
+ */
 class DummyQKDDriver : public cqp::DriverApplication
 {
 public:
+    /// Constructor
     DummyQKDDriver();
 
+    /// Distructor
     ~DummyQKDDriver() override;
 
-    // Application interface
+    /**
+     * @brief Main
+     * @param args
+     * @return exit code
+     */
     int Main(const std::vector<std::string>& args) override;
 
     /**
@@ -63,11 +72,15 @@ public:
     /**
      * @brief HandleQuiet
      * Parse commandline argument
+     * @param option contains the filename
      */
     void HandleConfigFile(const cqp::CommandArgs::Option& option) override;
 
 protected: // methods
 
+    /**
+     * @brief StopProcessing
+     */
     void StopProcessing(int);
 
 protected: // members
@@ -81,7 +94,9 @@ protected: // members
                      ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99
                    };
 
+    /// The device driver
     std::shared_ptr<cqp::DummyQKD> device;
+    /// the device configuration
     cqp::config::DummyQKDConfig config;
     struct DummyNames;
 

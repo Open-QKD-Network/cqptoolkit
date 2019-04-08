@@ -26,6 +26,9 @@ namespace cqp
     class RemoteQKDDevice;
 }
 
+/**
+ * @brief The HandheldDriver class
+ */
 class HandheldDriver : public cqp::DriverApplication
 {
 public:
@@ -39,11 +42,15 @@ public:
     /**
      * @brief HandleQuiet
      * Parse commandline argument
+     * @param option contains the filename
      */
     void HandleConfigFile(const cqp::CommandArgs::Option& option) override;
 
 protected: // methods
 
+    /**
+     * @brief StopProcessing
+     */
     void StopProcessing(int);
 
 protected: // members
@@ -56,7 +63,9 @@ protected: // members
                      ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99
                    };
 
+    /// the device driver
     std::shared_ptr<cqp::LEDAliceMk1> device;
+    /// the device configuration
     cqp::config::HandheldConfig config;
     struct HandheldNames;
 };

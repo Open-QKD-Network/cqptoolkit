@@ -15,8 +15,11 @@ import public "google/protobuf/empty.proto";
 
 package cqp.remote;
 
+/// Name value pair
 message Pair {
+    /// name portion
     string name = 1;
+    /// value portion
     string value = 2;
 }
 
@@ -58,6 +61,7 @@ message DeviceConfig {
     uint32 bytesPerKey = 6;
 }
 
+/// Settings for a device
 message ControlDetails
 {
     /// Details on how to setup the device
@@ -81,14 +85,19 @@ message SessionDetails {
     repeated Pair parameters = 1;
     /// The loss in dB for this link
     double lineAttenuation = 2;
+    /// The number of photons transmitted on each frame
     uint64 photonsPerBurst = 3;
+    /// The number of photons per second in each burst
     uint32 repitionRate = 4;
     /// Which key to use for initial authentication/bootstrap
     uint64 initialKeyId = 5;
 };
 
+/// Details for the session with details about the initiator
 message SessionDetailsFrom {
+    /// Session details
     SessionDetails details = 1;
+    /// Who started the session
     string initiatorAddress = 2;
 }
 

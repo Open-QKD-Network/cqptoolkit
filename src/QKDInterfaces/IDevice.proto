@@ -135,7 +135,6 @@ service IDevice
          deactivate dev2
      @enduml
     * @param request Session details to start the session
-    * @param response A stream of keys as they are created
     * @return status
     */
     rpc RunSession(SessionDetailsTo) returns (google.protobuf.Empty);
@@ -143,11 +142,17 @@ service IDevice
     /**
      * @brief RunSession
      * Notify the device that key exchange will begin
-     * @param response A stream of keys as they are created
+     * @param request settings for the device
+     * @param writer A stream of keys as they are created
      * @return status
      */
     rpc WaitForSession(LocalSettings) returns (stream RawKeys);
 
+    /**
+     * @brief EndSession
+     * Stop a session
+     * @return status
+     */
     rpc EndSession(google.protobuf.Empty) returns (google.protobuf.Empty);
 
     /**
@@ -158,5 +163,10 @@ service IDevice
     */
     rpc GetLinkStatus(google.protobuf.Empty) returns (stream LinkStatus);
 
+    /**
+     * Get the device details
+     * @param response The details
+     * @return status
+     */
     rpc GetDetails(google.protobuf.Empty) returns (ControlDetails);
 }

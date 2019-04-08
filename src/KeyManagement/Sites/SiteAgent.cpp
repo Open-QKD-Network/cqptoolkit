@@ -24,6 +24,7 @@
 #include "CQPToolkit/Statistics/ReportServer.h"
 #include "Algorithms/Net/DNS.h"
 #include "Algorithms/Util/Env.h"
+#include "Algorithms/Util/Threading.h"
 
 #include <grpc++/server_builder.h>
 #include <grpc++/server.h>
@@ -392,6 +393,8 @@ namespace cqp
                     localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
                     // read stats and pass them on
                     localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
+                    // make the stats thread lower priority than the key reader
+                    threads::SetPriority(localDev->statsThread, 1);
 
                     devicesInUse.emplace(deviceId, move(localDev));
                     // The session will be start by the right side as it has all the required details

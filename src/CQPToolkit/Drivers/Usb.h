@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - USB IO
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -95,6 +95,7 @@ namespace cqp
          * @param bufferLength The size of the incomming data
          * @param callback Handler for the data
          * @param userData passed to the callback in the transfer parameter
+         * @param timeout How long to wait before failing to read, 0 = block forever
          * @return The transfer object, which can be used to canel the action with CancelTransfer()
          * If the result is null the request failed
          */
@@ -107,7 +108,8 @@ namespace cqp
          * @tparam C The class for the callback
          */
         template<typename C>
-        struct ReadEventData {
+        struct ReadEventData
+        {
             /// The calback signiture
             using CallbackFunc = void (C::*)(std::unique_ptr<DataBlock>);
             /// Back refernce for this
@@ -129,12 +131,13 @@ namespace cqp
          * it will be resized to the actual received size before passing to the callback.
          * @param func Handler for the data
          * @param obj passed to the callback in the transfer parameter
+         * @param timeout How long to wait before failing to read, 0 = block forever
          * @return The transfer object, which can be used to canel the action with CancelTransfer()
          * If the result is null the request failed
          */
         template<typename C>
         libusb_transfer* StartReadingBulk(uint8_t endPoint, std::unique_ptr<DataBlock> buffer,
-                                          void (C::* func)(std::unique_ptr<DataBlock>) , C* obj,
+                                          void (C::* func)(std::unique_ptr<DataBlock>), C* obj,
                                           std::chrono::milliseconds timeout = std::chrono::milliseconds{0})
         {
             ReadEventData<C>* eventData = new ReadEventData<C>();
@@ -220,7 +223,9 @@ namespace cqp
                 callback(move(eventData->buffer));
                 // clear up the transfer
                 CleanupTransfer(transfer);
-            } else {
+            }
+            else
+            {
                 LOGERROR("Invalid userdata in callback");
             }
             delete eventData;

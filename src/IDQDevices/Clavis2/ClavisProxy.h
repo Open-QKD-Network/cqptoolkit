@@ -51,7 +51,6 @@ namespace cqp
          * @brief ClavisProxy
          * @param initialConfig default settings for the device
          * @param creds
-         * @param bytesPerKey
          */
         ClavisProxy(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds);
 
@@ -85,9 +84,11 @@ namespace cqp
     protected:
         /// controller which passes key from the wrapper
         std::shared_ptr<session::ClavisController> controller;
+        /// the device configuration
         remote::DeviceConfig config;
-
+        /// for publishing stats
         std::shared_ptr<stats::ReportServer> reportServer;
+        /// for initial authentication
         std::unique_ptr<PSK> authKey;
     };
 

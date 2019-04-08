@@ -22,6 +22,7 @@ namespace cqp
     namespace stats
     {
 
+        /// Publisher type
         using StatsPublisher = Event<void(IStatsReportCallback::*)(const remote::SiteAgentReport&), &IStatsReportCallback::StatsReport>;
 
         /**
@@ -76,7 +77,8 @@ namespace cqp
             /**
             * @brief SetAdditionalProperties
             * Set values to be sent with every report
-            * @param addProps
+            * @param key
+            * @param value
             */
             void AddAdditionalProperties(const std::string& key, const std::string& value);
         protected: // members

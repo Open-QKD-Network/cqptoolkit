@@ -22,5 +22,6 @@ message HandheldConfig {
     string deviceName = 2;
     /// usb device name
     string usbDeviceName = 3;
+    /// standard device details
     remote.ControlDetails controlParams = 4;
 }

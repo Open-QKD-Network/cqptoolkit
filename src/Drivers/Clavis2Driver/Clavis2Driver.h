@@ -24,24 +24,39 @@ namespace cqp
     class RemoteQKDDevice;
 }
 
+/**
+ * @brief The Clavis2Driver class application for the driver
+ */
 class Clavis2Driver : public cqp::DriverApplication
 {
 public:
+    /**
+     * @brief Clavis2Driver
+     */
     Clavis2Driver();
 
+    /// destructor
     ~Clavis2Driver() override;
 
-    // Application interface
+    /**
+     * @brief Main
+     * @param args
+     * @return exit code
+     */
     int Main(const std::vector<std::string>& args) override;
 
     /**
      * @brief HandleQuiet
      * Parse commandline argument
+     * @param option contains the filename
      */
     void HandleConfigFile(const cqp::CommandArgs::Option& option) override;
 
 protected: // methods
 
+    /**
+     * @brief StopProcessing
+     */
     void StopProcessing(int);
 
 protected: // members
@@ -54,7 +69,10 @@ protected: // members
                      ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99
                    };
 
+    /// the device driver
     std::shared_ptr<cqp::ClavisProxy> device;
+    /// configuration
     cqp::config::Clavis2Config config;
+    /// struct for long arguments
     struct Clavis2Names;
 };

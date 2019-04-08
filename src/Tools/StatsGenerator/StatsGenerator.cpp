@@ -46,10 +46,10 @@ struct Names
 
 struct TypeNames
 {
-    static NAMEDSTRING(all);
-    static NAMEDSTRING(alignment);
-    static NAMEDSTRING(keygen);
-    static NAMEDSTRING(session);
+    static CONSTSTRING all = "all";
+    static CONSTSTRING alignment = "alignment";
+    static CONSTSTRING keygen = "keygen";
+    static CONSTSTRING session = "session";
 };
 
 // storage for strings

@@ -34,13 +34,23 @@ namespace cqp
 
     namespace stats
     {
+        /**
+         * @brief The IStatsReportCallback class
+         */
         class IStatsReportCallback
         {
         public:
+            /**
+             * @brief StatsReport
+             * @param report
+             */
             virtual void StatsReport(const remote::SiteAgentReport& report) = 0;
+
+            /// distructor
             virtual ~IStatsReportCallback() = default;
         };
 
+        /// The event
         using IStatsPublisher = IEvent<IStatsReportCallback>;
 
     }
@@ -77,9 +87,9 @@ namespace cqp
 
         /**
          * @brief SetInitialKey
-         * @param initailKey The key for initial authentication
+         * @param initialKey The key for initial authentication
          */
-        virtual void SetInitialKey(std::unique_ptr<PSK> initailKey) = 0;
+        virtual void SetInitialKey(std::unique_ptr<PSK> initialKey) = 0;
 
         /**
          * @brief GetSessionController
@@ -101,7 +111,7 @@ namespace cqp
 
         /**
          * @brief RegisterServices
-         * @return Attach driver services to a builder
+         * @param builder Attach driver services to a builder
          */
         virtual void RegisterServices(grpc::ServerBuilder& builder) = 0;
 
@@ -112,22 +122,22 @@ namespace cqp
         struct Parameters
         {
             /// The name of the switch port parameter
-            static NAMEDSTRING(switchPort);
+            static CONSTSTRING switchPort = "switchPort";
             /// The name of the side parameter
-            static NAMEDSTRING(side);
+            static CONSTSTRING side = "side";
             /// The name of the switch name parameter
-            static NAMEDSTRING(switchName);
+            static CONSTSTRING switchName = "switchName";
             /// The name of the key size parameter
-            static NAMEDSTRING(keybytes);
+            static CONSTSTRING keybytes = "keybytes";
             /// possible values for the side parameter
             struct SideValues
             {
                 /// side is alice
-                static NAMEDSTRING(alice);
+                static CONSTSTRING alice = "alice";
                 /// side is bob
-                static NAMEDSTRING(bob);
+                static CONSTSTRING bob = "bob";
                 /// side is any
-                static NAMEDSTRING(any);
+                static CONSTSTRING any = "any";
             };
         };
     };

@@ -52,7 +52,7 @@ namespace cqp
              * @brief SessionController
              * Constructor
              * @param creds credentials to use when contacting the peer controller
-             * @param services A list of services to register with builder
+             * @param theReportServer for publishing stats
              * @param remotes A list of objects which need to know when the sessions start/stop
              */
             SessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
@@ -71,11 +71,13 @@ namespace cqp
             /// @copydoc ISessionController::EndSession
             void EndSession() override;
 
+            /// @copydoc ISessionController::RegisterServices
             void RegisterServices(grpc::ServerBuilder &builder) override;
 
-            /// @copydoc ISessionController::StartServerAndConnect
+            /// @copydoc ISessionController::Connect
             grpc::Status Connect(URI otherController) override;
 
+            /// @copydoc ISessionController::Disconnect
             void Disconnect() override;
 
             /// @copydoc ISessionController::GetLinkStatus
@@ -93,14 +95,24 @@ namespace cqp
             grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
             ///@}
 
+            /// names for key-pair properties
             struct PropertyNames
             {
+                /// whether the session is running
                 static CONSTSTRING sessionActive = "sessionActive";
+                /// source
                 static CONSTSTRING from = "from";
+                /// destination
                 static CONSTSTRING to = "to";
             };
 
         protected: // methods
+            /**
+             * @brief UpdateStatus
+             * Send an update to the status
+             * @param newState
+             * @param errorCode
+             */
             void UpdateStatus(remote::LinkStatus::State newState, int errorCode = grpc::StatusCode::OK);
 
         protected: // members
@@ -109,6 +121,7 @@ namespace cqp
             std::shared_ptr<grpc::Channel> otherControllerChannel;
             /// The address of the controller on the other side
             std::string pairedControllerUri;
+            /// connection credentials
             std::shared_ptr<grpc::ChannelCredentials> creds;
 
             /// A list of objects which need to know when the sessions start/stop

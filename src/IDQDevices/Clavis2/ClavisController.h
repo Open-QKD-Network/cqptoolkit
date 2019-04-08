@@ -40,6 +40,7 @@ namespace cqp
              * @brief ClavisController
              * @param address The uri of the wrapper
              * @param creds credentials to use when connecting to the wrapper
+             * @param theReportServer for passing on stats
              */
             ClavisController(std::shared_ptr<grpc::ChannelCredentials> creds,
                              std::shared_ptr<stats::ReportServer> theReportServer);
@@ -80,7 +81,11 @@ namespace cqp
 
             ///@{
             /// @name IIDQWrapper interface
-            grpc::Status UseKeyID(grpc::ServerContext* context, ::grpc::ServerReader<remote::KeyIdValueList>* reader, google::protobuf::Empty* response) override;
+
+            ///@copydoc cqp::remote::IIDQWrapper::UseKeyID
+            /// @param context
+            grpc::Status UseKeyID(grpc::ServerContext* context,
+                                  ::grpc::ServerReader<remote::KeyIdValueList>* reader, google::protobuf::Empty*) override;
             ///@}
 
             /**
@@ -89,6 +94,11 @@ namespace cqp
              */
             remote::Side::Type GetSide();
 
+            /**
+             * @brief Initialise the device
+             * @param initialKey
+             * @return true on success
+             */
             bool Initialise(std::unique_ptr<PSK> initialKey);
         protected:
 
@@ -100,7 +110,9 @@ namespace cqp
              */
             void ReadKey();
 
+            /// The device to manage
             std::unique_ptr<cqp::Clavis> device;
+            /// lauches the clavis2 application
             std::unique_ptr<IDQSequenceLauncher> launcher;
 
             /// whether the threads should exit
@@ -111,6 +123,7 @@ namespace cqp
             std::thread statsThread;
             /// Our authentication token for getting shared secrets
             std::unique_ptr<PSK> authKey;
+            /// which side is this device
             remote::Side::Type side;
         };// ClavisController
     }

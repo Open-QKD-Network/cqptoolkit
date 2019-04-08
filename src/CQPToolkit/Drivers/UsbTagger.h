@@ -79,9 +79,9 @@ namespace cqp
         struct Parameters
         {
             /// the name of the serial device
-            static NAMEDSTRING(serial);
+            static CONSTSTRING serial = "serial";
             /// The serial number of the usb device
-            static NAMEDSTRING(usbserial);
+            static CONSTSTRING usbserial = "usbserial";
         };
 
         /**

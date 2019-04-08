@@ -38,5 +38,11 @@ service INetworkManager {
     */
     rpc UnregisterSite(SiteAddress) returns (google.protobuf.Empty);
 
+    /**
+    * @brief GetRegisteredSites
+    * Get a list of sites known to this network manager
+    * @param response the sites
+    * @return status
+    */
     rpc GetRegisteredSites(google.protobuf.Empty) returns (SiteDetailsList);
 }

@@ -40,9 +40,8 @@ namespace cqp
         /**
          * @brief DummyQKD
          * Constructor
-         * @param side Whether the device should be an alice or bob
+         * @param initialConfig config details
          * @param creds credentials to use when talking to peer
-         * @param bytesPerKey
          */
         DummyQKD(const remote::DeviceConfig& initialConfig, std::shared_ptr<grpc::ChannelCredentials> creds);
 
@@ -51,7 +50,6 @@ namespace cqp
          * Construct using a device url
          * @param address The url of the device
          * @param creds credentials to use when talking to peer
-         * @param bytesPerKey
          */
         DummyQKD(const std::string& address, std::shared_ptr<grpc::ChannelCredentials> creds);
 
@@ -101,7 +99,7 @@ namespace cqp
 
         /// handles postprocessing
         std::unique_ptr<ProcessingChain> processing;
-
+        /// device configuration
         remote::DeviceConfig config;
     };
 

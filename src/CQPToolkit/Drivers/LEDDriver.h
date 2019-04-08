@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - LED Driver board
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 29 Feb 2016
@@ -19,7 +19,8 @@
 
 namespace cqp
 {
-    namespace remote {
+    namespace remote
+    {
         class DeviceConfig;
     }
     class Usb;
@@ -28,8 +29,8 @@ namespace cqp
 
     /// Driver for Daves LED driver board
     class CQPTOOLKIT_EXPORT LEDDriver :
-            public virtual IPhotonGenerator,
-            public Provider<IEmitterEventCallback>
+        public virtual IPhotonGenerator,
+        public Provider<IEmitterEventCallback>
     {
     public:
         /**
@@ -86,9 +87,9 @@ namespace cqp
         struct Parameters
         {
             /// the name of the serial device
-            static NAMEDSTRING(serial);
+            static CONSTSTRING serial = "serial";
             /// The serial number of the usb device
-            static NAMEDSTRING(usbserial);
+            static CONSTSTRING usbserial = "usbserial";
         };
 
         /**
@@ -97,7 +98,12 @@ namespace cqp
          */
         bool Initialise();
 
-        void SetPhotonsPerBurst(uint64_t numPhotons) {
+        /**
+         * @brief SetPhotonsPerBurst
+         * @param numPhotons
+         */
+        void SetPhotonsPerBurst(uint64_t numPhotons)
+        {
             photonsPerBurst = numPhotons;
         }
     protected: // members

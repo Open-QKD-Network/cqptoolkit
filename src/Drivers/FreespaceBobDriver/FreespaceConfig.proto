@@ -20,5 +20,6 @@ message FreespaceConfig {
     string deviceName = 1;
     /// usb device name
     string usbDeviceName = 2;
+    /// standard device details
     remote.ControlDetails controlParams = 3;
 }

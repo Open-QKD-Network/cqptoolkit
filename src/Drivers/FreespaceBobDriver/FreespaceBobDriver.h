@@ -26,24 +26,39 @@ namespace cqp
     class RemoteQKDDevice;
 }
 
+/**
+ * @brief The FreespaceBobDriver class
+ */
 class FreespaceBobDriver : public cqp::DriverApplication
 {
 public:
+    /**
+     * @brief FreespaceBobDriver
+     */
     FreespaceBobDriver();
 
+    /// distructor
     ~FreespaceBobDriver() override;
 
-    // Application interface
+    /**
+     * @brief Main
+     * @param args
+     * @return exit code
+     */
     int Main(const std::vector<std::string>& args) override;
 
     /**
-     * @brief HandleQuiet
+     * @brief HandleConfigFile
      * Parse commandline argument
+     * @param option contains the filename
      */
     void HandleConfigFile(const cqp::CommandArgs::Option& option) override;
 
 protected: // methods
 
+    /**
+     * @brief StopProcessing
+     */
     void StopProcessing(int);
 
 protected: // members
@@ -56,7 +71,10 @@ protected: // members
                      ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99
                    };
 
+    /// The device driver
     std::shared_ptr<cqp::PhotonDetectorMk1> device;
+    /// the configuration
     cqp::config::FreespaceConfig config;
+    /// contains names of the long arguments
     struct FreespaceNames;
 };

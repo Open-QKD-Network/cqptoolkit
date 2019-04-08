@@ -3,7 +3,7 @@
 * @brief TunnelBuilder
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 7/11/2017
@@ -37,21 +37,21 @@ namespace cqp
 
         namespace Modes
         {
-            NAMEDSTRING(None);
-            NAMEDSTRING(GCM);
+            CONSTSTRING None = "None";
+            CONSTSTRING GCM = "GCM";
         }
 
         namespace SubModes
         {
-            NAMEDSTRING(None);
-            NAMEDSTRING(Tables2K);
-            NAMEDSTRING(Tables64K);
+            CONSTSTRING None = "None";
+            CONSTSTRING Tables2K = "Tables2K";
+            CONSTSTRING Tables64K = "Tables64K";
         }
 
         namespace BlockCiphers
         {
-            NAMEDSTRING(None);
-            NAMEDSTRING(AES);
+            CONSTSTRING None = "None";
+            CONSTSTRING AES = "AES";
         }
 
         enum KeySizes : uint8_t
@@ -62,22 +62,22 @@ namespace cqp
 
         namespace RandomNumberGenerators
         {
-            NAMEDSTRING(Any);
-            NAMEDSTRING(OSX917);
-            NAMEDSTRING(RDRAND);
-            NAMEDSTRING(SWRNG);
+            CONSTSTRING Any = "Any";
+            CONSTSTRING OSX917 = "OSX917";
+            CONSTSTRING RDRAND = "RDRAND";
+            CONSTSTRING SWRNG = "SWRNG";
         }
         /// string constants for devices types
         namespace DeviceTypes
         {
-            NAMEDSTRING(eth);
-            NAMEDSTRING(tun);   // raw IP packets
-            NAMEDSTRING(tap);   // raw ethernet packets
-            NAMEDSTRING(tcp);
-            NAMEDSTRING(tcpsrv);
-            NAMEDSTRING(udp);
-            NAMEDSTRING(clavis2);
-            NAMEDSTRING(crypto);
+            CONSTSTRING eth = "eth";
+            CONSTSTRING tun = "tun";   // raw IP packets
+            CONSTSTRING tap = "tap";   // raw ethernet packets
+            CONSTSTRING tcp = "tcp";
+            CONSTSTRING tcpsrv = "tcpsrv";
+            CONSTSTRING udp = "udp";
+            CONSTSTRING clavis2 = "clavis2";
+            CONSTSTRING crypto = "crypto";
         }
         /**
          * @brief The TunnelBuilder class

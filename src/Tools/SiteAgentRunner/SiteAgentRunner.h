@@ -54,6 +54,9 @@ protected:
      */
     int Main(const std::vector<std::string>& args) override;
 
+    /**
+     * @brief StopProcessing
+     */
     void StopProcessing(int);
 
     /// agents managed by this site

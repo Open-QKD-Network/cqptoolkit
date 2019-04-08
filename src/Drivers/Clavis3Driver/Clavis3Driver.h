@@ -28,12 +28,20 @@ namespace cqp
 class Clavis3Driver : public cqp::DriverApplication
 {
 
+    /**
+     * @brief The Names struct for command line long names
+     */
     struct Names
     {
+        /// manual connection mode
         static CONSTSTRING manual = "manual";
+        /// output filename for config writin
         static CONSTSTRING writeConfig = "write-config";
+        /// Address of the device
         static CONSTSTRING device = "device";
+        /// set alice mode
         static CONSTSTRING alice = "alice";
+        /// set bob mode
         static CONSTSTRING bob = "bob";
     };
 
@@ -47,7 +55,7 @@ public:
     /// The application's main logic.
     /// Returns an exit code which should be one of the values
     /// from the ExitCode enumeration.
-    /// @param[in] args Unprocessed command line arguments
+    /// @param definedArguments parsed commandline arguments
     /// @return success state of the application
     int Main(const std::vector<std::string>& definedArguments) override;
 
@@ -67,8 +75,11 @@ private:
     /// exit codes for this program
     enum ExitCodes { Ok = 0, ConfigNotFound = 10, InvalidConfig = 11, ServiceCreationFailed = 20, UnknownError = 99 };
 
+    /// the device driver
     std::shared_ptr<cqp::Clavis3Device> device;
+    /// the device configuration
     cqp::config::Clavis3Config config;
 
+    /// for reporting stats
     std::shared_ptr<cqp::stats::ReportServer> reportServer;
 };

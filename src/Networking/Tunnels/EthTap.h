@@ -40,9 +40,9 @@ namespace cqp
             struct Params
             {
                 /// device name
-                static NAMEDSTRING(name);
+                static CONSTSTRING name = "name";
                 /// netmask
-                static NAMEDSTRING(netmask);
+                static CONSTSTRING netmask = "netmask";
                 /// mode valuefor tun devices
                 static CONSTSTRING mode_tun = "tun";
                 /// mode valuefor tun devices

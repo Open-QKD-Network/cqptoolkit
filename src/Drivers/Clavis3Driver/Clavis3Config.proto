@@ -16,7 +16,10 @@ package cqp.config;
 
 /// Alice handheld config
 message Clavis3Config {
+    /// standard device details
     remote.ControlDetails controlParams = 1;
+    /// hostname of the device
     string deviceAddress = 2;
+    /// for manually connecting to bob if we're alice
     string bobAddress = 3;
 }

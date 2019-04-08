@@ -49,9 +49,9 @@ struct Names
     static CONSTSTRING writeConfig = "write-config";
     struct BackingStores
     {
-        static NAMEDSTRING(none);
-        static NAMEDSTRING(file);
-        static NAMEDSTRING(pkcs11);
+        static CONSTSTRING none = "none";
+        static CONSTSTRING file = "file";
+        static CONSTSTRING pkcs11 = "pkcs11";
     };
 };
 

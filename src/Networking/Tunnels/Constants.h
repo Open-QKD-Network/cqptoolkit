@@ -24,66 +24,66 @@ namespace cqp
         namespace Names
         {
 #if !defined(DOXYGEN)
-    NAMEDSTRING(TunnelID);
-    NAMEDSTRING(KeyName);
-    NAMEDSTRING(IV);
-    NAMEDSTRING(CipherData);
-    NAMEDSTRING(LocalDetails);
-    NAMEDSTRING(RemoteDetails);
-    NAMEDSTRING(CompletedDetails);
-    NAMEDSTRING(RequestedDetails);
-    NAMEDSTRING(Result);
+    CONSTSTRING TunnelID = "TunnelID";
+    CONSTSTRING KeyName = "KeyName";
+    CONSTSTRING IV = "IV";
+    CONSTSTRING CipherData = "CipherData";
+    CONSTSTRING LocalDetails = "LocalDetails";
+    CONSTSTRING RemoteDetails = "RemoteDetails";
+    CONSTSTRING CompletedDetails = "CompletedDetails";
+    CONSTSTRING RequestedDetails = "RequestedDetails";
+    CONSTSTRING Result = "Result";
 
-    NAMEDSTRING(Address);
-    NAMEDSTRING(Port);
+    CONSTSTRING Address = "Address";
+    CONSTSTRING Port = "Port";
 
-    NAMEDSTRING(Command);
-    NAMEDSTRING(Response);
-    NAMEDSTRING(ITunnelManager);
-    NAMEDSTRING(CreateTunnel);
-    NAMEDSTRING(CompleteTunnel);
-    NAMEDSTRING(CloseTunnel);
-    NAMEDSTRING(CompleteCloseTunnel);
-    NAMEDSTRING(Upgrade);
+    CONSTSTRING Command = "Command";
+    CONSTSTRING Response = "Response";
+    CONSTSTRING ITunnelManager = "ITunnelManager";
+    CONSTSTRING CreateTunnel = "CreateTunnel";
+    CONSTSTRING CompleteTunnel = "CompleteTunnel";
+    CONSTSTRING CloseTunnel = "CloseTunnel";
+    CONSTSTRING CompleteCloseTunnel = "CompleteCloseTunnel";
+    CONSTSTRING Upgrade = "Upgrade";
 #endif
         }
 
         namespace EndpointDetailsNames
         {
 #if !defined(DOXYGEN)
-    NAMEDSTRING(name);
-    NAMEDSTRING(tunnelId);
-    NAMEDSTRING(farSideController);
-    NAMEDSTRING(farSideControllerId);
-    NAMEDSTRING(active);
-    NAMEDSTRING(keyDeviceId);
-    NAMEDSTRING(encryptionMethod);
-    NAMEDSTRING(clientDataPort);
-    NAMEDSTRING(encryptedDataChannel);
-    NAMEDSTRING(nodeIndex);
+    CONSTSTRING name = "name";
+    CONSTSTRING tunnelId = "tunnelId";
+    CONSTSTRING farSideController = "farSideController";
+    CONSTSTRING farSideControllerId = "farSideControllerId";
+    CONSTSTRING active = "active";
+    CONSTSTRING keyDeviceId = "keyDeviceId";
+    CONSTSTRING encryptionMethod = "encryptionMethod";
+    CONSTSTRING clientDataPort = "clientDataPort";
+    CONSTSTRING encryptedDataChannel = "encryptedDataChannel";
+    CONSTSTRING nodeIndex = "nodeIndex";
 #endif
         }
 
         namespace ControllerDetailsNames
         {
 #if !defined(DOXYGEN)
-    NAMEDSTRING(name);
-    NAMEDSTRING(address);
-    NAMEDSTRING(port);
-    NAMEDSTRING(devices);
-    NAMEDSTRING(tunnels);
-    NAMEDSTRING(id);
-    NAMEDSTRING(connectionAddress);
+    CONSTSTRING name = "name";
+    CONSTSTRING address = "address";
+    CONSTSTRING port = "port";
+    CONSTSTRING devices = "devices";
+    CONSTSTRING tunnels = "tunnels";
+    CONSTSTRING id = "id";
+    CONSTSTRING connectionAddress = "connectionAddress";
 #endif
         }
 
         namespace CypherSuiteNames
         {
 #if !defined(DOXYGEN)
-    NAMEDSTRING(keyExchangeAlgorithm);
-    NAMEDSTRING(bultEncryptionAlgorithm);
-    NAMEDSTRING(macAlgorithm);
-    NAMEDSTRING(randomFunction);
+    CONSTSTRING keyExchangeAlgorithm = "keyExchangeAlgorithm";
+    CONSTSTRING bultEncryptionAlgorithm = "bultEncryptionAlgorithm";
+    CONSTSTRING macAlgorithm = "macAlgorithm";
+    CONSTSTRING randomFunction = "randomFunction";
 #endif
         }
     }

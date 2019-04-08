@@ -149,7 +149,7 @@ namespace cqp
         builder.RegisterService(driver.get());
     }
 
-    void PhotonDetectorMk1::SetInitialKey(std::unique_ptr<PSK> initailKey)
+    void PhotonDetectorMk1::SetInitialKey(std::unique_ptr<PSK> initialKey)
     {
         // TODO
     }

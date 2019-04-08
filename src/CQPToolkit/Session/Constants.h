@@ -17,27 +17,27 @@ namespace cqp
 #if !defined(DOXYGEN)
     namespace IKeyReceiverCommands
     {
-        NAMEDSTRING(IKeyReceiver);
-        NAMEDSTRING(parameters);
-        NAMEDSTRING(frame);
-        NAMEDSTRING(session);
-        NAMEDSTRING(BeginSession);
-        NAMEDSTRING(FrameComplete);
-        NAMEDSTRING(CloseSession);
-        NAMEDSTRING(ReturnCapabilities);
-        NAMEDSTRING(InitSession);
+        CONSTSTRING IKeyReceiver = "IKeyReceiver";
+        CONSTSTRING parameters = "parameters";
+        CONSTSTRING frame = "frame";
+        CONSTSTRING session = "session";
+        CONSTSTRING BeginSession = "BeginSession";
+        CONSTSTRING FrameComplete = "FrameComplete";
+        CONSTSTRING CloseSession = "CloseSession";
+        CONSTSTRING ReturnCapabilities = "ReturnCapabilities";
+        CONSTSTRING InitSession = "InitSession";
     };
 
     namespace IKeyTransmitterCommands
     {
-        NAMEDSTRING(IKeyTransmitter);
-        NAMEDSTRING(parameters);
-        NAMEDSTRING(frame);
-        NAMEDSTRING(session);
-        NAMEDSTRING(RequestCapabilities);
-        NAMEDSTRING(RequestKeySession);
-        NAMEDSTRING(ReadyToReceive);
-        NAMEDSTRING(CloseSession);
+        CONSTSTRING IKeyTransmitter = "IKeyTransmitter";
+        CONSTSTRING parameters = "parameters";
+        CONSTSTRING frame = "frame";
+        CONSTSTRING session = "session";
+        CONSTSTRING RequestCapabilities = "RequestCapabilities";
+        CONSTSTRING RequestKeySession = "RequestKeySession";
+        CONSTSTRING ReadyToReceive = "ReadyToReceive";
+        CONSTSTRING CloseSession = "CloseSession";
     };
 
 #endif

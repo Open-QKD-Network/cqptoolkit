@@ -75,6 +75,10 @@ namespace cqp
             }
         }
 
+        /**
+         * @brief HaveListener
+         * @return true if listener is set
+         */
         bool HaveListener()
         {
             std::unique_lock<std::mutex> lock(listenerMut);
@@ -86,6 +90,7 @@ namespace cqp
     private:
         /// The listener
         Listener* listener = nullptr;
+        /// control access to the listener
         std::mutex listenerMut;
     };
 

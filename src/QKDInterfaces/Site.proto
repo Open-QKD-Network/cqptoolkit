@@ -48,7 +48,9 @@ message Site {
     repeated ControlDetails devices = 2;
 }
 
+/// A list of sites
 message SiteDetailsList {
+    /// Sites
     repeated Site sites = 1;
 }
 
