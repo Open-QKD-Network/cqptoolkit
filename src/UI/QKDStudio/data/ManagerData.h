@@ -18,6 +18,10 @@ namespace cqp
     namespace model
     {
 
+        /**
+         * @brief The ManagerData class
+         * Models the network manager
+         */
         class ManagerData : public QtNodes::NodeData
         {
         public:

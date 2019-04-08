@@ -38,10 +38,21 @@ namespace cqp
     {
         class QKDNodeEditor;
 
+        /**
+         * @brief The QKDStudio class
+         * GUI for controlling and designing QKD systems
+         */
         class QKDStudio : public QMainWindow
         {
         public:
+            /**
+             * @brief QKDStudio
+             * @param parent
+             * @param flags
+             */
             QKDStudio(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+
+            /// Destructor
             ~QKDStudio() override;
         protected slots:
 

@@ -20,9 +20,13 @@ namespace cqp
     {
         class ManagerData;
 
+        /**
+         * @brief The SiteAgentData class
+         */
         class SiteAgentData : public QtNodes::NodeData
         {
         public:
+            /// constructor
             SiteAgentData();
 
             // NodeData interface

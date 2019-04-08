@@ -17,6 +17,10 @@ namespace cqp
     namespace model
     {
 
+        /**
+         * @brief The Clavis2 class
+         * models the clavis 2 device
+         */
         class Clavis2 : public cqp::model::Device
         {
         public:

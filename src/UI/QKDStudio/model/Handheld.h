@@ -18,6 +18,9 @@ namespace cqp
     namespace model
     {
 
+        /**
+         * @brief The Handheld class models the handheld alice device
+         */
         class Handheld : public cqp::model::Device
         {
         public:

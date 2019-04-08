@@ -18,9 +18,14 @@ namespace cqp
     namespace model
     {
 
+        /**
+         * @brief The DummyQKD class
+         * models the dummyqkd device
+         */
         class DummyQKD : public cqp::model::Device
         {
         public:
+            /// constructor
             DummyQKD();
 
         };

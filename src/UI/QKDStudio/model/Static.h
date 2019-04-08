@@ -17,6 +17,10 @@ namespace cqp
     namespace model
     {
 
+        /**
+         * @brief The Static class
+         * models the static network manager
+         */
         class Static : public cqp::model::Manager
         {
         public:

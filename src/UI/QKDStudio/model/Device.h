@@ -24,14 +24,24 @@ namespace cqp
     {
         class LinkData;
 
+        /**
+         * @brief The Device class
+         * models a device
+         */
         class Device : public QtNodes::NodeDataModel
         {
             Q_OBJECT
 
         public:
 
+            /**
+             * @brief Device
+             * @param name
+             * @param side
+             */
             Device(const std::string& name = "Device", remote::Side_Type side = remote::Side_Type::Side_Type_Alice);
 
+            /// distructor
             ~Device() override;
 
             QString caption() const override;

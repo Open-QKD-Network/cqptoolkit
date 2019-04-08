@@ -18,6 +18,10 @@ namespace cqp
     namespace model
     {
 
+        /**
+         * @brief The FreespaceBob class
+         * Models the freespace bob device
+         */
         class FreespaceBob : public cqp::model::Device
         {
         public:

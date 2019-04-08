@@ -37,6 +37,10 @@ namespace cqp
     {
         class SiteAgentData;
 
+        /**
+         * @brief The SiteAgent class
+         * Models the site agent
+         */
         class SiteAgent : public QtNodes::NodeDataModel
         {
             Q_OBJECT

@@ -23,6 +23,9 @@ namespace cqp
         class SiteEditor;
     }
 
+    /**
+     * @brief The SiteEditor class edits the site details
+     */
     class SiteEditor : public QDialog
     {
         Q_OBJECT
