@@ -38,7 +38,6 @@ namespace cqp
         public:
             /**
              * @brief ClavisController
-             * @param address The uri of the wrapper
              * @param creds credentials to use when connecting to the wrapper
              * @param theReportServer for passing on stats
              */
@@ -105,8 +104,6 @@ namespace cqp
             /**
              * @brief ReadKey
              * Pull key from the wrapper and pass it on to the keystore
-             * @param reader source of key from the wrapper
-             * @param wrapperCtx connection context
              */
             void ReadKey();
 

@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Serial IO
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -13,7 +13,7 @@
 #include <bits/stdint-uintn.h>         // for uint32_t
 #include <string>                      // for operator+, string, to_string
 #include <vector>                      // for allocator, vector
-  // for FILE_HANDLE
+// for FILE_HANDLE
 #include "Algorithms/Datatypes/URI.h"       // for URI
 #include "Algorithms/Util/FileIO.h"
 #include "CQPToolkit/cqptoolkit_export.h"
@@ -165,6 +165,9 @@ namespace cqp
         /// @return True on success with the number of bytes read in num
         bool Read(char* buffer, uint32_t& num);
 
+        /**
+         * @brief Flush
+         */
         void Flush();
     protected:
         /// The name of the port being used
