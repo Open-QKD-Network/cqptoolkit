@@ -23,8 +23,7 @@ namespace cqp
 }
 
 /**
- * @brief The ExampleConsoleApp class
- * Simple GUI for driving the QKD software
+ * @brief The Clavis3Driver class controls the IDQ clavis 3 device.
  */
 class Clavis3Driver : public cqp::DriverApplication
 {
@@ -34,6 +33,8 @@ class Clavis3Driver : public cqp::DriverApplication
         static CONSTSTRING manual = "manual";
         static CONSTSTRING writeConfig = "write-config";
         static CONSTSTRING device = "device";
+        static CONSTSTRING alice = "alice";
+        static CONSTSTRING bob = "bob";
     };
 
 public:
@@ -50,8 +51,16 @@ public:
     /// @return success state of the application
     int Main(const std::vector<std::string>& definedArguments) override;
 
+    /**
+     * @brief HandleConfigFile
+     * Parse the config file
+     * @param option
+     */
     void HandleConfigFile(const cqp::CommandArgs::Option& option) override;
 
+    /**
+     * @brief StopProcessing
+     */
     void StopProcessing(int);
 
 private:

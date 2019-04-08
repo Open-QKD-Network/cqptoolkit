@@ -38,6 +38,7 @@
 #include "Signals/OnSystemState_Changed.hpp"
 #include "Signals/FPGA/OnQber_NewValue.hpp"
 #include "Signals/FPGA/OnVisibility_NewValue.hpp"
+#include "Signals/OnUpdateSoftware_Progress.hpp"
 
 #include "ZmqClassExchange.hpp"
 #include "QuantumKey.hpp"
@@ -53,7 +54,8 @@ namespace cqp
     using idq4p::classes::CommandCommunicator;
     using idq4p::utilities::MsgpackSerializer;
 
-    Clavis3Device::Impl::Impl(const std::string& hostname)
+    Clavis3Device::Impl::Impl(const std::string& hostname, remote::Side::Type theSide) :
+        side{theSide}
     {
         try
         {
@@ -69,6 +71,18 @@ namespace cqp
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
             // create a thread to read and process the signals
             signalReader = std::thread(&Impl::ReadSignalSocket, this);
+
+            GetProtocolVersion();
+            GetSoftwareVersion(SoftwareId::CommunicatorService);
+            GetSoftwareVersion(SoftwareId::BoardSupervisorService);
+            GetSoftwareVersion(SoftwareId::RegulatorServiceAlice);
+            GetSoftwareVersion(SoftwareId::RegulatorServiceBob);
+            GetSoftwareVersion(SoftwareId::FpgaConfiguration);
+            GetBoardInformation(BoardId::QkeComE);
+            GetBoardInformation(BoardId::QkeHost);
+            GetBoardInformation(BoardId::QkeFpga);
+            GetBoardInformation(BoardId::QkeAlice);
+            GetBoardInformation(BoardId::QkeBob);
         }
         catch(const std::exception& e)
         {
@@ -98,7 +112,7 @@ namespace cqp
         }
     }
 
-    void cqp::Clavis3Device::Impl::Request_PowerOn()
+    void cqp::Clavis3Device::Impl::PowerOn()
     {
         using namespace idq4p::classes;
         using namespace idq4p::utilities;
@@ -111,11 +125,11 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void cqp::Clavis3Device::Impl::Request_GetBoardInformation()
+    idq4p::classes::GetBoardInformation cqp::Clavis3Device::Impl::GetBoardInformation(BoardId whichBoard)
     {
         using idq4p::classes::GetBoardInformation;
         //Serialize request
-        GetBoardInformation requestCommand(1);
+        GetBoardInformation requestCommand(static_cast<int32_t>(whichBoard));
         msgpack::sbuffer requestBuffer;
         MsgpackSerializer::Serialize<GetBoardInformation>(requestCommand, requestBuffer);
         // Send request
@@ -126,16 +140,17 @@ namespace cqp
         //Deserialize reply
         msgpack::sbuffer replyBuffer;
         reply.GetBuffer(replyBuffer);
-        boardInfo = std::make_unique<GetBoardInformation>();
-        MsgpackSerializer::Deserialize<GetBoardInformation>(replyBuffer, *boardInfo);
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + boardInfo->ToString() + ".");
+        GetBoardInformation boardInfo;
+        MsgpackSerializer::Deserialize<GetBoardInformation>(replyBuffer, boardInfo);
+        LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + boardInfo.ToString() + ".");
+        return boardInfo;
     }
 
-    void cqp::Clavis3Device::Impl::Request_GetSoftwareVersion()
+    idq4p::classes::GetSoftwareVersion cqp::Clavis3Device::Impl::GetSoftwareVersion(SoftwareId whichSoftware)
     {
         using idq4p::classes::GetSoftwareVersion;
         //Serialize request
-        GetSoftwareVersion requestCommand(1);
+        GetSoftwareVersion requestCommand(static_cast<int32_t>(whichSoftware));
         msgpack::sbuffer requestBuffer;
         MsgpackSerializer::Serialize<GetSoftwareVersion>(requestCommand, requestBuffer);
         // Send request
@@ -149,9 +164,10 @@ namespace cqp
         GetSoftwareVersion replyCommand;
         MsgpackSerializer::Deserialize<GetSoftwareVersion>(replyBuffer, replyCommand);
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        return replyCommand;
     }
 
-    void cqp::Clavis3Device::Impl::Request_GetProtocolVersion()
+    idq4p::classes::GetProtocolVersion cqp::Clavis3Device::Impl::GetProtocolVersion()
     {
         using idq4p::classes::GetProtocolVersion;
         // Send request
@@ -165,9 +181,10 @@ namespace cqp
         GetProtocolVersion replyCommand;
         MsgpackSerializer::Deserialize<GetProtocolVersion>(replyBuffer, replyCommand);
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        return replyCommand;
     }
 
-    void cqp::Clavis3Device::Impl::Request_SetInitialKey(DataBlock key)
+    void cqp::Clavis3Device::Impl::SetInitialKey(DataBlock key)
     {
         using idq4p::classes::SetInitialKey;
 
@@ -187,7 +204,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
     }
 
-    void Clavis3Device::Impl::GetRandomNumber(std::vector<uint8_t>& out)
+    bool Clavis3Device::Impl::GetRandomNumber(std::vector<uint8_t>& out)
     {
         using idq4p::classes::GetRandomNumber;
         // Send request
@@ -204,10 +221,12 @@ namespace cqp
         GetRandomNumber replyCommand;
         MsgpackSerializer::Deserialize<GetRandomNumber>(replyBuffer, replyCommand);
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+
         out = replyCommand.GetNumber();
+        return replyCommand.GetState() == 1;
     }
 
-    void cqp::Clavis3Device::Impl::Request_Zeroize()
+    void cqp::Clavis3Device::Impl::Zeroize()
     {
         using idq4p::classes::Zeroize;
 
@@ -220,11 +239,12 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void cqp::Clavis3Device::Impl::Request_UpdateSoftware()
+    void cqp::Clavis3Device::Impl::Request_UpdateSoftware(const std::string& filename, const std::string& filenameSha1)
     {
+        using namespace idq4p::domainModel;
         using idq4p::classes::UpdateSoftware;
         //Serialize request
-        UpdateSoftware requestCommand(2, "BoardSupervisor.dfu", "0123456789ABCDEF0123456789ABCDEF01234567");
+        UpdateSoftware requestCommand(5, filename, filenameSha1);
         msgpack::sbuffer requestBuffer;
         MsgpackSerializer::Serialize<UpdateSoftware>(requestCommand, requestBuffer);
         // Send request
@@ -236,7 +256,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void cqp::Clavis3Device::Impl::Request_PowerOff()
+    void cqp::Clavis3Device::Impl::PowerOff()
     {
         const Command request(CommandId::PowerOff, MessageDirection::Request);
         Command reply(  CommandId::PowerOff, MessageDirection::Reply);
@@ -245,13 +265,28 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void Clavis3Device::Impl::SubscribeToStateChange()
+    void Clavis3Device::Impl::SubscribeToSignals()
     {
         using namespace idq4p::domainModel;
 
+        const std::vector<SignalId> subscribeTo
+        {
+            SignalId::OnSystemState_Changed,
+            SignalId::OnQber_NewValue,
+            SignalId::OnVisibility_NewValue
+        };
+
+        for(const auto sig : subscribeTo)
+        {
+            SubscribeToSignal(sig);
+        }
+    }
+
+    void Clavis3Device::Impl::SubscribeToSignal(idq4p::domainModel::SignalId sig)
+    {
         using idq4p::classes::SubscribeSignal;
         //Serialize request
-        SubscribeSignal requestCommand(static_cast<uint32_t>(SignalId::OnSystemState_Changed));
+        SubscribeSignal requestCommand(static_cast<uint32_t>(sig));
         msgpack::sbuffer requestBuffer;
         MsgpackSerializer::Serialize<SubscribeSignal>(requestCommand, requestBuffer);
         // Send request
@@ -263,31 +298,20 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void Clavis3Device::Impl::SubscribeToSignals()
+    void Clavis3Device::Impl::UnsubscribeSignal(idq4p::domainModel::SignalId sig)
     {
-        using idq4p::classes::SubscribeSignal;
-        using namespace idq4p::domainModel;
+        using idq4p::classes::UnsubscribeSignal;
+        //Serialize request
+        UnsubscribeSignal requestCommand(static_cast<uint32_t>(sig));
+        msgpack::sbuffer requestBuffer;
+        MsgpackSerializer::Serialize<UnsubscribeSignal>(requestCommand, requestBuffer);
+        // Send request
+        const Command request(CommandId::UnsubscribeSignal, MessageDirection::Request, requestBuffer);
+        Command reply(  CommandId::UnsubscribeSignal, MessageDirection::Reply);
 
-        const std::vector<SignalId> subscribeTo
-        {
-            SignalId::OnQber_NewValue,
-            SignalId::OnVisibility_NewValue
-        };
-
-        for(const auto sig : subscribeTo)
-        {
-            //Serialize request
-            SubscribeSignal requestCommand(static_cast<uint32_t>(sig));
-            msgpack::sbuffer requestBuffer;
-            MsgpackSerializer::Serialize<SubscribeSignal>(requestCommand, requestBuffer);
-            // Send request
-            const Command request(CommandId::SubscribeSignal, MessageDirection::Request, requestBuffer);
-            Command reply(  CommandId::SubscribeSignal, MessageDirection::Reply);
-
-            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
-            // Deserialize reply
-            LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
-        }
+        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+        // Deserialize reply
+        LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
     bool Clavis3Device::Impl::ReadKey(PSK& keyValue)
@@ -322,10 +346,14 @@ namespace cqp
 
     remote::Side::Type Clavis3Device::Impl::GetSide()
     {
-        remote::Side::Type result = remote::Side_Type::Side_Type_Any;
+        // TODO: Is there a way to get the side from the device?
+        // can we call GetBoardInformation(QkeAlice) and check for errors?
+
+        /*remote::Side::Type result = remote::Side_Type::Side_Type_Any;
         if(!boardInfo)
         {
-            Request_GetBoardInformation();
+            boardInfo->
+            GetBoardInformation();
         }
 
         switch (static_cast<BoardID>(boardInfo->GetBoardId()))
@@ -338,9 +366,9 @@ namespace cqp
             break;
         default:
             LOGERROR("Unknown board type: " + std::to_string(boardInfo->GetBoardId()));
-        }
+        }*/
 
-        return result;
+        return side;
     }
 
     void Clavis3Device::Impl::ReadSignalSocket()
@@ -388,6 +416,19 @@ namespace cqp
                     MsgpackSerializer::Deserialize<OnVisibility_NewValue>(buffer, signal);
                     alignementStats.visibility.Update(static_cast<double>(signal.GetValue()));
                     LOGINFO("New visibility value: " + signal.ToString());
+                }
+                break;
+                case SignalId::OnUpdateSoftware_Progress:
+                {
+                    OnUpdateSoftware_Progress signal;
+                    MsgpackSerializer::Deserialize<OnUpdateSoftware_Progress>(buffer, signal);
+                    if(signal.GetProgress() == 100)
+                    {
+                        LOGINFO("Software update complete, please power cycle the device");
+                        UnsubscribeSignal(SignalId::OnUpdateSoftware_Progress);
+                    }
+                    LOGINFO("New visibility value: " + signal.ToString());
+
                 }
                 break;
                 default:

@@ -29,7 +29,7 @@ namespace cqp
         public KeyPublisher
     {
     public:
-        Clavis3Device(const std::string& hostname, std::shared_ptr<grpc::ChannelCredentials> creds, std::shared_ptr<stats::ReportServer> theReportServer);
+        Clavis3Device(const std::string& hostname, remote::Side::Type theSide, std::shared_ptr<grpc::ChannelCredentials> creds, std::shared_ptr<stats::ReportServer> theReportServer);
         ~Clavis3Device() override;
 
         ///@{
@@ -75,7 +75,7 @@ namespace cqp
     protected: // members
         class Impl;
         std::unique_ptr<Impl> pImpl;
-        remote::DeviceConfig deviveConfig;
+        remote::DeviceConfig deviceConfig;
     };
 
 } // namespace cqp

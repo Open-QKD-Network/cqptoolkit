@@ -17,11 +17,11 @@
 
 namespace cqp
 {
-    Clavis3Device::Clavis3Device(const std::string& hostname,
+    Clavis3Device::Clavis3Device(const std::string& hostname, remote::Side::Type theSide,
                                  std::shared_ptr<grpc::ChannelCredentials> newCreds,
                                  std::shared_ptr<stats::ReportServer> theReportServer) :
         session::SessionController {newCreds, {}, theReportServer},
-            pImpl{std::make_unique<Clavis3Device::Impl>(hostname)}
+            pImpl{std::make_unique<Clavis3Device::Impl>(hostname, theSide)}
     {
         if(reportServer)
         {
@@ -33,10 +33,10 @@ namespace cqp
 
         devUri.SetScheme("clavis3");
         devUri.SetHost(hostname);
-        deviveConfig.set_side(pImpl->GetSide());
-        deviveConfig.set_kind(devUri.GetScheme());
-        deviveConfig.set_id(DeviceUtils::GetDeviceIdentifier(devUri));
-        deviveConfig.set_bytesperkey(32);
+        deviceConfig.set_side(pImpl->GetSide());
+        deviceConfig.set_kind(devUri.GetScheme());
+        deviceConfig.set_id(DeviceUtils::GetDeviceIdentifier(devUri));
+        deviceConfig.set_bytesperkey(32);
     }
 
     Clavis3Device::~Clavis3Device()
@@ -61,13 +61,9 @@ namespace cqp
 
     bool Clavis3Device::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        pImpl->SubscribeToStateChange();
         pImpl->SubscribeToSignals();
-        pImpl->Request_GetProtocolVersion();
-        pImpl->Request_GetSoftwareVersion();
-        pImpl->Request_GetBoardInformation();
         //pImpl->Request_UpdateSoftware();
-        pImpl->Request_Zeroize();
+        pImpl->Zeroize();
 
         //pImpl->GetRandomNumber();
 
@@ -86,7 +82,7 @@ namespace cqp
 
     remote::DeviceConfig Clavis3Device::GetDeviceDetails()
     {
-        return deviveConfig;
+        return deviceConfig;
     }
 
     grpc::Status Clavis3Device::StartSession(const remote::SessionDetailsFrom& sessionDetails)
@@ -94,14 +90,14 @@ namespace cqp
         auto result = SessionController::StartSession(sessionDetails);
         if(result.ok())
         {
-            pImpl->Request_PowerOn();
+            pImpl->PowerOn();
         }
         return result;
     }
 
     void Clavis3Device::EndSession()
     {
-        pImpl->Request_PowerOff();
+        pImpl->PowerOff();
         SessionController::EndSession();
     }
 
@@ -120,7 +116,7 @@ namespace cqp
         auto result = SessionController::SessionStarting(context, request, response);
         if(result.ok())
         {
-            pImpl->Request_PowerOn();
+            pImpl->PowerOn();
         }
         return result;
     }
@@ -129,14 +125,14 @@ namespace cqp
     {
         auto result = SessionController::SessionEnding(context, request, response);
 
-        pImpl->Request_PowerOff();
+        pImpl->PowerOff();
 
         return result;
     }
 
     void Clavis3Device::SetInitialKey(std::unique_ptr<PSK> initailKey)
     {
-        pImpl->Request_SetInitialKey(*initailKey);
+        pImpl->SetInitialKey(*initailKey);
     }
 
     void Clavis3Device::RegisterServices(grpc::ServerBuilder& builder)

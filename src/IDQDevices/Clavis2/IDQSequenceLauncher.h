@@ -22,6 +22,8 @@
 #include "Algorithms/Statistics/Stat.h"
 #include "Algorithms/Statistics/StatCollection.h"
 #include "IDQDevices/idqdevices_export.h"
+#include "CQPToolkit/Alignment/Stats.h"
+#include "CQPToolkit/ErrorCorrection/Stats.h"
 
 namespace cqp
 {
@@ -89,10 +91,10 @@ namespace cqp
             /// The group to contain these stats
             const char* parent = "Key";
             /// detector efficiency
-            stats::Stat<double> Visibility {{parent, "Visibility"}, stats::Units::Percentage, "A measurement of the detectors ability"};
+            stats::Stat<double> Visibility {{align::Statistics::parent, "Visibility"}, stats::Units::Percentage, "A measurement of the detectors ability"};
 
             /// bit error rate
-            stats::Stat<double> Qber {{parent, "QBER"}, stats::Units::Count, "Quantum Bit Error Rate"};
+            stats::Stat<double> Qber {{ec::Stats::parent, "QBER"}, stats::Units::Percentage, "Quantum Bit Error Rate"};
 
             /// key bits produced
             stats::Stat<size_t> keySize {{parent, "Key size"}, stats::Units::Count, "Bits produced"};

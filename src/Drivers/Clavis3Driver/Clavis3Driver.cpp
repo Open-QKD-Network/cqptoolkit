@@ -27,6 +27,9 @@ Clavis3Driver::Clavis3Driver() :
     ConsoleLogger::Enable();
     DefaultLogger().SetOutputLevel(LogLevel::Info);
 
+    definedArguments.AddOption(Names::alice, "a", "Set side to Alice.");
+    definedArguments.AddOption(Names::bob, "b", "Set side to Bob.");
+
     definedArguments.AddOption(Names::device, "d", "Device address")
     .Bind();
     definedArguments.AddOption(Names::manual, "m", "Manual mode, specify Bobs address to directly connect and start generating key")
@@ -61,13 +64,25 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
             stopExecution = true;
             exitCode = ExitCodes::InvalidConfig;
         }
+
+        if(definedArguments.IsSet(Names::alice))
+        {
+            config.mutable_controlparams()->mutable_config()->set_side(remote::Side_Type::Side_Type_Alice);
+        }
+
+        if(definedArguments.IsSet(Names::bob))
+        {
+            config.mutable_controlparams()->mutable_config()->set_side(remote::Side_Type::Side_Type_Bob);
+        }
+
     }
 
     if(!stopExecution)
     {
         using namespace std;
 
-        device = make_shared<Clavis3Device>(config.deviceaddress(), channelCreds, reportServer);
+        device = make_shared<Clavis3Device>(config.deviceaddress(), config.controlparams().config().side(),
+                                            channelCreds, reportServer);
         adaptor = make_unique<RemoteQKDDevice>(device, serverCreds);
 
         // get the real settings which have been corrected by the device driuver
