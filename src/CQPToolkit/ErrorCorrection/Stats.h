@@ -24,7 +24,7 @@ namespace cqp
         struct Stats : stats::StatCollection
         {
             /// The group to contain these stats
-            const char* parent = "ErrorCorrection";
+            static const constexpr char* parent = "ErrorCorrection";
             /// The number of errors corrected during this frame
             stats::Stat<double> Errors {{parent, "Errors"}, stats::Units::Percentage};
 

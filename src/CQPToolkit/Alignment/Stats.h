@@ -24,7 +24,7 @@ namespace cqp
         struct Statistics : stats::StatCollection
         {
             /// A group of values
-            const char* parent = "Alignment";
+            static const constexpr char* parent = "Alignment";
 
             /// The number of errors begin corrected per frame on average
             stats::Stat<double> overhead {{parent, "Overhead"}, stats::Units::Percentage};
