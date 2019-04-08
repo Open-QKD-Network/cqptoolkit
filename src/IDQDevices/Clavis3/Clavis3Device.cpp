@@ -13,6 +13,7 @@
 #include "Clavis3Device.h"
 #include "Clavis3DeviceImpl.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "CQPToolkit/QKDDevices/DeviceUtils.h"
 
 namespace cqp
 {
@@ -22,11 +23,29 @@ namespace cqp
         session::SessionController {newCreds, {}, theReportServer},
             pImpl{std::make_unique<Clavis3Device::Impl>(hostname)}
     {
+        if(reportServer)
+        {
+            pImpl->alignementStats.Add(reportServer.get());
+            pImpl->errorStats.Add(reportServer.get());
+        }
+
+        URI devUri;
+
+        devUri.SetScheme("clavis3");
+        devUri.SetHost(hostname);
+        deviveConfig.set_side(pImpl->GetSide());
+        deviveConfig.set_kind(devUri.GetScheme());
+        deviveConfig.set_id(DeviceUtils::GetDeviceIdentifier(devUri));
+        deviveConfig.set_bytesperkey(32);
     }
 
     Clavis3Device::~Clavis3Device()
     {
-
+        if(reportServer)
+        {
+            pImpl->alignementStats.Remove(reportServer.get());
+            pImpl->errorStats.Remove(reportServer.get());
+        }
     }
 
     std::string Clavis3Device::GetDriverName() const
@@ -43,13 +62,13 @@ namespace cqp
     bool Clavis3Device::Initialise(const remote::SessionDetails& sessionDetails)
     {
         pImpl->SubscribeToStateChange();
+        pImpl->SubscribeToSignals();
         pImpl->Request_GetProtocolVersion();
         pImpl->Request_GetSoftwareVersion();
         pImpl->Request_GetBoardInformation();
         //pImpl->Request_UpdateSoftware();
         pImpl->Request_Zeroize();
-        // This will move once the new session control changes are merged
-        pImpl->Request_SetInitialKey({0x1u,0x2u,0x3u,0x4u,0x5u,0x6u,0x7u,0x8u,0x9u,0xAu,0xBu,0xCu,0xDu,0xEu,0xFu});
+
         //pImpl->GetRandomNumber();
 
         return true;
@@ -67,9 +86,7 @@ namespace cqp
 
     remote::DeviceConfig Clavis3Device::GetDeviceDetails()
     {
-        remote::DeviceConfig result;
-        //TODO
-        return result;
+        return deviveConfig;
     }
 
     grpc::Status Clavis3Device::StartSession(const remote::SessionDetailsFrom& sessionDetails)
@@ -124,6 +141,7 @@ namespace cqp
 
     void Clavis3Device::RegisterServices(grpc::ServerBuilder& builder)
     {
+        SessionController::RegisterServices(builder);
     }
 } // namespace cqp
 #endif //HAVE_IDQ4P

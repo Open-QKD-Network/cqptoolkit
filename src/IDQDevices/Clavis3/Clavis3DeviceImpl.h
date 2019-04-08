@@ -19,6 +19,9 @@
 #include "QKDInterfaces/Site.pb.h"
 #include "IDQDevices/idqdevices_export.h"
 
+#include "CQPToolkit/Alignment/Stats.h"
+#include "CQPToolkit/ErrorCorrection/Stats.h"
+
 namespace idq4p
 {
     namespace classes
@@ -58,9 +61,14 @@ namespace cqp
 
         void SubscribeToStateChange();
 
+        void SubscribeToSignals();
+
         bool ReadKey(PSK& keyValue);
 
         remote::Side::Type GetSide();
+
+        cqp::align::Statistics alignementStats;
+        cqp::ec::Stats errorStats;
 
     protected: // methods
 
@@ -92,6 +100,7 @@ namespace cqp
             QkeBob = 4,
             QkeFpga = 5
         };
+
     };
 
 }

@@ -75,9 +75,7 @@ namespace cqp
     protected: // members
         class Impl;
         std::unique_ptr<Impl> pImpl;
-        std::shared_ptr<grpc::ChannelCredentials> creds;
-
-
+        remote::DeviceConfig deviveConfig;
     };
 
 } // namespace cqp

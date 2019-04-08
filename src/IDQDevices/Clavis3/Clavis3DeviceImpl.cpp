@@ -36,6 +36,8 @@
 #include "Commands/UnsubscribeAllSignals.hpp"
 #include "Commands/SetNotificationFrequency.hpp"
 #include "Signals/OnSystemState_Changed.hpp"
+#include "Signals/FPGA/OnQber_NewValue.hpp"
+#include "Signals/FPGA/OnVisibility_NewValue.hpp"
 
 #include "ZmqClassExchange.hpp"
 #include "QuantumKey.hpp"
@@ -245,9 +247,11 @@ namespace cqp
 
     void Clavis3Device::Impl::SubscribeToStateChange()
     {
+        using namespace idq4p::domainModel;
+
         using idq4p::classes::SubscribeSignal;
         //Serialize request
-        SubscribeSignal requestCommand(1);
+        SubscribeSignal requestCommand(static_cast<uint32_t>(SignalId::OnSystemState_Changed));
         msgpack::sbuffer requestBuffer;
         MsgpackSerializer::Serialize<SubscribeSignal>(requestCommand, requestBuffer);
         // Send request
@@ -257,6 +261,33 @@ namespace cqp
         CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
         // Deserialize reply
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+    }
+
+    void Clavis3Device::Impl::SubscribeToSignals()
+    {
+        using idq4p::classes::SubscribeSignal;
+        using namespace idq4p::domainModel;
+
+        const std::vector<SignalId> subscribeTo
+        {
+            SignalId::OnQber_NewValue,
+            SignalId::OnVisibility_NewValue
+        };
+
+        for(const auto sig : subscribeTo)
+        {
+            //Serialize request
+            SubscribeSignal requestCommand(static_cast<uint32_t>(sig));
+            msgpack::sbuffer requestBuffer;
+            MsgpackSerializer::Serialize<SubscribeSignal>(requestCommand, requestBuffer);
+            // Send request
+            const Command request(CommandId::SubscribeSignal, MessageDirection::Request, requestBuffer);
+            Command reply(  CommandId::SubscribeSignal, MessageDirection::Reply);
+
+            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+            // Deserialize reply
+            LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        }
     }
 
     bool Clavis3Device::Impl::ReadKey(PSK& keyValue)
@@ -342,6 +373,23 @@ namespace cqp
                 }
                 break;
 
+                case SignalId::OnQber_NewValue:
+                {
+                    OnQber_NewValue signal;
+                    MsgpackSerializer::Deserialize<OnQber_NewValue>(buffer, signal);
+                    errorStats.QBER.Update(static_cast<double>(signal.GetValue()));
+                    LOGINFO("New QBER value: " + signal.ToString());
+                }
+                break;
+
+                case SignalId::OnVisibility_NewValue:
+                {
+                    OnVisibility_NewValue signal;
+                    MsgpackSerializer::Deserialize<OnVisibility_NewValue>(buffer, signal);
+                    alignementStats.visibility.Update(static_cast<double>(signal.GetValue()));
+                    LOGINFO("New visibility value: " + signal.ToString());
+                }
+                break;
                 default:
                     // do nothing
                     break;

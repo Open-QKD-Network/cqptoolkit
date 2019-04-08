@@ -3,7 +3,7 @@
 * @brief %{Cpp:License:ClassName}
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 6/7/2017
@@ -34,6 +34,9 @@ namespace cqp
 
             /// The total number of bytes processed by this instance
             stats::Stat<size_t> qubitsProcessed {{parent, "QubitsProcessed"}, stats::Units::Count};
+
+            /// The detection percentage
+            stats::Stat<double> visibility {{parent, "Visibility"}, stats::Units::Percentage};
 
             /// @copydoc stats::StatCollection::Add
             virtual void Add(stats::IAllStatsCallback* statsCb) override
