@@ -51,6 +51,8 @@ namespace cqp
 
         void on_bytesPerKey_currentIndexChanged(int index);
 
+        void on_exportConfig_clicked();
+
     private:
         Ui::DeviceEditor *ui;
         remote::ControlDetails editing;

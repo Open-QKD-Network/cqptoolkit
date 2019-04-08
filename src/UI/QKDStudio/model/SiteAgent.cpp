@@ -21,6 +21,7 @@
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "SiteEditor.h"
+#include <QLabel>
 
 namespace cqp
 {

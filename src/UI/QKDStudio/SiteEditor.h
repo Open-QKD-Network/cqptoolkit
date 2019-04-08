@@ -48,6 +48,8 @@ namespace cqp
 
         void on_fallbackKey_editingFinished();
 
+        void on_exportConfig_clicked();
+
     private:
         Ui::SiteEditor *ui;
         remote::SiteAgentConfig editing;

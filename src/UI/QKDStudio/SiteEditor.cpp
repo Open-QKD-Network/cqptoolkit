@@ -12,6 +12,10 @@
 #include "SiteEditor.h"
 #include "ui_SiteEditor.h"
 #include "Algorithms/Util/Strings.h"
+#include <QFileDialog>
+#include <QMessageBox>
+#include <google/protobuf/util/json_util.h>
+#include "Algorithms/Util/FileIO.h"
 
 #define QS(x) QString::fromStdString(x)
 
@@ -92,5 +96,34 @@ namespace cqp
         editing.mutable_fallbackkey()->assign(bytes.begin(), bytes.end());
     }
 
+    void SiteEditor::on_exportConfig_clicked()
+    {
+        QFileDialog dlg(this, "Save Site Agent config");
+        dlg.setDefaultSuffix(".json");
+        if(dlg.exec() == QDialog::Accepted)
+        {
+            auto filenames = dlg.selectedFiles();
+            using namespace google::protobuf::util;
+            std::string jsonStr;
+            JsonOptions options;
+            options.add_whitespace = true;
+            options.always_print_primitive_fields = true;
+            auto result = MessageToJsonString(editing, &jsonStr);
+
+            if(!result.ok())
+            {
+                QMessageBox::critical(this, "Failed to generate json",
+                                      QString::fromStdString(result.message()));
+            }
+            else
+            {
+                if(!fs::WriteEntireFile(filenames[0].toStdString(), jsonStr))
+                {
+                    QMessageBox::critical(this, QString::fromStdString("Failed to write"),
+                                          QString::fromStdString("Failed to export json to ") + filenames[0]);
+                }
+            }
+        }
+    }
 
 }
