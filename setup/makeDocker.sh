@@ -68,17 +68,17 @@ OPTS="--build-arg version=$VERSION"
 if [ "${RUNTIME}" == "true" ]; then
     echo "Runtime mode"
     if [ "${NAME_CUST}" != "true" ]; then
-        NAME=cqp/cqpruntime
+        NAME=runtime
     fi
     OPTS="$OPTS --build-arg opts=-r"
 fi
 
-${SUDO} docker build $OPTS -t "${SERV}/${REPO}/${NAME}:${VERSION}" . && \
+${SUDO} docker build $OPTS -f Dockerfile.${NAME} -t "${SERV}/${REPO}/${NAME}:${VERSION}" . && \
 ${SUDO} docker tag "${SERV}/${REPO}/${NAME}:${VERSION}" "${SERV}/${REPO}/${NAME}:latest" || exit 1
 
 # copy out any generated debs
 id=$(${SUDO} docker create "${SERV}/${REPO}/${NAME}:${VERSION}")
-mkdir generated
+mkdir -p generated
 ${SUDO} docker cp "$id:/setup" ./generated/
 ${SUDO} chown -R $USER ./generated
 ${SUDO} docker rm -v $id

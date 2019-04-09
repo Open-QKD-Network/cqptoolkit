@@ -118,7 +118,7 @@ deploy:toolkit-build-image:
   script:
     - apk add --no-cache bash
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - cd setup && bash makeDocker.sh -p -r registry.gitlab.com -n qcomms/cqptoolkit/buildenv
+    - cd setup && bash makeDocker.sh -p -r registry.gitlab.com
   cache:
     policy: pull
   when: manual
@@ -135,27 +135,9 @@ deploy:toolkit-run-image:
     - apk add --no-cache bash
     - cp build/gcc/*.deb setup/
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - cd setup && bash makeDocker.sh -p -u -r registry.gitlab.com -n qcomms/cqptoolkit/runtime
+    - cd setup && bash makeDocker.sh -p -u -r registry.gitlab.com -v ${CI_COMMIT_SHORT_SHA}
   dependencies:
     - package:deb
-  cache:
-    policy: pull
-  when: manual
-
-deploy:idqwrapper-docker-image:
-  stage: deploy
-  image: "docker:stable"
-  services:
-    - docker:dind
-  variables:
-     DOCKER_HOST: tcp://docker:2375
-     DOCKER_DRIVER: overlay2
-  script:
-    - apk add --no-cache bash
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - cd external/id3100 && bash builddocker.sh -r registry.gitlab.com -n qcomms/cqptoolkit/idqcontainer -p
-  dependencies:
-    - build:linux
   cache:
     policy: pull
   when: manual
