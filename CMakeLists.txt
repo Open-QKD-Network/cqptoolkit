@@ -34,7 +34,7 @@ set(BUILD_CQP_EXAMPLES ON CACHE BOOL "Build example code")
 # Should we produce package installer(s) for the Toolkit
 set(BUILD_INSTALLER ON CACHE BOOL "Build Installer")
 # default to a local "test" install
-set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/installed" CACHE STRING "Root of install")
+set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE STRING "Root of install")
 set(DEB_ENABLED ON CACHE BOOL "Build debian/ubuntu package")
 # Make extra CMake modules available for use, such as funcitons and find_package(x)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
