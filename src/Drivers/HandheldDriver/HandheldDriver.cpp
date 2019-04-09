@@ -101,6 +101,8 @@ int HandheldDriver::Main(const std::vector<std::string>& args)
             StopProcessing(signum);
         });
 
+        LOGINFO("My device id is " + config.controlparams().config().id());
+
         if(!config.bobaddress().empty())
         {
             // TODO: get the key and do something with it

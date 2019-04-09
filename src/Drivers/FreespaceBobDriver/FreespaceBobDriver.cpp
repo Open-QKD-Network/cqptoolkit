@@ -98,6 +98,8 @@ int FreespaceBobDriver::Main(const std::vector<std::string>& args)
             StopProcessing(signum);
         });
 
+        LOGINFO("My device id is " + config.controlparams().config().id());
+
         // Wait for something to stop the driver
         adaptor->WaitForServerShutdown();
     }

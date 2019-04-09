@@ -91,6 +91,8 @@ int Clavis2Driver::Main(const std::vector<std::string>& args)
             StopProcessing(signum);
         });
 
+        LOGINFO("My device id is " + config.controlparams().config().id());
+
         if(config.controlparams().config().side() == remote::Side_Type::Side_Type_Alice && !config.bobaddress().empty())
         {
             // TODO: get the key and do something with it
