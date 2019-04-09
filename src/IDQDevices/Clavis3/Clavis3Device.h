@@ -14,7 +14,6 @@
 
 #include <string>
 #include "CQPToolkit/Interfaces/IQKDDevice.h"
-#include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "CQPToolkit/Interfaces/ISessionController.h"
 #include "IDQDevices/idqdevices_export.h"
 #include "CQPToolkit/Session/SessionController.h"
@@ -22,11 +21,9 @@
 
 namespace cqp
 {
-
     class IDQDEVICES_EXPORT Clavis3Device :
         public virtual IQKDDevice,
-        public session::SessionController,
-        public KeyPublisher
+        public session::SessionController
     {
     public:
         Clavis3Device(const std::string& hostname, remote::Side::Type theSide, std::shared_ptr<grpc::ChannelCredentials> creds, std::shared_ptr<stats::ReportServer> theReportServer);
@@ -76,6 +73,7 @@ namespace cqp
         class Impl;
         std::unique_ptr<Impl> pImpl;
         remote::DeviceConfig deviceConfig;
+        std::unique_ptr<KeyPublisher> keyPub;
     };
 
 } // namespace cqp

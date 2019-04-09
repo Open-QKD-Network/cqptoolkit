@@ -25,6 +25,10 @@ namespace cqp
     class Provider
     {
     public:
+
+        /// Constructor
+        Provider() {}
+
         /// destructor
         virtual ~Provider() = default;
 
@@ -84,9 +88,7 @@ namespace cqp
             std::unique_lock<std::mutex> lock(listenerMut);
             return listener != nullptr;
         }
-    protected:
-        /// Constructor
-        Provider() {}
+
     private:
         /// The listener
         Listener* listener = nullptr;

@@ -14,6 +14,7 @@
 #include "Clavis3DeviceImpl.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
 #include "CQPToolkit/QKDDevices/DeviceUtils.h"
+#include "CQPToolkit/Interfaces/IKeyPublisher.h"
 
 namespace cqp
 {
@@ -21,7 +22,8 @@ namespace cqp
                                  std::shared_ptr<grpc::ChannelCredentials> newCreds,
                                  std::shared_ptr<stats::ReportServer> theReportServer) :
         session::SessionController {newCreds, {}, theReportServer},
-            pImpl{std::make_unique<Clavis3Device::Impl>(hostname, theSide)}
+            pImpl{std::make_unique<Clavis3Device::Impl>(hostname, theSide)},
+            keyPub{std::make_unique<KeyPublisher>()}
     {
         if(reportServer)
         {
@@ -77,7 +79,7 @@ namespace cqp
 
     KeyPublisher* Clavis3Device::GetKeyPublisher()
     {
-        return this;
+        return keyPub.get();
     }
 
     remote::DeviceConfig Clavis3Device::GetDeviceDetails()
@@ -107,7 +109,7 @@ namespace cqp
         keys->resize(1);
         if(pImpl->ReadKey((*keys)[0]))
         {
-            Emit(&IKeyCallback::OnKeyGeneration, move(keys));
+            keyPub->Emit(&IKeyCallback::OnKeyGeneration, move(keys));
         }
     }
 
