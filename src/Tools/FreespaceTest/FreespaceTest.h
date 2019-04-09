@@ -3,7 +3,7 @@
 * @brief StatsDump
 *
 * @copyright Copyright (C) University of Bristol 2019
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 6/2/2019
@@ -25,8 +25,8 @@
  * Outputs statistics in csv format
  */
 class FreespaceTest : public cqp::Application,
-        public virtual cqp::IDetectionEventCallback,
-        public virtual cqp::IEmitterEventCallback
+    public virtual cqp::IDetectionEventCallback,
+    public virtual cqp::IEmitterEventCallback
 {
 public:
     FreespaceTest();
@@ -58,6 +58,7 @@ public:
     /**
      * @brief HandleQuiet
      * Parse commandline argument
+     * @param option contains the config filename
      */
     void HandleConfigFile(const cqp::CommandArgs::Option& option);
 
@@ -72,7 +73,8 @@ protected:
     /// exit codes for this program
     enum ExitCodes { Ok = 0,
                      NoDevice = 1,
-                     ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99 };
+                     ConfigNotFound = 10, InvalidConfig = 11, UnknownError = 99
+                   };
 
     [[noreturn]] void StopProcessing(int);
 protected: // members

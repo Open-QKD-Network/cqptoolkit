@@ -24,14 +24,25 @@ namespace cqp
     namespace ui
     {
 
+        /**
+         * @brief The QKDNodeEditor class provides a graphical editor for sites and devices
+         * it uses the [node editor](https://github.com/paceholder/nodeeditor) from @cite Pinaev2017
+         */
         class QKDNodeEditor : public QtNodes::FlowScene
         {
         public:
             QKDNodeEditor();
 
+            /**
+             * @brief SetStyle
+             */
             static void SetStyle();
         protected: // methods
 
+            /**
+             * @brief RegisterDataModels
+             * @return
+             */
             static std::shared_ptr<QtNodes::DataModelRegistry> RegisterDataModels();
 
         protected: // members

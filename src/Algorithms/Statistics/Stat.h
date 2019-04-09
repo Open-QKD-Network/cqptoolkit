@@ -3,7 +3,7 @@
 * @brief Stat
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/3/2018
@@ -204,10 +204,10 @@ namespace cqp
              * Construct a stat
              * @param pathin Name of the stat
              * @param k Kind of units
-             * @param description User readable descrition
+             * @param newDescription User readable descrition
              */
-            Stat(std::vector<std::string> const & pathin, Units k = Units::Complex, const std::string& description = "") :
-                StatBase(pathin, k, description)
+            Stat(std::vector<std::string> const & pathin, Units k = Units::Complex, const std::string& newDescription = "") :
+                StatBase(pathin, k, newDescription)
             {
             }
 

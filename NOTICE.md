@@ -11,3 +11,4 @@ It uses the following libraries in their original form:
 - [OpenSSL](https://www.openssl.org/source/license.html) - OpenSSL
 - [Avahi](https://github.com/lathiat/avahi/blob/master/LICENSE) - LGPL 2.1
 - [googletest](https://github.com/google/googletest/blob/master/googletest/LICENSE) - googletest
+- [nodeeditor](https://github.com/paceholder/nodeeditor) - BSD-3-Clause

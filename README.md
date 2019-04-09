@@ -1,24 +1,17 @@
 CQP Tool kit {#mainpage}
 ============
 
-This file is written in [markdown](https://en.wikipedia.org/wiki/Markdown), it can be viewed with the Markdown Viewer chrome extension. The generated documentation can be found [on gitlab](https://qcomms.gitlab.io/cqptoolkit/).
+[//]: # "This file is written in markdown and rendered with [Doxygen][], the rendered documentation can be found on the gitlab project cqptoolkit."
 
-Binary packages can be installed on Ubuntu 18.04+ from [here](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb).
-
-The system provides various components for integrating [QKD](https://en.wikipedia.org/wiki/Quantum_key_distribution) into a security system.
-
-- Fully documented code using Doxygen
-- Written in modern ISO standardised C++11
-- The communication uses [GRPC][] which has built in support for [TLS][].
-- Generic statistic collection and reporting using the cqp::remote::IReporting interface
+The system provides various components for integrating [QKD](https://en.wikipedia.org/wiki/Quantum_key_distribution) into a security system. It's written in C++11 but uses [GRPC][] interfaces so can be integrated with lots of different languages.
 
 Planed and completed features
 
 - [ ] Device Drivers
     + [x] Compatibility drivers for IDQ Clavis 2
         - [ ] Device feedback
-    + [ ] Compatibility drivers for IDQ Clavis 3
-    + [ ] University of Bristol handheld freespace device
+    + [x] Compatibility drivers for IDQ Clavis 3
+    + [x] University of Bristol handheld freespace device
     + [ ] University of Bristol on chip device
 - [ ] Post processing
     + [x] Alignment for asyncronous systems
@@ -48,24 +41,71 @@ Planed and completed features
     + [x] Linux
     + [ ] Windows (see issue #2)
 
-This project is intended to be used for both scientific research work and to form part of completed projects. As such it incorporates some approaches which are intended to maintain a production quality level of code and design. More details on the project can be found in [this paper](paper.md).
-The build system is based on [CMake][], it is used to produce many different build files from one set of definitions. In order to build the code, one of the build systems, such as gcc, is setup by calling the command `cmake` first. See the build folder for ready made scripts for common environments.
-See the [walk through](Walkthrough.md) for details of how the system operates. The [TLS](TLS.md) document details how this system can be used with standard internet communications.
+It is hoped that this project can prove usful for both scientific research work and large projects.  More details on the project can be found in [this paper](paper.md).
 
 To contribute to this project please see the [Contribution](Contribution.md) file.
+
 ## Installation
+
+The system currently works on Linux - Windows is planned for the future.
+
+### Docker image
+
+There is a ready to run docker image in the [gitlab registry][]. You can run with
+`sudo docker run -it --rm registry.gitlab.com/qcomms/cqptoolkit/runtime`. Add a command on the end to run something directly, for example to run a simulation of the QKD key generation with `QKDSim`:
+
+```bash
+sudo docker run -it --rm registry.gitlab.com/qcomms/cqptoolkit/runtime AlignmentTests
+```
 
 ### Ubuntu 18.04+
 
-Download the packages from [Gitlab](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb). Extract the zip file and install the tools with ``sudo dpkg -i setup/*.deb build/gcc/CQP-*-Linux-{Algorithms,Networking,CQPToolkit,KeyManagement,QKDInterfaces,CQPUI,Simulate,Tools,UI}.deb``. This will complain about missing dependencies but don't worry, run `sudo apt update && sudo apt install -fy` to install the dependencies and finish the setup.
+You can install binary packages from [Gitlab](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb). Extract the zip file and install the tools with `dpkg`, it will complain about missing dependencies but don't worry, the second line will fix them.
 
-To install the development files (headers and static libraries) run ``sudo dpkg -i build/gcc/CQP-*-Linux-*-dev.deb``.
+```bash
+sudo dpkg -i setup/*.deb build/gcc/CQP-*-Linux-{Algorithms,Networking,CQPToolkit,KeyManagement,QKDInterfaces,CQPUI,Simulate,Tools,UI,Drivers,IDQDevices}.deb
+sudo apt install -fy
+```
 
-For instructions on running the demos see [Demos](DemoHowto.md)
+To install the development files (headers and static libraries) run `sudo dpkg -i build/gcc/CQP-*-Linux-*-dev.deb ; sudo apt install -fy` instead.
+
+### From source
+
+Building from source requres that you install dependencies listed in the `setup/setupbuild.sh`, currently it works for Ubuntu and ArchLinux.  You can build inside a [docker container](https://www.docker.com/resources/what-container) which already has all the depedencies installed with:
+
+```bash
+sudo docker run -it registry.gitlab.com/qcomms/cqptoolkit/buildenv
+```
+
+Clone the source from [gitlab](https://gitlab.com/QComms/cqptoolkit.git) with [git][] and build with [CMake][] and [gnu make](https://www.gnu.org/software/make/):
+
+```bash
+git clone https://gitlab.com/QComms/cqptoolkit.git
+mkdir cqptoolkit-build
+cd cqptoolkit-build
+cmake ../cqptoolkit && nice make -s -j
+# this can be installed with
+sudo make install
+```
+
+The build uses [CMake][] to produce makefiles/solutions/etc for many different platforms and is invoked from an empty build folder which will contain all the output files. Debug builds with produce packages postfixed with a "D".
+The build can be controlled by passing options to cmake, eg `-DBUILD_TESTING=OFF`. Run cmake with the `-LH` options to list available switches.
+
+To make changes and develop the library it's recommended to install [QT Creator](http://doc.qt.io/qtcreator/) and open the project by [selecting the CMakeLists.txt file](https://codeyarns.com/2016/01/26/how-to-import-cmake-project-in-qt-creator/). It is advisable to use parallel builds by going to Projects->Build Steps-> Details and adding `-j<number>` to the tool parameters, see [so](https://stackoverflow.com/questions/8860712/setting-default-make-options-for-qt-creator).
+Once built the files, by default, are at the same level as the project folder called `build-<project name>-<platform>-<target>`.
+
+> **Note about protobuf + QT on unbuntu**
+> The library `qt5-gtk-platformtheme` is linked against an old version of protobuf which will prevent our QT programs from running.
+> This optional dependency can be removed with `apt-get remove qt5-gtk-platformtheme`
 
 ## Exploring the Library
 
-The in-source documentation has details and examples to help developers, ether build the `doc` target (see below) of visit the [CQPToolkit Documentation](https://qcomms.gitlab.io/cqptoolkit/).
+Below is a flow chart to help find the area relevent to you as the project covers many different aspects of QKD and key management - contibutors are welcome to drive this project to be more specialised.
+QKD requires some form of [non-cloning](https://en.wikipedia.org/wiki/No-cloning_theorem) communication, usually by using single photons over a fibre optic cable. They can operate point-to-point or as one-to-many but they inherently have a physical location (where the fibre terminates) - they cannot be virtualised! The point at which the photon is transmitted or detected is the boundry of the secure system - almost like the [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)) to a network. Once the in-divisible photons have been turned into a string of bits to form a [symetric key](https://en.wikipedia.org/wiki/Key_(cryptography)) the standard rules of computer security like authentication, access control, etc, apply. The difference is that once those keys have been produced, each of the QKD devices have a number which [noone else knows](https://en.wikipedia.org/wiki/Shared_secret) [proven by science](https://arxiv.org/pdf/quant-ph/0003004.pdf).
+
+The nature of this "firewall" effect is that the systems controlling the QKD devices need to be secure and considered trusted - also called "trusted node" - where and how you draw the line can range from armed guards to just [locking the server room door](https://www.youtube.com/watch?v=rnmcRTnTNC8).
+
+The in-source documentation has more details and examples to help developers, you can see them online [here](https://qcomms.gitlab.io/cqptoolkit/), they can also be built by the `doc` target.
 
     @startuml
     title Where to start \n
@@ -80,29 +120,30 @@ The in-source documentation has details and examples to help developers, ether b
     }
 
     start
-    if (Does your QKD device have a driver?) then (No)
-        :You will need to [[./index.html#Drivers create a driver]] which implements the
-        <b>IDriver</b> and <b>IReporting</b> interfaces.;
-        note left
-            This can be done with the help
-            of the library, or independently
-            using any [[https://grpc.io/faq/ language gRPC supports]].
-        end note
-        if (Use the library?) then (Yes)
-            :See the <b>DummyQKDDriver</b> for an example.;
-        else (No)
+    if (Do you have a QKD Device?) then (Yes)
+        if (Does your QKD device have a driver?) then (No)
+            :You will need to [[./index.html#CreatingDrivers create a driver]] which implements the
+            <b>IDriver</b> and <b>IReporting</b> interfaces.;
+            if (Use the library?) then (Yes)
+                :See the [[./index.html#RunningDummyQKDDriver DummyQKDDriver]] for an example.;
+            else (No)
+            endif
+        else (Yes)
         endif
-    else (Yes)
+    else (No)
+        :Check out how to run the
+        [[./index.html#RunningDummyQKDDriver DummyQKDDriver]];
     endif
 
-    if (Do you want keys for different locations?) then (Sites)
-        :Register your driver with the site agent
+    if (Do you want keys for multiple
+    locations in a network?) then (Yes: Sites)
+        :[[./index.html#Registering Register your driver]] with the site agent
         using the <b>ISiteAgent</b> Interface
         Keys can be obtained by using the <b>IKey</b> interface;
 
         if(Do you want keys to be stored/persist between restarts?) then (Yes)
             if (Do the keys need to be secured?) then (Yes)
-                :Use the HSM storage options;
+                :Use the [[./index.html#HSMs HSM storage]] options;
                 if (Is your HSM supported?) then (No)
                     :Create a driver that implements
                     the <b>IBackingStore</b> interface.
@@ -118,8 +159,8 @@ The in-source documentation has details and examples to help developers, ether b
             endif
         else (No)
         endif
-    else (Point-to-Point)
-        :Use the <b>IDevice</b> interface to
+    else (No: Point-to-Point)
+        :Use the [[./index.html#IDeviceInterface IDevice interface]] to
         control the driver for your system.
         As keys become available they will
         be sent via the call to <b>WaitForSession</b>.;
@@ -127,99 +168,95 @@ The in-source documentation has details and examples to help developers, ether b
 
     if (Do you want to use the key for anything?) then (Yes)
         :See the [[./index.html#Encryption encryption section]]
-        for an example of using the [[./index.html#Keys IKey interface]];
+        for an example of using the [[./index.html#IKeyInterface IKey interface]];
     else (No)
     endif
     stop
 
     @enduml
 
-### Drivers
-@section Drivers
+### Running DummyQKDDriver <a name="RunningDummyQKDDriver" />
 
-### Keys
-@section Keys
+As with most programs, passing `-h` to it will display the options available. The DummyQKDDriver runs a standard set of postprocessing steps on simulated photon detections using the cqp::DummyQKD class. There needs to be two instances of the program running, one for Alice and one for Bob.
 
-### Encryption
-@section Encryption
+Run Bob first on port 8000 by calling:
+```bash
+DummyQKDDriver -b -k 0.0.0.0:8000
+```
+Now run Alice, telling her to connect to Bob and start exchanging key (in manual mode):
 
-### Complete programs
-@section Programs
+```bash
+DummyQKDDriver -a -m localhost:8000
+```
 
-There are a number of complete programs which use the library:
+If it worked you'll get a flood of error message like this: `ERROR: OnKeyGeneration No listener for generated key`. This is because while running the system like this is nice to see it doing something, it's not very usful, there's nowhere to put the key that is generated. the drivers are designed to be used by something.
+The project has a system for managing the keys called [Site Agents](#SiteAgents) or you can talk to the drivers directly using the [IDevice interface](#IDeviceInterface)
 
-| Program          | Description | Interfaces |
-| ---------------- | ----------- | ---------- |
-| SiteAgentRunner  | Starts a cqp::SiteAgent to control the generation of key using a number of devices | cqp::remote::IKey cqp::remote::ISiteAgent cqp::remote::ISession cqp::remote::INetworkManager cqp::remote::IReporting |
-| IDQWrapper       | Acts as a bridge between the CQPToolkit and the IDQuantique Clavis programs, allowing multiple devices to be connected to one system. It is designed to be used from within a docker container | cqp::remote::IIDQWrapper |
-| IDQKeyExtraction | Utility to manually get keys from the IDQWrapper | cqp::remote::IIDQWrapper |
-| QTunnelServer    | An example of the key sharing interfaces being used. Manages Encryption tunnels, making use of keys shared by SiteAgents | cqp::remote::tunnels::ITunnelServer cqp::remote::IKey cqp::remote::ITransfer |
-| SiteAgentCtl     | Sends commands to site agents to start/stop key exchange manually | cqp::remote::ISiteAgent |
-| NetworkManager   | Takes information about the network and controls known site agents to generate key in the most efficient way | cqp::remote::ISiteAgent |
-| StatsDump        | Prints the statistics generated by a service as csv | cqp::remote::IReporting |
-| KeyViewer        | Simple GUI to request and display keys from a cqp::SiteAgent | cqp::remote::IKey |
-| QKDTunnel        | Configuration file reader/generator for QTunnelServer | |
+### Site Agents <a name="SiteAgents" />
 
+Site agents can be run with the SiteAgentRunner, we can run two sites with:
+```bash
+SiteAgentRunner -p 9000
+```
+and:
+```bash
+SiteAgentRunner -p 9001
+```
+Now we can attach our DummyQKDDriver's, one to each site:
+```bash
+DummyQKDDriver -a -r localhost:9000 # run as Alice, register with site agent
+```
+and:
+```bash
+DummyQKDDriver -b -r localhost:9001 # run as Bob, register with site agent
+```
+> We dont care which ports the devices use - the sites will work it out themselves.
 
-### Interfaces
-There are two kinds of interfaces, all interface classes are prefixed with an 'I':
-1. Internal C++ interfaces used when linking to the library directly. these are under src/CQPToolkit/Interfaces
-2. External [Grpc][] interfaces which are compatible with many languages and platforms. These are in the `cqp::remote` namespace. They are defined by .proto files in `src/QKDInterfaces` which are turned into C++ code when the build runs
+Nothing will happen yet as the site agents dont know what to do with these devices. We can instruct them to start making key by sending the cqp::ISiteAgent::StartNode command:
+```bash
+SiteAgentCtl -c localhost:9000 -b '{"hops":[{"first":{"site":"localhost:9000","deviceId":"dummyqkd__0__16_alice"},"second":{"site":"localhost:9001","deviceId":"dummyqkd__0__16_bob"}}]}'
+```
+This is a long winded way of saying connect A to B but it is very powerful, allowing multiple hops to be specifed to produce an end-to-end secure key from a chain of devices.  This JSON string can be specified in the site agents "staticHops" config field to let this happen automatically once all the devices are available.
+The link can then be stopped with:
+```bash
+SiteAgentCtl -c localhost:9000 -e '{"hops":[{"first":{"site":"localhost:9000","deviceId":"dummyqkd__0__16_alice"},"second":{"site":"localhost:9001","deviceId":"dummyqkd__0__16_bob"}}]}'
+```
+> Note the `-e` instead of `-b` to *end* the link instead of *beginning* it.
+
+More complex setups can be achieved by implementing the cqp::remote::INetworkManager interface yourself to issue the commands. Feedback from the devices comes over the cqp::remote::IReporting interface on the same socket so that you can react to changes in the system. [Here](#Reporting) you can see how to extract things from the reporting interface with the StateDump tool.
+
+### Creating Drivers <a name="CreatingDrivers" />
+
+The driver application is a bridge between the internal device interfaces (cqp::IQKDDevice) and the external cqp::remote::IDevice interface. The cqp::RemoteQKDDevice class handles most of the work for you, the application must handle the configuration and creation of the device.
+The real work is in creating a driver to setup the device and read the key. If your device just produces raw detections then you will need to configure a [processing pipeline](#ProcessingPipelines) like cqp::DummyQKD or cqp::PhotonDetectorMk1 and cqp::LEDAliceMk1. If your device generates ready to use key like the cqp::Clavis3Device you need to read it and publish it over the cqp::IKeyCallback interface (use cqp::KeyPublisher).
+Both these approaches require a form of session management, provided by cqp::session::SessionController and cqp::session::AliceSessionController, these implement the cqp::ISessionController and cqp::remote::ISession interface and are used by cqp::RemoteQKDDevice to start and stop the device and it's peer.  These are usually all thats needed but in some situtations they need to be specialised to cope with device requirements
+
+### Registering a driver <a name="Registering" />
+
+At the time of writing, all the drivers can be registered with a site agent by using the `-r` switch. This causes the cqp::RemoteQKDDevice to call cqp::remote::ISiteAgent::RegisterDevice on the cqp::SiteAgent, it will then use the cqp::remote::ISession interface to start/stop the device.
+
+### IDevice Interface <a name="IDeviceInterface" />
+
+This interface allows a more direct access to the device than going through the site agents. Key generated by the device are immediately fed back to the caller. First call cqp::remote::IDevice::WaitForSession, then cqp::remote::IDevice::RunSession. Call cqp::remote::IDevice::EndSession to stop generating key.
+
+### HSMs <a name="HSMs" />
+
+### IKey Interface <a name="IKeyInterface" />
+
+### Encryption <a name="Encryption" />
 
 More details on specific implementations can be found in:
 * [Tunnels](Tunnels.md)
 
+### Reporting <a name="Reporting" />
+
+### Processing Pipelines <a name="ProcessingPipelines" />
+
 ## Building
-These instructions assume using a 64bit OS to build for 64bit OSs, alternate libraries will need to be installed for 32bit builds.
-If you only need to make use of the library rather than change it, it is advised that you use the pre-built binaries from [Gitlab](https://gitlab.com/QComms/cqptoolkit).
 
-The build uses [CMake][] to produce makefiles/solutions/etc for many different platforms and is invoked from an empty build folder which will contain all the output files. Debug builds with produce packages postfixed with a "D".
-The build can be controlled by passing options to cmake, eg `-DBUILD_TESTING=OFF`. Run cmake with the `-LH` options to list available switches.
+The builds are managed by the gitlab [continous intagration system](https://about.gitlab.com/product/continuous-integration/) defined in the `.gitlab-ci.yml` file.
 
-The build structure:
-
-- CMakeLists.txt                     - "Super" project containing all other projects.
-    + src
-        + CMakeLists.txt          - CQP Project cmake file.
-- tests
-    + CMakeLists.txt        - Google Test Project for unit test.
-        + Interfaces
-            + CMakeLists.txt     - Tests of interfaces.
-
-### Linux
-
-These instructions are for producing a build to install and run. To make changes and develop the library it's recommended to install [QT Creator](http://doc.qt.io/qtcreator/) and open the project by [selecting the CMakeLists.txt file](https://codeyarns.com/2016/01/26/how-to-import-cmake-project-in-qt-creator/). It is advisable to use parallel builds by going to Projects->Build Steps-> Details and adding `-j<number>` to the tool parameters, see [so](https://stackoverflow.com/questions/8860712/setting-default-make-options-for-qt-creator). Once build the files by default are at the same level as the project folder called `build-<project name>-<platform>-<target>`.
-
-> **Note about protobuf + QT on unbuntu**
-> The library `qt5-gtk-platformtheme` is linked against an old version of protobuf which will prevent our QT programs from running.
-> This optional dependency can be removed with `apt-get remove qt5-gtk-platformtheme`
-
-#### Docker build environment
-
-Run:
-
-```bash
-setup/buildWithDocker.sh
-```
-
-The built files will be placed in `build/gcc`.
-This uses a docker file from the [gitlab registry](registry.gitlab.com/qcomms/cqptoolkit/buildenv) which can be built manually by running `setup/makeDocker.sh`.
-
-#### Manually
-
-If you don't want to use the ubuntu docker image - or if your building for a system other than Ubuntu 18.04+ or Arch Linux, install the dependencies with:
-```bash
-./setup/setupBuild.sh
-```
-
-Start the debug build from the `build/gcc` or any empty folder by running:
-```bash
-cmake ../.. && make -j package
-```
-For a release build, set the `CMAKE_BUILD_TYPE` variable  to ether `Debug`, `Release` or `RELWITHDEBINFO` when calling cmake:
-```bash
-cmake -DCMAKE_BUILD_TYPE=Release ../.. && make -j package
-```
+The docker images can by built manually by running `setup/makeDocker.sh`.
 
 ### Windows
 
@@ -232,15 +269,8 @@ The following configurations are supported
 | Linux     |           | gcc           | gcc           |
 | Windows   | MSVC      | MSVC / MSYS2  | MSYS2-Mingw   |
 
-#### Required Dependencies
-- [CMake][]
-- [Tortoise SVN][] and/or [Git for Windows][]
-
-#### Optional Dependencies
-- [Doxygen][]
-- [GoogleTest Runner for visual studio][]
-
 #### IDE
+
 - [Visual Studio 2016][]
     + Run the [SetupMSBuild.bat](./build/vs2017_x64/SetupMSBuild.bat) script
     + Open the [cqp.sln](./build/vs2017_x64/cqp.sln) solution
@@ -270,104 +300,6 @@ If your project file has deep folder structure (this is a bug), it can be improv
 - Unchecking "Display folders as on disk"
 - Checking "Hide Folder Name"
 
-## Running
-
-The system as many facets but a good starting point is `DummyQKDDriver` which will perform all the handshaking and session setup and exchange key by simulating the QKD processes. All tools should show a help message when `-h` is passed as an argument.
-The simulator runs as a client and server, start one instance then connect the second to the first. 
-
-```bash
-DummyQKDDriver -k 0.0.0.0:8000
-```
-
-Shows:
-```
-INFO: Main Basic application to simulate key exchange
-INFO: CreateDevice Device dummyqkd ready
-INFO: CreateDevice Device dummyqkd ready
-INFO: SiteAgent My address is: mypc:8000
-```
-
-This shows that two simulated devices were created by default (one alice and one bob). Now run the second, connecting it to the first:
-
-```bash
-QKDSim -r localhost:8000 -v
-```
-
-This shows:
-
-```
-INFO: Main Basic application to simulate key exchange
-INFO: CreateDevice Device dummyqkd ready
-INFO: CreateDevice Device dummyqkd ready
-INFO: SiteAgent My address is: mypc:38689
-INFO: StartServer Listening on mypc:39365
-INFO: Connect Waiting for connection from mypc:42245...
-INFO: Connect Connected.
-INFO: StartNode Node setup complete
-DEBUG: OnAligned Received aligned qubits
-DEBUG: OnKeyGeneration Received 1 fragments
-
-```
-
-And the two start to create key, which is made available through the `cqp::IKey` gRPC interface. The `KeyViewer` GUI or the `SiteAgentCtl` tool can be used to request keys from this interface:
-
-List the site is connected to:
-
-```bash
-SiteAgentCtl -c localhost:8000 -l
-```
-
-Use the address show to extract a key:
-
-```bash
-SiteAgentCtl -c localhost:8000 -k <address>:<port>
-```
-
-It should show the key with a PKCS url like this: `PKCS=pkcs11:type%3Dsecret-key;object%3D<ip>%253A<port>;id%3D0x02 Id=0x02 Value=15761AB6DA8261A599F41C6F746A5A20`, this url can be passed to another user so they can retrieve the key from their key store.
-
-
-#### To create a release
-- [.Net 3.5][] and [Wix Toolkit][]
-
-### IDE
-
-The recommended IDE for Linux is QT Creator. Open the CMakeLists.txt at the root of the source tree. Use the project options to configure what is built.
-
-Install from the [app centre](apt://qtcreator) or
-```
-sudo apt-get install qtcreator
-sudo apt-get remove qt5-gtk-platformtheme
-```
-
-## Serial
-For serial devices using the FTDI chip on windows you must install the [FTDI Driver][]
-
-[Doxygen][] For generating the documentation
-[GraphViz][] For generating UML diagrams in the documentation and cmake build-in graphs
-
-## OpenCL
-
-This depends on the hardware on the build system:
- - [NVidia - CUDA toolkit][]
- - [Intel SDK][]
- - [AMD OpenCL SDK][]
-
-# Producing a release
-## Windows
-The official release is made with MSBuild as above. Starting with a clean checkout of the trunk.
-1. Ensure that BUILD_VERSION_MAJOR and BUILD_VERSION_MINOR have been set correctly in the toplevel ```CMakeLists.txt```
-2. Ensure that [GUID]s have been changed if necessary in ```CMakeModules\\Packaging.cmake```
-3. Run ```Build\\Release\\BuildRelease.bat```
-4. Copy the following to the release folder:
-    - CQP_Build_Env-*.exe
-    - CQP-*.msi
-    - CQP-*.zip
-    - doc.7z
-
-## Linux
-
-Build the `package` target. Releases are built automatically by gitlab based on commands defined in the `.gitlab-ci.yml` file.
-
 ## Citing this software
 
 ```
@@ -387,26 +319,16 @@ Questions and issues see the [FAQ](FAQ.md)
 
 [//]: ##Footnotes
 
-[NVidia - CUDA toolkit]: https://developer.nvidia.com/cuda-downloads
-[Intel SDK]: https://software.intel.com/en-us/intel-opencl/download
-[AMD OpenCL SDK]: http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/
-[Tortoise SVN]: https://tortoisesvn.net/downloads.html
+[gitlab registry]: https://gitlab.com/QComms/cqptoolkit/container_registry
 [MSYS2]: https://sourceforge.net/projects/msys2/
 [Doxygen]: http://www.stack.nl/~dimitri/doxygen/download.html#srcbin
-[GraphViz]: http://www.graphviz.org/Download_windows.php
 [CMake]: https://cmake.org/download/
-[Enterprise Archetect]: http://www.sparxsystems.com/products/ea/
-[FTDI Driver]: http://www.ftdichip.com/Drivers/D2XX.htm
-[Wix Toolkit]: http://wixtoolset.org/
 [CodeBlocks]: http://www.codeblocks.org/
-[GUID]: https://en.wikipedia.org/wiki/Globally_unique_identifier
-[Git for Windows]: https://git-scm.com/download/win
+[git]: https://git-scm.com/
 [.Net 3.5]: https://www.microsoft.com/en-gb/download/details.aspx?id=22
 [Visual Studio 2016]: https://www.visualstudio.com/downloads/
 [QT Creator for windows]: https://info.qt.io/download-qt-for-application-development
 [GoogleTest Runner for visual studio]: https://marketplace.visualstudio.com/items?itemName=ChristianSoltenborn.GoogleTestAdapter
 [Windows 10 SDK]: https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
-[docker file]: https://www.digitalocean.com/community/tutorials/docker-explained-using-dockerfiles-to-automate-building-of-images
 [Grpc]: https://grpc.io/docs/
-[TLS]: https://en.wikipedia.org/wiki/Transport_Layer_Security
 [Zeroconf]: https://en.wikipedia.org/wiki/Zero-configuration_networking

@@ -134,10 +134,10 @@ namespace cqp
 
         /// @copydoc cqp::remote::ISiteAgent::RegisterDevice
         /// @param context Connection details from the server
-        grpc::Status RegisterDevice(grpc::ServerContext* context, const remote::ControlDetails* request, google::protobuf::Empty* response) override;
+        grpc::Status RegisterDevice(grpc::ServerContext* context, const remote::ControlDetails* request, google::protobuf::Empty*) override;
         /// @copydoc cqp::remote::ISiteAgent::UnregisterDevice
         /// @param context Connection details from the server
-        grpc::Status UnregisterDevice(grpc::ServerContext* context, const remote::DeviceID* request, google::protobuf::Empty* response) override;
+        grpc::Status UnregisterDevice(grpc::ServerContext* context, const remote::DeviceID* request, google::protobuf::Empty*) override;
         ///@}
 
     protected: // members

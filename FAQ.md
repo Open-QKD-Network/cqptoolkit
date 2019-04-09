@@ -40,3 +40,6 @@ The full error:
 
 This is due to `qt5-gtk-platformtheme` being installed
 Remove it with `apt remove qt5-gtk-platformtheme`
+
+### Serial
+For serial devices using the FTDI chip on windows you must install the [FTDI Driver][]
