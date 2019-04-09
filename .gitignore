@@ -2,3 +2,4 @@ build/gcc/*
 CMakeLists.txt.user
 external/nginx/nginx
 /cppcheck-cppcheck-build-dir/
+setup/generated/*
