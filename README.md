@@ -105,7 +105,7 @@ QKD requires some form of [non-cloning](https://en.wikipedia.org/wiki/No-cloning
 
 The nature of this "firewall" effect is that the systems controlling the QKD devices need to be secure and considered trusted - also called "trusted node" - where and how you draw the line can range from armed guards to just [locking the server room door](https://www.youtube.com/watch?v=rnmcRTnTNC8).
 
-The in-source documentation has more details and examples to help developers, you can see them online [here](https://qcomms.gitlab.io/cqptoolkit/), they can also be built by the `doc` target.
+If you can't see the diagram below, please go to the [online documentation](https://qcomms.gitlab.io/cqptoolkit/), it can also be built by the `doc` target.
 
     @startuml
     title Where to start \n
@@ -139,7 +139,7 @@ The in-source documentation has more details and examples to help developers, yo
     locations in a network?) then (Yes: Sites)
         :[[./index.html#Registering Register your driver]] with the site agent
         using the <b>ISiteAgent</b> Interface
-        Keys can be obtained by using the [[./Index.html#IKeyInterface]] interface;
+        Keys can be obtained by using the [[./index.html#IKeyInterface IKey]] interface;
 
         if(Do you want keys to be stored/persist between restarts?) then (Yes)
             if (Do the keys need to be secured?) then (Yes)
