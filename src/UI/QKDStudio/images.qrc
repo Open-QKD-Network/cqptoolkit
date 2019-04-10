@@ -3,5 +3,6 @@
         <file alias="manager">images/boss.svg</file>
         <file alias="site">images/enterprise.svg</file>
         <file alias="device">images/password.svg</file>
+        <file alias="app">images/ico_qet.png</file>
     </qresource>
 </RCC>

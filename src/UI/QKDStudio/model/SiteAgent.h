@@ -26,6 +26,7 @@ namespace grpc
 namespace cqp
 {
     class SiteEditor;
+    class KeyViewer;
 
     namespace remote
     {
@@ -77,6 +78,7 @@ namespace cqp
             std::shared_ptr<grpc::ChannelCredentials> creds;
 
             std::unique_ptr<SiteEditor> siteEditor;
+            std::unique_ptr<KeyViewer> keyViewer;
             QToolButton* disconnect;
 
 
@@ -88,6 +90,7 @@ namespace cqp
             void OnDisconnect();
             void OnEdit();
             void OnEditFinished(int result);
+            void GetKey();
 
             // NodeDataModel interface
         public:

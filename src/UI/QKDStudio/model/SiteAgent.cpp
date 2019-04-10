@@ -21,6 +21,7 @@
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "SiteEditor.h"
+#include "KeyViewer.h"
 #include <QLabel>
 
 namespace cqp
@@ -30,7 +31,8 @@ namespace cqp
 
         SiteAgent::SiteAgent() :
             siteData{std::make_shared<SiteAgentData>()},
-            siteEditor{std::make_unique<SiteEditor>(nullptr)}
+            siteEditor{std::make_unique<SiteEditor>()},
+            keyViewer{std::make_unique<KeyViewer>()}
         {
 
             topWidget = new QScrollArea();
@@ -40,6 +42,10 @@ namespace cqp
             topWidget->setLayout(layout);
             topWidget->setSizePolicy(sizePolicy);
             topWidget->resize(0,0);
+
+            auto getKey = new QToolButton(topWidget);
+            getKey->setIcon(QIcon::fromTheme(QString::fromUtf8("key")));
+            layout->addWidget(getKey);
 
             auto connect = new QToolButton(topWidget);
             connect->setIcon(QIcon::fromTheme(QString::fromUtf8("network-connect")));
@@ -58,6 +64,7 @@ namespace cqp
             QObject::connect(disconnect, &QToolButton::clicked, this, &SiteAgent::OnDisconnect);
             QObject::connect(edit, &QToolButton::clicked, this, &SiteAgent::OnEdit);
             QObject::connect(siteEditor.get(), &SiteEditor::finished, this, &SiteAgent::OnEditFinished);
+            QObject::connect(getKey, &QToolButton::clicked, this, &SiteAgent::GetKey);
 
             creds = grpc::InsecureChannelCredentials();
         }
@@ -258,6 +265,12 @@ namespace cqp
                 siteEditor->UpdateSite(config);
                 // TODO: trigger redraw
             }
+        }
+
+        void SiteAgent::GetKey()
+        {
+            keyViewer->SetSourceSite(details.url());
+            keyViewer->open();
         }
 
         bool SiteAgent::portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const
