@@ -14,7 +14,7 @@ cmake_minimum_required (VERSION 3.7.2)
 project(QKDStudio CXX)
 include(CommonSetup)
 
-if(TARGET NodeEditor::nodes)
+if(TARGET NodeEditor::nodes AND TARGET PkgConfig::QREncode)
 
     # MAke standard program which uses the CQP Toolkit
     CQP_QT_PROJECT()
@@ -25,6 +25,7 @@ if(TARGET NodeEditor::nodes)
         target_link_libraries(${PROJECT_NAME} PRIVATE
             CQPToolkit_Shared
             NodeEditor::nodes
+            PkgConfig::QREncode
             )
     endif()
 endif()

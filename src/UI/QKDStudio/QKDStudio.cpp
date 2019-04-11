@@ -30,6 +30,7 @@
 #include "model/Manager.h"
 
 #include "Algorithms/Logging/ConsoleLogger.h"
+#include "KeyViewer.h"
 
 namespace cqp
 {
@@ -65,6 +66,7 @@ namespace cqp
             connect(nodeData.get(), &QtNodes::FlowScene::connectionCreated, this, &QKDStudio::ConnectionCreated);
             connect(ui->actionDelete_All, &QAction::triggered, nodeData.get(), &QtNodes::FlowScene::clearScene);
             connect(ui->actionDelete, &QAction::triggered, ui->nodeWidget, &QtNodes::FlowView::deleteSelectedNodes);
+            connect(ui->actionKey_Viewer, &QAction::triggered, this, &QKDStudio::ShowKeyViewer);
 
         }
 
@@ -222,6 +224,12 @@ namespace cqp
             {
 
             }
+        }
+
+        void QKDStudio::ShowKeyViewer()
+        {
+            KeyViewer viewer;
+            viewer.exec();
         }
     }
 }

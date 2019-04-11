@@ -60,11 +60,12 @@ namespace cqp
             void OnConnectTo();
             void GrpcConnectionFinished(int result);
             void ConnectionCreated(QtNodes::Connection const & conn);
-
+            void ShowKeyViewer();
         protected:
             bool AddLiveSiteAgent(const std::string& address);
             bool AddLiveDevice(const std::string& address);
             bool AddLiveManager(const std::string& address);
+
         private:
             std::unique_ptr<Ui::QKDStudio> ui;
             std::unique_ptr<ConnectDialog> connectDialog;

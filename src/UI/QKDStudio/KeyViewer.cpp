@@ -20,6 +20,8 @@
 #include <QLinearGradient>
 #include <QPainter>
 #include <QFileDialog>
+// qr stuff
+#include <qrencode.h>
 
 using google::protobuf::Empty;
 using grpc::Status;
@@ -110,22 +112,34 @@ namespace cqp
         const auto purple = QColor(0x44, 0x00, 0x64);
         const auto red = QColor(0xB0, 0x1C, 0x2E);
 
-        std::string jsonMessage = "{ \"keyid\": " + std::to_string(id) + ",\n"
-                                  "\"source\": \"" + source + "\","
-                                  "\"dest\": \"" + dest + "\","
+        std::string jsonMessage = "{ \"keyid\": " + std::to_string(id) + ", "
+                                  "\"source\": \"" + source + "\", "
+                                  "\"dest\": \"" + dest + "\", "
                                   "\"keyvalue\": \"" + value.toBase64().toStdString() + "\"}";
 
+        LOGDEBUG(jsonMessage);
         // to get the colour gradient, fill an image with the gradient then mast it out with the qr code
-        QBitmap qrImage(500, 500);
-        qrImage.fill(Qt::white);
 
+        auto qrCode = QRcode_encodeData(jsonMessage.size(), reinterpret_cast<const unsigned char*>(jsonMessage.data()), 0, QRecLevel::QR_ECLEVEL_H);
+        // the qr image is stored a one byte per pixel but only the LSB bit represents the pixel, the rest is usless info about the creation of the pixel
+        // to be usful we need to convert it into pixels
+        const uint numPixels = qrCode->width * qrCode->width;
+        for(uint index = 0; index < numPixels; index++)
         {
-            QPainter p2(&qrImage);
-            p2.setBrush(Qt::black);
-            p2.drawEllipse(250, 250, 100, 150);
+            if(qrCode->data[index] & 0x01)
+            {
+                // black
+                qrCode->data[index] = 0x00;
+            }
+            else
+            {
+                // White
+                qrCode->data[index] = 0xFF;
+            }
         }
-        //qrImage.loadFromData();
-        //qr.encode(jsonMessage);
+
+        QBitmap qrImage = QBitmap::fromImage(QImage(qrCode->data, qrCode->width, qrCode->width, qrCode->width, QImage::Format::Format_Grayscale8));
+        qrImage = qrImage.scaledToWidth(qrCode->width*4);
 
         // create an image with the same size as the qr code
         QPixmap result(qrImage.size());
@@ -145,6 +159,7 @@ namespace cqp
         // fill the image
         painter.fillRect(0, 0, qrImage.width(), qrImage.height(), fillBrush);
 
+        QRcode_free(qrCode);
         return result;
     }
 

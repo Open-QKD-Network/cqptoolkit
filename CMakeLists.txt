@@ -313,6 +313,8 @@ else(TARGET PkgConfig::libUSB_1)
     message(WARNING "Libusb was not found, projects will be disabled. see README.md")
 endif(TARGET PkgConfig::libUSB_1)
 
+find_package(QREncode QUIET)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/external/idq4p/CMakeLists.txt")
 
     if(NOT TARGET PkgConfig::MsgPack)
@@ -474,6 +476,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/external/nodeeditor/CMakeLists.txt)
 endif()
 # Setup is done, now include the source code to build.
 add_subdirectory(src)
+
 
 if(BUILD_INSTALLER)
 

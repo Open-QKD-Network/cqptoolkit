@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>QKD Studio</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="images.qrc">
+    <normaloff>:/icons/app</normaloff>:/icons/app</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -184,6 +188,8 @@
    <addaction name="actionAdd_Manager"/>
    <addaction name="separator"/>
    <addaction name="actionDelete"/>
+   <addaction name="separator"/>
+   <addaction name="actionKey_Viewer"/>
   </widget>
   <action name="actionOpen">
    <property name="icon">
@@ -295,10 +301,23 @@
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset theme="remove"/>
+    <iconset theme="remove">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+  </action>
+  <action name="actionKey_Viewer">
+   <property name="icon">
+    <iconset resource="../QKDTunnel/images.qrc">
+     <normaloff>:/icons/KeyExchange</normaloff>:/icons/KeyExchange</iconset>
+   </property>
+   <property name="text">
+    <string>Key Viewer</string>
+   </property>
+   <property name="toolTip">
+    <string>Key Viewer</string>
    </property>
   </action>
  </widget>
@@ -311,6 +330,7 @@
  </customwidgets>
  <resources>
   <include location="images.qrc"/>
+  <include location="../QKDTunnel/images.qrc"/>
  </resources>
  <connections/>
 </ui>

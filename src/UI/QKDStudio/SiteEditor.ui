@@ -16,6 +16,10 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="images.qrc">
+    <normaloff>:/icons/app</normaloff>:/icons/app</iconset>
+  </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
@@ -188,7 +192,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
