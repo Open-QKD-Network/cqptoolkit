@@ -20,6 +20,7 @@
 #include <QLinearGradient>
 #include <QPainter>
 #include <QFileDialog>
+#include "Algorithms/Util/FileIO.h"
 // qr stuff
 #include <qrencode.h>
 
@@ -32,13 +33,23 @@ namespace cqp
 
     KeyViewer::KeyViewer(QWidget *parent, std::shared_ptr<grpc::ChannelCredentials> credentials) :
         QDialog(parent),
-        ui(new Ui::KeyViewer)
+        ui(std::make_unique<Ui::KeyViewer>()),
+        rekeyTimer(this)
     {
         ui->setupUi(this);
 
+        // add the radio button to the radio group
         ui->formatGroup->setId(ui->formatHex, FormatGroupIds::hex);
         ui->formatGroup->setId(ui->formatBase64, FormatGroupIds::base64);
 
+        // setup the timer for repeated key generation
+        rekeyTimer.setInterval(std::chrono::seconds(ui->refreshTime->value()));
+        rekeyTimer.setTimerType(Qt::TimerType::CoarseTimer);
+        rekeyTimer.setSingleShot(false);
+
+        connect(&rekeyTimer, &QTimer::timeout, this, &KeyViewer::OnKeyRefresh);
+
+        // setup default creds
         creds = credentials;
         if(!creds)
         {
@@ -48,7 +59,6 @@ namespace cqp
 
     KeyViewer::~KeyViewer()
     {
-        delete ui;
     }
 
     void KeyViewer::SetSourceSite(const std::string& siteFrom)
@@ -56,74 +66,90 @@ namespace cqp
         ui->fromSite->setText(QString::fromStdString(siteFrom));
         siteFromChannel = grpc::CreateChannel(siteFrom, creds);
         ui->toSite->clear();
+        // populate the list of possible destinations
         ui->toSite->addItems(GetDestinations());
     }
 
     QStringList KeyViewer::GetDestinations()
     {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+
         QStringList result;
         auto stub = remote::IKey::NewStub(siteFromChannel);
         if(stub)
         {
             grpc::ClientContext ctx;
             remote::SiteList sites;
+            // get the list of key stores from the source
             auto getResult = stub->GetKeyStores(&ctx, Empty(), &sites);
             if(LogStatus(getResult).ok())
             {
+                // build the display list
                 for(const auto& remoteSite : sites.urls())
                 {
                     result.push_back(QString::fromStdString(remoteSite));
-                }
+                } // for sites
             }
             else
             {
                 QMessageBox::critical(this, QString::fromStdString("Failed to connect"),
                                       QString::fromStdString(getResult.error_message()));
             }
-        }
+        } // if stub
 
+        QApplication::restoreOverrideCursor();
         return result;
     }
 
     void KeyViewer::DisplayKey(const remote::SharedKey& key)
     {
+        // set the key id
         ui->id->setText(QString::fromStdString(std::to_string(key.keyid())));
-        keyData = QByteArray(key.keyvalue().data(), key.keyvalue().size());
+        // for converting the key data for display
+        auto rawKey = QByteArray(key.keyvalue().data(), static_cast<int>(key.keyvalue().size()));
 
         switch (ui->formatGroup->checkedId())
         {
         case FormatGroupIds::hex:
-            ui->keyHexView->setPlainText(keyData.toHex());
+            ui->keyHexView->setPlainText(rawKey.toHex());
             break;
         case FormatGroupIds::base64:
-            ui->keyHexView->setPlainText(keyData.toBase64());
+            ui->keyHexView->setPlainText(rawKey.toBase64());
             break;
         }
 
-        qrCodeImage = GenerateQrCode(ui->fromSite->text().toStdString(), key.url(),
-                                     key.keyid(), keyData);
+        // generate the qr code
+        qrCodeImage = GenerateQrCode(KeyToJSON(ui->fromSite->text().toStdString(), key));
+        // scale it for the window
         ui->qrCodeView->setPixmap(qrCodeImage.scaled(ui->qrCodeView->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         ui->saveQr->setEnabled(true);
     }
 
-    QPixmap KeyViewer::GenerateQrCode(const std::string& source, const std::string& dest,
-                                      uint64_t id, const QByteArray& value)
+    std::string KeyViewer::KeyToJSON(const std::string& source, const remote::SharedKey& key)
     {
+        auto keyData = QByteArray(key.keyvalue().data(), static_cast<int>(key.keyvalue().size()));
+
+        std::string jsonMessage = "{ \"keyid\": " + std::to_string(key.keyid()) + ", "
+                                  "\"source\": \"" + source + "\", "
+                                  "\"dest\": \"" + key.url() + "\", "
+                                  "\"keyvalue\": \"" + keyData.toBase64().toStdString() + "\"}";
+        return  jsonMessage;
+    }
+
+    QPixmap KeyViewer::GenerateQrCode(const std::string& jsonMessage)
+    {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
         const auto purple = QColor(0x44, 0x00, 0x64);
         const auto red = QColor(0xB0, 0x1C, 0x2E);
-
-        std::string jsonMessage = "{ \"keyid\": " + std::to_string(id) + ", "
-                                  "\"source\": \"" + source + "\", "
-                                  "\"dest\": \"" + dest + "\", "
-                                  "\"keyvalue\": \"" + value.toBase64().toStdString() + "\"}";
 
         LOGDEBUG(jsonMessage);
         // to get the colour gradient, fill an image with the gradient then mast it out with the qr code
 
-        auto qrCode = QRcode_encodeData(jsonMessage.size(), reinterpret_cast<const unsigned char*>(jsonMessage.data()), 0, QRecLevel::QR_ECLEVEL_H);
+        auto qrCode = QRcode_encodeData(static_cast<int>(jsonMessage.size()),
+                                        reinterpret_cast<const unsigned char*>(jsonMessage.data()), 0, QRecLevel::QR_ECLEVEL_H);
         // the qr image is stored a one byte per pixel but only the LSB bit represents the pixel, the rest is usless info about the creation of the pixel
         // to be usful we need to convert it into pixels
-        const uint numPixels = qrCode->width * qrCode->width;
+        const uint numPixels = static_cast<uint>(qrCode->width) * static_cast<uint>(qrCode->width);
         for(uint index = 0; index < numPixels; index++)
         {
             if(qrCode->data[index] & 0x01)
@@ -160,6 +186,7 @@ namespace cqp
         painter.fillRect(0, 0, qrImage.width(), qrImage.height(), fillBrush);
 
         QRcode_free(qrCode);
+        QApplication::restoreOverrideCursor();
         return result;
     }
 
@@ -176,57 +203,79 @@ namespace cqp
         SetSourceSite(ui->fromSite->text().toStdString());
     }
 
+    void KeyViewer::GetNewKey()
+    {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        auto stub = remote::IKey::NewStub(siteFromChannel);
+        grpc::ClientContext ctx;
+        remote::KeyRequest request;
+
+        keyData = std::make_unique<remote::SharedKey>();
+        request.set_siteto(ui->toSite->currentItem()->text().toStdString());
+
+        // request a key
+        auto getResult = stub->GetSharedKey(&ctx, request, keyData.get());
+
+        if(LogStatus(getResult).ok())
+        {
+            DisplayKey(*keyData);
+        }
+        else
+        {
+            rekeyTimer.stop();
+            QMessageBox::critical(this, QString::fromStdString("Failed to get key"),
+                                  QString::fromStdString(getResult.error_message()));
+        }
+        QApplication::restoreOverrideCursor();
+    }
+
     void KeyViewer::on_newKey_clicked()
     {
-        auto stub = remote::IKey::NewStub(siteFromChannel);
-        if(stub)
+        if(siteFromChannel && ui->toSite->currentItem())
         {
-            grpc::ClientContext ctx;
-            remote::KeyRequest request;
-            remote::SharedKey keyResponse;
-
-            request.set_siteto(ui->toSite->currentItem()->text().toStdString());
-
-            auto getResult = stub->GetSharedKey(&ctx, request, &keyResponse);
-
-            if(LogStatus(getResult).ok())
+            if(!ui->newKey->isCheckable() || ui->newKey->isChecked())
             {
-                DisplayKey(keyResponse);
+                GetNewKey();
+                if(ui->newKey->isCheckable())
+                {
+                    rekeyTimer.start();
+                }
             }
             else
             {
-                QMessageBox::critical(this, QString::fromStdString("Failed to get key"),
-                                      QString::fromStdString(getResult.error_message()));
+                rekeyTimer.stop();
             }
         }
-
     }
 
     void KeyViewer::on_existingKey_clicked()
     {
-        auto existingKeyId = QInputDialog::getInt(this, "Key ID to get", "ID");
-        if(existingKeyId > 0)
+        if(siteFromChannel)
         {
-            auto stub = remote::IKey::NewStub(siteFromChannel);
-            if(stub)
+            auto existingKeyId = QInputDialog::getInt(this, "Key ID to get", "ID");
+            if(existingKeyId > 0)
             {
-                grpc::ClientContext ctx;
-                remote::KeyRequest request;
-                remote::SharedKey keyResponse;
-
-                request.set_siteto(ui->toSite->currentItem()->text().toStdString());
-                request.set_keyid(existingKeyId);
-
-                auto getResult = stub->GetSharedKey(&ctx, request, &keyResponse);
-
-                if(LogStatus(getResult).ok())
+                auto stub = remote::IKey::NewStub(siteFromChannel);
+                if(stub)
                 {
-                    DisplayKey(keyResponse);
-                }
-                else
-                {
-                    QMessageBox::critical(this, QString::fromStdString("Failed to get key"),
-                                          QString::fromStdString(getResult.error_message()));
+                    grpc::ClientContext ctx;
+                    remote::KeyRequest request;
+                    remote::SharedKey keyResponse;
+
+                    request.set_siteto(ui->toSite->currentItem()->text().toStdString());
+                    request.set_keyid(static_cast<uint64_t>(existingKeyId));
+
+                    auto getResult = stub->GetSharedKey(&ctx, request, &keyResponse);
+
+                    if(LogStatus(getResult).ok())
+                    {
+                        DisplayKey(keyResponse);
+                    }
+                    else
+                    {
+                        QMessageBox::critical(this, QString::fromStdString("Failed to get key"),
+                                              QString::fromStdString(getResult.error_message()));
+                    }
                 }
             }
         }
@@ -234,12 +283,21 @@ namespace cqp
 
     void KeyViewer::on_formatBase64_clicked()
     {
-        ui->keyHexView->setPlainText(keyData.toBase64());
+        if(keyData)
+        {
+            // for converting the key data for display
+            auto rawKey = QByteArray(keyData->keyvalue().data(), static_cast<int>(keyData->keyvalue().size()));
+            ui->keyHexView->setPlainText(rawKey.toBase64());
+        }
     }
 
     void cqp::KeyViewer::on_formatHex_clicked()
     {
-        ui->keyHexView->setPlainText(keyData.toHex());
+        if(keyData)
+        {
+            auto rawKey = QByteArray(keyData->keyvalue().data(), static_cast<int>(keyData->keyvalue().size()));
+            ui->keyHexView->setPlainText(rawKey.toHex());
+        }
     }
 
     void KeyViewer::on_saveQr_clicked()
@@ -247,18 +305,76 @@ namespace cqp
         auto image = ui->qrCodeView->pixmap();
         if(image)
         {
-            auto saveFile = QFileDialog::getSaveFileName(this, "Save As...");
-            image->save(saveFile, "PNG");
+            bool result = false;
+            const auto pngFilter = tr("PNG Image (*.png)");
+            const auto jsonFilter = tr("JSON Text (*.json)");
+            const auto filter = pngFilter + tr(";;") + jsonFilter;
+
+            QFileDialog saveDialog(this, "Save As...", tr(""), filter);
+            saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+            if(saveDialog.exec() == QDialog::Accepted)
+            {
+                QApplication::setOverrideCursor(Qt::WaitCursor);
+
+                auto filename = saveDialog.selectedFiles().first();
+                if(saveDialog.selectedNameFilter() == pngFilter)
+                {
+                    if(!filename.endsWith(".png"))
+                    {
+                        filename += ".png";
+                    }
+
+                    result = image->save(filename, "PNG");
+                }
+                else
+                {
+                    if(!filename.endsWith(".json"))
+                    {
+                        filename += ".json";
+                    }
+
+                    if(keyData)
+                    {
+                        result = fs::WriteEntireFile(filename.toStdString(),
+                                                     KeyToJSON(ui->fromSite->text().toStdString(), *keyData));
+                    }
+                }
+                QApplication::restoreOverrideCursor();
+
+                if(!result)
+                {
+                    QMessageBox::critical(this, "Failed to save", "Failed to save the key to\n" + filename);
+                }
+            }
+            QApplication::restoreOverrideCursor();
+
         }
     }
 
     void KeyViewer::on_testQr_clicked()
     {
-        remote::SharedKey key;
-        key.set_url("Siteb:8000");
-        key.set_keyid(1234);
-        key.set_keyvalue(QByteArray::fromBase64("9CqndMa11eureWq9n/LljgUwhpiV0ckhzX0fhzlDCjc=").toStdString());
-        DisplayKey(key);
+        keyData = std::make_unique<remote::SharedKey>();
+        keyData->set_url("Siteb:8000");
+        keyData->set_keyid(1234);
+        keyData->set_keyvalue(QByteArray::fromBase64("9CqndMa11eureWq9n/LljgUwhpiV0ckhzX0fhzlDCjc=").toStdString());
+        DisplayKey(*keyData);
+    }
+
+    void KeyViewer::on_refreshEnable_stateChanged(int state)
+    {
+        ui->newKey->setCheckable(state == Qt::Checked);
+    }
+
+    void KeyViewer::on_refreshTime_valueChanged(int newValue)
+    {
+        using std::chrono::seconds;
+
+        rekeyTimer.setInterval(seconds(newValue));
+    }
+
+    void KeyViewer::OnKeyRefresh()
+    {
+        GetNewKey();
     }
 
 } // namespace cqp
