@@ -485,6 +485,19 @@ macro(CQP_QT_PROJECT)
 
         # Use the Widgets module from Qt 5.
         target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
+
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+            # create a desktop file for the program
+            configure_file("${CMAKE_SOURCE_DIR}/packaging/app.desktop" "${PROJECT_NAME}.desktop")
+            install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.desktop"
+                DESTINATION share/applications
+                COMPONENT ${CQP_INSTALL_COMPONENT})
+            install(FILES "${CMAKE_SOURCE_DIR}/packaging/qetlabs.png"
+                DESTINATION share/icons
+                RENAME "${PROJECT_NAME}.png"
+                COMPONENT ${CQP_INSTALL_COMPONENT})
+        endif()
+
     else(${Qt5Widgets_FOUND})
         message(WARNING "${PROJECT_NAME} skipped.")
     endif(${Qt5Widgets_FOUND})
