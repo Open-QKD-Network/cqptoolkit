@@ -186,10 +186,9 @@
    <addaction name="actionAdd_Site"/>
    <addaction name="actionAdd_Device"/>
    <addaction name="actionAdd_Manager"/>
+   <addaction name="actionKey_Viewer"/>
    <addaction name="separator"/>
    <addaction name="actionDelete"/>
-   <addaction name="separator"/>
-   <addaction name="actionKey_Viewer"/>
   </widget>
   <action name="actionOpen">
    <property name="icon">
@@ -310,8 +309,8 @@
   </action>
   <action name="actionKey_Viewer">
    <property name="icon">
-    <iconset resource="../QKDTunnel/images.qrc">
-     <normaloff>:/icons/KeyExchange</normaloff>:/icons/KeyExchange</iconset>
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/keys</normaloff>:/icons/keys</iconset>
    </property>
    <property name="text">
     <string>Key Viewer</string>
@@ -330,7 +329,6 @@
  </customwidgets>
  <resources>
   <include location="images.qrc"/>
-  <include location="../QKDTunnel/images.qrc"/>
  </resources>
  <connections/>
 </ui>

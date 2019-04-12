@@ -44,7 +44,7 @@ namespace cqp
             topWidget->resize(0,0);
 
             auto getKey = new QToolButton(topWidget);
-            getKey->setIcon(QIcon::fromTheme(QString::fromUtf8("key")));
+            getKey->setIcon(QIcon::fromTheme(QString::fromUtf8("keys")));
             layout->addWidget(getKey);
 
             auto connect = new QToolButton(topWidget);

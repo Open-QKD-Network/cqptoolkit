@@ -4,5 +4,6 @@
         <file alias="site">images/enterprise.svg</file>
         <file alias="device">images/password.svg</file>
         <file alias="app">images/ico_qet.png</file>
+        <file alias="keys">images/keys.png</file>
     </qresource>
 </RCC>
