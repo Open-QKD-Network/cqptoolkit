@@ -19,26 +19,28 @@ project (CQPUI C CXX)
 # Perform some standard setup steps like detecting the platform.
 include(CommonSetup)
 
-# Version Information
-set(${PROJECT_NAME}_VERSION_MAJOR 0)
-set(${PROJECT_NAME}_VERSION_MINOR 1)
-set(${PROJECT_NAME}_VERSION_PATCH 0)
-set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH})
+if(TARGET Qt5::Widgets)
+    # Version Information
+    set(${PROJECT_NAME}_VERSION_MAJOR 0)
+    set(${PROJECT_NAME}_VERSION_MINOR 1)
+    set(${PROJECT_NAME}_VERSION_PATCH 0)
+    set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH})
 
-# Generate a standard setup for a library
-CQP_QT_LIB_PROJECT()
-add_dependencies(${PROJECT_NAME} CQPToolkit)
-add_dependencies(${PROJECT_NAME}_Static CQPToolkit_Static)
-add_dependencies(${PROJECT_NAME}_Shared CQPToolkit_Shared)
+    # Generate a standard setup for a library
+    CQP_QT_LIB_PROJECT()
+    add_dependencies(${PROJECT_NAME} CQPToolkit)
+    add_dependencies(${PROJECT_NAME}_Static CQPToolkit_Static)
+    add_dependencies(${PROJECT_NAME}_Shared CQPToolkit_Shared)
 
-# Now tell the compiler and linker where to find specific libs
+    # Now tell the compiler and linker where to find specific libs
 
-if(TARGET ${PROJECT_NAME}_Shared)
+    if(TARGET ${PROJECT_NAME}_Shared)
 
-    target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
-        CQPToolkit_Shared
-    )
+        target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
+            CQPToolkit_Shared
+        )
 
-endif(TARGET ${PROJECT_NAME}_Shared)
-# packaging
-SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "CQP UI")
+    endif(TARGET ${PROJECT_NAME}_Shared)
+    # packaging
+    SET(CPACK_COMPONENT_${PROJECT_NAME}_DESCRIPTION   "CQP UI")
+endif()

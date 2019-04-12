@@ -18,4 +18,6 @@ include(CommonSetup)
 
 SET_COMPONENT_NAME("UI" CQP_INSTALL_COMPONENT)
 
-ADD_ALL_SUBDIRS()
+if(TARGET Qt5::Widgets)
+    ADD_ALL_SUBDIRS()
+endif()

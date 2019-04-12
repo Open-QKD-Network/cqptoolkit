@@ -186,6 +186,9 @@ else()
     message(WARNING "Avahi missing")
 endif()
 
+# Find the QtWidgets library
+find_package(Qt5 COMPONENTS Core Widgets QUIET)
+
 if(BUILD_TESTING)
         find_package(GTest QUIET)
         find_package(GMock QUIET)
