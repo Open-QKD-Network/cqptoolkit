@@ -78,9 +78,18 @@ sudo docker run -it registry.gitlab.com/qcomms/cqptoolkit/buildenv
 ```
 
 Clone the source from [gitlab](https://gitlab.com/QComms/cqptoolkit.git) with [git][] and build with [CMake][] and [gnu make](https://www.gnu.org/software/make/):
+The `--recurse-submodules` adds the optional extras - access to some of these is restricted to UoB and it's partners, the build will work without them.
 
 ```bash
-git clone https://gitlab.com/QComms/cqptoolkit.git
+git clone --recurse-submodules https://gitlab.com/QComms/cqptoolkit.git
+```
+
+If you want to get all submodules, and have the appropreate logins run:
+```bash
+git submodule update --checkout
+```
+
+```bash
 mkdir cqptoolkit-build
 cd cqptoolkit-build
 cmake ../cqptoolkit && nice make -s -j

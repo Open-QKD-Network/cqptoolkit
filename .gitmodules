@@ -1,6 +1,7 @@
 [submodule "external/idq4p"]
 	path = external/idq4p
 	url = ../idq4p.git
+	update = none
 [submodule "external/nodeeditor"]
 	path = external/nodeeditor
 	url = https://github.com/paceholder/nodeeditor.git

@@ -21,6 +21,7 @@ stages:
 build:linux:
   stage: build
   script:
+    - git submodule update --checkout
     - mkdir -p build/gcc
     - cd build/gcc
     - cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
