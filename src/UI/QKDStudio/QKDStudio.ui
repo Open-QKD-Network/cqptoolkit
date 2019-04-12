@@ -272,6 +272,9 @@
    </property>
   </action>
   <action name="actionAdd_Site">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="images.qrc">
      <normaloff>:/icons/site</normaloff>:/icons/site</iconset>
@@ -281,6 +284,9 @@
    </property>
   </action>
   <action name="actionAdd_Device">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="images.qrc">
      <normaloff>:/icons/device</normaloff>:/icons/device</iconset>
@@ -290,6 +296,9 @@
    </property>
   </action>
   <action name="actionAdd_Manager">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="images.qrc">
      <normaloff>:/icons/manager</normaloff>:/icons/manager</iconset>
