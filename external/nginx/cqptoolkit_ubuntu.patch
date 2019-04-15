@@ -25,25 +25,42 @@ diff -N -p -r -u nginx-1.14.0-orig/auto/lib/cqptoolkit/conf nginx-1.14.0/auto/li
 +    ngx_feature="cqptoolkit"
 +    ngx_feature_name=
 +    ngx_feature_run=no
-+    ngx_feature_incs="#include <OpenSSLHandler.h>"
-+    ngx_feature_path="/usr/include/CQPToolkit"
-+    ngx_feature_libs="-l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++    ngx_feature_incs="#include <KeyManagement/OpenSSLHandler.h>"
++    ngx_feature_path="/usr/include/"
++    ngx_feature_libs="-lKeyManagement-x86_64"
 +    ngx_feature_test="unsigned char test[33];
 +                      OpenSSLHandler_ServerCallback(0, \"\", test, 32);"
 +    . auto/feature
++    echo "**********$ngx_found************"
++
++if [ $ngx_found = no ]; then
++
++    # usr local debug
++
++    ngx_feature="cqptoolkitd in /usr/local/"
++    ngx_feature_path="/usr/local/include/"
++
++    if [ $NGX_RPATH = YES ]; then
++        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -l:KeyManagement-x86_64d"
++    else
++        ngx_feature_libs="-L/usr/local/lib -lKeyManagement-x86_64d"
++    fi
++
++    . auto/feature
++fi
 +
 +
 +if [ $ngx_found = no ]; then
 +
-+    # FreeBSD port
++    # usr local
 +
 +    ngx_feature="cqptoolkit in /usr/local/"
-+    ngx_feature_path="/usr/local/include/CQPToolkit /usr/local/include"
++    ngx_feature_path="/usr/local/include"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -lKeyManagement-x86_64"
 +    else
-+        ngx_feature_libs="-L/usr/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L/usr/local/lib -lKeyManagement-x86_64"
 +    fi
 +
 +    . auto/feature
@@ -52,32 +69,15 @@ diff -N -p -r -u nginx-1.14.0-orig/auto/lib/cqptoolkit/conf nginx-1.14.0/auto/li
 +
 +if [ $ngx_found = no ]; then
 +
-+    # NetBSD port
++    # usr
 +
-+    ngx_feature="cqptoolkit in /usr/pkg/"
-+    ngx_feature_path="/usr/pkg/include/CQPToolkit /usr/pkg/include"
-+
-+    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/pkg/lib -L/usr/pkg/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
-+    else
-+        ngx_feature_libs="-L/usr/pkg/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
-+    fi
-+
-+    . auto/feature
-+fi
-+
-+
-+if [ $ngx_found = no ]; then
-+
-+    # MacPorts
-+
-+    ngx_feature="cqptoolkit in /opt/local/"
-+    ngx_feature_path="/opt/local/include/CQPToolkit /opt/local/include"
++    ngx_feature="cqptoolkit in /usr"
++    ngx_feature_path="/usr/include"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/opt/local/lib -L/opt/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R/usr/lib -L/usr/lib -lKeyManagement-x86_64"
 +    else
-+        ngx_feature_libs="-L/opt/local/lib -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L/usr/lib -lKeyManagement-x86_64"
 +    fi
 +
 +    . auto/feature
@@ -86,12 +86,12 @@ diff -N -p -r -u nginx-1.14.0-orig/auto/lib/cqptoolkit/conf nginx-1.14.0/auto/li
 +if [ $ngx_found = no ]; then
 +
 +    ngx_feature="cqptoolkit in release"
-+    ngx_feature_path="/home/rc15345/code/trunk/src/CQPToolkit /home/rc15345/code/build-trunk-Desktop-Release/src"
++    ngx_feature_path="/home/rc15345/code/trunk/src/KeyManagement /home/rc15345/code/build-trunk-Desktop-Release/src"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/home/rc15345/code/build-trunk-Desktop-Release/src/CQPToolkit -L/home/rc15345/code/build-trunk-Desktop-Release/src/CQPToolkit -l:libCQPToolkit-x86_64.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R/home/rc15345/code/build-trunk-Desktop-Release/src/KeyManagement -L/home/rc15345/code/build-trunk-Desktop-Release/src/CQPToolkit -l:libKeyManagement-x86_64.a -lcurl  -lstdc++ -ldl"
 +    else
-+        ngx_feature_libs="-L/home/rc15345/code/build-trunk-Desktop-Release/src/CQPToolkit -l:libCQPToolkit-x86_64.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L/home/rc15345/code/build-trunk-Desktop-Release/src/KeyManagement -l:libKeyManagement-x86_64.a -lcurl  -lstdc++ -ldl"
 +    fi
 +
 +    . auto/feature
@@ -100,12 +100,12 @@ diff -N -p -r -u nginx-1.14.0-orig/auto/lib/cqptoolkit/conf nginx-1.14.0/auto/li
 +if [ $ngx_found = no ]; then
 +
 +    ngx_feature="cqptoolkit in dev"
-+    ngx_feature_path="/home/rc15345/code/CQPToolkit/src/CQPToolkit /home/rc15345/code/CQPToolkit/build/gcc/src"
++    ngx_feature_path="/home/rc15345/code/CQPToolkit/src/KeyManagement /home/rc15345/code/CQPToolkit/build/gcc/src"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit -L/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R/home/rc15345/code/CQPToolkit/build/gcc/src/KeyManagement -L/home/rc15345/code/CQPToolkit/build/gcc/src/KeyManagement -l:libKeyManagement-x86_64d.a -lcurl  -lstdc++ -ldl"
 +    else
-+        ngx_feature_libs="-L/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L/home/rc15345/code/CQPToolkit/build/gcc/src/KeyManagement -l:libKeyManagement-x86_64d.a -lcurl  -lstdc++ -ldl"
 +    fi
 +
 +    . auto/feature
@@ -314,7 +314,7 @@ diff -N -p -r -u nginx-1.14.0-orig/src/event/ngx_event_openssl.c nginx-1.14.0/sr
  #include <ngx_event.h>
 -
 +#if defined(HTTP_SSL_PSK)
-+#include "OpenSSLHandler.h"
++#include "KeyManagement/OpenSSLHandler.h"
 +#endif
  
  #define NGX_SSL_PASSWORD_BUFFER_SIZE  4096
@@ -344,7 +344,7 @@ diff -N -p -r -u nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.c nginx-
  #include <ngx_http.h>
 -
 +#if defined(HTTP_SSL_PSK)
-+#include "OpenSSLHandler.h"
++#include "KeyManagement/OpenSSLHandler.h"
 +#endif
  
  typedef ngx_int_t (*ngx_ssl_variable_handler_pt)(ngx_connection_t *c,

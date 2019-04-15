@@ -17,6 +17,7 @@
 #include "grpcpp/create_channel.h"
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
+#include "Algorithms/Datatypes/URI.h"
 
 namespace cqp
 {
@@ -225,40 +226,31 @@ namespace cqp
     {
         using namespace cqp;
         LOGTRACE("");
+        bool result = false;
 
         delete activeHsm;
         activeHsm = nullptr;
 
-        if(std::string(url).find("yubihsm") != std::string::npos)
+        URI hsmUri(url);
+        if(hsmUri.GetScheme() == "pkcs")
         {
-            activeHsm = new cqp::keygen::YubiHSM(url, pinCallback);
+            if(std::string(url).find("yubihsm") != std::string::npos)
+            {
+                activeHsm = new cqp::keygen::YubiHSM(url, pinCallback);
+            }
+            else
+            {
+                activeHsm = new cqp::keygen::HSMStore(url, pinCallback);
+            }
+            result = activeHsm->InitSession();
         }
         else
         {
-            activeHsm = new cqp::keygen::HSMStore(url, pinCallback);
+            keystoreAddress = url;
+            result = true;
         }
-        bool result = activeHsm->InitSession();
-        if(result)
-        {
-            return 1;
-        }
-        else
-        {
-            LOGERROR("Failed to start HSM");
-            return 0;
-        }
-        LOGTRACE("");
-    }
 
-    unsigned OpenSSLHandler::SetKeystore(const char* address)
-    {
-        LOGTRACE("");
-        using namespace cqp;
-        delete activeHsm;
-        activeHsm = nullptr;
-        keystoreAddress = address;
-
-        return 1;
+        return result;
     }
 
     bool OpenSSLHandler::GetKeystoreKey(const std::string& destination, KeyID& keyId, PSK& psk)
@@ -320,9 +312,4 @@ void OpenSSLHandler_SetPinCallback(OpenSSLHandler_PinCallback cb, void* userData
 unsigned OpenSSLHandler_SetHSM(const char* url)
 {
     return OpenSSLHandler::Instance()->SetHSM(url);
-}
-
-unsigned OpenSSLHandler_SetKeystore(const char* address)
-{
-    return OpenSSLHandler::Instance()->SetKeystore(address);
 }

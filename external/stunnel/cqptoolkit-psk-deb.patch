@@ -31,7 +31,7 @@ Last-Update: 2018-11-03
  
  # TLS library
 -stunnel_LDFLAGS = -L$(SSLDIR)/lib64 -L$(SSLDIR)/lib -lssl -lcrypto
-+stunnel_LDFLAGS = -L$(SSLDIR)/lib64 -L$(SSLDIR)/lib -lssl -lcrypto -lCQPToolkit-x86_64
++stunnel_LDFLAGS = -L$(SSLDIR)/lib64 -L$(SSLDIR)/lib -lssl -lcrypto -lKeyManagement-x86_64
  
  # stunnel3 script
  edit = sed \
@@ -42,7 +42,7 @@ Last-Update: 2018-11-03
  #include "prototypes.h"
  
 +#ifndef OPENSSL_NO_PSK
-+#include "CQPToolkit/OpenSSLHandler.h"
++#include "KeyManagement/OpenSSLHandler.h"
 +#endif
 +
  SERVICE_OPTIONS *current_section=NULL;

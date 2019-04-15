@@ -97,7 +97,9 @@ KEYMANAGEMENT_EXPORT void OpenSSLHandler_SetPinCallback(OpenSSLHandler_PinCallba
 /**
  * @brief OpenSSLHandler_SetHSM
  * sets the HSM to use for future use of OpenSSLHandler_ClientCallback and OpenSSLHandler_ServerCallback
- * @param url pkcs url for module
+ * @details
+ * If the url does not start with "pkcs" it is assumed to be an IKey interface hostname
+ * @param url pkcs url for module or IKey interface
  * @return non-zero on success, 0 on failure
  */
 KEYMANAGEMENT_EXPORT unsigned OpenSSLHandler_SetHSM(const char* url);
@@ -141,8 +143,6 @@ namespace cqp
         void SetPinCallback(cqp::keygen::IPinCallback* cb);
 
         unsigned SetHSM(const char* url);
-
-        unsigned SetKeystore(const char* address);
 
         unsigned int ServerCallback(SSL*, const char* identity, unsigned char* psk, unsigned int max_psk_len); // ServerCallback
 
