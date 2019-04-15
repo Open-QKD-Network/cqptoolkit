@@ -3,7 +3,7 @@
 * @brief OpenSSLHandler
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 17/8/2018
@@ -102,15 +102,66 @@ KEYMANAGEMENT_EXPORT void OpenSSLHandler_SetPinCallback(OpenSSLHandler_PinCallba
  */
 KEYMANAGEMENT_EXPORT unsigned OpenSSLHandler_SetHSM(const char* url);
 
-#ifdef __cplusplus
-}
-
 /**
- * @brief SetPin
- * Specify a callback to provide password/pin for a token when needed. The callback can then lookup/request the pin from the user.
- * @param cb The callback to call
- * @param userData This will be passed to the callback
+ * @brief OpenSSLHandler_SetKeystore
+ * sets the key store to use for future use of OpenSSLHandler_ClientCallback and OpenSSLHandler_ServerCallback
+ * This overrides any call to OpenSSLHandler_SetHSM
+ * @param address The address of the IKey interface to connect to.
+ * @return non-zero on success, 0 on failure
  */
-KEYMANAGEMENT_EXPORT void OpenSSLHandler_SetPinCallback(cqp::keygen::IPinCallback* cb);
+KEYMANAGEMENT_EXPORT unsigned OpenSSLHandler_SetKeystore(const char* address);
+
+#ifdef __cplusplus
+} // extern "C"
+
+namespace cqp
+{
+
+    class KEYMANAGEMENT_EXPORT OpenSSLHandler final : public virtual keygen::IPinCallback
+    {
+    public:
+        inline static OpenSSLHandler* Instance()
+        {
+            if(!instance)
+            {
+                instance = new OpenSSLHandler();
+            }
+            return instance;
+        }
+
+        OpenSSLHandler();
+
+        inline bool GetHSMPin(const std::string& tokenSerial, const std::string& tokenLabel,
+                              keygen::UserType& login, std::string& pin) override;
+
+        void SetSearchModules(const char** modules, unsigned int numModules);
+
+        void SetPinCallback(OpenSSLHandler_PinCallback cb, void* userData);
+
+        void SetPinCallback(cqp::keygen::IPinCallback* cb);
+
+        unsigned SetHSM(const char* url);
+
+        unsigned SetKeystore(const char* address);
+
+        unsigned int ServerCallback(SSL*, const char* identity, unsigned char* psk, unsigned int max_psk_len); // ServerCallback
+
+        unsigned int ClientCallback(SSL*, const char* hint, char* identity, unsigned int max_identity_len, unsigned char* psk, unsigned int max_psk_len); // ClientCallback
+
+        bool GetKeystoreKey(const std::string& destination, KeyID& keyId, PSK& psk);
+    protected:
+        std::vector<std::string> searchModules = { "libsofthsm2.so" };
+        OpenSSLHandler_PinCallback pinCallbackFunc = nullptr;
+        void* callbackUserData = nullptr;
+        size_t pinLengthLimit = 0;
+        cqp::keygen::HSMStore* activeHsm;
+        std::string keystoreAddress;
+        cqp::keygen::IPinCallback* pinCallback = nullptr;
+
+    private:
+        static OpenSSLHandler* instance;
+    };
+
+}
 
 #endif
