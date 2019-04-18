@@ -109,6 +109,37 @@ Once built the files, by default, are at the same level as the project folder ca
 
 ## Exploring the Library
 
+    @startuml
+        title Applicaiton Overview
+
+        component "QKD Device Drivers" as drv
+        interface IDevice as idev
+        drv - idev
+
+        component "Device contol and\n Key storage" as sa
+        interface IKey as ikey
+        sa - ikey
+        sa ..> idev
+
+    package "Key consumers" as kc {
+        component "Custom VPN" as tun
+        component "Custom\nWeb Server" as nginx
+        component "HSM bridge" as hsm
+    }
+    tun ..> ikey
+    nginx ..> ikey
+    hsm ..> ikey
+
+    package Utilities {
+        component "Config/Control GUI" as gui
+        component "Simulators/Testing" as sim
+        component "Data extraction" as stats
+
+        gui -[hidden]down- sim
+        sim -[hidden]down- stats
+    }
+    @enduml
+
 Below is a flow chart to help find the area relevant to you as the project covers many different aspects of QKD and key management - contributors are welcome to drive this project to be more specialised.
 QKD requires some form of [non-cloning](https://en.wikipedia.org/wiki/No-cloning_theorem) communication, usually by using single photons over a fibre optic cable. They can operate point-to-point or as one-to-many but they inherently have a physical location (where the fibre terminates) - they cannot be virtualised! The point at which the photon is transmitted or detected is the boundary of the secure system - almost like the [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)) to a network. Once the in-divisible photons have been turned into a string of bits to form a [symmetric key](https://en.wikipedia.org/wiki/Key_(cryptography)) the standard rules of computer security like authentication, access control, etc, apply. The difference is that once those keys have been produced, each of the QKD devices have a number which [no one else knows](https://en.wikipedia.org/wiki/Shared_secret) [proven by science](https://arxiv.org/pdf/quant-ph/0003004.pdf).
 
