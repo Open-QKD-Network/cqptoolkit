@@ -44,7 +44,7 @@ namespace cqp
             topWidget->resize(0,0);
 
             auto getKey = new QToolButton(topWidget);
-            getKey->setIcon(QIcon::fromTheme(QString::fromUtf8("keys")));
+            getKey->setIcon(QIcon(tr(":/icons/keys")));
             layout->addWidget(getKey);
 
             auto connect = new QToolButton(topWidget);
@@ -178,9 +178,16 @@ namespace cqp
             {
             case 0:
             {
-                // register with network manager
-                auto managerData = std::dynamic_pointer_cast<ManagerData>(nodeData);
-                config.set_netmanuri(managerData->address);
+                if(nodeData)
+                {
+                    // register with network manager
+                    auto managerData = std::dynamic_pointer_cast<ManagerData>(nodeData);
+                    config.set_netmanuri(managerData->address);
+                }
+                else
+                {
+                    config.set_netmanuri("");
+                }
             }
             break;
             default:
@@ -269,7 +276,10 @@ namespace cqp
 
         void SiteAgent::GetKey()
         {
-            keyViewer->SetSourceSite(details.url());
+            if(!details.url().empty())
+            {
+                keyViewer->SetSourceSite(details.url());
+            }
             keyViewer->open();
         }
 

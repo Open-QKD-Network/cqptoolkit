@@ -176,18 +176,40 @@ namespace cqp
 
         }
 
+        void Device::EndSession()
+        {
+            if(linkData)
+            {
+                // TODO
+            }
+
+        }
+
         void Device::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, QtNodes::PortIndex port)
         {
             switch (port)
             {
             case 0:
-                // register with site agent
-                details.set_siteagentaddress(std::dynamic_pointer_cast<SiteAgentData>(nodeData)->address);
+                if(nodeData)
+                {
+                    // register with site agent
+                    details.set_siteagentaddress(std::dynamic_pointer_cast<SiteAgentData>(nodeData)->address);
+                }
+                else
+                {
+                    details.set_siteagentaddress("");
+                }
                 break;
             case 1:
-                // connect to device
-                StartSession(std::dynamic_pointer_cast<LinkData>(nodeData));
-
+                if(nodeData)
+                {
+                    // connect to device
+                    StartSession(std::dynamic_pointer_cast<LinkData>(nodeData));
+                }
+                else
+                {
+                    EndSession();
+                }
                 break;
             default:
                 break;

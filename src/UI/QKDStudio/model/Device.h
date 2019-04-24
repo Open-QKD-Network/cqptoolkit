@@ -64,6 +64,8 @@ namespace cqp
             void SetDetails(const remote::ControlDetails& details);
 
             void StartSession(std::shared_ptr<LinkData> newLink);
+
+            void EndSession();
         protected:
             std::shared_ptr<LinkData> linkData;
             const std::string driverName;
