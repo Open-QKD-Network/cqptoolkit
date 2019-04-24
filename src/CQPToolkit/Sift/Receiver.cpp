@@ -26,6 +26,7 @@ namespace cqp
 
         grpc::Status Receiver::VerifyBases(grpc::ServerContext*, const remote::BasisBySiftFrame* request, remote::AnswersByFrame* response)
         {
+            LOGTRACE("");
             using std::chrono::high_resolution_clock;
             using namespace std;
             using google::protobuf::RepeatedField;

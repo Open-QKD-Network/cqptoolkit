@@ -25,7 +25,7 @@ namespace cqp
         void SiftBase::OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits)
         {
             using namespace std;
-            LOGDEBUG("Received aligned qubits");
+            LOGTRACE("Received aligned qubits");
 
             // Lock scope
             {
@@ -41,7 +41,7 @@ namespace cqp
                 } // if else
             } // Lock scope
 
-            statesCv.notify_one();
+            statesCv.notify_all();
         } //OnAligned
 
         void SiftBase::Connect(std::shared_ptr<grpc::ChannelInterface>)

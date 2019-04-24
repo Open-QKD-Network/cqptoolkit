@@ -19,7 +19,7 @@ namespace cqp
 
         Transmitter::Transmitter(unsigned int framesBeforeVerify) :
             WorkerThread (),
-            SiftBase (accessMutex, threadConditional),
+            SiftBase (statesMutex, statesCv),
             minFramesBeforeVerify(framesBeforeVerify)
         {
         }
@@ -67,41 +67,27 @@ namespace cqp
 
                 /*lock scope*/
                 {
-                    std::unique_lock<std::mutex>  lock(accessMutex);
+                    std::unique_lock<std::mutex>  lock(statesMutex);
+                    LOGTRACE("Waiting...");
                     // Wait for data to be available
-                    result = threadConditional.wait_for(lock, threadTimeout, bind(&Transmitter::ValidateIncomming, this, firstSeq));
+                    result = statesCv.wait_for(lock, threadTimeout, bind(&Transmitter::ValidateIncomming, this, firstSeq));
 
+                    LOGTRACE("Trigggered");
                     if(result && !collectedStates.empty())
                     {
-                        QubitsByFrame::iterator it = collectedStates.begin();
-                        QubitsByFrame::iterator end;
+                        QubitsByFrame::iterator it = collectedStates.find(firstSeq);
 
-                        SequenceNumber prevSeq = it->first;
-                        // skip the first element
-                        ++it;
-                        while(it != collectedStates.end())
+                        do
                         {
-                            // verify that the sequence is contiguous
-                            if(it->first == prevSeq + 1)
-                            {
-                                prevSeq = it->first;
-                                ++it;
-                                // don't stop, we may have more to use
-                            }
-                            else
-                            {
-                                // stop walking through the data, there's a hole
-                                break;
-                            }
+                            statesToWorkOn[it->first] = move(it->second);
+                            // remove it from the list
+                            collectedStates.erase(it);
+                            // look for the next item in the list
+                            firstSeq++;
+                            it = collectedStates.find(firstSeq);
                         }
-                        // it now point to one past the last valid element.
-                        end = it;
+                        while(it != collectedStates.end()); // stop when we reach the end or there's a gap in the data
 
-                        for(auto moveItem = collectedStates.begin(); moveItem != end; moveItem++)
-                        {
-                            statesToWorkOn[moveItem->first] = move(moveItem->second);
-                        }
-                        collectedStates.erase(collectedStates.begin(), end);
                     } // if result
 
                 }/*lock scope*/
@@ -124,23 +110,25 @@ namespace cqp
                             currentList.add_basis(remote::Basis::Type((QubitHelper::Base(qubit))));
                         } // for
 
-                        // store the start of the next set of elements to process
-                        firstSeq = it->first + 1;
                         ++it;
                     } // while(it != end)
 
                     // send the bases to alice
                     if(verifier)
                     {
+                        LOGTRACE("A");
                         grpc::ClientContext ctx;
                         result = LogStatus(
                                      verifier->VerifyBases(&ctx, basis, &answers)).ok();
 
+                        LOGTRACE("B");
                         if(result)
                         {
                             // Process the results
                             PublishStates(statesToWorkOn.begin(), statesToWorkOn.end(), answers);
                         }
+
+                        LOGTRACE("C");
                     } // if
                     else
                     {
@@ -151,47 +139,70 @@ namespace cqp
 
             } // while(!ShouldStop())
 
+            LOGTRACE("Transmitter DoWork Leaving");
         } // DoWork
 
         bool Transmitter::ValidateIncomming(SequenceNumber firstSeq) const
         {
             bool result = false;
-            if(minFramesBeforeVerify > 1 && collectedStates.size() > 1 && collectedStates.begin()->first == firstSeq)
+            try
             {
-                QubitsByFrame::const_iterator it = collectedStates.begin();
-
-                SequenceNumber prevSeq = it->first;
-                // skip the first element
-                ++it;
-                SequenceNumber numCollected = 1;
-                while(it != collectedStates.end())
+                if(minFramesBeforeVerify > 1 && collectedStates.size() > 1)
                 {
-                    // verify that the sequence is contiguous
-                    if(it->first == prevSeq + 1)
+                    QubitsByFrame::const_iterator it = collectedStates.begin();
+
+                    if(it->first == firstSeq)
                     {
-                        prevSeq = it->first;
-                        numCollected++;
+                        SequenceNumber prevSeq = it->first;
+                        // skip the first element
                         ++it;
-                        // check if we have enough
-                        if(numCollected >= minFramesBeforeVerify)
+                        SequenceNumber numCollected = 1;
+                        while(it != collectedStates.end())
                         {
-                            result = true;
-                            break;
-                        } // if
-                    } // if
+                            // verify that the sequence is contiguous
+                            if(it->first == prevSeq + 1)
+                            {
+                                prevSeq = it->first;
+                                numCollected++;
+                                ++it;
+                                // check if we have enough
+                                if(numCollected >= minFramesBeforeVerify)
+                                {
+                                    result = true;
+                                    break;
+                                } // if
+                            } // if
+                            else
+                            {
+                                // stop walking through the data, there's a hole
+                                break;
+                            } // else
+                        } // while(it != collectedStates.end())
+                    } // if firstSeq ready
                     else
                     {
-                        // stop walking through the data, there's a hole
-                        break;
-                    } // else
-                } // while(it != collectedStates.end())
-            } // if
-            else if(minFramesBeforeVerify == 1)
-            {
-                result = collectedStates.size() >= minFramesBeforeVerify && collectedStates.begin()->first == firstSeq;
-            } // else if
+                        LOGTRACE("Waiting for first seq num: " + std::to_string(firstSeq));
+                    }
+                } // if
+                else if(minFramesBeforeVerify == 1 && !collectedStates.empty())
+                {
+                    LOGTRACE("FirstSeq=" + std::to_string(firstSeq) + " collected first = " + std::to_string(collectedStates.begin()->first));
+                    auto it = collectedStates.begin();
+                    do
+                    {
+                        result = it->first == firstSeq;
+                        it++;
+                    }
+                    while(!result && it != collectedStates.end());
+                } // else if
 
-            return result || state != State::Started;
+            }
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+                result = false;
+            }
+            return result;
         } // ValidateIncomming
 
 

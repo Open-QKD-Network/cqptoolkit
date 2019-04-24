@@ -98,6 +98,10 @@ namespace cqp
             /// How many aligned frames to receive before trying to generate a sifted frame
             const unsigned int minFramesBeforeVerify = 1;
 
+            /// a mutex for use with collectedStatesCv
+            std::mutex statesMutex;
+            /// used for waiting for new data to arrive
+            std::condition_variable statesCv;
         };
 
     } // namespace Sift

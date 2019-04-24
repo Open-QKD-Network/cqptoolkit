@@ -97,6 +97,7 @@ namespace cqp
 
                 if(report && !report->empty())
                 {
+                    LOGTRACE("Sending report "+ std::to_string(seq));
                     Emit(&IAlignmentCallback::OnAligned, seq++, 0.0, move(report));
                 }
             } // while keepGoing

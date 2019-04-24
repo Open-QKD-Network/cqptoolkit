@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Key Converter
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 27 Jul 2016
@@ -26,7 +26,7 @@ namespace cqp
 
         void KeyConverter::OnKeyGeneration(std::unique_ptr<KeyList> keyData)
         {
-            LOGDEBUG("Received " + std::to_string(keyData->size()) + " fragments");
+            LOGTRACE("Received " + std::to_string(keyData->size()) + " fragments");
             // The list of keys which will be emitted
             std::unique_ptr<KeyList> keyToEmit(new KeyList);
             DataBlock availableBytes;
@@ -60,7 +60,9 @@ namespace cqp
                 {
                     Emit<std::unique_ptr<KeyList>>(&IKeyCallback::OnKeyGeneration, move(keyToEmit));
                 }
-            } else {
+            }
+            else
+            {
                 carryOverBytes.assign(availableBytes.begin(), availableBytes.end());
                 LOGERROR("No listener for generated key");
             }
