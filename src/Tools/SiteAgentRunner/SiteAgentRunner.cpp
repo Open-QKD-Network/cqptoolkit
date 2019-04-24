@@ -44,7 +44,6 @@ struct Names
     static CONSTSTRING keyFile = "key";
     static CONSTSTRING rootCaFile = "rootca";
     static CONSTSTRING tls = "tls";
-    static CONSTSTRING bs = "backingstore";
     static CONSTSTRING bsurl = "bsurl";
     static CONSTSTRING writeConfig = "write-config";
     struct BackingStores
@@ -83,8 +82,6 @@ SiteAgentRunner::SiteAgentRunner()
     definedArguments.AddOption(Names::id, "i", "Site Agent ID")
     .Bind();
 
-    definedArguments.AddOption(Names::bs, "b", "Backing Store (none, file)")
-    .Bind();
     definedArguments.AddOption(Names::bsurl, "u", "Backing Store URL")
     .Bind();
 
