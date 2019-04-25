@@ -1,0 +1,15 @@
+{
+ "controlParams": {
+  "config": {
+   "id": "dummyqkd__0__16_bob",
+   "side": "Bob",
+   "switchName": "",
+   "switchPort": "",
+   "kind": "dummyqkd",
+   "bytesPerKey": 0
+  },
+  "controlAddress": "0.0.0.0:0",
+  "siteAgentAddress": "localhost:8001"
+ },
+ "bobAddress": ""
+}

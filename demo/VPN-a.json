@@ -1,0 +1,27 @@
+{
+ "name": "VPN-a",
+ "id": "08e88e96-51d7-47fa-b839-279c6ec61305",
+ "localKeyFactoryUri": "localhost:8000",
+ "tunnels": {
+  "tunnel1": {
+   "name": "tunnel1",
+   "keyLifespan": {
+    "maxBytes": "65536"
+   },
+   "remoteControllerUri": "localhost:8100",
+   "encryptionMethod": {
+    "mode": "GCM",
+    "subMode": "Tables2K",
+    "blockCypher": "AES",
+    "keySizeBytes": 32
+   },
+   "startNode": {
+    "clientDataPortUri": "tcpsrv://0.0.0.0:9000"
+   },
+   "endNode": {
+    "clientDataPortUri": "tcpsrv://0.0.0.0:9001"
+   }
+  }
+ },
+ "credentials": {}
+}

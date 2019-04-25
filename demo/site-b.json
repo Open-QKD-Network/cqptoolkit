@@ -1,0 +1,19 @@
+{
+ "name": "",
+ "id": "d403598f-f715-4823-93a7-9c885acc5533",
+ "netManUri": "localhost:8000",
+ "deviceUrls": [],
+ "bindAddress": "",
+ "listenPort": 8001,
+ "connectionAddress": "",
+ "credentials": {
+  "useTLS": false,
+  "privateKeyFile": "",
+  "rootCertsFile": "",
+  "certChainFile": ""
+ },
+ "useAutoDiscover": false,
+ "backingStoreUrl": "file://site-b.db",
+ "staticHops": [],
+ "fallbackKey": ""
+}

@@ -1,0 +1,7 @@
+{
+ "name": "VPN-b",
+ "id": "0082d318-d06b-4823-99c3-994bcbd249d2",
+ "listenPort": 8100,
+ "localKeyFactoryUri": "localhost:8001",
+ "credentials": {}
+}

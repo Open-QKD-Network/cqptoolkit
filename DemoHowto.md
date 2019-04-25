@@ -1,8 +1,19 @@
 # Howto run a demonstration of the system
 
-Note this requires closed source code from [HPN labs](http://www.bristol.ac.uk/engineering/research/hpn/).
+## Dummy Drivers
 
-## Installation
+This shows how dummy drivers can talk directly to each other. It will produce errors as there is nowhere for the key to go.
+Run `demo/run-devices.sh`
+
+## Chat program
+
+This shows drivers + site agents + encryption tunnels.
+Anything typed into one of the blank windows will be encrypted using a key from one site and sent to the other for decryption and displayed in the other blank window. It uses tcp ports and netcat.
+Run `demo/run-chat.sh`
+
+## HPN demo
+
+> Note this requires closed source code from [HPN labs](http://www.bristol.ac.uk/engineering/research/hpn/).
 
 Download the version to install from the [GitLab repository](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb) by going to download -> artifact -> Download 'package:deb'
 
