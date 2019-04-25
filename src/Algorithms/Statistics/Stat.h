@@ -50,6 +50,7 @@ namespace cqp
 
         class ProcessingWorker;
 
+        /// Dictionary
         using KeyValue = std::unordered_map<std::string, std::string>;
 
         /**

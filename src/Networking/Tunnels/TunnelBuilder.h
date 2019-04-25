@@ -37,23 +37,31 @@ namespace cqp
 
         namespace Modes
         {
+            /// No encryption mode
             CONSTSTRING None = "None";
+            /// GCM+AES
             CONSTSTRING GCM = "GCM";
         }
 
         namespace SubModes
         {
+            /// no submod
             CONSTSTRING None = "None";
+            /// GCM with 2K tables
             CONSTSTRING Tables2K = "Tables2K";
+            /// GCM with 64K tables
             CONSTSTRING Tables64K = "Tables64K";
         }
 
         namespace BlockCiphers
         {
+            /// no cipher
             CONSTSTRING None = "None";
+            /// AES cipher
             CONSTSTRING AES = "AES";
         }
 
+        /// bits per key
         enum KeySizes : uint8_t
         {
             Key128 = 16,
@@ -62,22 +70,34 @@ namespace cqp
 
         namespace RandomNumberGenerators
         {
+            /// use any source of randomness
             CONSTSTRING Any = "Any";
+            /// use the OSX917 algorithm
             CONSTSTRING OSX917 = "OSX917";
+            /// use hardware rng
             CONSTSTRING RDRAND = "RDRAND";
+            /// use any software rng
             CONSTSTRING SWRNG = "SWRNG";
         }
         /// string constants for devices types
         namespace DeviceTypes
         {
+            /// ethernet device
             CONSTSTRING eth = "eth";
+            /// tunnel device
+            /// @details https://en.wikipedia.org/wiki/TUN/TAP
             CONSTSTRING tun = "tun";   // raw IP packets
+            /// tap device
+            /// @details https://en.wikipedia.org/wiki/TUN/TAP
             CONSTSTRING tap = "tap";   // raw ethernet packets
+            /// tcp socket connected to a server
             CONSTSTRING tcp = "tcp";
+            /// tcp server socket for recieving connections
             CONSTSTRING tcpsrv = "tcpsrv";
+            /// udp socket for fire and forget
             CONSTSTRING udp = "udp";
+            /// clavis 2 QKD device
             CONSTSTRING clavis2 = "clavis2";
-            CONSTSTRING crypto = "crypto";
         }
         /**
          * @brief The TunnelBuilder class

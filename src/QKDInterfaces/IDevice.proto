@@ -37,65 +37,62 @@ message SessionDetailsTo {
     string peerAddress = 2;
 }
 
-/**
-package cqp.remote;
-@startuml
-    !pragma horizontalLineBetweenDifferentPackageAllowed
-    skinparam linetype ortho
-
-    title Processes and GRPC interfaces they provide
-    skinparam interface {
-        backgroundColor<<external>> Green
-    }
-
-    package Device {
-        component QKDDevice as qkddev
-        interface IQKDDevice as iqkddev <<external>>
-        interface IReporting as irpt <<external>>
-        interface ISession as isession
-
-        qkddev -u- iqkddev
-        qkddev -r- irpt
-        qkddev -- isession
-
-        note left of qkddev
-            For use ether standalone
-            or as part of a site
-        end note
-    }
-
-
-    package Site {
-        component SiteAgent as sa
-        interface ISiteAgent as isa
-        interface IReporting as isarpt <<external>>
-        interface IKey as ikey <<external>>
-
-        sa -right- isa
-        sa -d- ikey
-        sa -u- isarpt
-
-    }
-
-    package Net {
-        component NetworkManager as nm
-        interface INetworkManager as inm
-
-        nm -l- inm
-
-    }
-
-    Device .[hidden]right. Site
-    Site .[hidden]right. Net
-
-    qkddev .d.> isession
-    sa .l.> iqkddev
-    sa .r.> inm
-    nm .l.> isarpt
-    nm .l.> isa
-
-@enduml
-*/
+/// @details
+/// @startuml
+///     !pragma horizontalLineBetweenDifferentPackageAllowed
+///     title Processes and GRPC interfaces they provide
+///     skinparam interface<<external>> {
+///         backgroundColor Green
+///     }
+///     skinparam linetype ortho
+///
+///     package Device {
+///         component QKDDevice as qkddev
+///         interface IQKDDevice as iqkddev <<external>>
+///         interface IReporting as irpt <<external>>
+///         interface ISession as isession
+///
+///         qkddev -r- iqkddev
+///         qkddev -u- irpt
+///         qkddev -- isession
+///
+///         note left of qkddev
+///             For use ether standalone
+///             or as part of a site
+///         end note
+///     }
+///
+///     package Site {
+///         component SiteAgent as sa
+///         interface ISiteAgent as isa
+///         interface IReporting as isarpt <<external>>
+///         interface IKey as ikey <<external>>
+///
+///         sa -right- isa
+///         sa -d- ikey
+///         sa -u- isarpt
+///
+///     }
+///
+///     package Net {
+///         component NetworkManager as nm
+///         interface INetworkManager as inm
+///
+///         nm -l- inm
+///
+///     }
+///
+///     Device .[hidden]right. Site
+///     Site .[hidden]right. Net
+///
+///     qkddev .d.> isession
+///     sa .l.> iqkddev
+///     sa .l.> irpt
+///     sa .r.> inm
+///     nm .l.> isarpt
+///     nm .l.> isa
+///
+/// @enduml
 service IDevice
 {
 

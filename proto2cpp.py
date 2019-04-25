@@ -130,7 +130,7 @@ class proto2cpp:
     theOutput = ''
     for line in inputFile:
       # Search for comment ("//")
-      matchComment = re.search("//", line)
+      matchComment = re.search("//.+", line)
       # Search for semicolon and if one is found before comment, add a third slash character
       # ("/") and a smaller than ("<") chracter to the comment to make Doxygen detect it.
       matchSemicolon = re.search(";", line)
@@ -172,18 +172,22 @@ class proto2cpp:
                 line += ", " + response + "* response"
         line += ") = 0;\n"
 
+      cleanline = line
+      if matchComment is not None:
+          cleanline = line[:matchComment.start()]
+
       # Search for a closing brace.
-      matchClosingBrace = re.search("}", line)
+      matchClosingBrace = re.search("}", cleanline)
       if isEnum is True and matchClosingBrace is not None:
         line = line[:matchClosingBrace.start()] + "};" + line[matchClosingBrace.end():]
         isEnum = False
-      elif isEnum is False and re.search("}", line) is not None:
+      elif isEnum is False and re.search("}", cleanline) is not None:
         # Message (to be struct) ends => add semicolon so that it'll
         # be a proper C(++) struct and Doxygen will handle it correctly.
         line = line[:matchClosingBrace.start()] + "};" + line[matchClosingBrace.end():]
         isClass = False
         isMessage = False
-      elif isClass and re.search("{", line) is not None:
+      elif isClass and re.search("{", cleanline) is not None:
         line += " public: "
       elif isClass is False and isEnum is False and isMessage is True:
         matchRepeated = re.search("repeated (.+ )(.+=.+;)", line)
@@ -192,7 +196,7 @@ class proto2cpp:
         else:
             matchVar = re.search("(.+ )(.+=.+;)", line)
             line = line.replace(".", "::")
-      elif re.search("^syntax = \"proto", line):
+      elif re.search("^syntax = \"proto", cleanline):
         line = line.strip() + " ///< file syntax version\n"
 
       # Search for 'message' and replace it with 'struct' unless 'message' is behind a comment.

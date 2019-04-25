@@ -22,20 +22,35 @@ namespace cqp
         class ConnectDialog;
     }
 
+    /**
+     * @brief The ConnectDialog class requests a connection address from the user
+     */
     class ConnectDialog : public QDialog
     {
         Q_OBJECT
 
     public:
+        /// constructor
         explicit ConnectDialog(QWidget *parent = nullptr);
+        /// Distructor
         ~ConnectDialog();
 
+        /// The type of connection
         enum class ConnectionType { Site, Device, Manager };
 
+        /**
+         * @brief GetType
+         * @return The type of connection requested
+         */
         ConnectionType GetType();
+        /**
+         * @brief GetAddress
+         * @return The address specified by the user
+         */
         std::string GetAddress();
 
     private:
+        /// Dialog widgets
         Ui::ConnectDialog *ui;
     };
 

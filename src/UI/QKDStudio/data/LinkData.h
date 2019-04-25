@@ -13,13 +13,25 @@
 
 #include <nodes/NodeData>
 
-namespace cqp {
-    namespace model {
+namespace cqp
+{
+    namespace model
+    {
 
+        /**
+         * @brief The LinkData class holds data for a link between qkd devices
+         */
         class LinkData : public QtNodes::NodeData
         {
         public:
+            /**
+             * @brief LinkData constructor
+             */
             LinkData();
+            /**
+             * @brief type
+             * @return Data type for noteeditor glue
+             */
             QtNodes::NodeDataType type() const override;
         };
 
