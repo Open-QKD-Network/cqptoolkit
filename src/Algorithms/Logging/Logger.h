@@ -62,7 +62,7 @@ namespace cqp
     #define LOGERROR(x) cqp::DefaultLogger().Log(cqp::LogLevel::Error, std::string("") + x)
 
 #endif
-#if __GNUC__ < 7
+#if (__GNUC__ < 7) && (!defined(__clang__))
     /// Used for producing standard prefixs to levels
     using LevelMap = std::unordered_map<LogLevel, std::string, EnumClassHash>;
 #else
