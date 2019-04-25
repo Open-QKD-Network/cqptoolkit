@@ -3,7 +3,7 @@
 * @brief DNS
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 8/3/2018
@@ -56,6 +56,7 @@ namespace cqp
                     {
                         result = addr->ai_canonname;
                     }
+                    freeaddrinfo(addr);
                 }
             }
             catch(const std::exception& e)

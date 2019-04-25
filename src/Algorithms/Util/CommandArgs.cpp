@@ -3,7 +3,7 @@
 * @brief CommandArgs
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 8/3/2018
@@ -17,7 +17,14 @@
 
 namespace cqp
 {
-
+    CommandArgs::~CommandArgs()
+    {
+        for(auto option : options)
+        {
+            delete option;
+        }
+        options.clear();
+    }
 
     CommandArgs::Option& CommandArgs::AddOption(const std::string& longName, const std::string& shortName, const std::string& description)
     {
@@ -473,21 +480,29 @@ namespace cqp
                     if(suffix == "ms")
                     {
                         out = milliseconds(std::stoul(value));
-                    } else if(suffix == "ns")
+                    }
+                    else if(suffix == "ns")
                     {
                         out = nanoseconds(std::stoul(value));
-                    } else if(suffix == "ps")
+                    }
+                    else if(suffix == "ps")
                     {
                         out = PicoSeconds(std::stoul(value));
-                    } else {
+                    }
+                    else
+                    {
                         out = seconds(std::stoul(it->second));
                     }
 
-                } else {
+                }
+                else
+                {
                     if(it->second.back() == 's' || it->second.back() == 'S')
                     {
                         out = seconds(std::stoul(it->second.substr(0, it->second.length() - 1)));
-                    } else {
+                    }
+                    else
+                    {
                         out = PicoSeconds(std::stoul(it->second));
                     }
 
@@ -520,21 +535,29 @@ namespace cqp
                     if(suffix == "ms")
                     {
                         out = milliseconds(std::stol(value));
-                    } else if(suffix == "ns")
+                    }
+                    else if(suffix == "ns")
                     {
                         out = nanoseconds(std::stol(value));
-                    } else if(suffix == "ps")
+                    }
+                    else if(suffix == "ps")
                     {
                         out = PicoSecondOffset(std::stol(value));
-                    } else {
+                    }
+                    else
+                    {
                         out = seconds(std::stol(it->second));
                     }
 
-                } else {
+                }
+                else
+                {
                     if(it->second.back() == 's' || it->second.back() == 'S')
                     {
                         out = seconds(std::stol(it->second.substr(0, it->second.length() - 1)));
-                    } else {
+                    }
+                    else
+                    {
                         out = PicoSecondOffset(std::stol(it->second));
                     }
 
@@ -567,27 +590,37 @@ namespace cqp
                     if(suffix == "ms")
                     {
                         out = milliseconds(std::stol(value));
-                    } else if(suffix == "ns")
+                    }
+                    else if(suffix == "ns")
                     {
                         out = nanoseconds(std::stol(value));
-                    } else if(suffix == "ps")
+                    }
+                    else if(suffix == "ps")
                     {
                         out = PicoSecondOffset(std::stol(value));
-                    } else if(suffix == "fs")
+                    }
+                    else if(suffix == "fs")
                     {
                         out = FemtoSecondOffset(std::stol(value));
-                    } else if(suffix == "as")
+                    }
+                    else if(suffix == "as")
                     {
                         out = AttoSecondOffset(std::stol(value));
-                    } else {
+                    }
+                    else
+                    {
                         out = seconds(std::stol(it->second));
                     }
 
-                } else {
+                }
+                else
+                {
                     if(it->second.back() == 's' || it->second.back() == 'S')
                     {
                         out = seconds(std::stol(it->second.substr(0, it->second.length() - 1)));
-                    } else {
+                    }
+                    else
+                    {
                         out = PicoSecondOffset(std::stol(it->second));
                     }
 
