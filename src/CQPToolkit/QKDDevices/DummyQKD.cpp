@@ -52,7 +52,7 @@ namespace cqp
             {
             case remote::Side::Alice:
             {
-                photonSource = make_shared<sim::DummyTransmitter>(rng);
+                photonSource = make_shared<sim::DummyTransmitter>(rng, chrono::microseconds(10));
                 photonSource->Attach(alignment.get());
                 remotes.push_back(photonSource);
                 photonSource->stats.Add(reportServer.get());
