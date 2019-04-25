@@ -3,7 +3,7 @@
 * @brief %{Cpp:License:ClassName}
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 2/5/2017
@@ -15,6 +15,7 @@
 #include <vector>
 #include "Algorithms/Datatypes/Base.h"
 #include <unordered_map>
+#include <map>
 #include <memory>
 
 namespace cqp
@@ -87,7 +88,7 @@ namespace cqp
     using QubitList = std::vector<Qubit>;
 
     /// A dictionary of QubitLists indexed by SequenceNumber
-    using QubitsByFrame = std::unordered_map<SequenceNumber, std::unique_ptr<QubitList>>;
+    using QubitsByFrame = std::map<SequenceNumber, std::unique_ptr<QubitList>>;
 
     /// Identifier type for slots
     using SlotID = uint64_t;

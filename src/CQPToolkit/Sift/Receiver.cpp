@@ -31,99 +31,82 @@ namespace cqp
             using namespace std;
             using google::protobuf::RepeatedField;
             using grpc::Status;
-            bool dataReady = false;
+
             Status result = grpc::Status(grpc::StatusCode::ABORTED, "Sift: No data available");
+            QubitsByFrame statesToWorkOn;
 
             if(!request->basis().empty())
             {
+                bool dataReady = false;
                 // wait for incoming data
                 /*lock scope*/
                 {
                     unique_lock<mutex> lock(statesMutex);
                     dataReady = statesCv.wait_for(lock, receiveTimeout, [&]()
                     {
-                        return collectedStates.find(request->basis().begin()->first) != collectedStates.end();
+                        bool allFound = true;
+                        for(auto requested : request->basis())
+                        {
+                            if(collectedStates.find(requested.first) == collectedStates.end())
+                            {
+                                allFound = false;
+                                break; // for
+                            }
+                        }
+                        return allFound;
                     });
-                }/*lock scope*/
-            }
 
-            if(dataReady)
+                    if(dataReady)
+                    {
+                        for(auto requested : request->basis())
+                        {
+                            statesToWorkOn.emplace(requested.first, move(collectedStates.find(requested.first)->second));
+                        }
+
+                        // erase the items we're working on
+                        for(auto requested : request->basis())
+                        {
+                            collectedStates.erase(requested.first);
+                        }
+                    } // if dataReady
+                }/*lock scope*/
+            } // if list !empty
+
+            for(auto& stateList : statesToWorkOn)
             {
                 high_resolution_clock::time_point timerStart = high_resolution_clock::now();
                 result = grpc::Status::OK;
-                try
+
+                auto theirList = request->basis().find(stateList.first);
+                if(static_cast<uint>(theirList->second.basis_size()) == stateList.second->size())
                 {
-                    std::unique_lock<std::mutex>  lock(statesMutex);
+                    // a lias for the reply list for this frame number
+                    RepeatedField<bool>* myAnswers = (*response->mutable_answers())[theirList->first].mutable_answers();
+                    myAnswers->Resize(theirList->second.basis().size(), false);
 
-                    LOGTRACE("First seq number:" + std::to_string(request->basis().begin()->first));
-                    QubitsByFrame::iterator firstAnswer =
-                        collectedStates.find(request->basis().begin()->first);
-                    QubitsByFrame::iterator mySeqIt = firstAnswer;
-
-                    auto theirSeqIt = request->basis().begin();
-
-                    // for each sequence id
-                    while(theirSeqIt != request->basis().end())
+                    // for each basis, compare to our basis, putting the answer in myAnswers
+                    std::transform(theirList->second.basis().begin(), theirList->second.basis().end(),
+                                   stateList.second->begin(),
+                                   myAnswers->begin(),
+                                   [](auto left, auto right)
                     {
-                        if(mySeqIt != collectedStates.end())
-                        {
-                            // shortcuts for readability
-                            const auto& theirBasisList = theirSeqIt->second;
-                            RepeatedField<bool>* myAnswers = (*response->mutable_answers())[theirSeqIt->first].mutable_answers();
-                            LOGTRACE("Their list: " + std::to_string(theirBasisList.basis_size()) +
-                                     " My List: " + std::to_string(mySeqIt->second->size()));
+                        return Basis(left) == QubitHelper::Base(right);
+                    });
 
-                            if(static_cast<unsigned long>(theirBasisList.basis_size()) == mySeqIt->second->size())
-                            {
-                                myAnswers->Resize(theirBasisList.basis().size(), false);
-
-                                // for each basis, compare to our basis, putting the answer in myAnswers
-                                std::transform(theirBasisList.basis().begin(), theirBasisList.basis().end(),
-                                               mySeqIt->second->begin(),
-                                               myAnswers->begin(),
-                                               [](auto left, auto right)
-                                {
-                                    return Basis(left) == QubitHelper::Base(right);
-                                });
-
-                            } // if
-                            else
-                            {
-                                LOGERROR("Length mismatch in basis listSift Sequence ID=" + to_string(mySeqIt->first));
-                                result = Status(grpc::StatusCode::OUT_OF_RANGE, "Sift: Length mismatch in basis list", "Sequence ID=" + to_string(mySeqIt->first));
-                                break;
-                            } // else
-                        } //if(mySeqIt != collectedStates.end())
-                        else
-                        {
-                            LOGERROR("Failed to find state to compare: Sift Sequence ID=" + to_string(theirSeqIt->first));
-                            result = Status(grpc::StatusCode::INVALID_ARGUMENT, "Sift: Failed to find state to compare", "Sequence ID=" + to_string(theirSeqIt->first));
-                            break;
-                        } // else
-                        ++theirSeqIt;
-                        // find the matching record on our side
-                        ++mySeqIt;
-                    } // while(theirSeqIt != basis.end())
-
-                    if(result.ok())
-                    {
-                        // publish the results on our side
-                        PublishStates(firstAnswer, mySeqIt, *response);
-                    }
-                    else
-                    {
-                        LOGERROR("Sifted data not published");
-
-                    } // if(result)
-
-                } // try
-                catch(const std::exception& e)
+                } // if sizes match
+                else
                 {
-                    LOGERROR(e.what());
-                } // catch
+                    LOGERROR("Length mismatch in basis listSift Sequence ID=" + to_string(stateList.first));
+                    result = Status(grpc::StatusCode::OUT_OF_RANGE, "Sift: Length mismatch in basis list", "Sequence ID=" + to_string(stateList.first));
+                }
 
                 stats.comparisonTime.Update(high_resolution_clock::now() - timerStart);
-            }
+
+            } // for statesToWorkOn
+
+            // publish the results on our side
+            PublishStates(statesToWorkOn.begin(), statesToWorkOn.end(), *response);
+
             return result;
         } // VerifyBases
 

@@ -99,8 +99,6 @@ namespace cqp
                     QubitsByFrame::iterator it = statesToWorkOn.begin();
                     while(it != statesToWorkOn.end())
                     {
-
-                        //(*basis.mutable_basis())[it->first].reserve(it->second.size());
                         // extract the basis from the qubits
                         auto& currentList = (*basis.mutable_basis())[it->first];
 
@@ -116,27 +114,22 @@ namespace cqp
                     // send the bases to alice
                     if(verifier)
                     {
-                        LOGTRACE("A");
                         grpc::ClientContext ctx;
                         result = LogStatus(
                                      verifier->VerifyBases(&ctx, basis, &answers)).ok();
 
-                        LOGTRACE("B");
                         if(result)
                         {
                             // Process the results
                             PublishStates(statesToWorkOn.begin(), statesToWorkOn.end(), answers);
                         }
 
-                        LOGTRACE("C");
                     } // if
                     else
                     {
                         LOGERROR("Sift: No verifier");
                     }
-
                 } // if(result)
-
             } // while(!ShouldStop())
 
             LOGTRACE("Transmitter DoWork Leaving");
