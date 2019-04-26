@@ -21,14 +21,14 @@ new file mode 100644
 +
 +# Copyright (C) Igor Sysoev
 +# Copyright (C) Nginx, Inc.
-+
-+
++    cqplibs="-l:libKeyManagement-x86_64.a -l:libCQPToolkit-x86_64.a -l:libAlgorithms-x86_64.a -l:libQKDInterfaces-x86_64.a -lgrpc++ -lprotobuf -lstdc++ -ldl"
++    cqplibsd="-l:libKeyManagement-x86_64d.a -l:libCQPToolkit-x86_64d.a -l:libAlgorithms-x86_64d.a -l:libQKDInterfaces-x86_64d.a -lgrpc++ -lprotobuf -lstdc++ -ldl"
 +    ngx_feature="cqptoolkit"
 +    ngx_feature_name=
 +    ngx_feature_run=no
 +    ngx_feature_incs="#include <OpenSSLHandler.h>"
 +    ngx_feature_path="/usr/include/KeyManagement"
-+    ngx_feature_libs="-l:libKeyManagement-x86_64.a -l:libCQPToolkit-x86_64.a -l:libAlgorithms-x86_64.a -lcurl  -lstdc++ -ldl"
++    ngx_feature_libs="$cqplibs"
 +    ngx_feature_test="unsigned char test[33];
 +                      OpenSSLHandler_ServerCallback(0, \"\", test, 32);"
 +    . auto/feature
@@ -42,9 +42,9 @@ new file mode 100644
 +    ngx_feature_path="/usr/local/include/KeyManagement"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -l:libCQPToolkit-x86_64.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib $cqplibs"
 +    else
-+        ngx_feature_libs="-L/usr/local/lib -l:libKeyManagement-x86_64.a -l:libCQPToolkit-x86_64.a -l:libAlgorithms-x86_64.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L/usr/local/lib $cqplibs"
 +    fi
 +
 +    . auto/feature
@@ -59,9 +59,9 @@ new file mode 100644
 +    ngx_feature_path="/usr/include/KeyManagement"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/lib -L/usr/lib -l:libKeyManagement-x86_64d.a -l:libCQPToolkit-x86_64d.a -l:libAlgorithms-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R/usr/lib -L/usr/lib $cqplibsd"
 +    else
-+        ngx_feature_libs="-L/usr/lib -l:libKeyManagement-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L/usr/lib $cqplibsd"
 +    fi
 +
 +    . auto/feature
@@ -76,9 +76,9 @@ new file mode 100644
 +    ngx_feature_path="/usr/local/include/KeyManagement"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -l:libKeyManagement-x86_64d.a -l:libCQPToolkit-x86_64d.a -l:libAlgorithms-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib $cqplibsd"
 +    else
-+        ngx_feature_libs="-L/usr/local/lib -l:libKeyManagement-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L/usr/local/lib $cqplibsd"
 +    fi
 +
 +    . auto/feature

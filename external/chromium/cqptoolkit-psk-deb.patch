@@ -101,7 +101,7 @@ Last-Update: 2018-10-30
  #endif
  
 +#if defined(USE_PSK)
-+#include "CQPToolkit/OpenSSLHandler.h"
++#include "KeyManagement/OpenSSLHandler.h"
 +#else
 +#error "PSK not enabled"
 +#endif
@@ -139,12 +139,12 @@ Last-Update: 2018-10-30
 +config("cqptoolkit_config")
 +{
 +    #include_dirs = [ "/home/rc15345/code/CQPToolkit/src/", "/home/rc15345/code/CQPToolkit/build/gcc/src/" ]
-+    #include_dirs = [ "/usr/include/x86_64-linux-gnu/qt5/QtWidgets/", "/usr/include/x86_64-linux-gnu/qt5/" ]
++    include_dirs = [ "/usr/include/x86_64-linux-gnu/qt5/QtWidgets/", "/usr/include/x86_64-linux-gnu/qt5/" ]
 +    #lib_dirs = [ "/home/rc15345/code/CQPToolkit/build/gcc/src/CQPToolkit" ]
-+    libs = [ "CQPToolkit-x86_64", "curl" ]
++    libs = [ "CQPUI-x86_64", "KeyManagement-x86_64", "curl", "Qt5Widgets", "Qt5Core" ]
 +}
 +
-+static_library("cqptoolkit") {
++shared_library("cqptoolkit") {
 +    public_configs = [ ":cqptoolkit_config" ]
 +}
 +

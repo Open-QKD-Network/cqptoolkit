@@ -6,14 +6,20 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 #
 
+SUDO=sudo
+if [ "$UID" == "0" ]; then
+  SUDO=""
+fi
+
 echo Enablng source repositories...
-sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
-apt update -q && apt install -qy dpkg-dev
+$SUDO sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
+$SUDO apt update -q && $SUDO apt install -qy dpkg-dev
 echo Getting Chromium source...
 
 apt source chromium-browser && \
 echo Installing buld dependencies... && \
-apt build-dep -qy chromium-browser && \
+$SUDO apt build-dep -qy chromium-browser && \
+$SUDO apt install -qy qtbase5-dev && \
 pushd chromium-browser-* && \
 echo Applying patch && \
 quilt import -P cqptoolkit-psk-deb.patch ../cqptoolkit-psk-deb.patch ; \

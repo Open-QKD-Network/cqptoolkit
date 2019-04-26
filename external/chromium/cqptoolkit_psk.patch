@@ -101,6 +101,6 @@ diff -prN -x debian chromium-69.0.3497.81/third_party/cqp/BUILD.gn mod/third_par
 +     libs = [ "CQPUI-x86_64", "curl", "Qt5Widgets", "Qt5Core" ]
 + }
 + 
-+ static_library("cqptoolkit") {
++ shared_library("cqptoolkit") {
 +     public_configs = [ ":cqptoolkit_config" ]
 + }
