@@ -159,7 +159,7 @@ externals:nginx:
     - sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
     - apt update -q
     - apt build-dep -qy nginx
-    - apt install -qy mercurial apt install build-essential libcurl4-openssl-dev
+    - apt install -qy mercurial build-essential libcurl4-openssl-dev
     - dpkg -i /setup/*.deb
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - cd external/nginx && bash build_nginx.sh
