@@ -1,5 +1,6 @@
 build/gcc/*
 CMakeLists.txt.user
 external/nginx/nginx
+external/chromium/chromium-browser-*
 /cppcheck-cppcheck-build-dir/
 setup/generated/*
