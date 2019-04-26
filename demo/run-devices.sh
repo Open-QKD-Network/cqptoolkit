@@ -1,8 +1,28 @@
 #!/bin/bash
-BUILDDIR=../build-cqptoolkit-Desktop-Default/src
-SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
-DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
-QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+if [ "$1" == "" ]; then
+	BUILDDIR=../../build-cqptoolkit-Desktop-Default/src
+
+	SITEAGENT=`which SiteAgentRunner 2>/dev/null`
+	DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
+	QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+
+	if [ "$SITEAGENT" == "" ]; then
+		SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
+	fi
+	if [ "$DRIVER" == "" ]; then
+		DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
+	fi
+	if [ "QTUN" == "" ]; then
+		QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+	fi
+else 
+	BUILDDIR="$1"
+
+	SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
+	DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
+	QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+fi
+
 SESSION=driverdemo
 
 byobu kill-session -t ${SESSION}

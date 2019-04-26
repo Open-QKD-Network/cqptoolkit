@@ -1,11 +1,34 @@
 #!/bin/bash
-BUILDDIR=../build-cqptoolkit-Desktop-Default/src
-SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
-DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
-QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
-SESSION=demo3
+if [ "$1" == "" ]; then
+	BUILDDIR=../../build-cqptoolkit-Desktop-Default/src
 
+	SITEAGENT=`which SiteAgentRunner 2>/dev/null`
+	DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
+	QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+
+	if [ "$SITEAGENT" == "" ]; then
+		SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
+	fi
+	if [ "$DRIVER" == "" ]; then
+		DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
+	fi
+	if [ "QTUN" == "" ]; then
+		QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+	fi
+else 
+	BUILDDIR="$1"
+
+	SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
+	DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
+	QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+fi
+
+SESSION=chatdemo
+
+# Cleanup
 byobu kill-session -t ${SESSION}
+rm site-a.db* site-b.db*
+
 # Top left
 byobu new-session -d -s "${SESSION}" -c . "${SITEAGENT} -c site-a.json"
 byobu rename-window Sites

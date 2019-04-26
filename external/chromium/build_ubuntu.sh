@@ -5,13 +5,19 @@
 #    See LICENSE file for details.
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 #
-if [ -z "$CHROMIUM_VERSION" ]; then
-    CHROMIUM_VERSION=70.0.3538.77
-fi
+
+echo Enablng source repositories...
+sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
+apt update -q && apt install -qy dpkg-dev
+echo Getting Chromium source...
 
 apt source chromium-browser && \
-cd chromium-browser-${CHROMIUM_VERSION} && \
+echo Installing buld dependencies... && \
+apt build-dep -qy chromium-browser && \
+pushd chromium-browser-* && \
+echo Applying patch && \
 quilt import -P cqptoolkit-psk-deb.patch ../cqptoolkit-psk-deb.patch ; \
 sed -i -e 's/optimize_webui=false$/optimize_webui=false \\\n\tuse_psk=true/' debian/rules && \
+echo Building... && \
 dpkg-buildpackage --no-sign -nc
-
+popd

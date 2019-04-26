@@ -19,4 +19,5 @@ hg import --no-commit ../cqptoolkit.patch && \
  --prefix=. --with-http_ssl_psk && \
 make -s -j8 && \
 popd && \
-docker build -t registry.gitlab.com/qcomms/cqptoolkit/qkdsecure .
+docker build -t registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd . && \
+docker push registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd
