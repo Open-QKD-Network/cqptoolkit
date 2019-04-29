@@ -159,7 +159,7 @@ externals:nginx:
     - sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
     - apt update -q
     - apt build-dep -qy nginx
-    - apt install -qy mercurial build-essential libcurl4-openssl-dev
+    - apt install -qy mercurial build-essential libcurl4-openssl-dev docker.io
     - dpkg -i /setup/*.deb
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - cd external/nginx && bash build_nginx.sh
@@ -191,7 +191,7 @@ externals:chromium:
     name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 month
     paths:
-      - external/chromium/*.deb
+      - external/chromium/chromium-*.deb
 
 check:sast:
   stage: check

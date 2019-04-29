@@ -4,3 +4,5 @@ external/nginx/nginx
 external/chromium/chromium-browser-*
 /cppcheck-cppcheck-build-dir/
 setup/generated/*
+chromium-browser_*.tar.xz
+chromium-browser_*.dsc

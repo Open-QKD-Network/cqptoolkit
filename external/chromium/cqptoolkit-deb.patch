@@ -1,0 +1,89 @@
+Add CQPToolkit super powers to Chromium
+Index: chromium-browser-73.0.3683.86/net/BUILD.gn
+===================================================================
+--- chromium-browser-73.0.3683.86.orig/net/BUILD.gn
++++ chromium-browser-73.0.3683.86/net/BUILD.gn
+@@ -85,6 +85,10 @@ config("net_internal_config") {
+     include_dirs = [ "/usr/include/kerberosV" ]
+   }
+ 
++  if (use_psk) {
++    defines += [ "USE_PSK" ]
++  }
++
+   if (enable_built_in_dns) {
+     defines += [ "ENABLE_BUILT_IN_DNS" ]
+   }
+@@ -101,6 +105,10 @@ if (is_linux) {
+   net_configs += [ "//build/config/linux:libresolv" ]
+ }
+ 
++if (use_psk) {
++  net_configs += [ "//third_party/cqp:cqptoolkit" ]
++}
++
+ source_set("constants") {
+   sources = [
+     "base/trace_constants.h",
+Index: chromium-browser-73.0.3683.86/net/features.gni
+===================================================================
+--- chromium-browser-73.0.3683.86.orig/net/features.gni
++++ chromium-browser-73.0.3683.86/net/features.gni
+@@ -39,4 +39,7 @@ declare_args() {
+   # willing to take the responsibility to make sure that all important
+   # connections use HTTPS.
+   include_transport_security_state_preload_list = true
++
++  # allow pre-shared keys
++  use_psk = false
+ }
+Index: chromium-browser-73.0.3683.86/net/socket/ssl_client_socket_impl.cc
+===================================================================
+--- chromium-browser-73.0.3683.86.orig/net/socket/ssl_client_socket_impl.cc
++++ chromium-browser-73.0.3683.86/net/socket/ssl_client_socket_impl.cc
+@@ -65,6 +65,12 @@
+ #include "third_party/brotli/include/brotli/decode.h"
+ #endif
+ 
++#if defined(USE_PSK)
++#include "KeyManagement/OpenSSLHandler.h"
++#else
++#error "PSK not enabled"
++#endif
++
+ namespace net {
+ 
+ namespace {
+@@ -324,6 +330,11 @@ class SSLClientSocketImpl::SSLContext {
+     SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
+     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
+ 
++#if defined(USE_PSK)
++    OpenSSLHandler_SetHSM("pkcs11:module-name=yubihsm_pkcs11.so?pin-value=0001password");
++    SSL_CTX_set_psk_client_callback(ssl_ctx_.get(), OpenSSLHandler_ClientCallback);
++#endif
++
+ #if !defined(NET_DISABLE_BROTLI)
+     SSL_CTX_add_cert_compression_alg(
+         ssl_ctx_.get(), TLSEXT_cert_compression_brotli,
+@@ -868,7 +879,11 @@ int SSLClientSocketImpl::Init() {
+ 
+   // Use BoringSSL defaults, but disable HMAC-SHA1 ciphers in ECDSA. These are
+   // the remaining CBC-mode ECDSA ciphers.
++#if defined(USE_PSK)
++  std::string command("ALL::!ECDSA+SHA1:!kRSA+AESGCM");
++#else
+   std::string command("ALL::!aPSK:!ECDSA+SHA1");
++#endif
+ 
+   if (ssl_config_.require_ecdhe)
+     command.append(":!kRSA");
+Index: chromium-browser-73.0.3683.86/third_party/cqp/BUILD.gn
+===================================================================
+--- /dev/null
++++ chromium-browser-73.0.3683.86/third_party/cqp/BUILD.gn
+@@ -0,0 +1,4 @@
++config("cqptoolkit")
++{
++  libs = [ "KeyManagement-x86_64", "CQPUI-x86_64" ]
++}
