@@ -1,6 +1,6 @@
-diff --git a/auto/lib/conf b/auto/lib/conf
---- a/auto/lib/conf
-+++ b/auto/lib/conf
+diff -N -p -r -u nginx-1.14.0-orig/auto/lib/conf nginx-1.14.0/auto/lib/conf
+--- nginx-1.14.0-orig/auto/lib/conf	2018-08-28 14:28:10.841092585 +0100
++++ nginx-1.14.0/auto/lib/conf	2018-08-28 14:29:50.991941312 +0100
 @@ -33,6 +33,11 @@ if [ $USE_LIBXSLT != NO ]; then
      . auto/lib/libxslt/conf
  fi
@@ -13,25 +13,41 @@ diff --git a/auto/lib/conf b/auto/lib/conf
  if [ $USE_LIBGD != NO ]; then
      . auto/lib/libgd/conf
  fi
-diff --git a/auto/lib/cqptoolkit/conf b/auto/lib/cqptoolkit/conf
-new file mode 100644
---- /dev/null
-+++ b/auto/lib/cqptoolkit/conf
+diff -N -p -r -u nginx-1.14.0-orig/auto/lib/cqptoolkit/conf nginx-1.14.0/auto/lib/cqptoolkit/conf
+--- nginx-1.14.0-orig/auto/lib/cqptoolkit/conf	1970-01-01 01:00:00.000000000 +0100
++++ nginx-1.14.0/auto/lib/cqptoolkit/conf	2018-08-28 14:29:50.991941312 +0100
 @@ -0,0 +1,117 @@
 +
 +# Copyright (C) Igor Sysoev
 +# Copyright (C) Nginx, Inc.
-+    cqplibs="-l:libKeyManagement-x86_64.a -l:libCQPToolkit-x86_64.a -l:libAlgorithms-x86_64.a -l:libQKDInterfaces-x86_64.a -lgrpc++ -lprotobuf -lstdc++ -ldl"
-+    cqplibsd="-l:libKeyManagement-x86_64d.a -l:libCQPToolkit-x86_64d.a -l:libAlgorithms-x86_64d.a -l:libQKDInterfaces-x86_64d.a -lgrpc++ -lprotobuf -lstdc++ -ldl"
++
++
 +    ngx_feature="cqptoolkit"
 +    ngx_feature_name=
 +    ngx_feature_run=no
-+    ngx_feature_incs="#include <OpenSSLHandler.h>"
-+    ngx_feature_path="/usr/include/KeyManagement"
-+    ngx_feature_libs="$cqplibs"
++    ngx_feature_incs="#include <KeyManagement/OpenSSLHandler.h>"
++    ngx_feature_path="/usr/include/"
++    ngx_feature_libs="-lKeyManagement-x86_64"
 +    ngx_feature_test="unsigned char test[33];
 +                      OpenSSLHandler_ServerCallback(0, \"\", test, 32);"
 +    . auto/feature
++    echo "**********$ngx_found************"
++
++if [ $ngx_found = no ]; then
++
++    # usr local debug
++
++    ngx_feature="cqptoolkitd in /usr/local/"
++    ngx_feature_path="/usr/local/include/"
++
++    if [ $NGX_RPATH = YES ]; then
++        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -l:KeyManagement-x86_64d"
++    else
++        ngx_feature_libs="-L/usr/local/lib -lKeyManagement-x86_64d"
++    fi
++
++    . auto/feature
++fi
 +
 +
 +if [ $ngx_found = no ]; then
@@ -39,12 +55,12 @@ new file mode 100644
 +    # usr local
 +
 +    ngx_feature="cqptoolkit in /usr/local/"
-+    ngx_feature_path="/usr/local/include/KeyManagement"
++    ngx_feature_path="/usr/local/include"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib $cqplibs"
++        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib -lKeyManagement-x86_64"
 +    else
-+        ngx_feature_libs="-L/usr/local/lib $cqplibs"
++        ngx_feature_libs="-L/usr/local/lib -lKeyManagement-x86_64"
 +    fi
 +
 +    . auto/feature
@@ -53,32 +69,15 @@ new file mode 100644
 +
 +if [ $ngx_found = no ]; then
 +
-+    # debug
++    # usr
 +
-+    ngx_feature="cqptoolkit debug in /usr/"
-+    ngx_feature_path="/usr/include/KeyManagement"
-+
-+    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/lib -L/usr/lib $cqplibsd"
-+    else
-+        ngx_feature_libs="-L/usr/lib $cqplibsd"
-+    fi
-+
-+    . auto/feature
-+fi
-+
-+
-+if [ $ngx_found = no ]; then
-+
-+    # debug usr/local
-+
-+    ngx_feature="cqptoolkit debug in /usr/local/"
-+    ngx_feature_path="/usr/local/include/KeyManagement"
++    ngx_feature="cqptoolkit in /usr"
++    ngx_feature_path="/usr/include"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R/usr/local/lib -L/usr/local/lib $cqplibsd"
++        ngx_feature_libs="-R/usr/lib -L/usr/lib -lKeyManagement-x86_64"
 +    else
-+        ngx_feature_libs="-L/usr/local/lib $cqplibsd"
++        ngx_feature_libs="-L/usr/lib -lKeyManagement-x86_64"
 +    fi
 +
 +    . auto/feature
@@ -86,13 +85,13 @@ new file mode 100644
 +
 +if [ $ngx_found = no ]; then
 +
-+    ngx_feature="cqptoolkit in release "
-+    ngx_feature_path="../../../src/CQPToolkit ../../../build/gcc/src"
++    ngx_feature="cqptoolkit in release"
++    ngx_feature_path="../../../src ../../../../build-cqptoolkit-Desktop-Release/src/"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R../../../build/gcc/src/CQPToolkit -L../../../build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R../../../../build-cqptoolkit-Desktop-Release/src/KeyManagement -L../../../../build-cqptoolkit-Desktop-Release/src/KeyManagement -lKeyManagement-x86_64"
 +    else
-+        ngx_feature_libs="-L../../../build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L../../../../build-cqptoolkit-Desktop-Release/src/KeyManagement -lKeyManagement-x86_64"
 +    fi
 +
 +    . auto/feature
@@ -101,12 +100,12 @@ new file mode 100644
 +if [ $ngx_found = no ]; then
 +
 +    ngx_feature="cqptoolkit in dev"
-+    ngx_feature_path="../../../build/gcc/src/CQPToolkit ../../../build/gcc/src"
++    ngx_feature_path="../../../src ../../../../build-cqptoolkit-Desktop-Default/src/"
 +
 +    if [ $NGX_RPATH = YES ]; then
-+        ngx_feature_libs="-R../../../build/gcc/src/CQPToolkit -L../../../build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-R../../../../build-cqptoolkit-Desktop-Default/src/KeyManagement -L../../../../build-cqptoolkit-Desktop-Default/src/KeyManagement -lKeyManagement-x86_64d"
 +    else
-+        ngx_feature_libs="-L../../../build/gcc/src/CQPToolkit -l:libCQPToolkit-x86_64d.a -lcurl  -lstdc++ -ldl"
++        ngx_feature_libs="-L../../../../build-cqptoolkit-Desktop-Default/src/KeyManagement -lKeyManagement-x86_64d"
 +    fi
 +
 +    . auto/feature
@@ -135,10 +134,10 @@ new file mode 100644
 +    exit 1
 +fi
 +
-diff --git a/auto/options b/auto/options
---- a/auto/options
-+++ b/auto/options
-@@ -159,6 +159,7 @@ NGX_PERL=perl
+diff -N -p -r -u nginx-1.14.0-orig/auto/options nginx-1.14.0/auto/options
+--- nginx-1.14.0-orig/auto/options	2018-08-28 14:28:10.841092585 +0100
++++ nginx-1.14.0/auto/options	2018-08-28 14:29:50.991941312 +0100
+@@ -157,6 +157,7 @@ NGX_PERL=perl
  USE_LIBXSLT=NO
  USE_LIBGD=NO
  USE_GEOIP=NO
@@ -146,7 +145,7 @@ diff --git a/auto/options b/auto/options
  
  NGX_GOOGLE_PERFTOOLS=NO
  NGX_CPP_TEST=NO
-@@ -247,6 +248,8 @@ do
+@@ -245,6 +246,8 @@ $0: warning: the \"--with-ipv6\" option
          --with-http_degradation_module)  HTTP_DEGRADATION=YES       ;;
          --with-http_slice_module)        HTTP_SLICE=YES             ;;
  
@@ -155,7 +154,7 @@ diff --git a/auto/options b/auto/options
          --without-http_charset_module)   HTTP_CHARSET=NO            ;;
          --without-http_gzip_module)      HTTP_GZIP=NO               ;;
          --without-http_ssi_module)       HTTP_SSI=NO                ;;
-@@ -462,6 +465,8 @@ cat << END
+@@ -456,6 +459,8 @@ cat << END
    --with-http_slice_module           enable ngx_http_slice_module
    --with-http_stub_status_module     enable ngx_http_stub_status_module
  
@@ -164,9 +163,9 @@ diff --git a/auto/options b/auto/options
    --without-http_charset_module      disable ngx_http_charset_module
    --without-http_gzip_module         disable ngx_http_gzip_module
    --without-http_ssi_module          disable ngx_http_ssi_module
-diff --git a/conf/nginx.conf b/conf/nginx.conf
---- a/conf/nginx.conf
-+++ b/conf/nginx.conf
+diff -N -p -r -u nginx-1.14.0-orig/conf/nginx.conf nginx-1.14.0/conf/nginx.conf
+--- nginx-1.14.0-orig/conf/nginx.conf	2018-08-28 14:28:10.841092585 +0100
++++ nginx-1.14.0/conf/nginx.conf	2018-08-28 14:29:50.991941312 +0100
 @@ -1,117 +1,57 @@
  
 -#user  nobody;
@@ -209,7 +208,7 @@ diff --git a/conf/nginx.conf b/conf/nginx.conf
  
      server {
 -        listen       80;
-+        listen       80;
++        listen       8080;
          server_name  localhost;
  
 -        #charset koi8-r;
@@ -256,7 +255,8 @@ diff --git a/conf/nginx.conf b/conf/nginx.conf
  
  
 -    # another virtual host using mix of IP-, name-, and port-based configuration
--    #
++    # HTTPS server
+     #
 -    #server {
 -    #    listen       8000;
 -    #    listen       somename:8080;
@@ -267,67 +267,59 @@ diff --git a/conf/nginx.conf b/conf/nginx.conf
 -    #        index  index.html index.htm;
 -    #    }
 -    #}
--
--
-     # HTTPS server
-     #
++    server {
++        listen       4433 ssl http2;
++        server_name  localhost;
+ 
++        ssl_protocols TLSv1.2;
++        ssl_ciphers kPSK:kDHEPSK:kECDHEPSK:!SSLv3;
++        ssl_certificate "ssl/nginx.crt";
++        ssl_certificate_key "ssl/nginx.key";
++        hsm "pkcs:module-name=libsofthsm2.so;pin-value=1234;token=My%20token%201";
++        psk_identity_hint "something";
+ 
+-    # HTTPS server
+-    #
 -    #server {
 -    #    listen       443 ssl;
 -    #    server_name  localhost;
 -
 -    #    ssl_certificate      cert.pem;
 -    #    ssl_certificate_key  cert.key;
-+    server {
-+        listen       443 ssl http2;
-+        server_name  localhost;
- 
+-
 -    #    ssl_session_cache    shared:SSL:1m;
 -    #    ssl_session_timeout  5m;
 -
 -    #    ssl_ciphers  HIGH:!aNULL:!MD5;
 -    #    ssl_prefer_server_ciphers  on;
-+        ssl_protocols TLSv1.2;
-+        ssl_ciphers kPSK:kDHEPSK:kECDHEPSK:!SSLv3;
-+        ssl_certificate "qkdsecure.crt";
-+        ssl_certificate_key "qkdsecure.key";
-+        hsm "pkcs:module-name=libsofthsm2.so;pin-value=1234;token=SoftHSM2Token";
-+        psk_identity_hint "something";
- 
+-
 -    #    location / {
 -    #        root   html;
 -    #        index  index.html index.htm;
 -    #    }
 -    #}
 +        location / {
-+            root   /html;
-+            index  index-secure.html;
++            root   html;
++            index  index.html index.htm;
 +        }
 +    }
  
  }
-diff --git a/src/event/ngx_event_openssl.c b/src/event/ngx_event_openssl.c
---- a/src/event/ngx_event_openssl.c
-+++ b/src/event/ngx_event_openssl.c
+diff -N -p -r -u nginx-1.14.0-orig/src/event/ngx_event_openssl.c nginx-1.14.0/src/event/ngx_event_openssl.c
+--- nginx-1.14.0-orig/src/event/ngx_event_openssl.c	2018-08-28 14:28:10.845092539 +0100
++++ nginx-1.14.0/src/event/ngx_event_openssl.c	2018-08-28 14:29:50.991941312 +0100
 @@ -8,7 +8,9 @@
  #include <ngx_config.h>
  #include <ngx_core.h>
  #include <ngx_event.h>
 -
 +#if defined(HTTP_SSL_PSK)
-+#include "OpenSSLHandler.h"
++#include "KeyManagement/OpenSSLHandler.h"
 +#endif
  
  #define NGX_SSL_PASSWORD_BUFFER_SIZE  4096
  
-@@ -23,6 +25,7 @@ static int ngx_ssl_password_callback(cha
- static int ngx_ssl_verify_callback(int ok, X509_STORE_CTX *x509_store);
- static void ngx_ssl_info_callback(const ngx_ssl_conn_t *ssl_conn, int where,
-     int ret);
-+
- static void ngx_ssl_passwords_cleanup(void *data);
- static int ngx_ssl_new_client_session(ngx_ssl_conn_t *ssl_conn,
-     ngx_ssl_session_t *sess);
-@@ -351,6 +354,15 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_
+@@ -345,6 +347,15 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_
      SSL_CTX_set_read_ahead(ssl->ctx, 1);
  
      SSL_CTX_set_info_callback(ssl->ctx, ngx_ssl_info_callback);
@@ -343,22 +335,22 @@ diff --git a/src/event/ngx_event_openssl.c b/src/event/ngx_event_openssl.c
  
      return NGX_OK;
  }
-diff --git a/src/http/modules/ngx_http_ssl_module.c b/src/http/modules/ngx_http_ssl_module.c
---- a/src/http/modules/ngx_http_ssl_module.c
-+++ b/src/http/modules/ngx_http_ssl_module.c
+diff -N -p -r -u nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.c nginx-1.14.0/src/http/modules/ngx_http_ssl_module.c
+--- nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.c	2018-08-28 14:28:10.845092539 +0100
++++ nginx-1.14.0/src/http/modules/ngx_http_ssl_module.c	2018-08-28 14:29:50.991941312 +0100
 @@ -8,7 +8,9 @@
  #include <ngx_config.h>
  #include <ngx_core.h>
  #include <ngx_http.h>
 -
 +#if defined(HTTP_SSL_PSK)
-+#include "OpenSSLHandler.h"
++#include "KeyManagement/OpenSSLHandler.h"
 +#endif
  
  typedef ngx_int_t (*ngx_ssl_variable_handler_pt)(ngx_connection_t *c,
      ngx_pool_t *pool, ngx_str_t *s);
-@@ -246,6 +248,22 @@ static ngx_command_t  ngx_http_ssl_comma
-       offsetof(ngx_http_ssl_srv_conf_t, early_data),
+@@ -234,6 +236,22 @@ static ngx_command_t  ngx_http_ssl_comma
+       offsetof(ngx_http_ssl_srv_conf_t, stapling_verify),
        NULL },
  
 +#if defined(HTTP_SSL_PSK)
@@ -380,8 +372,8 @@ diff --git a/src/http/modules/ngx_http_ssl_module.c b/src/http/modules/ngx_http_
        ngx_null_command
  };
  
-@@ -827,6 +845,23 @@ ngx_http_ssl_merge_srv_conf(ngx_conf_t *
-         return NGX_CONF_ERROR;
+@@ -804,6 +822,23 @@ ngx_http_ssl_merge_srv_conf(ngx_conf_t *
+ 
      }
  
 +#if defined(HTTP_SSL_PSK)
@@ -404,10 +396,10 @@ diff --git a/src/http/modules/ngx_http_ssl_module.c b/src/http/modules/ngx_http_
      return NGX_CONF_OK;
  }
  
-diff --git a/src/http/modules/ngx_http_ssl_module.h b/src/http/modules/ngx_http_ssl_module.h
---- a/src/http/modules/ngx_http_ssl_module.h
-+++ b/src/http/modules/ngx_http_ssl_module.h
-@@ -56,6 +56,11 @@ typedef struct {
+diff -N -p -r -u nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.h nginx-1.14.0/src/http/modules/ngx_http_ssl_module.h
+--- nginx-1.14.0-orig/src/http/modules/ngx_http_ssl_module.h	2018-08-28 14:28:10.845092539 +0100
++++ nginx-1.14.0/src/http/modules/ngx_http_ssl_module.h	2018-08-28 14:29:50.991941312 +0100
+@@ -55,6 +55,11 @@ typedef struct {
      ngx_str_t                       stapling_file;
      ngx_str_t                       stapling_responder;
  

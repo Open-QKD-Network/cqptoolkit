@@ -19,7 +19,7 @@ echo Getting nginx source...
 $SUDO apt source nginx && \
 $SUDO apt build-dep -qy nginx && \
 pushd `find -maxdepth 1 -type d -name 'nginx-*'`
-quilt import -P cqptoolkit_ubuntu.patch ../cqptoolkit_ubuntu.patch && \
+quilt import -P cqptoolkit.patch ../cqptoolkit.patch && \
 sed -i -e 's/--with-threads$/--with-threads \\\n\t\t\t--with-http_ssl_psk/' debian/rules ||true && \
 DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --no-sign
 popd

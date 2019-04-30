@@ -17,7 +17,5 @@ hg import --no-commit ../cqptoolkit.patch && \
  --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-pcre-jit --with-stream \
  --with-stream_geoip_module --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads \
  --prefix=. --with-http_ssl_psk && \
-make -s -j8 && \
-popd && \
-docker build -t registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd . && \
-docker push registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd
+make -s -j
+popd
