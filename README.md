@@ -156,7 +156,6 @@ If you can't see the diagram below, please go to the [online documentation](http
       EndColor #EF476F
       BackgroundColor #06D6A0
       BorderColor #118AB2
-      FontName Impact
     }
 
     start
