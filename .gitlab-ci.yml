@@ -156,13 +156,12 @@ externals:nginx:
      DOCKER_DRIVER: overlay2
   allow_failure: true
   script:
-    - sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
-    - apt update -q
-    - apt build-dep -qy nginx
-    - apt install -qy mercurial build-essential libcurl4-openssl-dev docker.io
     - dpkg -i /setup/*.deb
+    - apt install -qy docker.io
+    - cd external/nginx && bash build_nginx_ubuntu.sh
+    - cd external/nginx && docker build -f Dockerfile.ubuntu -t registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd .
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-    - cd external/nginx && bash build_nginx.sh
+    - docker push registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd
   dependencies:
     - package:deb
     - deploy:toolkit-run-image
@@ -171,6 +170,11 @@ externals:nginx:
   # Only run this stage on the master branch
   only:
     - master
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    expire_in: 1 month
+    paths:
+      - external/nginx/*.deb
 
 externals:chromium:
   stage: externals
@@ -192,6 +196,7 @@ externals:chromium:
     expire_in: 1 month
     paths:
       - external/chromium/chromium-*.deb
+  when: manual
 
 check:sast:
   stage: check

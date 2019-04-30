@@ -6,13 +6,23 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 
-apt source nginx && \
-apt build-dep nginx && \
-cd `find -maxdepth 1 -type d -name 'nginx-*'` && \
+SUDO=sudo
+if [ "$UID" == "0" ]; then
+  SUDO=""
+fi
+
+echo Enabling source repositories...
+$SUDO sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
+$SUDO apt update -q && $SUDO apt install -qy dpkg-dev
+echo Getting nginx source...
+
+$SUDO apt source nginx && \
+$SUDO apt build-dep -qy nginx && \
+pushd `find -maxdepth 1 -type d -name 'nginx-*'`
 quilt import -P cqptoolkit_ubuntu.patch ../cqptoolkit_ubuntu.patch && \
 sed -i -e 's/--with-threads$/--with-threads \\\n\t\t\t--with-http_ssl_psk/' debian/rules ||true && \
-DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --no-sign -j4
-
+DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --no-sign
+popd
 
 #cp cqptoolkit_ubuntu.patch nginx-${NGINX_VERSION}/debian/patches && \
 #echo "cqptoolkit_ubuntu.patch" >> nginx-${NGINX_VERSION}/debian/patches/series && \
