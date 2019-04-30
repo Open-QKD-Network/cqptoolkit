@@ -16,14 +16,11 @@ $SUDO sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
 $SUDO apt update -q && $SUDO apt install -qy dpkg-dev
 echo Getting nginx source...
 
-$SUDO apt source nginx && \
+apt source nginx && \
 $SUDO apt build-dep -qy nginx && \
 pushd `find -maxdepth 1 -type d -name 'nginx-*'`
 quilt import -P cqptoolkit.patch ../cqptoolkit.patch && \
 sed -i -e 's/--with-threads$/--with-threads \\\n\t\t\t--with-http_ssl_psk/' debian/rules ||true && \
 DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --no-sign
 popd
-
-#cp cqptoolkit_ubuntu.patch nginx-${NGINX_VERSION}/debian/patches && \
-#echo "cqptoolkit_ubuntu.patch" >> nginx-${NGINX_VERSION}/debian/patches/series && \
 
