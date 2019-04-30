@@ -2,9 +2,6 @@
     "name":"",
     "id":"fa43c424-9a52-4ac2-bc05-02f50ac11bdc",
     "netManUri":"",
-    "deviceUrls":[
-
-    ],
     "bindAddress":"",
     "listenPort":8000,
     "connectionAddress":"",
