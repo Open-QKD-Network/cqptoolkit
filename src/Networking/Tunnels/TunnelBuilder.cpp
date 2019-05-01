@@ -46,7 +46,6 @@ using cqp::remote::tunnels::TunnelEndDetails;
 #include <cryptopp/eccrypto.h>
 // ASN1 is a namespace, not an object
 #include <cryptopp/asn.h>
-#include <cryptopp/socketft.h>
 #include <cryptopp/filters.h>
 
 #include <grpc++/server_builder.h>
