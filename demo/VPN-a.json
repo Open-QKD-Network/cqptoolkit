@@ -6,7 +6,10 @@
   "tunnel1": {
    "name": "tunnel1",
    "keyLifespan": {
-    "maxBytes": "65536"
+    "maxBytes": "65536",
+    "maxAge": {
+        "seconds": 10
+    }
    },
    "remoteControllerUri": "localhost:8100",
    "encryptionMethod": {
