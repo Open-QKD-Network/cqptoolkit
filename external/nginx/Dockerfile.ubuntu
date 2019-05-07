@@ -9,6 +9,7 @@ ADD *.deb /root/
 RUN dpkg -i /root/*.deb ; apt --fix-broken install -qy
 
 RUN chmod +x /bin/run_nginx.sh
+RUN mkdir -p /var/log/nginx/logs
 ADD qkdsecure.* nginx/conf/* /conf/
 ADD softhsm2.conf /etc
 ADD libsofthsm2.so /usr/lib
@@ -23,6 +24,6 @@ RUN git clone https://github.com/jpetazzo/pipework.git && \
 
 ADD html /html/
 
-ENTRYPOINT /bin/run_nginx.sh $IFACE
+CMD ["/bin/run_nginx.sh", "$IFACE"]
 LABEL description="docker run -it --rm -v /var/lib/softhsm:/var/lib/softhsm --env IFACE=p1p1 qkdsecure"
 EXPOSE 80 443

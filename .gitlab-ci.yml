@@ -159,7 +159,7 @@ externals:nginx:
     - dpkg -i /setup/*.deb
     - apt install -qy docker.io
     - cd external/nginx && bash build_nginx_ubuntu.sh
-    - cd external/nginx && docker build -f Dockerfile.ubuntu -t registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd .
+    - docker build -f Dockerfile.ubuntu -t registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd .
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - docker push registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd
   dependencies:
@@ -183,6 +183,9 @@ externals:chromium:
   script:
     - dpkg -i /setup/*.deb
     - cd external/chromium && bash build_ubuntu.sh
+    - docker build -t registry.gitlab.com/qcomms/cqptoolkit/chromium-qkd .
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker push registry.gitlab.com/qcomms/cqptoolkit/chromium-qkd
   dependencies:
     - package:deb
     - deploy:toolkit-run-image

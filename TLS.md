@@ -48,6 +48,8 @@ The TLS standard has the ability to use QKD, but it requires some tweaks to the 
 
 The toolkit can store generated key into a HSM or similar device using the PKCS#11 standard. The `cqp::keygen::HSMStore` class uses the `cqp::p11` classes to access and compatible device such as smart cards, etc. It stores the keys with the label set to the address of the other keystore, this is passed to the other side when it is used. This means that when the key is requested it can be extracted at the other end from their local keystore.
 
+> Note: A servers list of supported ciphers can be show with `nmap -sV --script ssl-enum-ciphers -p <port> <host>`
+
 ## OpenSSL
 
 [OpenSSL](https://www.openssl.org/) is widely used, mainly in server applications. It supports nearly all standards and ciphers.
