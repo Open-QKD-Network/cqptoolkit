@@ -182,6 +182,7 @@ externals:chromium:
   allow_failure: true
   script:
     - dpkg -i /setup/*.deb
+    - apt install -qy docker.io
     - cd external/chromium && bash build_ubuntu.sh
     - docker build -t registry.gitlab.com/qcomms/cqptoolkit/chromium-qkd .
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
