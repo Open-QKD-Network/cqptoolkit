@@ -15,6 +15,7 @@
 #include "Algorithms/Random/RandomNumber.h"
 #include "Algorithms/Net/DNS.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "Algorithms/Datatypes/Units.h"
 
 namespace cqp
 {
@@ -132,7 +133,9 @@ namespace cqp
             // if we havn't got a connection to the caller yet, create one
             if(!otherControllerChannel)
             {
-                otherControllerChannel = grpc::CreateChannel(sessionDetails->initiatoraddress(), creds);
+                grpc::ChannelArguments args;
+                args.SetMaxReceiveMessageSize(8_MiB);
+                otherControllerChannel = grpc::CreateCustomChannel(sessionDetails->initiatoraddress(), creds, args);
 
                 if(!otherControllerChannel->WaitForConnected(system_clock::now() + seconds(10)))
                 {
@@ -206,7 +209,9 @@ namespace cqp
             Disconnect();
             pairedControllerUri = otherController;
 
-            otherControllerChannel = grpc::CreateChannel(otherController, creds);
+            grpc::ChannelArguments args;
+            args.SetMaxReceiveMessageSize(8_MiB);
+            otherControllerChannel = grpc::CreateCustomChannel(otherController, creds, args);
 
             if(reportServer)
             {

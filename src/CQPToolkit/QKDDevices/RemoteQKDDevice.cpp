@@ -18,6 +18,7 @@
 #include "Algorithms/Net/DNS.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include <thread>
+#include "Algorithms/Datatypes/Units.h"
 
 namespace cqp
 {
@@ -242,6 +243,7 @@ namespace cqp
         device->RegisterServices(devServBuilder);
         session->RegisterServices(devServBuilder);
 
+        devServBuilder.SetMaxMessageSize(8_MiB);
         deviceServer = devServBuilder.BuildAndStart();
 
         URI controlURI{controlAddress};
