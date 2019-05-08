@@ -7,4 +7,4 @@ RUN chmod 777 /home
 
 WORKDIR /home
 ENV HOME /home
-CMD ["/usr/bin/chromium-browser", "--no-sandbox"]
+ENTRYPOINT "/usr/bin/chromium-browser"

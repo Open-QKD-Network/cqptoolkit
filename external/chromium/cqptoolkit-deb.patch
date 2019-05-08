@@ -59,7 +59,7 @@ Index: chromium-browser-73.0.3683.86/net/socket/ssl_client_socket_impl.cc
      SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
  
 +#if defined(USE_PSK)
-+    OpenSSLHandler_SetHSM("pkcs11:module-name=yubihsm_pkcs11.so?pin-value=0001password");
++    //OpenSSLHandler_SetHSM("pkcs11:module-name=yubihsm_pkcs11.so?pin-value=0001password");
 +    SSL_CTX_set_psk_client_callback(ssl_ctx_.get(), OpenSSLHandler_ClientCallback);
 +#endif
 +

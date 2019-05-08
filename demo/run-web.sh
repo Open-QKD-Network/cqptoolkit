@@ -15,7 +15,7 @@ if [ "$1" == "" ]; then
 	if [ "QTUN" == "" ]; then
 		QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
 	fi
-else 
+else
 	BUILDDIR="$1"
 
 	SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
@@ -33,8 +33,8 @@ rm site-a.db* site-b.db*
 byobu new-session -d -s "${SESSION}" -c . "${SITEAGENT} -c site-a.json"
 byobu rename-window Sites
 # bottom left
-byobu split-window -v "${SITEAGENT} -c site-b.json" 
-byobu select-pane -t 0 
+byobu split-window -v "${SITEAGENT} -c site-b.json"
+byobu select-pane -t 0
 # top right
 byobu split-window -h "${DRIVER}" -q -c qkd-alice.json
 byobu select-pane -D -t 0
@@ -44,6 +44,6 @@ sleep 1
 byobu new-window -n WebServer "docker run -it --rm -v `pwd`/nginx-conf:/etc/nginx:ro --net=host --name nginx \
     --entrypoint=/usr/sbin/nginx \
     registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd"
-byobu split-window -h chromium https://localhost:8080
+byobu split-window -h ../external/chromium/run-chromium.sh --pskhsm=https://localhost:8433
 
 byobu attach
