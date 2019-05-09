@@ -154,7 +154,7 @@ namespace cqp
         OpenSSLHandler_PinCallback pinCallbackFunc = nullptr;
         void* callbackUserData = nullptr;
         size_t pinLengthLimit = 0;
-        cqp::keygen::HSMStore* activeHsm;
+        cqp::keygen::HSMStore* activeHsm = nullptr;
         std::string keystoreAddress;
         cqp::keygen::IPinCallback* pinCallback = nullptr;
 

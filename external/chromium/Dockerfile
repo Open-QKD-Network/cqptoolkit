@@ -7,4 +7,5 @@ RUN chmod 777 /home
 
 WORKDIR /home
 ENV HOME /home
-ENTRYPOINT "/usr/bin/chromium-browser"
+CMD ["/usr/bin/chromium-browser"]
+

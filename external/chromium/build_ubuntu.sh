@@ -23,7 +23,6 @@ $SUDO apt install -qy qtbase5-dev && \
 pushd `find -type d -name "chromium-browser-*"` && \
 echo Applying patch && \
 quilt import -P cqptoolkit-deb.patch ../cqptoolkit-deb.patch ; \
-sed -i -e 's/optimize_webui=false$/optimize_webui=false \\\n\tuse_psk=true/' debian/rules && \
 echo Building... && \
 dpkg-buildpackage --no-sign -nc
 popd
