@@ -301,7 +301,7 @@ namespace cqp
                     // reserve space for the new items
                     report->detections.reserve(report->detections.size() + numDetections);
 
-                    for(auto offset = 0u; offset < data->size(); offset += NoxReport::messageBytes)
+                    for(size_t offset = 0u; offset < data->size(); offset += NoxReport::messageBytes)
                     {
                         // read the report
                         if(devReport.LoadRaw(&(*data)[offset]))
@@ -331,6 +331,7 @@ namespace cqp
                 // but the buffer back onto the queue for the reader to use
                 data->clear();
                 ReturnBuffer(move(data));
+                data.reset();
 
                 {
                     /*lock scope*/

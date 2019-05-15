@@ -3,7 +3,7 @@
 * @brief %{Cpp:License:ClassName}
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 6/7/2017
@@ -35,7 +35,7 @@ namespace cqp
             stats::Stat<double> timeTaken {{parent, "TimeTaken"}, stats::Units::Milliseconds};
 
             /// @copydoc stats::StatCollection::Add
-            virtual void Add(stats::IAllStatsCallback* statsCb) override
+            void Add(stats::IAllStatsCallback* statsCb) override
             {
                 bytesDiscarded.Add(statsCb);
                 keysEmitted.Add(statsCb);
@@ -43,7 +43,7 @@ namespace cqp
             }
 
             /// @copydoc stats::StatCollection::Remove
-            virtual void Remove(stats::IAllStatsCallback* statsCb) override
+            void Remove(stats::IAllStatsCallback* statsCb) override
             {
                 bytesDiscarded.Remove(statsCb);
                 keysEmitted.Remove(statsCb);

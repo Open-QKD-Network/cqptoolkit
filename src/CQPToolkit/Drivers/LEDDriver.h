@@ -52,7 +52,7 @@ namespace cqp
         LEDDriver(IRandom* randomSource, std::unique_ptr<Serial> controlDev, std::unique_ptr<Usb> dataDev);
 
         /// destructor
-        virtual ~LEDDriver() override = default;
+        ~LEDDriver() override = default;
 
         /// @name IPhotonGenerator Interface realisation
         ///@{

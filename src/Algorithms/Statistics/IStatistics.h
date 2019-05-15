@@ -38,7 +38,7 @@ namespace cqp
              */
             virtual void StatUpdated(const Stat<T>* stat) = 0;
             /// Destructor
-            virtual ~IStatCallback() {}
+            virtual ~IStatCallback() = default;
         };
 
         /**

@@ -114,9 +114,9 @@ namespace std
     struct hash<array<T, N> >
     {
         /// array type to hash
-        typedef array<T, N> argument_type;
+        using argument_type = array<T, N>;
         /// Hash type
-        typedef size_t result_type;
+        using result_type = size_t;
 
         /**
          * @brief operator ()

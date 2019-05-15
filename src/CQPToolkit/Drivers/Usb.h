@@ -113,11 +113,11 @@ namespace cqp
             /// The calback signiture
             using CallbackFunc = void (C::*)(std::unique_ptr<DataBlock>);
             /// Back refernce for this
-            Usb* self;
+            Usb* self {};
             /// callback which was passed to StartReadingBulk
-            CallbackFunc callback;
+            CallbackFunc callback {};
             /// The instance to bind to the callback
-            C* obj;
+            C* obj {};
             /// The storage for the incomming data
             std::unique_ptr<DataBlock> buffer;
 
@@ -250,7 +250,7 @@ namespace cqp
         /// Provides a thread for libusb to do it's event handling on.
         class EventHandler : public WorkerThread
         {
-            void DoWork();
+            void DoWork() override;
         };
         /// Provides a thread for libusb to do it's event handling on.
         EventHandler eventHandler;

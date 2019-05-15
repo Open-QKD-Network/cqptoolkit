@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Interface example
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 18 April 2016
@@ -24,6 +24,8 @@ namespace cqp
     public:
         /// All interface operations are pure (=0) virtual, they cannot be called without an implementing object to fulfill them.
         virtual void Foo() = 0;
+
+        virtual ~IThisIsAnInterface() = default;
     };
 
     /// This class implements the IThisIsAnInterface by inheriting from it
@@ -37,6 +39,8 @@ namespace cqp
     public:
         /// The non-pure virtual function we are implementing from IThisIsAnInterface;
         virtual void Foo() override;
+
+        ~ImplementsInterface() override = default;
     };
 
     /// This class doesn't inherit from anything but is exported from the dll
@@ -45,6 +49,8 @@ namespace cqp
     public:
         /// The virtual keyword here allows sub classes to override the funtion.
         virtual void Go(IThisIsAnInterface* iface);
+
+        virtual ~UsesInterface() = default;
     };
 
     /// An example of normal class inheritence
@@ -59,6 +65,8 @@ namespace cqp
 
         /// A normal function.
         virtual void DoSomethingElse();
+
+        ~Child() override = default;
     };
 
     // There is no implementation for IThisIsAnInterface

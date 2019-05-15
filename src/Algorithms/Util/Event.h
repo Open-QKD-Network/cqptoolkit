@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Event template
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -35,7 +35,7 @@ namespace cqp
 
         /// Attaches the callback to this event
         /// @param listener The listener to add to event list
-        virtual void Add(Interface* const listener) override
+        void Add(Interface* const listener) override
         {
             if(listeners.size() >= MaxListeners)
             {
@@ -49,13 +49,13 @@ namespace cqp
 
         /// Removes the callback from this event
         /// @param listener The listener to remove from the event list
-        virtual void Remove(Interface* const listener) override
+        void Remove(Interface* const listener) override
         {
             if (listener != nullptr)
             {
                 // Not overly efficient but the number of listeners is likely to be low and
                 // Removal from the list is unusual
-                for (unsigned index = 0; index < listeners.size(); index++)
+                for (size_t index = 0; index < listeners.size(); index++)
                 {
                     if (listener != nullptr && (listeners[index] == listener))
                     {
@@ -67,14 +67,14 @@ namespace cqp
         }
 
         /// Removes any added listeners
-        virtual void Clear() override
+        void Clear() override
         {
             listeners.clear();
         }
 
     protected:
         /// Storage for the currently registered listeners
-        typedef std::vector<Interface*> ListenerList;
+        using ListenerList = std::vector<Interface*>;
         /// Stores the currently registered listeners
         ListenerList listeners;
     };
@@ -109,8 +109,9 @@ namespace cqp
     {
     public:
         /// Construct a new event handler
-        Event() { }
-        virtual ~Event() {}
+        Event() = default;
+
+        virtual ~Event() = default;
 
         /// Cause all registered callbacks to be notified with the data supplied
         /// @param args values to pass to the listeners

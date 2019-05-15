@@ -30,6 +30,16 @@ namespace cqp
 
         }
 
+        DetectionReciever::~DetectionReciever()
+        {
+            Stop(true);
+            transmitter.reset();
+            while(!receivedData.empty())
+            {
+                receivedData.pop();
+            }
+        }
+
         void DetectionReciever::OnPhotonReport(std::unique_ptr<ProtocolDetectionReport> report)
         {
             using namespace std;
@@ -82,7 +92,7 @@ namespace cqp
             {
                 size_t outputIndex = 0;
                 // walk through each valid record, removing the qubit elements which ether aren't valid or the basis dont match
-                for(auto validSlotIndex = 0u; validSlotIndex < validSlots.size(); validSlotIndex++)
+                for(size_t validSlotIndex = 0u; validSlotIndex < validSlots.size(); validSlotIndex++)
                 {
                     // find the qubit index which the current valid index relates to once offset is applied
                     const auto adjustedSlot = offset + static_cast<ssize_t>(validSlots[validSlotIndex]);
@@ -183,7 +193,7 @@ namespace cqp
                             align::Offsetting offsetting(0);
                             QubitsBySlot markers;
                             markers.reserve(response.markers().size());
-                            for(auto marker : response.markers())
+                            for(const auto & marker : response.markers())
                             {
                                 markers.emplace(marker.first, marker.second);
                             }

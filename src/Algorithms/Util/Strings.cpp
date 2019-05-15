@@ -36,7 +36,7 @@ namespace cqp
         bool result = left.size() == right.size();
         if(result)
         {
-            for(unsigned i = 0; i < left.length(); i++)
+            for(size_t i = 0; i < left.length(); i++)
             {
                 if(std::tolower(left[i]) != std::tolower(right[i]))
                 {
@@ -89,7 +89,7 @@ namespace cqp
         {
             bytes.reserve(hex.length() / 2);
 
-            for (unsigned int i = 0; i < hex.length(); i += 2)
+            for (size_t i = 0; i < hex.length(); i += 2)
             {
                 std::string byteString = hex.substr(i, 2);
                 uint8_t byte = static_cast<uint8_t>(strtoul(byteString.c_str(), nullptr, 16));

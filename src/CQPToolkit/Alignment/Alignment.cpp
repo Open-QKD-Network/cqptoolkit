@@ -10,7 +10,7 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Alignment.h"
-#include <limits.h>
+#include <climits>
 
 namespace cqp
 {
@@ -27,7 +27,7 @@ namespace cqp
             seq = 0;
         }
 
-        Alignment::Alignment() {}
+        Alignment::Alignment() = default;
 
         void Alignment::SendResults(const QubitList& emissions, double securityParameter)
         {

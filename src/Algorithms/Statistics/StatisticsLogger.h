@@ -3,7 +3,7 @@
 * @brief StatisticsLogger
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 19/7/2017
@@ -73,7 +73,7 @@ namespace cqp
                             ", rate: " << stat->GetRate() <<
                             "," << GetValueString(stat);
 
-                    for(auto param : stat->parameters)
+                    for(const auto & param : stat->parameters)
                     {
                         message << ", " << param.first + "=" + param.second;
                     }

@@ -27,7 +27,7 @@ namespace cqp
     public:
 
         /// Constructor
-        Provider() {}
+        Provider() = default;
 
         /// destructor
         virtual ~Provider() = default;

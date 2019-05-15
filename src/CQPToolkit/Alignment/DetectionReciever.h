@@ -59,10 +59,7 @@ namespace cqp
             DetectionReciever(const SystemParameters &parameters = DefaultSystemParameters);
 
             /// destructor
-            virtual ~DetectionReciever() override
-            {
-                Disconnect();
-            }
+            ~DetectionReciever() override;
 
             /// @{
             /// @name IDetectionEventCallback Interface

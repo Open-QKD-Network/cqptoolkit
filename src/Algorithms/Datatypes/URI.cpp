@@ -3,7 +3,7 @@
 * @brief URI
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 7/3/2018
@@ -24,8 +24,8 @@ namespace cqp
     // doing this at object creation is expensive
     // see https://stackoverflow.com/questions/5620235/cpp-regular-expression-to-validate-url
     const std::regex URI::urlRegExTemplate(R"foo(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)foo",
-                                      std::regex::extended
-                                     );
+                                           std::regex::extended
+                                          );
 
     // copy the compiled regex to prevent side effected with multiple instances
     URI::URI() : urlRegEx(urlRegExTemplate)
@@ -412,7 +412,9 @@ namespace cqp
             if(encode)
             {
                 path += Encode(element);
-            } else {
+            }
+            else
+            {
                 path += element;
             }
         }
@@ -422,11 +424,11 @@ namespace cqp
     {
         bool found = false;
         const std::string encodedKey(Encode(key));
-        for(auto param = parameters.begin(); param != parameters.end(); param++)
+        for(auto & param : parameters)
         {
-            if(param->first == encodedKey)
+            if(param.first == encodedKey)
             {
-                param->second = Encode(value);
+                param.second = Encode(value);
                 found = true;
                 break; // for
             }
@@ -454,7 +456,8 @@ namespace cqp
         }
     }
 
-    const std::set<char> URI::Unresserved = {
+    const std::set<char> URI::Unresserved =
+    {
         '0', '1', '2', '3', '4',
         '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e',
@@ -486,7 +489,8 @@ namespace cqp
                 else if(c == ' ')
                 {
                     result.push_back(SpaceSeperator);
-                } else
+                }
+                else
                 {
                     result.append(EscapeChar + ToHexString(c));
                 }
@@ -506,7 +510,8 @@ namespace cqp
                 if(input[index] == SpaceSeperator)
                 {
                     result.push_back(' ');
-                } else if(input[index] == EscapeChar && input.size() > (index + 2))
+                }
+                else if(input[index] == EscapeChar && input.size() > (index + 2))
                 {
                     // decode the escaped character
                     std::string code;
@@ -514,7 +519,9 @@ namespace cqp
                     code.push_back(input[index + 2]);
                     result.push_back(CharFromHex(code));
                     index += 2;
-                } else {
+                }
+                else
+                {
                     // copy as is
                     result.push_back(input[index]);
                 }
@@ -527,9 +534,9 @@ namespace cqp
         return result;
     }
 
-    void URI::ToDictionary(std::map<std::string, std::string>& destination, char pathSeperator, char keyValueSeperator) const
+    void URI::ToDictionary(std::map<std::string, std::string>& destination, char pathSeperator, char keyValueSeparator) const
     {
-        cqp::ToDictionary(Decode(path), destination, pathSeperator, keyValueSeperator);
+        cqp::ToDictionary(Decode(path), destination, pathSeperator, keyValueSeparator);
         for(const auto& element : parameters)
         {
             destination[element.first] = Decode(element.second);

@@ -1,20 +1,22 @@
 #include "Filter.h"
 #include "Algorithms/Logging/Logger.h"
 
-namespace cqp {
-    namespace align {
+namespace cqp
+{
+    namespace align
+    {
 
         Filter::Filter(double sigma, size_t filterWidth, double courseThreshold, double fineThreshold, size_t initialStride) :
-                filter{Filter::GaussianWindow1D(sigma, filterWidth)},
-                courseThreshold{courseThreshold}, fineThreshold{fineThreshold},
-                initialStride{initialStride}
+            filter{Filter::GaussianWindow1D(sigma, filterWidth)},
+            courseThreshold{courseThreshold}, fineThreshold{fineThreshold},
+            initialStride{initialStride}
         {
 
         }
 
         bool Filter::Isolate(const std::vector<double>& filter, size_t stride, double threshold, bool findStart,
                              DetectionReportList::const_iterator begin, DetectionReportList::const_iterator end,
-                          IteratorPair& edgeRange)
+                             IteratorPair& edgeRange)
         {
             bool result = false;
             using namespace std;
@@ -33,8 +35,8 @@ namespace cqp {
                 diffs.reserve(numElements / stride);
                 // the first element of diffs will equal the first element of timetags
                 for(auto tagIt = begin + static_cast<ssize_t>(stride);
-                    tagIt < end;
-                    tagIt += static_cast<ssize_t>(stride))
+                        tagIt < end;
+                        tagIt += static_cast<ssize_t>(stride))
                 {
                     if(tagIt < end)
                     {
@@ -63,7 +65,9 @@ namespace cqp {
                                 edge++;
                             }
                             result = true; //FindEdge(convolved.cbegin(), convolved.cend(), cutoffScaled, edge);
-                        } else {
+                        }
+                        else
+                        {
                             auto revEdge = convolved.crbegin();
                             while(revEdge != convolved.crend() && *revEdge > cutoffScaled)
                             {
@@ -86,7 +90,9 @@ namespace cqp {
                 }// else {
                 //    LOGERROR("Convolution failed");
                 //}
-            } else {
+            }
+            else
+            {
                 LOGWARN("stride is wider than data");
             }
 
@@ -108,7 +114,7 @@ namespace cqp {
             if(result)
             {
                 // Repeat the process with a fine grain approach within that window
-                result = Isolate(filter, 1, fineThreshold, true, startEdgeRange.first, startEdgeRange.second, startEdgeRange);
+                Isolate(filter, 1, fineThreshold, true, startEdgeRange.first, startEdgeRange.second, startEdgeRange);
             }
             start = startEdgeRange.first;
 

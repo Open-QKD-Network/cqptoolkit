@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Logging
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -96,21 +96,21 @@ namespace cqp
 
         /// Change the level out output from the logger
         /// @param[in] level Message which are as or more severe as this will be printed
-        virtual void SetOutputLevel(LogLevel level) override;
+        void SetOutputLevel(LogLevel level) override;
         /// Gets the current setting of the filter for logging
         /// @return The currently limited log level
-        virtual LogLevel GetOutputLevel() const  override
+        LogLevel GetOutputLevel() const  override
         {
             return currentOutput;
         }
 
         /// Default destructor
-        virtual ~Logger() override = default;
+        ~Logger() override = default;
 
         /// Send output to the logger
         /// @param[in] level message severity
         /// @param[in] message The Message to display
-        virtual void Log(LogLevel level, const std::string& message) override
+        void Log(LogLevel level, const std::string& message) override
         {
             // Pass the message on to any loggers attached to us
             for (ILogger* childLogger : subLoggers)
@@ -121,17 +121,17 @@ namespace cqp
 
         /// Daisy chain another logger so that it will receive the same messages as the top level logger.
         /// @param newLogger The logger to attach
-        virtual void AttachLogger(ILogger* const newLogger) override;
+        void AttachLogger(ILogger* const newLogger) override;
 
         /// Remove a logger from the chain.
         /// @param logger The logger to remove
-        virtual void DettachLogger(ILogger* const logger) override;
+        void DettachLogger(ILogger* const logger) override;
 
         /// Increase the level of output
-        virtual void IncOutputLevel() override;
+        void IncOutputLevel() override;
 
         /// Decrease the level of output
-        virtual void DecOutputLevel() override;
+        void DecOutputLevel() override;
 
         /// default constructor
         Logger() = default;

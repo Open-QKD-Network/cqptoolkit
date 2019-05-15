@@ -114,9 +114,9 @@ namespace std
         {
             hash<unsigned char> hasher;
             size_t h = 0;
-            for (size_t i = 0; i < a.value.size(); ++i)
+            for (const auto & byte : a.value)
             {
-                h = h * 31 + hasher(a.value[i]);
+                h = h * 31 + hasher(byte);
             }
             return h;
         }

@@ -39,7 +39,7 @@ namespace cqp
             stats::Stat<double> visibility {{parent, "Visibility"}, stats::Units::Percentage};
 
             /// @copydoc stats::StatCollection::Add
-            virtual void Add(stats::IAllStatsCallback* statsCb) override
+            void Add(stats::IAllStatsCallback* statsCb) override
             {
                 overhead.Add(statsCb);
                 timeTaken.Add(statsCb);
@@ -47,7 +47,7 @@ namespace cqp
             }
 
             /// @copydoc stats::StatCollection::Remove
-            virtual void Remove(stats::IAllStatsCallback* statsCb) override
+            void Remove(stats::IAllStatsCallback* statsCb) override
             {
                 overhead.Remove(statsCb);
                 timeTaken.Remove(statsCb);

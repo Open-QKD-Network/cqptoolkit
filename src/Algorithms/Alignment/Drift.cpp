@@ -15,8 +15,10 @@
 #include "Algorithms/Logging/Logger.h"
 #include "Algorithms/Util/Maths.h"
 
-namespace cqp {
-    namespace align {
+namespace cqp
+{
+    namespace align
+    {
 
         constexpr PicoSeconds Drift::DefaultDriftSampleTime;
 
@@ -28,10 +30,10 @@ namespace cqp {
         }
 
         void Drift::Histogram(const DetectionReportList::const_iterator& start,
-                       const DetectionReportList::const_iterator& end,
-                       uint_fast16_t numBins,
-                       PicoSeconds windowWidth,
-                       std::vector<uint64_t>& counts)
+                              const DetectionReportList::const_iterator& end,
+                              uint_fast16_t numBins,
+                              PicoSeconds windowWidth,
+                              std::vector<uint64_t>& counts)
         {
             counts.resize(numBins, 0);
             const auto binWidth = windowWidth / numBins;
@@ -47,10 +49,10 @@ namespace cqp {
         }
 
         void Drift::Histogram(const DetectionReportList::const_iterator& start,
-                       const DetectionReportList::const_iterator& end,
-                       uint_fast16_t numBins,
-                       PicoSeconds windowWidth,
-                       ChannelHistograms& counts)
+                              const DetectionReportList::const_iterator& end,
+                              uint_fast16_t numBins,
+                              PicoSeconds windowWidth,
+                              ChannelHistograms& counts)
         {
             for(auto& hist : counts)
             {
@@ -69,7 +71,7 @@ namespace cqp {
         }
 
         double Drift::FindPeak(DetectionReportList::const_iterator sampleStart,
-                      DetectionReportList::const_iterator sampleEnd) const
+                               DetectionReportList::const_iterator sampleEnd) const
         {
             using namespace std;
             using namespace std::chrono;
@@ -79,7 +81,7 @@ namespace cqp {
             /*LOGDEBUG("Look from " + to_string(sampleStart->time.count()) + " to " +
                      to_string(sampleEnd->time.count()) + " in " +
                      to_string(distance(sampleStart, sampleEnd)) + " samples");
-*/
+            */
 
             // create a histogram of the sample
             Histogram(sampleStart, sampleEnd, driftBins, slotWidth, histogram);
@@ -117,7 +119,7 @@ namespace cqp {
         } // FindPeak
 
         ChannelOffsets Drift::ChannelFindPeak(DetectionReportList::const_iterator sampleStart,
-                      DetectionReportList::const_iterator sampleEnd) const
+                                              DetectionReportList::const_iterator sampleEnd) const
         {
             using namespace std;
             using namespace std::chrono;
@@ -131,7 +133,8 @@ namespace cqp {
 
             uint_fast8_t channelIndex = 0;
 
-            for(auto hist : channelHistograms){
+            for(auto hist : channelHistograms)
+            {
 
                 // get the extents of the graphs to find the centre of the transmission.
                 const auto maxIt = std::max_element(hist.cbegin(), hist.cend());
@@ -166,10 +169,10 @@ namespace cqp {
             return channelCentres;
         } // FindPeak
 
-        
+
         void Drift::GetPeaks(const DetectionReportList::const_iterator& start,
-                      const DetectionReportList::const_iterator& end,
-                      std::vector<double>& peaks, std::vector<double>::const_iterator& maximum)
+                             const DetectionReportList::const_iterator& end,
+                             std::vector<double>& peaks, std::vector<double>::const_iterator& maximum)
         {
             using namespace std;
             /*
@@ -200,16 +203,18 @@ namespace cqp {
                 DetectionReport cutoff;
                 cutoff.time = start->time + driftSampleTime * sampleIndex;
                 // use the binary search to find the point in the data where the time is past our sample time limit
-                Filter::FindThreshold<DetectionReport>(sampleStart, sampleEnd, cutoff, sampleEnd, [](const auto& left, const auto& right){
-                                                      return left.time > right.time;
+                Filter::FindThreshold<DetectionReport>(sampleStart, sampleEnd, cutoff, sampleEnd, [](const auto& left, const auto& right)
+                {
+                    return left.time > right.time;
                 });
 
                 if(sampleEnd != (end - 1) || sampleEnd->time - sampleStart->time >= driftSampleTime)
                 {
                     peakFutures.emplace_back(
-                            workQueue.Enqueue([&, sampleStart, sampleEnd]() {
-                                return FindPeak(sampleStart, sampleEnd);
-                            })
+                        workQueue.Enqueue([&, sampleStart, sampleEnd]()
+                    {
+                        return FindPeak(sampleStart, sampleEnd);
+                    })
                     );
                 }
                 //LOGDEBUG("Searching for peak in " + to_string(distance(sampleStart, sampleEnd)) + " samples");
@@ -249,7 +254,7 @@ namespace cqp {
         } // GetPeaks
 
         double Drift::Calculate(const DetectionReportList::const_iterator& start,
-                                        const DetectionReportList::const_iterator& end)
+                                const DetectionReportList::const_iterator& end)
         {
             using namespace std;
             std::vector<double> peaks;
@@ -272,7 +277,7 @@ namespace cqp {
                 double slope = 0.0;
                 uint_fast16_t slopeSamples = 0;
 
-                for(auto index = 0u; index < peaks.size() - 1; index++)
+                for(uint64_t index = 0u; index < peaks.size() - 1; index++)
                 {
 
                     auto nextIndex = index + 1;

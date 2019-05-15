@@ -142,13 +142,16 @@ namespace cqp
                                     if(maxCourseTime != 0 && noxReport.detection.coarse >= maxCourseTime)
                                     {
                                         keepReading = false;
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         if(noxReport.detection.channel < channelMappings.size())
                                         {
-                                            output.push_back({
-                                                                 noxReport.GetTime(),
-                                                                 channelMappings[noxReport.detection.channel]
-                                                             });
+                                            output.push_back(
+                                            {
+                                                noxReport.GetTime(),
+                                                channelMappings[noxReport.detection.channel]
+                                            });
                                         }
                                         else
                                         {
@@ -162,7 +165,9 @@ namespace cqp
                                     gotConfig = true;
 
                                 }
-                            } else {
+                            }
+                            else
+                            {
                                 LOGERROR("Failed to decode buffer");
                             }
 
@@ -202,9 +207,10 @@ namespace cqp
                     inFile.read(reinterpret_cast<char*>(&value), sizeof (value));
                     if(!inFile.eof())
                     {
-                        output.push_back({
-                                             PicoSeconds(be64toh(time)), value
-                                         });
+                        output.push_back(
+                        {
+                            PicoSeconds(be64toh(time)), value
+                        });
                     }
                 }
                 while(!inFile.eof());
@@ -226,11 +232,11 @@ namespace cqp
             std::ofstream outFile(outFileName, std::ios::out | std::ios::binary);
             if (outFile)
             {
-                for(size_t index = 0; index < source.size(); index++)
+                for(const auto & report : source)
                 {
-                    const uint64_t time = htobe64(source[index].time.count());
+                    const uint64_t time = htobe64(report.time.count());
                     outFile.write(reinterpret_cast<const char*>(&time), sizeof(time));
-                    outFile.write(reinterpret_cast<const char*>(&source[index].value), sizeof (source[index].value));
+                    outFile.write(reinterpret_cast<const char*>(&report.value), sizeof (report.value));
                 }
                 outFile.close();
                 result = true;
@@ -268,21 +274,24 @@ namespace cqp
             if(messageType == MessageType::Detection)
             {
                 detection.coarse = (
-                                                 static_cast<uint64_t>(buffer[1]) <<28 |
-                                                 static_cast<uint64_t>(buffer[2]) <<20 |
-                                                 static_cast<uint64_t>(buffer[3]) <<12 |
-                                                 static_cast<uint64_t>(buffer[4]) <<4 |
-                                                 static_cast<uint64_t>(buffer[5]) >>4
-                                             );
+                                       static_cast<uint64_t>(buffer[1]) <<28 |
+                                       static_cast<uint64_t>(buffer[2]) <<20 |
+                                       static_cast<uint64_t>(buffer[3]) <<12 |
+                                       static_cast<uint64_t>(buffer[4]) <<4 |
+                                       static_cast<uint64_t>(buffer[5]) >>4
+                                   );
 
                 detection.fine = static_cast<uint16_t>((buffer[6] & 0x0F) << 8) | buffer[7];
                 detection.channel = (buffer[6] >> 4) -1;
                 result = true;
-            } else if(messageType == MessageType::Config)
+            }
+            else if(messageType == MessageType::Config)
             {
                 // TODO
                 result = true;
-            } else {
+            }
+            else
+            {
                 messageType = MessageType::Invalid;
             }
 

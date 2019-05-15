@@ -213,7 +213,7 @@ namespace cqp
             }
 
             /// Destructor
-            virtual ~Stat() = default;
+            ~Stat() override = default;
 
             /**
              * @brief GetLatest

@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - USB IO
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -18,7 +18,7 @@
 #include "Algorithms/Logging/Logger.h"  // for LOGTRACE, LOGERROR, DefaultLogger
 #include "Algorithms/Datatypes/Base.h"          // for DataBlock, IntList
 #include "Algorithms/Logging/ILogger.h"      // for LogLevel, ILogger, LogLevel::Debug
-           // for EnumClassHash
+// for EnumClassHash
 #include "Algorithms/Datatypes/URI.h"                // for URI
 #include "libusb-1.0/libusb.h"
 
@@ -47,7 +47,8 @@ namespace cqp
     }
 
     /// Used for mapping log levels to libusb
-    struct UsbLevel {
+    struct UsbLevel
+    {
         static const UsbLevelMap Lookup;
     };
     // storage for data
@@ -68,7 +69,7 @@ namespace cqp
         // Create an object which will hopefully connect
         std::unique_ptr<Usb> result;
 
-        for (int devIndex = 0; devIndex < numDevices; devIndex++)
+        for (ssize_t devIndex = 0; devIndex < numDevices; devIndex++)
         {
 
             /// The description of the connected device
@@ -95,7 +96,9 @@ namespace cqp
                         // match is good
 
                         break; // for
-                    } else {
+                    }
+                    else
+                    {
                         // false match, drop the device
                         result.reset();
                     }
@@ -157,7 +160,7 @@ namespace cqp
             }
 
             if (libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER))
-            //        libusb_kernel_driver_active(myHandle, interfaceIndex) != LIBUSB_SUCCESS)
+                //        libusb_kernel_driver_active(myHandle, interfaceIndex) != LIBUSB_SUCCESS)
             {
                 // We need to remove the kernel driver to gain access to the device
                 //LogUsb(libusb_detach_kernel_driver(myHandle, interfaceIndex));
@@ -191,7 +194,9 @@ namespace cqp
                     {
                         claimedInterfaces.push_back(config->interface[0].altsetting->bInterfaceNumber);
                     }
-                } else {
+                }
+                else
+                {
                     result = false;
                 }
             } // if default interface needed
@@ -221,12 +226,13 @@ namespace cqp
         // create the transfer object and issue the request
         // block until data arrives
         auto result = LogUsb(libusb_bulk_transfer(
-            myHandle, endPoint, data.data(), sizeof(data.size()), &bytesRecieved, static_cast<unsigned int>(timeout.count())));
+                                 myHandle, endPoint, data.data(), sizeof(data.size()), &bytesRecieved, static_cast<unsigned int>(timeout.count())));
 
         if ((result == LIBUSB_SUCCESS || result == LIBUSB_ERROR_OVERFLOW) && bytesRecieved > 0)
         {
             data.resize(static_cast<size_t>(bytesRecieved));
-        } else
+        }
+        else
         {
             data.resize(0);
             LOGERROR("Failed to submit usb transfer.");
@@ -236,8 +242,8 @@ namespace cqp
     }
 
     struct ::libusb_transfer * Usb::StartReadingBulk(uint8_t endPoint, unsigned char* buffer, size_t bufferLength,
-                                                     Usb::CallbackFunc callback, void* userData,
-                                                     chrono::milliseconds timeout)
+            Usb::CallbackFunc callback, void* userData,
+            chrono::milliseconds timeout)
     {
         struct ::libusb_transfer *transfer = libusb_alloc_transfer(0);
 
@@ -245,8 +251,8 @@ namespace cqp
         {
             // create the transfer object
             ::libusb_fill_bulk_transfer(
-                        transfer, myHandle, endPoint, buffer, static_cast<int>(bufferLength),
-                    callback, userData, timeout.count());
+                transfer, myHandle, endPoint, buffer, static_cast<int>(bufferLength),
+                callback, userData, timeout.count());
 
             // issue the request, the callback will be called when data is ready
             if (LogUsb(libusb_submit_transfer(transfer)) != LIBUSB_SUCCESS)
@@ -255,7 +261,9 @@ namespace cqp
                 libusb_free_transfer(transfer);
                 transfer = nullptr;
             }
-        } else {
+        }
+        else
+        {
             LOGERROR("Failed to allocate transfer");
         }
 
@@ -275,8 +283,8 @@ namespace cqp
             // strerror is not provided by earlier versions of libusb
 #if defined(libusb_strerror)
             message += " : " + std::string(libusb_strerror(static_cast<libusb_error>(result)))
-        #endif
-                    LOGDEBUG(message);
+#endif
+                       LOGDEBUG(message);
         }
         return result;
     }
@@ -321,7 +329,9 @@ namespace cqp
         if(numPortNumbers != LIBUSB_ERROR_OVERFLOW)
         {
             result.resize(static_cast<size_t>(numPortNumbers));
-        } else {
+        }
+        else
+        {
             result.clear();
             LOGERROR("USB bus depth too big");
         }
@@ -345,12 +355,14 @@ namespace cqp
             if(desc.iSerialNumber != 0)
             {
                 auto descLength = libusb_get_string_descriptor_ascii(myHandle, desc.iSerialNumber,
-                                                                     reinterpret_cast<unsigned char*>(&serial[0]),
-                                                                     static_cast<int>(serial.length()));
+                                  reinterpret_cast<unsigned char*>(&serial[0]),
+                                  static_cast<int>(serial.length()));
                 if(descLength > 0)
                 {
                     serial.resize(static_cast<size_t>(descLength));
-                } else{
+                }
+                else
+                {
                     LogUsb(descLength);
                     serial = "";
                 }
@@ -366,7 +378,9 @@ namespace cqp
         {
             LogUsb(transfer->status);
             return transfer->user_data;
-        } else {
+        }
+        else
+        {
             return nullptr;
         }
     }

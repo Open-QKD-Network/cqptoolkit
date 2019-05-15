@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Logging
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -39,11 +39,11 @@ namespace cqp
     /// Daisy chain another logger so that it will receive the same messages as the top level logger.
     void Logger::DettachLogger(ILogger* logger)
     {
-        for (unsigned int index = 0; index < subLoggers.size(); index++)
+        for (unsigned long index = 0; index < subLoggers.size(); index++)
         {
             if (subLoggers[index] == logger)
             {
-                subLoggers.erase(subLoggers.begin()+index);
+                subLoggers.erase(subLoggers.begin() + static_cast<long>(index));
                 break;
             }
         }

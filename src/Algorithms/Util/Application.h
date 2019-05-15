@@ -35,7 +35,7 @@ namespace cqp
         Application() noexcept;
 
         /// Destructor
-        virtual ~Application() {}
+        virtual ~Application() = default;
 
         /**
          * @brief Main
@@ -99,7 +99,7 @@ namespace cqp
          * Callback from a signal which will map to a handler
          * @param signal The signal being thrown
          */
-        static void SignalHandler(int signal);
+        static void SignalHandler(int signum);
 
 
     private:

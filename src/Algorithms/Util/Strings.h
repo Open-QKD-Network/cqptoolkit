@@ -165,9 +165,11 @@ namespace cqp
     /// Lookup table to go from a hex character to it's number
     struct CharToIntTable
     {
+    private:
         /// storage for the table
         char tab[256] {0};
 
+    public:
         /// constructor
         constexpr CharToIntTable() : tab {}
         {

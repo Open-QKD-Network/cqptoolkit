@@ -3,7 +3,7 @@
  * @brief CQP Toolkit - Usb Tagger
  *
  * @copyright Copyright (C) University of Bristol 2016
- *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+ *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
  * @date 08 Feb 2016
@@ -21,15 +21,16 @@ struct libusb_transfer;
 
 namespace cqp
 {
-    namespace remote {
+    namespace remote
+    {
         class DeviceConfig;
     }
     class Usb;
 
     /// Class for controlling the "RWN 11" time tagger and coincidence counter built at UOB.
     class CQPTOOLKIT_EXPORT UsbTagger :
-            public remote::IDetector::Service,
-            public Provider<IDetectionEventCallback>
+        public remote::IDetector::Service,
+        public Provider<IDetectionEventCallback>
     {
     public:
         /**
@@ -49,7 +50,7 @@ namespace cqp
         UsbTagger(std::unique_ptr<Serial> controlDev, std::unique_ptr<Usb> dataDev);
 
         /// Destructor
-        virtual ~UsbTagger() override;
+        ~UsbTagger() override;
 
         ///@{
         /// @name remote::IDetector interface

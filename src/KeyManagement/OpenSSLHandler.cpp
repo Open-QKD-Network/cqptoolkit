@@ -193,7 +193,7 @@ namespace cqp
                 if(store.FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
                 {
                     std::copy(keyValue.begin(), keyValue.end(), psk);
-                    std::string keyIdString = "pkcs:object=" + activeHsm->GetSource() + "?id=" + std::to_string(keyId);
+                    std::string keyIdString = "pkcs:object=" + store.GetSource() + "?id=" + std::to_string(keyId);
                     keyIdString.copy(identity, max_identity_len);
                     result = keyValue.size();
                     LOGTRACE("Key identity=" + identity);

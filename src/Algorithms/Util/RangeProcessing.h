@@ -2,7 +2,8 @@
 #include "Algorithms/algorithms_export.h"
 #include "Algorithms/Util/ProcessingQueue.h"
 
-namespace cqp {
+namespace cqp
+{
 
     /**
      * @brief RangeProcessing class allows a sequence of values to be applied to a processing function using multiple threads
@@ -23,7 +24,7 @@ namespace cqp {
          */
         RangeProcessing(uint numThreads = std::thread::hardware_concurrency());
 
-        virtual ~RangeProcessing() = default;
+        ~RangeProcessing() override = default;
 
         /**
          * The funtion controls which value is processed next and whether to stop
@@ -115,7 +116,8 @@ namespace cqp {
     template<typename RangeType>
     void RangeProcessing<RangeType>::ProcessSequence(RangeProcessing::RangeAction process, RangeProcessing::NextValueFunc nextVal)
     {
-        /*lock scope*/{
+        /*lock scope*/
+        {
             std::lock_guard<std::mutex> lock(pendingMutex);
             action = process;
 
@@ -137,17 +139,20 @@ namespace cqp {
             RangeType nextVal;
             bool processValue = false;
 
-            { /* lock scope*/
+            {
+                /* lock scope*/
                 unique_lock<mutex> lock(pendingMutex);
 
                 // wait for data or the command to quit
-                pendingCv.wait(lock, [&](){
+                pendingCv.wait(lock, [&]()
+                {
                     bool unblock = false;
 
                     if(stopProcessing)
                     {
                         unblock = true;
-                    } else if(moreValuesAvailable)
+                    }
+                    else if(moreValuesAvailable)
                     {
                         moreValuesAvailable = nextValueFunc(nextVal);
                         processValue = true;
