@@ -60,7 +60,7 @@ namespace cqp
 
         grpc::Status KeyStore::GetExistingKey(const KeyID& identity, PSK& output)
         {
-            LOGTRACE("");
+            LOGTRACE("ID:" + std::to_string(identity));
             grpc::Status result = Status(StatusCode::NOT_FOUND, "No key found within timeout.");
 
             std::unique_lock<std::mutex> lock(allKeys_lock);
@@ -107,6 +107,7 @@ namespace cqp
                 // build key from path
                 result = GetNewIndirectKey(identity, output);
             }
+            LOGTRACE("ID:" + std::to_string(identity));
             return result;
         }
 

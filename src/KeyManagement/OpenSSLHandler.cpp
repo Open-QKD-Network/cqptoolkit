@@ -33,30 +33,37 @@ namespace cqp
     {
         bool result = false;
 
-        if(pinCallbackFunc)
+        try
         {
-            std::vector<char> tempPin(pinLengthLimit+1, 0);
-            ulong loginInt = 0;
-            size_t pinUsed = pinCallbackFunc(callbackUserData, tokenSerial.c_str(), tokenLabel.c_str(),
-                                             &loginInt, tempPin.data(), pinLengthLimit);
-            switch(loginInt)
+            if(pinCallbackFunc)
             {
-            case 0:
-                login = keygen::UserType::SecurityOfficer;
-                break;
-            case 1:
-                login = keygen::UserType::User;
-                break;
-            case 2:
-                login = keygen::UserType::ContextSpecific;
-                break;
+                std::vector<char> tempPin(pinLengthLimit+1, 0);
+                ulong loginInt = 0;
+                size_t pinUsed = pinCallbackFunc(callbackUserData, tokenSerial.c_str(), tokenLabel.c_str(),
+                                                 &loginInt, tempPin.data(), pinLengthLimit);
+                switch(loginInt)
+                {
+                case 0:
+                    login = keygen::UserType::SecurityOfficer;
+                    break;
+                case 1:
+                    login = keygen::UserType::User;
+                    break;
+                case 2:
+                    login = keygen::UserType::ContextSpecific;
+                    break;
+                }
+                result = pinUsed > 0 && pinUsed <= pinLengthLimit;
+                if(result)
+                {
+                    pin.clear();
+                    pin.assign(tempPin.begin(), tempPin.begin() + pinUsed);
+                }
             }
-            result = pinUsed > 0 && pinUsed <= pinLengthLimit;
-            if(result)
-            {
-                pin.clear();
-                pin.assign(tempPin.begin(), tempPin.begin() + pinUsed);
-            }
+        }
+        catch(const std::exception& e)
+        {
+            LOGERROR(e.what());
         }
         return result;
     }
@@ -69,75 +76,92 @@ namespace cqp
         LOGTRACE("Got identity: " + std::string(identity));
         unsigned int result = 0;
 
-        URI identityUri(identity);
-
-        if(identityUri.GetScheme() == "pkcs")
+        try
         {
-            std::map<std::string, std::string> pathElements;
-            identityUri.ToDictionary(pathElements);
-            const std::string destination = pathElements["object"];
+            URI identityUri(identity);
 
-            if(activeHsm)
+            if(identityUri.GetScheme() == "pkcs")
             {
-                uint64_t keyId = 0;
+                LOGTRACE("Using HSM for keys");
+                std::map<std::string, std::string> pathElements;
+                identityUri.ToDictionary(pathElements);
+                const std::string destination = pathElements["object"];
 
-                if(identityUri.GetFirstParameter("id", keyId))
+                if(activeHsm)
                 {
-                    LOGTRACE("Have ID=" + std::to_string(keyId) + " Destination=" + destination);
-                    PSK keyValue;
-                    if(activeHsm->GetKey(destination, keyId, keyValue) && keyValue.size() <= max_psk_len)
-                    {
-                        std::copy(keyValue.begin(), keyValue.end(), psk);
-                        result = keyValue.size();
-                    } // if GetKey
-                } // if have id
-                else
-                {
-                    LOGERROR("No ID specified");
-                }
-            }
-            else if(!keystoreAddress.empty())
-            {
-                KeyID keyId = 0;
-                PSK keyValue;
+                    uint64_t keyId = 0;
 
-                if(identityUri.GetFirstParameter("id", keyId) && keyId != 0)
-                {
-                    if(GetKeystoreKey(destination, keyId, keyValue))
+                    if(identityUri.GetFirstParameter("id", keyId))
                     {
-                        // copy the key into the provided storage
-                        std::copy(keyValue.begin(), keyValue.end(), psk);
-                        result = keyValue.size();
+                        LOGTRACE("Have ID=" + std::to_string(keyId) + " Destination=" + destination);
+                        PSK keyValue;
+                        if(activeHsm->GetKey(destination, keyId, keyValue) && keyValue.size() <= max_psk_len)
+                        {
+                            std::copy(keyValue.begin(), keyValue.end(), psk);
+                            result = keyValue.size();
+                        } // if GetKey
+                    } // if have id
+                    else
+                    {
+                        LOGERROR("No ID specified");
                     }
-                } // if have id
+                }
+                else if(!keystoreAddress.empty())
+                {
+                    LOGTRACE("Using keystore for keys");
+                    KeyID keyId = 0;
+                    PSK keyValue;
+
+                    if(identityUri.GetFirstParameter("id", keyId) && keyId != 0)
+                    {
+                        LOGTRACE("Requesting key from keystore");
+                        if(GetKeystoreKey(destination, keyId, keyValue))
+                        {
+                            LOGTRACE("Successfully retrieved key");
+                            // copy the key into the provided storage
+                            std::copy(keyValue.begin(), keyValue.end(), psk);
+                            result = keyValue.size();
+                        }
+                    } // if have id
+                    else
+                    {
+                        LOGERROR("No ID specified");
+                    }
+
+                }
                 else
                 {
-                    LOGERROR("No ID specified");
+                    LOGERROR("No active HSM");
                 }
 
             }
             else
             {
-                LOGERROR("No active HSM");
+                LOGERROR("Unknown identity URL: " + identity);
             }
-
         }
-        else
+        catch(const std::exception& e)
         {
-            LOGERROR("Unknown identity URL: " + identity);
+            LOGERROR(e.what());
         }
-
         LOGTRACE("Leaving");
         return result;
     }
 
     void OpenSSLHandler::SetSearchModules(const char** modules, unsigned int numModules)
     {
-        searchModules.clear();
-        searchModules.reserve(numModules);
-        for(unsigned int index = 0; index < numModules; index++)
+        try
         {
-            searchModules.push_back(modules[index]);
+            searchModules.clear();
+            searchModules.reserve(numModules);
+            for(unsigned int index = 0; index < numModules; index++)
+            {
+                searchModules.push_back(modules[index]);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            LOGERROR(e.what());
         }
     }
 
@@ -147,79 +171,104 @@ namespace cqp
         using namespace cqp::keygen;
         unsigned int result = 0;
 
-        LOGTRACE("hint=" + hint);
-        if(activeHsm)
+        try
         {
-            LOGDEBUG("Using existing HSM");
-            uint64_t keyId = 0;
-
-            PSK keyValue;
-            if(activeHsm->FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
+            LOGTRACE("hint=" + hint);
+            if(activeHsm)
             {
-                std::copy(keyValue.begin(), keyValue.end(), psk);
-                std::string keyIdString = "pkcs:object=" + activeHsm->GetSource() + "?id=" + std::to_string(keyId);
-                keyIdString.copy(identity, max_identity_len);
-                result = keyValue.size();
-                LOGTRACE("Key identity=" + identity);
-            } // if key found
-
-        }
-        else if(!keystoreAddress.empty())
-        {
-            KeyID keyId = 0;
-            PSK keyValue;
-
-            if(GetKeystoreKey(hint, keyId, keyValue))
-            {
-                // copy the key into the provided storage
-                std::copy(keyValue.begin(), keyValue.end(), psk);
-
-                std::string keyIdString = "pkcs:object=" + keystoreAddress + "?id=" + std::to_string(keyId);
-                keyIdString.copy(identity, max_identity_len);
-                result = keyValue.size();
-            }
-        }
-        else
-        {
-            LOGDEBUG("Looking for a HSM");
-            for(auto& token : HSMStore::FindTokens(searchModules))
-            {
-                LOGTRACE("Found Token");
-
-                HSMStore store(token, pinCallback);
-
+                LOGDEBUG("Using existing HSM");
                 uint64_t keyId = 0;
+
                 PSK keyValue;
-                if(store.FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
+                if(activeHsm->FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
                 {
                     std::copy(keyValue.begin(), keyValue.end(), psk);
-                    std::string keyIdString = "pkcs:object=" + store.GetSource() + "?id=" + std::to_string(keyId);
+                    std::string keyIdString = "pkcs:object=" + activeHsm->GetSource() + "?id=" + std::to_string(keyId);
                     keyIdString.copy(identity, max_identity_len);
                     result = keyValue.size();
                     LOGTRACE("Key identity=" + identity);
-                    break; // for
                 } // if key found
 
-            } // for tokens
+            }
+            else if(!keystoreAddress.empty())
+            {
+                KeyID keyId = 0;
+                PSK keyValue;
+
+                if(GetKeystoreKey(hint, keyId, keyValue))
+                {
+                    // copy the key into the provided storage
+                    std::copy(keyValue.begin(), keyValue.end(), psk);
+
+                    std::string keyIdString = "pkcs:object=" + keystoreAddress + "?id=" + std::to_string(keyId);
+                    std::memset(identity, 0, max_identity_len);
+                    keyIdString.copy(identity, max_identity_len);
+
+                    result = keyValue.size();
+                    LOGTRACE("Key identity: " + keyIdString);
+                }
+            }
+            else
+            {
+                LOGDEBUG("Looking for a HSM");
+                for(auto& token : HSMStore::FindTokens(searchModules))
+                {
+                    LOGTRACE("Found Token");
+
+                    HSMStore store(token, pinCallback);
+
+                    uint64_t keyId = 0;
+                    PSK keyValue;
+                    if(store.FindKey(hint, keyId, keyValue) && keyValue.size() <= max_psk_len)
+                    {
+                        std::copy(keyValue.begin(), keyValue.end(), psk);
+                        std::string keyIdString = "pkcs:object=" + store.GetSource() + "?id=" + std::to_string(keyId);
+                        keyIdString.copy(identity, max_identity_len);
+                        result = keyValue.size();
+                        LOGTRACE("Key identity=" + identity);
+                        break; // for
+                    } // if key found
+
+                } // for tokens
+            }
+            LOGTRACE("Leaving");
         }
-        LOGTRACE("Leaving");
+        catch (const std::exception& e)
+        {
+            LOGERROR(e.what());
+        }
+
         return result;
     }
 
     void OpenSSLHandler::SetPinCallback(OpenSSLHandler_PinCallback cb, void* userData)
     {
-        // we're passing through to a C function so use the dummy callback handler
-        pinCallback = this;
-        pinCallbackFunc = cb;
-        callbackUserData = userData;
+        try
+        {
+            // we're passing through to a C function so use the dummy callback handler
+            pinCallback = this;
+            pinCallbackFunc = cb;
+            callbackUserData = userData;
+        }
+        catch(const std::exception& e)
+        {
+            LOGERROR(e.what());
+        }
     }
 
     void OpenSSLHandler::SetPinCallback(keygen::IPinCallback* cb)
     {
-        pinCallback = cb;
-        // clear any C callbacks
-        pinCallbackFunc = nullptr;
-        callbackUserData = nullptr;
+        try
+        {
+            pinCallback = cb;
+            // clear any C callbacks
+            pinCallbackFunc = nullptr;
+            callbackUserData = nullptr;
+        }
+        catch(const std::exception& e)
+        {
+            LOGERROR(e.what());
+        }
     }
 
     unsigned OpenSSLHandler::SetHSM(const char* url)
@@ -228,48 +277,65 @@ namespace cqp
         LOGTRACE("");
         bool result = false;
 
-        delete activeHsm;
-        activeHsm = nullptr;
-
-        URI hsmUri(url);
-        if(hsmUri.GetScheme() == "pkcs")
+        try
         {
-            if(std::string(url).find("yubihsm") != std::string::npos)
+            delete activeHsm;
+            activeHsm = nullptr;
+
+            URI hsmUri(url);
+            if(hsmUri.GetScheme() == "pkcs")
             {
-                activeHsm = new cqp::keygen::YubiHSM(url, pinCallback);
+                if(std::string(url).find("yubihsm") != std::string::npos)
+                {
+                    activeHsm = new cqp::keygen::YubiHSM(url, pinCallback);
+                }
+                else
+                {
+                    activeHsm = new cqp::keygen::HSMStore(url, pinCallback);
+                }
+                result = activeHsm->InitSession();
             }
             else
             {
-                activeHsm = new cqp::keygen::HSMStore(url, pinCallback);
+                keystoreAddress = url;
+                result = true;
             }
-            result = activeHsm->InitSession();
         }
-        else
+        catch(const std::exception& e)
         {
-            keystoreAddress = url;
-            result = true;
+            LOGERROR(e.what());
         }
-
         return result;
     }
 
     bool OpenSSLHandler::GetKeystoreKey(const std::string& destination, KeyID& keyId, PSK& psk)
     {
         bool result = false;
-        auto channel = grpc::CreateChannel(keystoreAddress, grpc::InsecureChannelCredentials());
-        auto stub = remote::IKey::NewStub(channel);
-        grpc::ClientContext ctx;
-        remote::KeyRequest request;
-        remote::SharedKey key;
-        request.set_siteto(destination);
-        request.set_keyid(keyId);
-        if(LogStatus(stub->GetSharedKey(&ctx, request, &key)).ok())
+        try
         {
-            psk.clear();
-            psk.assign(key.keyvalue().cbegin(), key.keyvalue().end());
-            keyId = key.keyid();
+            auto channel = grpc::CreateChannel(keystoreAddress, grpc::InsecureChannelCredentials());
+            auto stub = remote::IKey::NewStub(channel);
+            grpc::ClientContext ctx;
+            remote::KeyRequest request;
+            remote::SharedKey key;
+            request.set_siteto(destination);
+            if(keyId != 0)
+            {
+                request.set_keyid(keyId);
+            }
 
-            result = true;
+            if(LogStatus(stub->GetSharedKey(&ctx, request, &key)).ok())
+            {
+                psk.clear();
+                psk.assign(key.keyvalue().cbegin(), key.keyvalue().end());
+                keyId = key.keyid();
+
+                result = true;
+            }
+        }
+        catch(const std::exception& e)
+        {
+            LOGERROR(e.what());
         }
         return result;
     }

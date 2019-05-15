@@ -124,7 +124,8 @@ namespace cqp
                 PSK keyValue;
 
                 // grpc proto syntax version 3: us oneof to do optional parameters
-                if(request->opt_case() == remote::KeyRequest::OptCase::kKeyId)
+                if(request->opt_case() == remote::KeyRequest::OptCase::kKeyId &&
+                        request->keyid() != 0)
                 {
                     // the request has included a keyid, get an existing key
                     keyId = request->keyid();

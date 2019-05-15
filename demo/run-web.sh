@@ -28,13 +28,14 @@ SESSION=webdemo
 # Cleanup
 byobu kill-session -t ${SESSION}
 docker stop nginx-qkd 2>&1 2>/dev/null
-docker chromium-qkd 2>&1 2>/dev/null
+docker stop chromium-qkd 2>&1 2>/dev/null
 
 rm site-a.db* site-b.db*
 
 # Top left
 byobu new-session -d -s "${SESSION}" -c . "${SITEAGENT} -c site-a.json -v"
 byobu rename-window Sites
+
 # bottom left
 byobu split-window -v "${SITEAGENT} -c site-b.json -v"
 byobu select-pane -t 0
@@ -43,10 +44,14 @@ byobu split-window -h "${DRIVER}" -q -c qkd-alice.json
 byobu select-pane -D -t 0
 # bottom right
 byobu split-window -h "${DRIVER}" -q -c qkd-bob.json
-sleep 1
+sleep 2
 byobu new-window -n WebServer "docker run -it --rm -v `pwd`/nginx-conf:/etc/nginx:ro --net=host --name nginx-qkd \
     --entrypoint=/usr/sbin/nginx \
     registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd"
-byobu split-window -h ../external/chromium/run-chromium.sh --pskhsm=https://localhost:8001 http://localhost:8080 https://localhost:8433
+sleep 1
+byobu split-window -h ../external/chromium/run-chromium.sh --pskhsm=localhost:8001 http://localhost:8080 https://localhost:8443
 
-byobu attach
+byobu attach -t "${SESSION}"
+
+docker stop nginx-qkd 2>&1 2>/dev/null
+docker stop chromium-qkd 2>&1 2>/dev/null
