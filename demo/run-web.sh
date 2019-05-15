@@ -33,10 +33,10 @@ docker chromium-qkd 2>&1 2>/dev/null
 rm site-a.db* site-b.db*
 
 # Top left
-byobu new-session -d -s "${SESSION}" -c . "${SITEAGENT} -c site-a.json"
+byobu new-session -d -s "${SESSION}" -c . "${SITEAGENT} -c site-a.json -v"
 byobu rename-window Sites
 # bottom left
-byobu split-window -v "${SITEAGENT} -c site-b.json"
+byobu split-window -v "${SITEAGENT} -c site-b.json -v"
 byobu select-pane -t 0
 # top right
 byobu split-window -h "${DRIVER}" -q -c qkd-alice.json

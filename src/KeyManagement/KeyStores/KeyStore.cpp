@@ -60,6 +60,7 @@ namespace cqp
 
         grpc::Status KeyStore::GetExistingKey(const KeyID& identity, PSK& output)
         {
+            LOGTRACE("");
             grpc::Status result = Status(StatusCode::NOT_FOUND, "No key found within timeout.");
 
             std::unique_lock<std::mutex> lock(allKeys_lock);
@@ -95,6 +96,7 @@ namespace cqp
 
         bool KeyStore::GetNewKey(KeyID& identity, PSK& output, bool waitForKey)
         {
+            LOGTRACE("");
             // see if we've already got some key
             // if there's no path, wait until key arrives
             bool result = GetNewDirectKey(identity, output, myPath.empty() && waitForKey);
@@ -110,6 +112,7 @@ namespace cqp
 
         bool KeyStore::ReserveNewKey(std::unique_lock<std::mutex>&, KeyID& keyID)
         {
+            LOGTRACE("");
             bool result = !unusedKeys.empty();
             if(result)
             {
@@ -162,6 +165,7 @@ namespace cqp
 
         bool KeyStore::GetNewDirectKey(KeyID& identity, PSK& output, bool waitForKey)
         {
+            LOGTRACE("");
             bool result = false;
             KeyID keyID = 0;
 
@@ -265,6 +269,7 @@ namespace cqp
 
         bool KeyStore::GetNewIndirectKey(KeyID& identity, PSK& output)
         {
+            LOGTRACE("");
             bool result = true;
 
             remote::KeyPathRequest request;
@@ -311,6 +316,7 @@ namespace cqp
 
         grpc::Status KeyStore::MarkKeyInUse(const KeyID& identity, KeyID& alternative)
         {
+            LOGTRACE("");
             grpc::Status result;
             bool reserveAlternative = false;
 
