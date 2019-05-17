@@ -81,3 +81,53 @@ Index: chromium-browser-73.0.3683.86/chrome/app/chrome_main_delegate.cc
    content::SetContentClient(&chrome_content_client_);
  
    // The TLS slot used by the memlog allocator shim needs to be initialized
+Index: chromium-browser-73.0.3683.86/debian/rules
+===================================================================
+--- chromium-browser-73.0.3683.86.orig/debian/rules
++++ chromium-browser-73.0.3683.86/debian/rules
+@@ -56,11 +56,11 @@ common_defines+=\
+ 	enable_wayland_server=false \
+ 	enable_widevine=true \
+ 	fieldtrial_testing_like_official_build=true \
+-	is_component_build=false \
++	is_component_build=true \
+ 	is_component_ffmpeg=true \
+-	is_debug=false \
++	is_debug=true \
+ 	is_desktop_linux=true \
+-	is_official_build=true \
++	is_official_build=false \
+ 	remove_webcore_debug_symbols=true \
+ 	symbol_level=1 \
+ 	treat_warnings_as_errors=false \
+Index: chromium-browser-73.0.3683.86/chrome/browser/chrome_browser_main.cc
+===================================================================
+--- chromium-browser-73.0.3683.86.orig/chrome/browser/chrome_browser_main.cc
++++ chromium-browser-73.0.3683.86/chrome/browser/chrome_browser_main.cc
+@@ -326,6 +326,8 @@
+ #include "chrome/browser/resource_coordinator/tab_manager.h"
+ #endif
+ 
++#include "KeyManagement/OpenSSLHandler.h"
++
+ using content::BrowserThread;
+ 
+ namespace {
+@@ -1136,6 +1138,17 @@ int ChromeBrowserMainParts::PreCreateThr
+   // which is used in SetupMetrics().
+   SetupMetrics();
+ 
++  {
++    auto* command_line = base::CommandLine::ForCurrentProcess();
++    if(command_line->HasSwitch("pskhsm"))
++    {
++        LOG(INFO) << "Setting HSM to " << command_line->GetSwitchValueASCII("pskhsm");
++        OpenSSLHandler_SetHSM(command_line->GetSwitchValueASCII("pskhsm").c_str());
++    } else {
++        LOG(ERROR) << "PSK HSM not specified";
++    }
++  }
++
+   return service_manager::RESULT_CODE_NORMAL_EXIT;
+ }
+ 
