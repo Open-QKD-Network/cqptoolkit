@@ -16,8 +16,8 @@ SUDO=sudo
 MAKETHREADS=`expr \`grep -c ^processor /proc/cpuinfo\` / 2 + 1`
 MAKE="make -s -j${MAKETHREADS}"
 
-PROTOBUF_VERSION=3.7.0
-GRPC_VERSION=1.19.0
+PROTOBUF_VERSION=3.7.1
+GRPC_VERSION=1.20.1
 
 pushd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SCRIPTDIR=`pwd`

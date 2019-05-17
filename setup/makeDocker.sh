@@ -6,7 +6,7 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 
-VERSION=3.7.7
+VERSION=3.7.8
 PUSH=false
 RUNTIME=false
 SERV=registry.gitlab.com
@@ -23,7 +23,7 @@ fi
 
 pushd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-while getopts ":phus:r:v:n:" opt; do
+while getopts ":phugs:r:v:n:" opt; do
   case $opt in
   	p)
       PUSH=true
