@@ -18,3 +18,11 @@ external/nginx/*.tar.gz
 external/nginx/*.tar.xz
 external/nginx/*.buildinfo
 external/nginx/*.changes
+external/stunnel/stunnel4*
+external/stunnel/*.deb
+external/stunnel/*.ddeb
+external/stunnel/*.dsc
+external/stunnel/*.tar.gz
+external/stunnel/*.tar.xz
+external/stunnel/*.buildinfo
+external/stunnel/*.changes

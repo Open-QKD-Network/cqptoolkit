@@ -6,9 +6,16 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 #
 
-apt install dpkg-dev quilt -q && \
+SUDO=sudo
+if [ "$UID" == "0" ]; then
+  SUDO=""
+fi
+
+echo Enablng source repositories...
+$SUDO sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list"
+$SUDO apt update -q && $SUDO apt install -qy dpkg-dev quilt && \
 apt source stunnel4 && \
-apt build-dep stunnel4 && \
+$SUDO apt build-dep -qy stunnel4 && \
 cd `find -maxdepth 1 -type d -name 'stunnel4-*'` && \
-quilt import -P cqptoolkit-psk-deb.patch ../cqptoolkit-psk-deb.patch && \
-DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --no-sign -j4
+quilt import ../cqptoolkit-psk-deb.patch && \
+DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --no-sign -j
