@@ -29,7 +29,7 @@ build:linux:
     - make clean
     - make -j 8 all
   artifacts:
-    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 week
     paths:
       - build/gcc
@@ -88,7 +88,7 @@ package:deb:
   dependencies:
     - build:linux
   artifacts:
-    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 month
     paths:
       - build/gcc/*.deb
@@ -103,7 +103,7 @@ package:tar:
   dependencies:
     - build:linux
   artifacts:
-    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 month
     paths:
       - build/gcc/*.tar.gz
@@ -171,10 +171,35 @@ externals:nginx:
   only:
     - master
   artifacts:
-    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 month
     paths:
       - external/nginx/*.deb
+
+externals:stunnel:
+  stage: externals
+  image: "registry.gitlab.com/qcomms/cqptoolkit/runtime"
+  allow_failure: false
+  script:
+    - dpkg -i /setup/*.deb
+    - apt install -qy docker.io
+    - cd external/stunnel && bash build_ubuntu.sh
+    - docker build -t registry.gitlab.com/qcomms/cqptoolkit/stunnel-qkd .
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker push registry.gitlab.com/qcomms/cqptoolkit/stunnel-qkd
+  dependencies:
+    - package:deb
+    - deploy:toolkit-run-image
+  cache:
+    policy: pull
+  # Only run this stage on the master branch
+  only:
+    - master
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    expire_in: 1 month
+    paths:
+      - external/chromium/stunnel*.deb
 
 externals:chromium:
   stage: externals
@@ -196,7 +221,7 @@ externals:chromium:
   only:
     - master
   artifacts:
-    name: "${CI_PROJECT_NAME}-${CI_JOB_STAGE}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 month
     paths:
       - external/chromium/chromium-*.deb
