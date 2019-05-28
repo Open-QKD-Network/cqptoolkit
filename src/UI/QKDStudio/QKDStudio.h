@@ -12,17 +12,13 @@
 #pragma once
 #include <QMainWindow>
 #include <memory>
+#include <grpcpp/security/credentials.h>
 
 class QGraphicsItem;
 
 namespace QtNodes
 {
     class Connection;
-}
-namespace grpc
-{
-    class Channel;
-    class ChannelCredentials;
 }
 
 namespace cqp

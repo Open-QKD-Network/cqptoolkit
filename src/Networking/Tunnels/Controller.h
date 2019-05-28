@@ -3,7 +3,7 @@
 * @brief TunnelManager
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 6/3/2017
@@ -17,12 +17,9 @@
 #include "QKDInterfaces/Tunnels.pb.h"
 #include <condition_variable>
 #include "KeyManagement/Net/IService.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-    class ServerCredentials;
-}
+#include <grpcpp/channel.h>
+#include <grpcpp/security/credentials.h>
+#include <grpcpp/security/server_credentials.h>
 
 namespace cqp
 {

@@ -15,11 +15,8 @@
 #include <memory>
 #include "HandheldConfig.pb.h"
 #include "QKDInterfaces/Site.pb.h"
+#include <grpcpp/security/credentials.h>
 
-namespace grpc
-{
-    class Server;
-}
 namespace cqp
 {
     class LEDAliceMk1;

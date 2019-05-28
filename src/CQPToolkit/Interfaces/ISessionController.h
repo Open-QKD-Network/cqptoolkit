@@ -12,7 +12,8 @@
 #pragma once
 #include "Algorithms/Datatypes/Base.h"
 #include "Algorithms/Datatypes/URI.h"
-#include <grpc++/security/server_credentials.h>
+#include <grpcpp/security/server_credentials.h>
+#include <grpcpp/server_builder.h>
 #include "CQPToolkit/cqptoolkit_export.h"
 
 namespace grpc
@@ -21,7 +22,6 @@ namespace grpc
     template<typename>
     class ServerWriter;
     class ServerContext;
-    class ServerBuilder;
 }
 
 namespace cqp

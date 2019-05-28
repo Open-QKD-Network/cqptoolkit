@@ -3,7 +3,7 @@
 * @brief QuantomPathDummy
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 30/1/2018
@@ -12,6 +12,7 @@
 #pragma once
 #include "QKDInterfaces/IQuantumPath.grpc.pb.h"
 #include <grpc++/security/server_credentials.h>
+#include <grpcpp/server.h>
 
 namespace cqp
 {

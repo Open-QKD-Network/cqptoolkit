@@ -15,11 +15,8 @@
 #include <memory>
 #include "DummyQKDConfig.pb.h"
 #include "QKDInterfaces/Site.pb.h"
+#include <grpcpp/server.h>
 
-namespace grpc
-{
-    class Server;
-}
 namespace cqp
 {
     class DummyQKD;

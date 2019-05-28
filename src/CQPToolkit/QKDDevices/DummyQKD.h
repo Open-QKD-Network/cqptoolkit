@@ -16,11 +16,7 @@
 #include "QKDInterfaces/Site.pb.h"             // for Device, Side, Side::Type
 #include "Algorithms/Datatypes/URI.h"               // for URI
 #include "Algorithms/Random/RandomNumber.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-}
+#include <grpcpp/security/credentials.h>
 
 namespace cqp
 {

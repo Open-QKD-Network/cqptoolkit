@@ -13,11 +13,8 @@
 #include "CQPToolkit/Util/DriverApplication.h"
 #include "Algorithms/Logging/Logger.h"
 #include "Clavis2Config.pb.h"
+#include <grpcpp/server.h>
 
-namespace grpc
-{
-    class Server;
-}
 namespace cqp
 {
     class ClavisProxy;

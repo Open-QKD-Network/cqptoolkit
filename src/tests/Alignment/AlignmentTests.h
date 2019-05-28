@@ -3,7 +3,7 @@
 * @brief Alignment
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 5/7/2017
@@ -20,6 +20,7 @@
 #include "CQPToolkit/Interfaces/ISiftedPublisher.h"
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "Algorithms/Random/RandomNumber.h"
+#include <grpcpp/server.h>
 
 namespace cqp
 {
@@ -35,7 +36,8 @@ namespace cqp
         public:
             /// dummy callback for reacting to test data
             MOCK_METHOD3(OnSifted2, void(SequenceNumber seq, double securityParameter, JaggedDataBlock* rawQubits));
-            void OnSifted(SequenceNumber seq, double securityParameter, std::unique_ptr<JaggedDataBlock> siftedData) override {
+            void OnSifted(SequenceNumber seq, double securityParameter, std::unique_ptr<JaggedDataBlock> siftedData) override
+            {
                 OnSifted2(seq, securityParameter, siftedData.get());
             }
         };

@@ -3,7 +3,7 @@
 * @brief AuthUtil
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 29/3/2018
@@ -11,8 +11,6 @@
 */
 #include "AuthUtil.h"
 #include "Algorithms/Util/FileIO.h"
-#include <grpcpp/security/credentials.h>
-#include <grpcpp/security/server_credentials.h>
 #include "Algorithms/Logging/Logger.h"
 #include "grpc/grpc_security_constants.h"
 #include <utility>                               // for pair, move

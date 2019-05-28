@@ -12,16 +12,12 @@
 #pragma once
 #include <nodes/NodeDataModel>
 #include "QKDInterfaces/Site.pb.h"
+#include <grpcpp/security/credentials.h>
+#include <grpcpp/channel.h>
 
 class QString;
 class QScrollArea;
 class QToolButton;
-
-namespace grpc
-{
-    class Channel;
-    class ChannelCredentials;
-}
 
 namespace cqp
 {

@@ -14,12 +14,9 @@
 #include "QKDInterfaces/Site.pb.h"
 #include "Algorithms/Util/Strings.h"
 #include "CQPToolkit/cqptoolkit_export.h"
+#include <grpcpp/security/credentials.h>
+#include <grpcpp/security/server_credentials.h>
 
-namespace grpc
-{
-    class ChannelCredentials;
-    class ServerCredentials;
-}
 namespace cqp
 {
 

@@ -14,11 +14,7 @@
 #include "KeyManagement/keymanagement_export.h"
 #include <condition_variable>
 #include <thread>
-
-namespace grpc
-{
-    class ChannelCredentials;
-}
+#include <grpcpp/security/credentials.h>
 
 namespace cqp
 {

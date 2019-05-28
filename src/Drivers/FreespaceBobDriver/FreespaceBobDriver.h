@@ -15,11 +15,8 @@
 #include <memory>
 #include "FreespaceConfig.pb.h"
 #include "QKDInterfaces/Site.pb.h"
+#include <grpcpp/server.h>
 
-namespace grpc
-{
-    class Server;
-}
 namespace cqp
 {
     class PhotonDetectorMk1;

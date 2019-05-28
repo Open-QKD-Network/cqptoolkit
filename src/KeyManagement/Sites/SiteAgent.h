@@ -18,11 +18,7 @@
 #include <unordered_map>
 #include <thread>
 #include "QKDInterfaces/IDevice.grpc.pb.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-}
+#include <grpcpp/security/credentials.h>
 
 namespace cqp
 {

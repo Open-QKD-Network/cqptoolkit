@@ -17,11 +17,7 @@
 #include "Algorithms/Util/IEvent.h"
 #include <memory>
 #include "CQPToolkit/cqptoolkit_export.h"
-
-namespace grpc
-{
-    class ServerBuilder;
-}
+#include <grpcpp/server_builder.h>
 
 namespace cqp
 {

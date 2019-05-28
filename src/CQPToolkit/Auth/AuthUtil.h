@@ -15,12 +15,8 @@
 #include <string>                    // for operator+, allocator, char_traits
 #include "Algorithms/Logging/Logger.h"
 #include "CQPToolkit/cqptoolkit_export.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-    class ServerCredentials;
-}
+#include <grpcpp/security/credentials.h>
+#include <grpcpp/security/server_credentials.h>
 
 namespace cqp
 {

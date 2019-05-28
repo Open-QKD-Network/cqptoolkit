@@ -17,11 +17,7 @@
 #include "QKDInterfaces/Site.pb.h"             // for Device
 #include "Algorithms/Datatypes/URI.h"                          // for URI
 #include "IDQDevices/idqdevices_export.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-}
+#include <grpcpp/security/credentials.h>
 
 namespace cqp
 {

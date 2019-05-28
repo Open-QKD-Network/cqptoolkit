@@ -3,7 +3,7 @@
 * @brief NetworkManagerDummy
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 12/2/2018
@@ -13,6 +13,7 @@
 #include "QKDInterfaces/INetworkManager.grpc.pb.h"
 #include <grpc++/security/server_credentials.h>
 #include "KeyManagement/keymanagement_export.h"
+#include <grpcpp/server.h>
 
 namespace cqp
 {

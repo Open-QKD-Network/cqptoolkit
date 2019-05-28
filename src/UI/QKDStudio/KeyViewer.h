@@ -15,12 +15,8 @@
 #include <QDialog>
 #include <QTimer>
 #include <memory>
+#include <grpcpp/security/credentials.h>
 
-namespace grpc
-{
-    class Channel;
-    class ChannelCredentials;
-}
 namespace cqp
 {
 

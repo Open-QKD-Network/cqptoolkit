@@ -20,11 +20,6 @@
 #include <condition_variable>
 #include <chrono>
 
-namespace grpc
-{
-    class ChannelCredentials;
-}
-
 namespace cqp
 {
     namespace keygen

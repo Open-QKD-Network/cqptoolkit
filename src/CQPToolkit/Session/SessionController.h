@@ -17,12 +17,7 @@
 #include "CQPToolkit/Interfaces/IRemoteComms.h"
 #include <condition_variable>
 #include "Algorithms/Util/Strings.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-    class Channel;
-}
+#include <grpcpp/security/credentials.h>
 
 namespace cqp
 {

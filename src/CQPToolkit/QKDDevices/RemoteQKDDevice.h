@@ -17,6 +17,7 @@
 #include <mutex>
 #include <vector>
 #include "CQPToolkit/cqptoolkit_export.h"
+#include <grpcpp/server.h>
 
 namespace cqp
 {

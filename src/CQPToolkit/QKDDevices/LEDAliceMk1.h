@@ -14,11 +14,7 @@
 #include "CQPToolkit/Interfaces/IQKDDevice.h"        // for IQKDDevice
 #include "Algorithms/Datatypes/URI.h"                                // for URI
 #include "Algorithms/Random/RandomNumber.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-}
+#include <grpcpp/security/credentials.h>
 
 namespace cqp
 {

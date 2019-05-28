@@ -12,11 +12,7 @@
 #pragma once
 #include "CQPToolkit/Interfaces/IQKDDevice.h"             // for IQKDDevice
 #include "Algorithms/Datatypes/URI.h"                                     // for URI
-
-namespace grpc
-{
-    class ChannelCredentials;
-}
+#include <grpcpp/security/credentials.h>
 
 namespace cqp
 {

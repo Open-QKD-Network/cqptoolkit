@@ -22,12 +22,8 @@
 #include <thread>
 #include <grpc++/security/server_credentials.h>
 #include "Algorithms/Util/Strings.h"
-
-namespace grpc
-{
-    class ChannelCredentials;
-    class ServerCredentials;
-}
+#include <grpcpp/security/credentials.h>
+#include <grpcpp/server.h>
 
 namespace cqp
 {
