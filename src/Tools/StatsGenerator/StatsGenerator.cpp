@@ -3,7 +3,7 @@
 * @brief IDQKeyExtraction
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -220,13 +220,14 @@ int StatsGenerator::Main(const std::vector<std::string>& args)
         session::Statistics sessionStats1;
         session::Statistics sessionStats2;
 
+        reportServer1.AddAdditionalProperties("from", "SiteA.cqp:7000");
+        reportServer1.AddAdditionalProperties("to", "SiteB.cqp:7101");
+
+        reportServer2.AddAdditionalProperties("from", "SiteA.cqp:7000");
+        reportServer2.AddAdditionalProperties("to", "SiteC.cqp:7000");
+
         if(allMessageTypes[TypeNames::all] || allMessageTypes[TypeNames::keygen])
         {
-            reportServer1.AddAdditionalProperties("from", "SiteA.cqp:7000");
-            reportServer1.AddAdditionalProperties("to", "SiteB.cqp:7101");
-
-            reportServer2.AddAdditionalProperties("from", "SiteA.cqp:7000");
-            reportServer2.AddAdditionalProperties("to", "SiteC.cqp:7000");
             keygenStats1.Add(&reportServer1);
             keygenStats2.Add(&reportServer2);
             keygenStats1.Add(&statsLogger);
@@ -245,7 +246,7 @@ int StatsGenerator::Main(const std::vector<std::string>& args)
             sessionStats2.Add(&statsLogger);
         }
         // send report2 to report1
-        reportServer1.Add(&reportServer2);
+        reportServer2.Add(&reportServer1);
 
         if(definedArguments.IsSet(Names::local))
         {

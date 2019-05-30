@@ -82,20 +82,25 @@ namespace cqp
 
         void ReportServer::StatsReport(const remote::SiteAgentReport& report)
         {
+            auto localReport = report;
+            // add our aditional properties
+            for(const auto& prop : additional)
+            {
+                if(!localReport.mutable_parameters()->contains(prop.first))
+                {
+                    (*localReport.mutable_parameters())[prop.first] = prop.second;
+                }
+            }
+
             std::lock_guard<std::mutex> lock(listenersMutex);
             for(auto& listener : remoteListeners)
             {
-                if(ShouldSendStat(&listener.second.filter, listener.second.lastUpdate, report))
+                if(ShouldSendStat(&listener.second.filter, listener.second.lastUpdate, localReport))
                 {
                     /*lock scope*/
                     {
                         std::lock_guard<std::mutex> lock(listener.second.reportMutex);
-                        listener.second.reports.push(report);
-                        // add our aditional properties
-                        for(const auto& prop : additional)
-                        {
-                            (*listener.second.reports.back().mutable_parameters())[prop.first] = prop.second;
-                        }
+                        listener.second.reports.push(localReport);
                     }/*lock scope*/
 
                     listener.second.reportCv.notify_one();
@@ -103,7 +108,7 @@ namespace cqp
             } // for listeners
 
             // send update to locally attached listeners
-            Emit(report);
+            Emit(localReport);
         }
 
         void ReportServer::AddAdditionalProperties(const std::string& key, const std::string& value)
@@ -214,7 +219,7 @@ namespace cqp
             report.mutable_updated()->set_seconds(
                 secs.count()
             );
-            report.mutable_updated()->set_seconds(
+            report.mutable_updated()->set_nanos(
                 remainder.count()
             );
             report.set_id(stat->GetId());

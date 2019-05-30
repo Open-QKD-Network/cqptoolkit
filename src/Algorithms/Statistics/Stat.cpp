@@ -128,7 +128,7 @@ namespace cqp
             using namespace std;
             lock_guard<mutex> lock(processMutex);
             waitingObjects.insert(me);
-            processCv.notify_one();
+            processCv.notify_all();
         }
 
         ProcessingWorker::~ProcessingWorker()
