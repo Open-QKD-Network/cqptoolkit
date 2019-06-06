@@ -43,6 +43,9 @@
 #include "ZmqClassExchange.hpp"
 #include "QuantumKey.hpp"
 
+#if defined(_DEBUG)
+    #include "msgpack.hpp"
+#endif
 //#include "Algorithms/Util/Hash.h"
 
 namespace cqp
@@ -59,8 +62,19 @@ namespace cqp
     {
         try
         {
+            using namespace std;
             const std::string prefix {"tcp://"};
+#if defined(_DEBUG)
+            {
+                int zmqVersion[3];
+                zmq_version(&zmqVersion[0], &zmqVersion[1], &zmqVersion[2]);
+                std::string zmqVersionString = to_string(zmqVersion[0]) + "." +
+                                               to_string(zmqVersion[1]) + "." +
+                                               to_string(zmqVersion[2]);
 
+                LOGDEBUG("Clavis3 Device created. ZeroMQ Version: " + zmqVersionString + " MsgPack Version: " + msgpack_version());
+            }
+#endif
             LOGTRACE("Connecting to signal socket");
             signalSocket.connect(prefix + hostname + ":" + std::to_string(signalsPort));
             signalSocket.setsockopt(ZMQ_SUBSCRIBE, "");
