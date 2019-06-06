@@ -61,18 +61,18 @@ namespace cqp
         {
             const std::string prefix {"tcp://"};
 
+            LOGTRACE("Connecting to signal socket");
+            signalSocket.connect(prefix + hostname + ":" + std::to_string(signalsPort));
+            signalSocket.setsockopt(ZMQ_SUBSCRIBE, "");
             LOGTRACE("Connecting to management socket");
             mgmtSocket.connect(prefix + hostname + ":" + std::to_string(managementPort));
-            LOGTRACE("Connecting to signal socket");
-            signalSocket.connect(prefix + hostname + ":" + std::to_string(managementPort));
-            signalSocket.setsockopt(ZMQ_SUBSCRIBE, "");
             LOGTRACE("Connecting to key socket");
             keySocket.connect(prefix + hostname + ":" + std::to_string(keyChannelPort));
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
             // create a thread to read and process the signals
             signalReader = std::thread(&Impl::ReadSignalSocket, this);
 
-            GetProtocolVersion();
+            //GetProtocolVersion();
             GetSoftwareVersion(SoftwareId::CommunicatorService);
             GetSoftwareVersion(SoftwareId::BoardSupervisorService);
             GetSoftwareVersion(SoftwareId::RegulatorServiceAlice);
