@@ -26,6 +26,8 @@ nocite: |
 
 The purpose of this software is to provide a set of interfaces, algorithms and tools to produce a full QKD system. The aim is to reduce the barrier to entry into QKD systems by developing a strong architecture with well defined interfaces. The separation of responsibility into components will allow researchers to concentrate on a specific component, the rest of the system being provided by existing algorithms or simulators.
 
+Quantum key distribution (QKD) uses properties of quantum states such as the [no-cloning theorem](https://www.quantiki.org/wiki/no-cloning-theorem) to share randomness between different locations, without the need to physically transport the key material. This randomness is known to be secure because the probability of an eavesdropper can be calculated. This means that [symmetric encryption](https://www.ssl2buy.com/wiki/symmetric-vs-asymmetric-encryption-what-are-differences) instead of public key can be used, which can prevent attacks from [quantum computers](https://www.cryptomathic.com/news-events/blog/quantum-computing-and-its-impact-on-cryptography). Symmetric keys are only as secure as the medium they are transported over. Unlike QKD, manually exchanged key is expensive (e.g. physically driving somewhere with a flash drive) and has to be used sparingly.  Making guaranteed secure key available as a resource makes symmetric keys more viable.
+
 The system demonstrates that the symmetric keys can be used in a disposable manner rather than the current model where valuable keys are derived to extend their use.
 There are many utilities in place to simplify the use of the toolkit such as statistics collection for gathering data.
 
