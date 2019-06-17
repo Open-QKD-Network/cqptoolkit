@@ -33,11 +33,6 @@ As well as optical device research, the system can be used to develop key manage
 
 ![Toolkit Stack](ToolkitStack.eps)
 
-# Access to the code
-The code can be found [on GitLab](https://gitlab.com/QComms/cqptoolkit.git)
-
-# Approach
-
 # Components
 ## Statistics
 The statistics component provides a means for publishing data from within an algorithm without adversely affecting the system's performance and allowing the data to be collected through a simple external interface.
