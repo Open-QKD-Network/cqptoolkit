@@ -14,9 +14,6 @@ cmake_minimum_required (VERSION 3.7.2)
 project(StatsGenerator CXX)
 include(CommonSetup)
 
-# projects below here will be put into this package
-SET_COMPONENT_NAME("Simulate" CQP_INSTALL_COMPONENT)
-
 # MAke standard program which uses the CQP Toolkit
 CQP_EXE_PROJECT()
 

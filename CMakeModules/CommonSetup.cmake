@@ -271,8 +271,6 @@ macro(CQP_LIBRARY_PROJECT)
     # for dependencies with other projects
     include_directories("${CMAKE_BINARY_DIR}/src")
 
-    SET_COMPONENT_NAME("${PROJECT_NAME}" _componentName)
-
     # Produce a header file which defines whether functions are imported/exported.
     # Rename the macros so they match the original project name
     GENERATE_EXPORT_HEADER(${PROJECT_NAME})
@@ -283,7 +281,7 @@ macro(CQP_LIBRARY_PROJECT)
         #${${PROJECT_NAME}_HEADERS}
         ${CMAKE_CURRENT_BINARY_DIR}/$<LOWER_CASE:${PROJECT_NAME}>_export.h
         DESTINATION include/${PROJECT_NAME}
-        COMPONENT ${_componentName}-dev)
+        COMPONENT ${CQP_INSTALL_COMPONENT}-dev)
 
     if(BUILD_SHARED)
         LIST(APPEND BUILD_TYPES "Shared")
@@ -357,16 +355,16 @@ macro(CQP_LIBRARY_PROJECT)
 
     if(BUILD_SHARED)
         set_property(TARGET ${PROJECT_NAME}_Shared PROPERTY POSITION_INDEPENDENT_CODE ON)
-        SET(CPACK_COMPONENT_${_componentName}_GROUP "Runtime")
+        SET(CPACK_COMPONENT_${CQP_INSTALL_COMPONENT}_GROUP "Runtime")
 
         # Add this library to the list of things to install
-        install(TARGETS ${PROJECT_NAME}_Shared COMPONENT ${_componentName}
+        install(TARGETS ${PROJECT_NAME}_Shared COMPONENT ${CQP_INSTALL_COMPONENT}
             EXPORT ${PROJECT_NAME}
-            RUNTIME DESTINATION bin COMPONENT ${_componentName}
-            ARCHIVE DESTINATION lib COMPONENT ${_componentName}-dev
-            LIBRARY DESTINATION lib COMPONENT ${_componentName}
-            PUBLIC_HEADER DESTINATION include/${PROJECT_NAME} COMPONENT ${_componentName}-dev
-            PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${_componentName}$-dev
+            RUNTIME DESTINATION bin COMPONENT ${CQP_INSTALL_COMPONENT}
+            ARCHIVE DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+            LIBRARY DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}
+            PUBLIC_HEADER DESTINATION include/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+            PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}$-dev
         )
 
         # This makes the project importable from the install directory
@@ -376,16 +374,16 @@ macro(CQP_LIBRARY_PROJECT)
     endif(BUILD_SHARED)
 
     if(BUILD_STATIC)
-        SET(CPACK_COMPONENT_${_componentName}-dev_GROUP "Development")
+        SET(CPACK_COMPONENT_${CQP_INSTALL_COMPONENT}-dev_GROUP "Development")
 
         # Add this library to the list of things to install
-        install(TARGETS ${PROJECT_NAME}_Static COMPONENT ${_componentName}-dev
+        install(TARGETS ${PROJECT_NAME}_Static COMPONENT ${CQP_INSTALL_COMPONENT}-dev
             #EXPORT ${PROJECT_NAME}
-            RUNTIME DESTINATION bin COMPONENT ${_componentName}
-            ARCHIVE DESTINATION lib COMPONENT ${_componentName}-dev
-            LIBRARY DESTINATION lib COMPONENT ${_componentName}
-            PUBLIC_HEADER DESTINATION include/${PROJECT_NAME} COMPONENT ${_componentName}-dev
-            PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${_componentName}-dev
+            RUNTIME DESTINATION bin COMPONENT ${CQP_INSTALL_COMPONENT}
+            ARCHIVE DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+            LIBRARY DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}
+            PUBLIC_HEADER DESTINATION include/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+            PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
         )
 
         # This makes the project importable from the install directory
@@ -398,13 +396,13 @@ macro(CQP_LIBRARY_PROJECT)
     # include the header files in the output structure
     # TODO: this seems clunky
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMPONENT ${_componentName}-dev
+        COMPONENT ${CQP_INSTALL_COMPONENT}-dev
         DESTINATION include FILES_MATCHING
         PATTERN "*.h"
         PATTERN "*.hpp")
 
-    SET(CPACK_DEBIAN_PACKAGE_${_componentName}_SECTION "libs")
-    SET(CPACK_DEBIAN_PACKAGE_${_componentName}-dev_SECTION "libs")
+    SET(CPACK_DEBIAN_PACKAGE_${CQP_INSTALL_COMPONENT}_SECTION "libs")
+    SET(CPACK_DEBIAN_PACKAGE_${CQP_INSTALL_COMPONENT}-dev_SECTION "libs")
 endmacro(CQP_LIBRARY_PROJECT)
 
 ### @def CQP_EXE_PROJECT
@@ -581,6 +579,6 @@ macro(GRPC_PROJECT)
     # add the interface files for installation
     INSTALL(FILES ${${PROJECT_NAME}_INTERFACES} ${${PROJECT_NAME}_PROTO_HDRS} ${${PROJECT_NAME}_GRPC_HDRS}
         DESTINATION "include/${PROJECT_NAME}/"
-        COMPONENT "${_componentName}-dev")
+        COMPONENT "${CQP_INSTALL_COMPONENT}-dev")
 
 endmacro(GRPC_PROJECT)

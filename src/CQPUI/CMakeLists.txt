@@ -11,6 +11,8 @@
 # See: https://cognitivewaves.wordpress.com/cmake-and-visual-studio/
 cmake_minimum_required (VERSION 3.7.2)
 
+SET_COMPONENT_NAME("UI" CQP_INSTALL_COMPONENT)
+
 # Maps to Visual Studio solution file (Tutorial.sln)
 # The solution will have all targets (exe, lib, dll)
 # as Visual Studio projects (.vcproj)

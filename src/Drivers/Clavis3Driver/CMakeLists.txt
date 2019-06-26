@@ -42,8 +42,8 @@ if(TARGET IDQ4PClasses)
             QKDInterfaces_Shared
             IDQDevices_Shared
             IDQ4PClasses
-            DomainModel
-            Utilities
+            IDQ4PDomainModel
+            IDQ4PUtilities
             )
     endif()
 endif()

@@ -18,6 +18,9 @@ cmake_minimum_required (VERSION 3.7.2)
 
 project(IDQDevices CXX)
 
+# projects below here will be put into this package
+SET_COMPONENT_NAME("Drivers" CQP_INSTALL_COMPONENT)
+
 # Perform some standard setup steps like detecting the platform.
 include(CommonSetup)
 
@@ -56,22 +59,22 @@ if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12.0)
 elseif(TARGET IDQ4PClasses)
     add_dependencies(${PROJECT_NAME} PkgConfig::ZeroMQ PkgConfig::MsgPack)
     get_target_property(IDQ4PCLASSES_SOURCE_DIR IDQ4PClasses INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(DOMAINMODEL_SOURCE_DIR DomainModel INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(UTILITIES_SOURCE_DIR Utilities INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(IDQ4PDOMAINMODEL_SOURCE_DIR IDQ4PDomainModel INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(IDQ4PUTILITIES_SOURCE_DIR IDQ4PUtilities INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(MSGPACK_SOURCE_DIR PkgConfig::MsgPack INTERFACE_INCLUDE_DIRECTORIES)
 
     target_include_directories(${PROJECT_NAME} PRIVATE
         ${IDQ4PCLASSES_SOURCE_DIR}
-        ${DOMAINMODEL_SOURCE_DIR}
-        ${UTILITIES_SOURCE_DIR}
+        ${IDQ4PDOMAINMODEL_SOURCE_DIR}
+        ${IDQ4PUTILITIES_SOURCE_DIR}
         ${MSGPACK_SOURCE_DIR})
 endif()
 
 if(TARGET ${PROJECT_NAME}_Shared AND TARGET IDQ4PClasses)
     target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
         IDQ4PClasses
-        DomainModel
-        Utilities
+        IDQ4PDomainModel
+        IDQ4PUtilities
         PkgConfig::ZeroMQ
         PkgConfig::MsgPack)
 

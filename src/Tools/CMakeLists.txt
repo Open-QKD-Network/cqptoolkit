@@ -15,6 +15,6 @@ project(Tools)
 include(CommonSetup)
 
 # projects below here will be put into this package
-SET_COMPONENT_NAME("Tools" CQP_INSTALL_COMPONENT)
+SET_COMPONENT_NAME("Base" CQP_INSTALL_COMPONENT)
 
 ADD_ALL_SUBDIRS()

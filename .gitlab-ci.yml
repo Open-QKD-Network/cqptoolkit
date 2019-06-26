@@ -85,6 +85,9 @@ package:deb:
     - cd build/gcc
     - cmake -D CPACK_GENERATOR=DEB -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
     - make package
+    - dpkg -i CQPToolkit*.deb
+    - ../../src/tests/TestExecution.sh
+    - apt remove "CQPToolkit*"
   dependencies:
     - build:linux
   artifacts:

@@ -64,6 +64,9 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/src/Algorithms;${CMAKE_BINARY_DIR}/
 # Perform some standard setup steps like detecting the platform.
 include(CommonSetup)
 
+SET(CPACK_PACKAGE_NAME "CQPToolkit")
+SET_COMPONENT_NAME("Base" CQP_INSTALL_COMPONENT)
+
 # download dependencies
 if(MSVC)
     find_program(NUGET nuget)
@@ -363,7 +366,9 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/external/idq4p/CMakeLists.txt")
 
     if(TARGET PkgConfig::ZeroMQ AND TARGET Boost::system)
         message("Adding idq4p to build")
+        SET_COMPONENT_NAME("Drivers" CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
         add_subdirectory(external/idq4p)
+        SET_COMPONENT_NAME("Base" CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
     else()
         message(WARNING "Not building idq4p due to missing dependencies")
     endif()
@@ -474,8 +479,12 @@ foreach(_xFile ${ExtraFiles})
 endforeach()
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/external/nodeeditor/CMakeLists.txt)
+
+    SET_COMPONENT_NAME("exclude" CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
     SET(BUILD_SHARED_LIBS OFF)
     add_subdirectory(${CMAKE_SOURCE_DIR}/external/nodeeditor)
+    SET_COMPONENT_NAME("" CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
+
 endif()
 # Setup is done, now include the source code to build.
 add_subdirectory(src)

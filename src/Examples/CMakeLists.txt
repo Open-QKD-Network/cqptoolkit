@@ -10,6 +10,6 @@
 ### 
 
 # projects below here will be put into this package
-SET_COMPONENT_NAME("Examples" CQP_INSTALL_COMPONENT)
+SET_COMPONENT_NAME("exclude" CQP_INSTALL_COMPONENT)
 
 ADD_ALL_SUBDIRS()
