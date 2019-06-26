@@ -9,6 +9,7 @@ image: registry.gitlab.com/qcomms/cqptoolkit/buildenv:latest
 #  untracked: true
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  DOCKER_HOST: tcp://docker:2375/
   
 # group jobs into stages
 stages:
@@ -136,6 +137,8 @@ deploy:toolkit-run-image:
   variables:
      DOCKER_HOST: tcp://docker:2375
      DOCKER_DRIVER: overlay2
+  before_script:
+    - docker info
   script:
     - apk add --no-cache bash
     - cp build/gcc/*.deb setup/
