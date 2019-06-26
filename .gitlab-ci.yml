@@ -10,6 +10,7 @@ image: registry.gitlab.com/qcomms/cqptoolkit/buildenv:latest
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
   
 # group jobs into stages
 stages:
@@ -118,9 +119,6 @@ deploy:toolkit-build-image:
   image: "docker:stable"
   services:
     - docker:dind
-  variables:
-     DOCKER_HOST: tcp://docker:2375/
-     DOCKER_DRIVER: overlay2
   script:
     - apk add --no-cache bash
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -134,11 +132,6 @@ deploy:toolkit-run-image:
   image: "docker:stable"
   services:
     - docker:dind
-  variables:
-     DOCKER_HOST: tcp://docker:2375
-     DOCKER_DRIVER: overlay2
-  before_script:
-    - docker info
   script:
     - apk add --no-cache bash
     - cp build/gcc/*.deb setup/
@@ -154,18 +147,14 @@ deploy:toolkit-run-image:
 
 externals:nginx:
   stage: externals
-  image: "registry.gitlab.com/qcomms/cqptoolkit/runtime"
+  image: "$CI_REGISTRY/qcomms/cqptoolkit/runtime"
   services:
     - docker:dind
-  variables:
-     DOCKER_HOST: tcp://docker:2375
-     DOCKER_DRIVER: overlay2
-  allow_failure: true
   script:
     - dpkg -i /setup/*.deb
     - apt install -qy docker.io
     - cd external/nginx && bash build_nginx_ubuntu.sh
-    - docker build -f Dockerfile.ubuntu -t registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd .
+    - docker build -f Dockerfile.ubuntu -t $CI_REGISTRY/qcomms/cqptoolkit/nginx-qkd .
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push $CI_REGISTRY/qcomms/cqptoolkit/nginx-qkd
   dependencies:
@@ -184,13 +173,14 @@ externals:nginx:
 
 externals:stunnel:
   stage: externals
-  image: "registry.gitlab.com/qcomms/cqptoolkit/runtime"
-  allow_failure: false
+  image: "$CI_REGISTRY/qcomms/cqptoolkit/runtime"
+  services:
+    - docker:dind
   script:
     - dpkg -i /setup/*.deb
     - apt install -qy docker.io
     - cd external/stunnel && bash build_ubuntu.sh
-    - docker build -t registry.gitlab.com/qcomms/cqptoolkit/stunnel-qkd .
+    - docker build -t $CI_REGISTRY/qcomms/cqptoolkit/stunnel-qkd .
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push $CI_REGISTRY/qcomms/cqptoolkit/stunnel-qkd
   dependencies:
@@ -209,13 +199,14 @@ externals:stunnel:
 
 externals:chromium:
   stage: externals
-  image: "registry.gitlab.com/qcomms/cqptoolkit/runtime"
-  allow_failure: true
+  image: "$CI_REGISTRY/qcomms/cqptoolkit/runtime"
+  services:
+    - docker:dind
   script:
     - dpkg -i /setup/*.deb
     - apt install -qy docker.io
     - cd external/chromium && bash build_ubuntu.sh
-    - docker build -t registry.gitlab.com/qcomms/cqptoolkit/chromium-qkd .
+    - docker build -t $CI_REGISTRY/qcomms/cqptoolkit/chromium-qkd .
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push $CI_REGISTRY/qcomms/cqptoolkit/chromium-qkd
   dependencies:
@@ -238,8 +229,6 @@ check:sast:
   image: docker:stable
   dependencies:
     - build:linux
-  variables:
-    DOCKER_DRIVER: overlay2
   allow_failure: true
   services:
     - docker:stable-dind
@@ -249,7 +238,7 @@ check:sast:
         --env SAST_CONFIDENCE_LEVEL="${SAST_CONFIDENCE_LEVEL:-3}"
         --volume "$PWD/src:/code"
         --volume /var/run/docker.sock:/var/run/docker.sock
-        "registry.gitlab.com/gitlab-org/security-products/sast:$SP_VERSION" /app/bin/run /code
+        "$CI_REGISTRY/gitlab-org/security-products/sast:$SP_VERSION" /app/bin/run /code
   artifacts:
     reports:
       sast: src/gl-sast-report.json
@@ -270,7 +259,7 @@ check:code_quality:
         --env SOURCE_CODE="$PWD/src"
         --volume "$PWD/src":/code
         --volume /var/run/docker.sock:/var/run/docker.sock
-        "registry.gitlab.com/gitlab-org/security-products/codequality:$SP_VERSION" /code
+        "$CI_REGISTRY/gitlab-org/security-products/codequality:$SP_VERSION" /code
   artifacts:
     reports:
       codequality: src/gl-code-quality-report.json
