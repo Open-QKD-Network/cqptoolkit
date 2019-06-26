@@ -87,7 +87,7 @@ package:deb:
     - make package
     - dpkg -i CQPToolkit*.deb
     - ../../src/tests/TestExecution.sh
-    - apt remove "CQPToolkit*"
+    - apt remove -qy "CQPToolkit*"
   dependencies:
     - build:linux
   artifacts:
