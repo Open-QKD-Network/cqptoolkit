@@ -28,13 +28,15 @@ namespace cqp
         reportServer(std::make_shared<stats::ReportServer>())
     {
         LOGTRACE("Creating controller");
+        controller.reset(new session::ClavisController(creds, reportServer));
+
         config.set_kind(DriverName);
+        config.set_side(controller->GetSide());
+
         if(config.id().empty())
         {
             config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
         }
-        controller.reset(new session::ClavisController(creds, reportServer));
-        config.set_side(controller->GetSide());
     }
 
     std::string ClavisProxy::GetDriverName() const

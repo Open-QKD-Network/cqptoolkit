@@ -66,6 +66,13 @@ int Clavis2Driver::Main(const std::vector<std::string>& args)
 
         device = make_shared<ClavisProxy>(config.controlparams().config(), channelCreds);
         adaptor = make_unique<RemoteQKDDevice>(device, serverCreds);
+        // default key for manual mode
+        auto authKey = std::make_unique<PSK>();
+        authKey->assign({0xfd, 0x48, 0xf8, 0x4c, 0x6a, 0x19, 0xdf, 0xf1, 0x0d, 0xa2, 0x2a, 0xd0, 0x7c, 0x10, 0xa3, 0xf0,
+                         0xfd, 0x48, 0xf8, 0x4c, 0x6a, 0x19, 0xdf, 0xf1, 0x0d, 0xa2, 0x2a, 0xd0, 0x7c, 0x10, 0xa3, 0xf0});
+        device->SetInitialKey(move(authKey))
+        device->Initialise(remote::SessionDetails());
+
 
         // get the real settings which have been corrected by the device driuver
         (*config.mutable_controlparams()->mutable_config()) = device->GetDeviceDetails();
