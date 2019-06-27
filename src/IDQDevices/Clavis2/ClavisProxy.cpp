@@ -34,6 +34,7 @@ namespace cqp
             config.set_id(DeviceUtils::GetDeviceIdentifier(GetAddress()));
         }
         controller.reset(new session::ClavisController(creds, reportServer));
+        config.set_side(controller->GetSide());
     }
 
     std::string ClavisProxy::GetDriverName() const
@@ -58,7 +59,6 @@ namespace cqp
 
     remote::DeviceConfig ClavisProxy::GetDeviceDetails()
     {
-        config.set_side(controller->GetSide());
         return config;
     }
 
