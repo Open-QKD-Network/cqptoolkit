@@ -51,7 +51,12 @@ namespace cqp
 
     bool ClavisProxy::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        return controller->Initialise(move(authKey));
+        bool result = true;
+        if(authKey != nullptr)
+        {
+            result = controller->Initialise(move(authKey));
+        }
+        return result;
     }
 
     ISessionController*ClavisProxy::GetSessionController()
