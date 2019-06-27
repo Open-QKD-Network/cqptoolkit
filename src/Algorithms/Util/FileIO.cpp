@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - File utility functions
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -250,8 +250,10 @@ namespace cqp
             // may be overwritten by subsequent calls. Alternatively,
             // they may return a pointer to some part of path!
             // so don't free anything
+            // dirname modifies it's parameter!
+            auto temp = path;
 
-            result = ::dirname(const_cast<char*>(path.c_str()));
+            result = ::dirname(const_cast<char*>(temp.c_str()));
 #elif defined(WIN32)
             PathRemoveFileSpec
 #endif
@@ -309,12 +311,13 @@ namespace cqp
             // may be overwritten by subsequent calls. Alternatively,
             // they may return a pointer to some part of path!
             // so don't free anything
-
-            result = ::basename(const_cast<char*>(path.c_str()));
+            // basename modifies it's parameter!
+            auto temp = path;
+            result = ::basename(const_cast<char*>(temp.c_str()));
 #elif defined(WIN32)
             PathRemoveFileSpec
 #endif
-                    return result;
+            return result;
         }
 
         std::string GetPathEnvSep()

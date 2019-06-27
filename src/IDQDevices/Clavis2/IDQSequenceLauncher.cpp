@@ -3,7 +3,7 @@
 * @brief IDQSequenceLauncher
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 27/3/2017
@@ -134,7 +134,8 @@ namespace cqp
         using namespace std;
         unique_lock<mutex> lock(keyReadyMutex);
         // wait for an event
-        keyReadyCv.wait(lock, [&](){
+        keyReadyCv.wait(lock, [&]()
+        {
             return keyAvailable || shutdown;
         });
 
@@ -164,8 +165,9 @@ namespace cqp
 
         // This is hard coded into the program
 
-        std::string configFile("/var/idq/vectis.conf");
-        std::string pskFolder(fs::Parent(configFile));
+        const std::string configFile("/var/idq/vectis.conf");
+        const std::string pskFolder(fs::Parent(configFile));
+        const std::string logFolder("/var/log/idq");
 
         if(psk.size() != 32)
         {
@@ -174,6 +176,12 @@ namespace cqp
 
         try
         {
+            // make sure it's log folder exists
+            if(!fs::Exists(logFolder))
+            {
+                fs::CreateDirectory(logFolder);
+            }
+
             if(!fs::Exists(pskFolder))
             {
                 result = fs::CreateDirectory(pskFolder);
@@ -185,18 +193,26 @@ namespace cqp
 
             if(result && fs::CanWrite(pskFolder))
             {
-                ofstream fs(configFile);
-
-
-                fs << "[installation]" << endl;
-                fs << "initial_secret_key = " << hex << uppercase << noshowbase << setw(2) << setfill('0');
-                for(uint8_t byte : psk)
+                ofstream fs(configFile, ios::out | ios::trunc);
+                if(fs.is_open())
                 {
-                    fs << byte;
-                }
-                fs << endl;
-                fs.close();
 
+                    fs << "[devices]" << endl;
+                    fs << "max_devices = 12" << endl;
+                    fs << "[installation]" << endl;
+                    fs << "initial_secret_key = " << hex << uppercase << noshowbase << setw(2) << setfill('0');
+                    for(uint8_t byte : psk)
+                    {
+                        // cast to int to get stream to output it as hex
+                        fs << static_cast<int>(byte);
+                    }
+                    fs << endl;
+                    fs.close();
+                }
+                else
+                {
+                    LOGERROR("Failed to write to vectis file");
+                }
             }
             else
             {
@@ -250,7 +266,8 @@ namespace cqp
                     if(line.compare(0, lineInfo.length(), lineInfo) == 0)
                     {
                         LOGINFO(line);
-                        try {
+                        try
+                        {
                             smatch matchResult;
                             if(std::regex_match(line, matchResult, visibilitySystem))
                             {
@@ -277,14 +294,17 @@ namespace cqp
                                 const double keyRate = stod(matchResult[0].str()); // bits per second
                                 stats.keyRate.Update(keyRate);
 
-                                { /*lockscope*/
+                                {
+                                    /*lockscope*/
                                     // trigger the host to collect key from the device
                                     unique_lock<mutex> lock(keyReadyMutex);
                                     keyAvailable = true;
                                 } /*lockscope*/
                                 keyReadyCv.notify_one();
                             }
-                        } catch (const exception& e) {
+                        }
+                        catch (const exception& e)
+                        {
                             LOGERROR(e.what());
                         }
 
