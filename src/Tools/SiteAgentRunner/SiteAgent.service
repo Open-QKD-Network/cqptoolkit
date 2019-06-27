@@ -10,7 +10,10 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
+User=nobody
+Group=nobody
 ExecStart=SiteAgentRunner -c /etc/cqp/siteagent.json
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
