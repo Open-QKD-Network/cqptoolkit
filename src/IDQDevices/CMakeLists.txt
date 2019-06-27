@@ -51,8 +51,8 @@ if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12.0)
     if(TARGET IDQ4PClasses)
         target_link_libraries(${PROJECT_NAME} PRIVATE
             IDQ4PClasses
-            DomainModel
-            Utilities
+            IDQ4PDomainModel
+            IDQ4PUtilities
             PkgConfig::ZeroMQ
             PkgConfig::MsgPack)
     endif()
