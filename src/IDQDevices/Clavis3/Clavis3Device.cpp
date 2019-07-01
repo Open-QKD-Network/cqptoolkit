@@ -11,31 +11,21 @@
 */
 #if defined(HAVE_IDQ4P)
 #include "Clavis3Device.h"
-#include "Clavis3DeviceImpl.h"
-#include "CQPToolkit/Statistics/ReportServer.h"
 #include "CQPToolkit/QKDDevices/DeviceUtils.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 
 namespace cqp
 {
-    Clavis3Device::Clavis3Device(const std::string& hostname, remote::Side::Type theSide,
+    Clavis3Device::Clavis3Device(const std::string& hostname,
                                  std::shared_ptr<grpc::ChannelCredentials> newCreds,
                                  std::shared_ptr<stats::ReportServer> theReportServer) :
-        session::SessionController {newCreds, {}, theReportServer},
-            pImpl{std::make_unique<Clavis3Device::Impl>(hostname, theSide)},
-            keyPub{std::make_unique<KeyPublisher>()}
+        sessionController(hostname, newCreds, theReportServer)
     {
-        if(reportServer)
-        {
-            pImpl->alignementStats.Add(reportServer.get());
-            pImpl->errorStats.Add(reportServer.get());
-        }
-
         URI devUri;
 
         devUri.SetScheme("clavis3");
         devUri.SetHost(hostname);
-        deviceConfig.set_side(pImpl->GetSide());
+        deviceConfig.set_side(sessionController.GetSide());
         deviceConfig.set_kind(devUri.GetScheme());
         deviceConfig.set_id(DeviceUtils::GetDeviceIdentifier(devUri));
         deviceConfig.set_bytesperkey(32);
@@ -43,11 +33,7 @@ namespace cqp
 
     Clavis3Device::~Clavis3Device()
     {
-        if(reportServer)
-        {
-            pImpl->alignementStats.Remove(reportServer.get());
-            pImpl->errorStats.Remove(reportServer.get());
-        }
+
     }
 
     std::string Clavis3Device::GetDriverName() const
@@ -63,23 +49,17 @@ namespace cqp
 
     bool Clavis3Device::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        pImpl->SubscribeToSignals();
-        //pImpl->Request_UpdateSoftware();
-        pImpl->Zeroize();
-
-        //pImpl->GetRandomNumber();
-
-        return true;
+        return sessionController.Initialise(sessionDetails);
     }
 
     ISessionController* Clavis3Device::GetSessionController()
     {
-        return this;
+        return &sessionController;
     }
 
     KeyPublisher* Clavis3Device::GetKeyPublisher()
     {
-        return keyPub.get();
+        return sessionController.GetKeyPublisher();
     }
 
     remote::DeviceConfig Clavis3Device::GetDeviceDetails()
@@ -87,59 +67,14 @@ namespace cqp
         return deviceConfig;
     }
 
-    grpc::Status Clavis3Device::StartSession(const remote::SessionDetailsFrom& sessionDetails)
-    {
-        auto result = SessionController::StartSession(sessionDetails);
-        if(result.ok())
-        {
-            pImpl->PowerOn();
-        }
-        return result;
-    }
-
-    void Clavis3Device::EndSession()
-    {
-        pImpl->PowerOff();
-        SessionController::EndSession();
-    }
-
-    void Clavis3Device::PassOnKeys()
-    {
-        auto keys = std::make_unique<KeyList>();
-        keys->resize(1);
-        if(pImpl->ReadKey((*keys)[0]))
-        {
-            keyPub->Emit(&IKeyCallback::OnKeyGeneration, move(keys));
-        }
-    }
-
-    grpc::Status Clavis3Device::SessionStarting(grpc::ServerContext* context, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)
-    {
-        auto result = SessionController::SessionStarting(context, request, response);
-        if(result.ok())
-        {
-            pImpl->PowerOn();
-        }
-        return result;
-    }
-
-    grpc::Status Clavis3Device::SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty* request, google::protobuf::Empty* response)
-    {
-        auto result = SessionController::SessionEnding(context, request, response);
-
-        pImpl->PowerOff();
-
-        return result;
-    }
-
     void Clavis3Device::SetInitialKey(std::unique_ptr<PSK> initailKey)
     {
-        pImpl->SetInitialKey(*initailKey);
+        sessionController.SetInitialKey(move(initailKey));
     }
 
-    void Clavis3Device::RegisterServices(grpc::ServerBuilder& builder)
+    void Clavis3Device::RegisterServices(grpc::ServerBuilder&)
     {
-        SessionController::RegisterServices(builder);
+        // nothing to do
     }
 } // namespace cqp
 #endif //HAVE_IDQ4P

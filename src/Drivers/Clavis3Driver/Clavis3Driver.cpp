@@ -81,7 +81,7 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
     {
         using namespace std;
 
-        device = make_shared<Clavis3Device>(config.deviceaddress(), config.controlparams().config().side(),
+        device = make_shared<Clavis3Device>(config.deviceaddress(),
                                             channelCreds, reportServer);
         adaptor = make_unique<RemoteQKDDevice>(device, serverCreds);
 

@@ -11,7 +11,7 @@
 */
 #if defined(HAVE_IDQ4P)
 
-#include "Clavis3DeviceImpl.h"
+#include "Clavis3SessionImpl.h"
 #include <string>
 
 #include "ZmqStringExchange.hpp"
@@ -57,8 +57,7 @@ namespace cqp
     using idq4p::classes::CommandCommunicator;
     using idq4p::utilities::MsgpackSerializer;
 
-    Clavis3Device::Impl::Impl(const std::string& hostname, remote::Side::Type theSide) :
-        side{theSide}
+    Clavis3Session::Impl::Impl(const std::string& hostname)
     {
         try
         {
@@ -75,28 +74,38 @@ namespace cqp
                 LOGDEBUG("Clavis3 Device created. ZeroMQ Version: " + zmqVersionString + " MsgPack Version: " + msgpack_version());
             }
 #endif
+            const auto recieveTimeoutMs = 10000;
             LOGTRACE("Connecting to signal socket");
             signalSocket.connect(prefix + hostname + ":" + std::to_string(signalsPort));
             signalSocket.setsockopt(ZMQ_SUBSCRIBE, "");
+            signalSocket.setsockopt(ZMQ_RCVTIMEO, recieveTimeoutMs); // in milliseconds
             LOGTRACE("Connecting to management socket");
             mgmtSocket.connect(prefix + hostname + ":" + std::to_string(managementPort));
+            mgmtSocket.setsockopt(ZMQ_RCVTIMEO, recieveTimeoutMs); // in milliseconds
             LOGTRACE("Connecting to key socket");
             keySocket.connect(prefix + hostname + ":" + std::to_string(keyChannelPort));
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
+            keySocket.setsockopt(ZMQ_RCVTIMEO, recieveTimeoutMs); // in milliseconds
             // create a thread to read and process the signals
             signalReader = std::thread(&Impl::ReadSignalSocket, this);
 
             //GetProtocolVersion();
             GetSoftwareVersion(SoftwareId::CommunicatorService);
             GetSoftwareVersion(SoftwareId::BoardSupervisorService);
-            GetSoftwareVersion(SoftwareId::RegulatorServiceAlice);
-            GetSoftwareVersion(SoftwareId::RegulatorServiceBob);
+            // clunky way to decide which box it is
+            if(GetSoftwareVersion(SoftwareId::RegulatorServiceAlice).GetMajor() >= 0)
+            {
+                side = remote::Side::Alice;
+            }
+            else if(GetSoftwareVersion(SoftwareId::RegulatorServiceBob).GetMajor() >= 0)
+            {
+                side = remote::Side::Bob;
+            }
+            else
+            {
+                LOGERROR("Cant work out which side this is");
+            }
             GetSoftwareVersion(SoftwareId::FpgaConfiguration);
-            GetBoardInformation(BoardId::QkeComE);
-            GetBoardInformation(BoardId::QkeHost);
-            GetBoardInformation(BoardId::QkeFpga);
-            GetBoardInformation(BoardId::QkeAlice);
-            GetBoardInformation(BoardId::QkeBob);
         }
         catch(const std::exception& e)
         {
@@ -104,7 +113,7 @@ namespace cqp
         }
     }
 
-    cqp::Clavis3Device::Impl::~Impl()
+    cqp::Clavis3Session::Impl::~Impl()
     {
         shutdown = true;
 
@@ -126,7 +135,7 @@ namespace cqp
         }
     }
 
-    void cqp::Clavis3Device::Impl::PowerOn()
+    void cqp::Clavis3Session::Impl::PowerOn()
     {
         using namespace idq4p::classes;
         using namespace idq4p::utilities;
@@ -139,7 +148,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    idq4p::classes::GetBoardInformation cqp::Clavis3Device::Impl::GetBoardInformation(BoardId whichBoard)
+    idq4p::classes::GetBoardInformation cqp::Clavis3Session::Impl::GetBoardInformation(BoardId whichBoard)
     {
         using idq4p::classes::GetBoardInformation;
         //Serialize request
@@ -160,7 +169,7 @@ namespace cqp
         return boardInfo;
     }
 
-    idq4p::classes::GetSoftwareVersion cqp::Clavis3Device::Impl::GetSoftwareVersion(SoftwareId whichSoftware)
+    idq4p::classes::GetSoftwareVersion cqp::Clavis3Session::Impl::GetSoftwareVersion(SoftwareId whichSoftware)
     {
         using idq4p::classes::GetSoftwareVersion;
         //Serialize request
@@ -181,7 +190,7 @@ namespace cqp
         return replyCommand;
     }
 
-    idq4p::classes::GetProtocolVersion cqp::Clavis3Device::Impl::GetProtocolVersion()
+    idq4p::classes::GetProtocolVersion cqp::Clavis3Session::Impl::GetProtocolVersion()
     {
         using idq4p::classes::GetProtocolVersion;
         // Send request
@@ -198,7 +207,7 @@ namespace cqp
         return replyCommand;
     }
 
-    void cqp::Clavis3Device::Impl::SetInitialKey(DataBlock key)
+    void cqp::Clavis3Session::Impl::SetInitialKey(const DataBlock& key)
     {
         using idq4p::classes::SetInitialKey;
 
@@ -218,7 +227,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
     }
 
-    bool Clavis3Device::Impl::GetRandomNumber(std::vector<uint8_t>& out)
+    bool Clavis3Session::Impl::GetRandomNumber(std::vector<uint8_t>& out)
     {
         using idq4p::classes::GetRandomNumber;
         // Send request
@@ -240,7 +249,7 @@ namespace cqp
         return replyCommand.GetState() == 1;
     }
 
-    void cqp::Clavis3Device::Impl::Zeroize()
+    void cqp::Clavis3Session::Impl::Zeroize()
     {
         using idq4p::classes::Zeroize;
 
@@ -253,7 +262,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void cqp::Clavis3Device::Impl::Request_UpdateSoftware(const std::string& filename, const std::string& filenameSha1)
+    void cqp::Clavis3Session::Impl::Request_UpdateSoftware(const std::string& filename, const std::string& filenameSha1)
     {
         using namespace idq4p::domainModel;
         using idq4p::classes::UpdateSoftware;
@@ -270,7 +279,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void cqp::Clavis3Device::Impl::PowerOff()
+    void cqp::Clavis3Session::Impl::PowerOff()
     {
         const Command request(CommandId::PowerOff, MessageDirection::Request);
         Command reply(  CommandId::PowerOff, MessageDirection::Reply);
@@ -279,7 +288,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void Clavis3Device::Impl::SubscribeToSignals()
+    void Clavis3Session::Impl::SubscribeToSignals()
     {
         using namespace idq4p::domainModel;
 
@@ -296,7 +305,7 @@ namespace cqp
         }
     }
 
-    void Clavis3Device::Impl::SubscribeToSignal(idq4p::domainModel::SignalId sig)
+    void Clavis3Session::Impl::SubscribeToSignal(idq4p::domainModel::SignalId sig)
     {
         using idq4p::classes::SubscribeSignal;
         //Serialize request
@@ -312,7 +321,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void Clavis3Device::Impl::UnsubscribeSignal(idq4p::domainModel::SignalId sig)
+    void Clavis3Session::Impl::UnsubscribeSignal(idq4p::domainModel::SignalId sig)
     {
         using idq4p::classes::UnsubscribeSignal;
         //Serialize request
@@ -328,7 +337,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    bool Clavis3Device::Impl::ReadKey(PSK& keyValue)
+    bool Clavis3Session::Impl::ReadKey(PSK& keyValue)
     {
         using namespace idq4p::classes;
         using namespace idq4p::domainModel;
@@ -358,34 +367,12 @@ namespace cqp
         return result;
     }
 
-    remote::Side::Type Clavis3Device::Impl::GetSide()
+    remote::Side::Type Clavis3Session::Impl::GetSide() const
     {
-        // TODO: Is there a way to get the side from the device?
-        // can we call GetBoardInformation(QkeAlice) and check for errors?
-
-        /*remote::Side::Type result = remote::Side_Type::Side_Type_Any;
-        if(!boardInfo)
-        {
-            boardInfo->
-            GetBoardInformation();
-        }
-
-        switch (static_cast<BoardID>(boardInfo->GetBoardId()))
-        {
-        case BoardID::QkeBob:
-            result = remote::Side_Type::Side_Type_Bob;
-            break;
-        case BoardID::QkeAlice:
-            result = remote::Side_Type::Side_Type_Alice;
-            break;
-        default:
-            LOGERROR("Unknown board type: " + std::to_string(boardInfo->GetBoardId()));
-        }*/
-
         return side;
     }
 
-    void Clavis3Device::Impl::ReadSignalSocket()
+    void Clavis3Session::Impl::ReadSignalSocket()
     {
         using namespace idq4p::classes;
         using namespace idq4p::domainModel;

@@ -13,6 +13,7 @@
 #include "Algorithms/Datatypes/URI.h"
 #include "Algorithms/Util/Strings.h"
 #include "CQPToolkit/Interfaces/IQKDDevice.h"
+#include "Algorithms/Logging/Logger.h"
 
 namespace cqp
 {

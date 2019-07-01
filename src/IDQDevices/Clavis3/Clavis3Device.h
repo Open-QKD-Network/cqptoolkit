@@ -14,19 +14,19 @@
 
 #include <string>
 #include "CQPToolkit/Interfaces/IQKDDevice.h"
-#include "CQPToolkit/Interfaces/ISessionController.h"
 #include "IDQDevices/idqdevices_export.h"
-#include "CQPToolkit/Session/SessionController.h"
 #include "QKDInterfaces/Site.pb.h"
+#include "IDQDevices/Clavis3/Clavis3Session.h"
 
 namespace cqp
 {
     class IDQDEVICES_EXPORT Clavis3Device :
-        public virtual IQKDDevice,
-        public session::SessionController
+        public virtual IQKDDevice
     {
     public:
-        Clavis3Device(const std::string& hostname, remote::Side::Type theSide, std::shared_ptr<grpc::ChannelCredentials> creds, std::shared_ptr<stats::ReportServer> theReportServer);
+        Clavis3Device(const std::string& hostname,
+                      std::shared_ptr<grpc::ChannelCredentials> creds,
+                      std::shared_ptr<stats::ReportServer> theReportServer);
         ~Clavis3Device() override;
 
         ///@{
@@ -50,30 +50,10 @@ namespace cqp
         void RegisterServices(grpc::ServerBuilder& builder) override;
         ///@}
 
-        ///@{
-        /// @name ISessionController interface
-
-        /// @copydoc ISessionController::StartSession
-        grpc::Status StartSession(const remote::SessionDetailsFrom& sessionDetails) override;
-        /// @copydoc ISessionController::EndSession
-        void EndSession() override;
-        ///@}
-
-        ///@{
-        /// @name ISession interface
-
-        /// @copydoc remote::ISession::SessionStarting
-        grpc::Status SessionStarting(grpc::ServerContext* context, const remote::SessionDetailsFrom* request, google::protobuf::Empty*) override;
-        /// @copydoc remote::ISession::SessionEnding
-        grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty* request, google::protobuf::Empty*) override;
-        ///@}
     protected: // methods
-        void PassOnKeys();
     protected: // members
-        class Impl;
-        std::unique_ptr<Impl> pImpl;
         remote::DeviceConfig deviceConfig;
-        std::unique_ptr<KeyPublisher> keyPub;
+        Clavis3Session sessionController;
     };
 
 } // namespace cqp

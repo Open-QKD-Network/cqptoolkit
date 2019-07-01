@@ -39,7 +39,7 @@ namespace cqp
     /**
      * @brief The Clavis3Device::Impl class manages the conneciton with the Clavis 3 device
      */
-    class IDQDEVICES_NO_EXPORT Clavis3Device::Impl
+    class IDQDEVICES_NO_EXPORT Clavis3Session::Impl
     {
     public:
 
@@ -47,7 +47,7 @@ namespace cqp
          * @brief Impl constructor
          * @param address The hostname (no port) of the device to connect to
          */
-        Impl(const std::string& address, remote::Side::Type theSide);
+        Impl(const std::string& address);
 
         /// distructor
         ~Impl();
@@ -72,7 +72,7 @@ namespace cqp
          * The size of the initial key shall be of 25 kbits (3125 Bytes).
          * @param key
          */
-        void SetInitialKey(DataBlock key);
+        void SetInitialKey(const DataBlock& key);
 
         /**
          * @brief GetRandomNumber
@@ -181,7 +181,7 @@ namespace cqp
          * @brief GetSide
          * @return the side of the connected device
          */
-        remote::Side::Type GetSide();
+        remote::Side::Type GetSide() const;
 
         cqp::align::Statistics alignementStats;
         cqp::ec::Stats errorStats;
