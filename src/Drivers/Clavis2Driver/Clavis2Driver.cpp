@@ -25,6 +25,7 @@ struct Clavis2Driver::Clavis2Names
 {
     static CONSTSTRING manual = "manual";
     static CONSTSTRING writeConfig = "write-config";
+    static CONSTSTRING attenuation = "atteniation";
 };
 
 Clavis2Driver::Clavis2Driver()
@@ -40,6 +41,8 @@ Clavis2Driver::Clavis2Driver()
     definedArguments.AddOption(Clavis2Names::manual, "m", "Manual mode, specify Bobs address to directly connect and start generating key")
     .Bind();
     definedArguments.AddOption(Clavis2Names::writeConfig, "", "Output the resulting config to a file")
+    .Bind();
+    definedArguments.AddOption(Clavis2Names::attenuation, "-a", "Line attenuation for manual mode")
     .Bind();
 
 }
@@ -108,6 +111,12 @@ int Clavis2Driver::Main(const std::vector<std::string>& args)
             google::protobuf::Empty response;
 
             request.set_peeraddress(config.bobaddress());
+            if(definedArguments.HasProp(Clavis2Names::attenuation))
+            {
+                double atten = 0.0;
+                definedArguments.GetProp(Clavis2Names::attenuation, atten);
+                request.mutable_details()->set_lineattenuation(atten);
+            }
             LogStatus(adaptor->RunSession(&ctx, &request, &response));
         }
 
