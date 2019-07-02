@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Console Logger
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -33,6 +33,7 @@ namespace cqp
     }
 #else
     /// Creates a structure to map an ansi colour escape sequence
+    /// @see https://misc.flogisoft.com/bash/tip_colors_and_formatting
     /// @returns the prebuilt array
     static LevelMap CreateLevelToColour()
     {
@@ -42,7 +43,7 @@ namespace cqp
         result[LogLevel::Error] = "\x1b[31m";
         result[LogLevel::Info] = "\x1b[32m";
         result[LogLevel::Trace] = "\x1b[37m";
-        result[LogLevel::Warning] = "\x1b[93;41m";
+        result[LogLevel::Warning] = "\x1b[33m";
         return result;
     }
 #endif
