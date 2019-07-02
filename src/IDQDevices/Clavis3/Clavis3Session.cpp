@@ -44,7 +44,10 @@ namespace cqp
         auto result = SessionController::SessionStarting(context, request, response);
         if(result.ok())
         {
-            pImpl->PowerOn();
+            if(pImpl->GetSide() == remote::Side_Type::Side_Type_Alice)
+            {
+                pImpl->PowerOn();
+            }
         }
         return result;
     }
@@ -53,7 +56,8 @@ namespace cqp
     {
         auto result = SessionController::SessionEnding(context, request, response);
 
-        pImpl->PowerOff();
+        //pImpl->PowerOff();
+        pImpl->Reboot();
 
         return result;
     }
@@ -63,7 +67,10 @@ namespace cqp
         auto result = SessionController::StartSession(sessionDetails);
         if(result.ok())
         {
-            pImpl->PowerOn();
+            if(pImpl->GetSide() == remote::Side_Type::Side_Type_Alice)
+            {
+                pImpl->PowerOn();
+            }
         }
         return result;
     }
@@ -71,6 +78,7 @@ namespace cqp
     void Clavis3Session::EndSession()
     {
         //pImpl->PowerOff();
+        pImpl->Reboot();
         SessionController::EndSession();
     }
 
@@ -106,6 +114,11 @@ namespace cqp
     KeyPublisher* Clavis3Session::GetKeyPublisher()
     {
         return keyPub.get();
+    }
+
+    bool Clavis3Session::SystemAvailable()
+    {
+        return pImpl->GetState() != idq4p::domainModel::SystemState::NOT_DEFINED;
     }
 
 } // namespace cqp

@@ -164,12 +164,21 @@ namespace cqp
         void PowerOff();
 
         /**
+         * @brief Reboot
+         * Shut down then restart the system in a clean way.  This command will cause the emission of the following signals in this sequence, which
+         * inform the subscriber about the state of the shutdown process. OnSystemState_Changed(PoweringOff) OnSystemState_Changed(PowerOff)
+         */
+        void Reboot();
+
+        /**
          * @brief SubscribeToSignals
          * Subscribe to the handlable signals
          */
         void SubscribeToSignals();
 
         void SetNotificationFrequency(idq4p::domainModel::SignalId sigId, float rateHz);
+
+        idq4p::domainModel::SystemState GetCurrentState();
 
         /**
          * @brief ReadKey
@@ -185,6 +194,8 @@ namespace cqp
          */
         remote::Side::Type GetSide() const;
 
+        idq4p::domainModel::SystemState GetState();
+
         cqp::align::Statistics alignementStats;
         cqp::ec::Stats errorStats;
 
@@ -195,7 +206,7 @@ namespace cqp
          * Process incomming from the device
          */
         void ReadSignalSocket();
-    protected: // methods
+
         /**
          * @brief SubscribeToSignal
          * Request that the device sends signals

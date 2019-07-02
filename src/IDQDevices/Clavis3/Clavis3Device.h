@@ -50,6 +50,8 @@ namespace cqp
         void RegisterServices(grpc::ServerBuilder& builder) override;
         ///@}
 
+        bool SystemAvailable();
+
     protected: // methods
     protected: // members
         remote::DeviceConfig deviceConfig;

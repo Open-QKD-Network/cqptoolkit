@@ -95,8 +95,17 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
             WriteConfigFile(config, definedArguments.GetStringProp(Names::writeConfig));
         } // if write config file
 
-        stopExecution = ! adaptor->StartControlServer(config.controlparams().controladdress(), config.controlparams().siteagentaddress());
+        if(!device->SystemAvailable())
+        {
+            LOGERROR("Failed to connect to system");
+            stopExecution = true;
+        }
+        else
+        {
 
+            stopExecution = ! adaptor->StartControlServer(config.controlparams().controladdress(), config.controlparams().siteagentaddress());
+
+        }
     }
 
     if(!stopExecution)

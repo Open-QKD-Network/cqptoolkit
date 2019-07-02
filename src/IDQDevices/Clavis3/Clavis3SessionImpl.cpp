@@ -58,8 +58,10 @@ namespace cqp
     using idq4p::domainModel::MessageDirection;
     using idq4p::classes::CommandCommunicator;
     using idq4p::utilities::MsgpackSerializer;
+    using idq4p::domainModel::SystemState;
 
-    Clavis3Session::Impl::Impl(const std::string& hostname)
+    Clavis3Session::Impl::Impl(const std::string& hostname):
+        state(SystemState::NOT_DEFINED)
     {
         try
         {
@@ -96,6 +98,8 @@ namespace cqp
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
             keySocket.setsockopt(ZMQ_RCVTIMEO, recieveTimeoutMs); // in milliseconds
 
+            //state = GetCurrentState();
+            //LOGINFO("*********** Initial state: " + idq4p::domainModel::SystemState_ToString(state));
             //GetProtocolVersion();
             GetSoftwareVersion(SoftwareId::CommunicatorService);
             GetSoftwareVersion(SoftwareId::BoardSupervisorService);
@@ -113,19 +117,9 @@ namespace cqp
                 LOGERROR("Cant work out which side this is");
             }
             GetSoftwareVersion(SoftwareId::FpgaConfiguration);
-            std::vector<uint8_t> randNum;
-            if(GetRandomNumber(randNum))
-            {
-                for(const auto& num : randNum)
-                {
-                    LOGINFO("Number of the day: " + std::to_string(num));
-                }
-            }
-            else
-            {
-                LOGERROR("No number of the day today");
-            }
+
             LOGTRACE("Device created");
+            state = SystemState::PoweringOn;
         }
         catch(const std::exception& e)
         {
@@ -301,6 +295,15 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
+    void cqp::Clavis3Session::Impl::Reboot()
+    {
+        const Command request(CommandId::Restart, MessageDirection::Request);
+        Command reply(  CommandId::Restart, MessageDirection::Reply);
+        LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
+        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+        LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+    }
+
     void Clavis3Session::Impl::SubscribeToSignals()
     {
         using namespace idq4p::domainModel;
@@ -333,6 +336,29 @@ namespace cqp
             SubscribeToSignal(sig);
             SetNotificationFrequency(sig, signalRate);
         }
+
+        // block some of the noise that keeps comming out
+        std::vector<SignalId> unsubscribe
+        {
+            SignalId::OnIF_Temperature_NewValue,
+            SignalId::OnDataDetector_BiasCurrent_NewValue,
+            SignalId::OnMonitorDetector_BiasCurrent_NewValue,
+            SignalId::OnIM_AmplifierCurrent_NewValue,
+            SignalId::OnIM_AmplifierVoltage_NewValue,
+            SignalId::OnIM_Temperature_NewValue,
+            SignalId::OnIM_TECCurrent_NewValue,
+            SignalId::OnVOA_Attenuation_NewValue,
+            SignalId::OnIM_BiasVoltage_AbsoluteOutOfRange,
+            SignalId::OnMonitoringPhotodiode_Power_OperationOutOfRange
+        };
+
+        for(const auto sig : subscribeTo)
+        {
+            // BUG: This doesn't work so slow them down
+            UnsubscribeSignal(sig);
+            SetNotificationFrequency(sig, signalRate);
+        }
+
     }
 
     void Clavis3Session::Impl::SetNotificationFrequency(idq4p::domainModel::SignalId sigId, float rateHz)
@@ -348,6 +374,21 @@ namespace cqp
         CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
         // Deserialize reply
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+    }
+
+    idq4p::domainModel::SystemState Clavis3Session::Impl::GetCurrentState()
+    {
+        using idq4p::classes::OnSystemState_Changed;
+        const Command request(CommandId::GetSystemState, MessageDirection::Request);
+        Command reply(  CommandId::GetSystemState, MessageDirection::Reply);
+        LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
+        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+        msgpack::sbuffer replyBuffer;
+        reply.GetBuffer(replyBuffer);
+        OnSystemState_Changed replyCommand;
+        MsgpackSerializer::Deserialize<OnSystemState_Changed>(replyBuffer, replyCommand);
+        LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        return replyCommand.GetState();
     }
 
     void Clavis3Session::Impl::SubscribeToSignal(idq4p::domainModel::SignalId sig)
@@ -417,6 +458,11 @@ namespace cqp
         return side;
     }
 
+    idq4p::domainModel::SystemState Clavis3Session::Impl::GetState()
+    {
+        return state;
+    }
+
     LogLevel SignalToErrorLevel(domo::SeverityId severity)
     {
         LogLevel result = LogLevel::Silent;
@@ -466,7 +512,7 @@ namespace cqp
                 case SignalId::OnSystemState_Changed:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnSystemState_Changed(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), "==========" + signal.ToString() + "==========");
                     state = signal.GetState();
                 }
                 break;

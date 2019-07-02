@@ -76,5 +76,10 @@ namespace cqp
     {
         // nothing to do
     }
+
+    bool Clavis3Device::SystemAvailable()
+    {
+        return sessionController.SystemAvailable();
+    }
 } // namespace cqp
 #endif //HAVE_IDQ4P

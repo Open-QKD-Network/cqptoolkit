@@ -50,6 +50,7 @@ namespace cqp
         void SetInitialKey(std::unique_ptr<PSK> initailKey);
         KeyPublisher* GetKeyPublisher();
 
+        bool SystemAvailable();
     protected: // methods
 
         void PassOnKeys();
