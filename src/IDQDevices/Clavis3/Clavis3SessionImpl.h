@@ -169,6 +169,8 @@ namespace cqp
          */
         void SubscribeToSignals();
 
+        void SetNotificationFrequency(idq4p::domainModel::SignalId sigId, float rateHz);
+
         /**
          * @brief ReadKey
          * Request a key from the device
@@ -193,7 +195,7 @@ namespace cqp
          * Process incomming from the device
          */
         void ReadSignalSocket();
-
+    protected: // methods
         /**
          * @brief SubscribeToSignal
          * Request that the device sends signals
@@ -217,6 +219,7 @@ namespace cqp
         zmq::socket_t signalSocket{context, ZMQ_SUB};
         zmq::socket_t keySocket{context, ZMQ_SUB};
 
+        float signalRate = 0.1f; // Hz
         std::atomic_bool shutdown {false};
         std::atomic<idq4p::domainModel::SystemState> state;
         std::thread signalReader;

@@ -77,7 +77,8 @@ namespace cqp
         using namespace std;
         std::future<Return> result;
 
-        { /* lock scope*/
+        {
+            /* lock scope*/
             lock_guard<mutex> lock(pendingMutex);
             auto prom = std::promise<Return>();
             result = prom.get_future();
@@ -94,7 +95,8 @@ namespace cqp
         using namespace std;
         std::future<Return> result;
 
-        { /* lock scope*/
+        {
+            /* lock scope*/
             lock_guard<mutex> lock(pendingMutex);
             auto prom = std::promise<Return>();
             result = prom.get_future();
@@ -102,7 +104,7 @@ namespace cqp
         }/*lock scope*/
 
         pendingCv.notify_one();
-        return std::move(result);
+        return result;
     }
 
     template<typename Return>
@@ -114,10 +116,12 @@ namespace cqp
 
         while(!stopProcessing)
         {
-            { /* lock scope*/
+            {
+                /* lock scope*/
                 unique_lock<mutex> lock(pendingMutex);
 
-                pendingCv.wait(lock, [this](){
+                pendingCv.wait(lock, [this]()
+                {
                     return !pending.empty() || stopProcessing;
                 });
 

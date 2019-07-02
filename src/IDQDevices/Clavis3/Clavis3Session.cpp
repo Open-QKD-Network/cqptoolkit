@@ -70,7 +70,7 @@ namespace cqp
 
     void Clavis3Session::EndSession()
     {
-        pImpl->PowerOff();
+        //pImpl->PowerOff();
         SessionController::EndSession();
     }
 
@@ -81,7 +81,6 @@ namespace cqp
 
     bool Clavis3Session::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        pImpl->SubscribeToSignals();
         //pImpl->Request_UpdateSoftware();
         //pImpl->Zeroize();
 
