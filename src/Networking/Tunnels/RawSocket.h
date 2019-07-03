@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Util/SecFileBuff.h"
 #include "Networking/Tunnels/DeviceIO.h"
 #include "Algorithms/Datatypes/URI.h"
 #include "Algorithms/Net/Sockets/Socket.h"
