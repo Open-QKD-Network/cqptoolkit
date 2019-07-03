@@ -11,9 +11,6 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
-# Fix for sub modules not being updated dispite the strategy above
-before_script:
-  - git submodule update --checkout  
 # group jobs into stages
 stages:
   - build
@@ -26,6 +23,8 @@ stages:
 build:linux:
   stage: build
   script:
+# Fix for sub modules not being updated dispite the strategy above
+    - git submodule update --checkout  
     - mkdir -p build/gcc
     - cd build/gcc
     - cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
@@ -85,6 +84,8 @@ pages:
 package:deb:
   stage: package
   script:
+# Fix for sub modules not being updated dispite the strategy above
+    - git submodule update --checkout  
     - cd build/gcc
     - cmake -D CPACK_GENERATOR=DEB -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
     - make package
@@ -103,6 +104,8 @@ package:deb:
 package:tar:
   stage: package
   script:
+# Fix for sub modules not being updated dispite the strategy above
+    - git submodule update --checkout  
     - cd build/gcc
     - cmake -D CPACK_GENERATOR=TGZ -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
     - make package
