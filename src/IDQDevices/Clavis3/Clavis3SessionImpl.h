@@ -39,7 +39,7 @@ namespace cqp
     /**
      * @brief The Clavis3Device::Impl class manages the conneciton with the Clavis 3 device
      */
-    class IDQDEVICES_NO_EXPORT Clavis3Session::Impl
+    class IDQDEVICES_NO_EXPORT Clavis3Session::Impl final
     {
     public:
 
@@ -57,7 +57,7 @@ namespace cqp
          * @param filename The name of the file previously uploaded to the devices `/tmp` folder
          * @param filenameSha1 The sha1 hash of the file uploaded
          */
-        void Request_UpdateSoftware(const std::string& filename, const std::string& filenameSha1);
+        void UpdateSoftware(const std::string& filename, const std::string& filenameSha1);
 
         /**
          * @brief Zeroize
@@ -205,7 +205,7 @@ namespace cqp
          * @brief ReadSignalSocket
          * Process incomming from the device
          */
-        void ReadSignalSocket();
+        void ReadSignalSocket(const std::string& address);
 
         /**
          * @brief SubscribeToSignal
@@ -225,16 +225,16 @@ namespace cqp
         static constexpr const uint16_t keyChannelPort = 5560;
         static constexpr const uint16_t signalsPort = 5562;
 
-        zmq::context_t context {1};
+        zmq::context_t context {3};
         zmq::socket_t mgmtSocket{context, ZMQ_REQ};
-        zmq::socket_t signalSocket{context, ZMQ_SUB};
         zmq::socket_t keySocket{context, ZMQ_SUB};
 
         float signalRate = 0.1f; // Hz
         std::atomic_bool shutdown {false};
         std::atomic<idq4p::domainModel::SystemState> state;
         std::thread signalReader;
-        remote::Side::Type side;
+        remote::Side::Type side = remote::Side::Any;
+        const int32_t sockTimeoutMs = 60000;
     };
 
 }

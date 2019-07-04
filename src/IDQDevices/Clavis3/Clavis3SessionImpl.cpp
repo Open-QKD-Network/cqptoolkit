@@ -78,25 +78,22 @@ namespace cqp
                 LOGDEBUG("Clavis3 Device created. ZeroMQ Version: " + zmqVersionString + " MsgPack Version: " + msgpack_version());
             }
 #endif
-            const auto recieveTimeoutMs = 10000;
-            LOGTRACE("Connecting to signal socket");
-            signalSocket.connect(prefix + hostname + ":" + std::to_string(signalsPort));
-            signalSocket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-            signalSocket.setsockopt(ZMQ_RCVTIMEO, recieveTimeoutMs); // in milliseconds
+            // create a thread to read and process the signals
+            signalReader = std::thread(&Impl::ReadSignalSocket, this, prefix + hostname + ":" + std::to_string(signalsPort));
 
             LOGTRACE("Connecting to management socket");
             mgmtSocket.connect(prefix + hostname + ":" + std::to_string(managementPort));
-            mgmtSocket.setsockopt(ZMQ_RCVTIMEO, recieveTimeoutMs); // in milliseconds
-
-            // create a thread to read and process the signals
-            signalReader = std::thread(&Impl::ReadSignalSocket, this);
+            mgmtSocket.setsockopt(ZMQ_RCVTIMEO, sockTimeoutMs); // in milliseconds
+            mgmtSocket.setsockopt(ZMQ_SNDTIMEO, sockTimeoutMs); // in milliseconds
+            mgmtSocket.setsockopt(ZMQ_LINGER, sockTimeoutMs); // Discard pending buffered socket messages on close().
+            mgmtSocket.setsockopt(ZMQ_CONNECT_TIMEOUT, sockTimeoutMs);
 
             SubscribeToSignals();
 
             LOGTRACE("Connecting to key socket");
             keySocket.connect(prefix + hostname + ":" + std::to_string(keyChannelPort));
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
-            keySocket.setsockopt(ZMQ_RCVTIMEO, recieveTimeoutMs); // in milliseconds
+            keySocket.setsockopt(ZMQ_RCVTIMEO, sockTimeoutMs); // in milliseconds
 
             //state = GetCurrentState();
             //LOGINFO("*********** Initial state: " + idq4p::domainModel::SystemState_ToString(state));
@@ -119,7 +116,8 @@ namespace cqp
             GetSoftwareVersion(SoftwareId::FpgaConfiguration);
 
             LOGTRACE("Device created");
-            state = SystemState::PoweringOn;
+            // This is assumed as GetCurrentState doesn't work
+            state = SystemState::PowerOff;
         }
         catch(const std::exception& e)
         {
@@ -133,13 +131,12 @@ namespace cqp
 
         keySocket.close();
         mgmtSocket.close();
-        signalSocket.close();
 
-        context.close();
         if(signalReader.joinable())
         {
             signalReader.join();
         }
+        context.close();
     }
 
     void cqp::Clavis3Session::Impl::PowerOn()
@@ -148,11 +145,18 @@ namespace cqp
         using namespace idq4p::utilities;
         using namespace idq4p::domainModel;
 
-        const Command request(CommandId::PowerOn, MessageDirection::Request);
-        Command reply(  CommandId::PowerOn, MessageDirection::Reply);
-        LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
-        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        if(state == SystemState::PowerOff)
+        {
+            const Command request(CommandId::PowerOn, MessageDirection::Request);
+            Command reply(  CommandId::PowerOn, MessageDirection::Reply);
+            LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
+            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+            LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        }
+        else
+        {
+            LOGERROR("Cannot perform PowerOn in state " + SystemState_ToString(state));
+        }
     }
 
     idq4p::classes::GetBoardInformation cqp::Clavis3Session::Impl::GetBoardInformation(BoardId whichBoard)
@@ -217,43 +221,65 @@ namespace cqp
     void cqp::Clavis3Session::Impl::SetInitialKey(const DataBlock& key)
     {
         using idq4p::classes::SetInitialKey;
+        using namespace idq4p::utilities;
+        using namespace idq4p::domainModel;
 
-        // Send request
-        SetInitialKey requestCommand(key);
-        msgpack::sbuffer requestBuffer;
-        MsgpackSerializer::Serialize<SetInitialKey>(requestCommand, requestBuffer);
-        const Command request(CommandId::SetInitialKey, MessageDirection::Request, requestBuffer);
-        Command reply(  CommandId::SetInitialKey, MessageDirection::Reply);
-        LOGINFO("ManagementChannel: sending '" + request.ToString() + "' " + requestCommand.ToString() + ".");
-        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
-        // Deserialize reply
-        msgpack::sbuffer replyBuffer;
-        reply.GetBuffer(replyBuffer);
-        SetInitialKey replyCommand;
-        MsgpackSerializer::Deserialize<SetInitialKey>(replyBuffer, replyCommand);
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        if(state == SystemState::ExecutingSecurityInitialization)
+        {
+            // Send request
+            SetInitialKey requestCommand(key);
+            msgpack::sbuffer requestBuffer;
+            MsgpackSerializer::Serialize<SetInitialKey>(requestCommand, requestBuffer);
+            const Command request(CommandId::SetInitialKey, MessageDirection::Request, requestBuffer);
+            Command reply(  CommandId::SetInitialKey, MessageDirection::Reply);
+            LOGINFO("ManagementChannel: sending '" + request.ToString() + "' " + requestCommand.ToString() + ".");
+            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+            // Deserialize reply
+            msgpack::sbuffer replyBuffer;
+            reply.GetBuffer(replyBuffer);
+            SetInitialKey replyCommand;
+            MsgpackSerializer::Deserialize<SetInitialKey>(replyBuffer, replyCommand);
+            LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        }
+        else
+        {
+            LOGERROR("Cannot perform SetInitialKey in state " + SystemState_ToString(state));
+        }
     }
 
     bool Clavis3Session::Impl::GetRandomNumber(std::vector<uint8_t>& out)
     {
+        bool result = false;
+        using namespace idq4p::domainModel;
         using idq4p::classes::GetRandomNumber;
-        // Send request
-        GetRandomNumber requestCommand(16);
-        msgpack::sbuffer requestBuffer;
-        MsgpackSerializer::Serialize<GetRandomNumber>(requestCommand, requestBuffer);
-        const Command request(CommandId::GetRandomNumber, MessageDirection::Request, requestBuffer);
-        Command reply(  CommandId::GetRandomNumber, MessageDirection::Reply);
-        LOGINFO("ManagementChannel: sending '" + request.ToString() + "' " + requestCommand.ToString() + ".");
-        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
-        // Deserialize reply
-        msgpack::sbuffer replyBuffer;
-        reply.GetBuffer(replyBuffer);
-        GetRandomNumber replyCommand;
-        MsgpackSerializer::Deserialize<GetRandomNumber>(replyBuffer, replyCommand);
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
+        if(state == SystemState::ExecutingGeneralInitialization ||
+                state == SystemState::ExecutingSecurityInitialization ||
+                state == SystemState::Running ||
+                state == SystemState::HandlingError)
+        {
+            // Send request
+            GetRandomNumber requestCommand(16);
+            msgpack::sbuffer requestBuffer;
+            MsgpackSerializer::Serialize<GetRandomNumber>(requestCommand, requestBuffer);
+            const Command request(CommandId::GetRandomNumber, MessageDirection::Request, requestBuffer);
+            Command reply(  CommandId::GetRandomNumber, MessageDirection::Reply);
+            LOGINFO("ManagementChannel: sending '" + request.ToString() + "' " + requestCommand.ToString() + ".");
+            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+            // Deserialize reply
+            msgpack::sbuffer replyBuffer;
+            reply.GetBuffer(replyBuffer);
+            GetRandomNumber replyCommand;
+            MsgpackSerializer::Deserialize<GetRandomNumber>(replyBuffer, replyCommand);
+            LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
 
-        out = replyCommand.GetNumber();
-        return replyCommand.GetState() == 1;
+            out = replyCommand.GetNumber();
+            result = replyCommand.GetState() == 1;
+        }
+        else
+        {
+            LOGERROR("Cannot perform GetRandomNumber in state " + SystemState_ToString(state));
+        }
+        return result;
     }
 
     void cqp::Clavis3Session::Impl::Zeroize()
@@ -269,30 +295,50 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    void cqp::Clavis3Session::Impl::Request_UpdateSoftware(const std::string& filename, const std::string& filenameSha1)
+    void cqp::Clavis3Session::Impl::UpdateSoftware(const std::string& filename, const std::string& filenameSha1)
     {
         using namespace idq4p::domainModel;
         using idq4p::classes::UpdateSoftware;
-        //Serialize request
-        UpdateSoftware requestCommand(5, filename, filenameSha1);
-        msgpack::sbuffer requestBuffer;
-        MsgpackSerializer::Serialize<UpdateSoftware>(requestCommand, requestBuffer);
-        // Send request
-        const Command request(CommandId::UpdateSoftware, MessageDirection::Request, requestBuffer);
-        Command reply(  CommandId::UpdateSoftware, MessageDirection::Reply);
-        LOGINFO("ManagementChannel: sending '" + request.ToString() + "' " + requestCommand.ToString() + ".");
-        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
-        // Deserialize reply
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        if(state == SystemState::ExecutingSelfTest ||
+                state == SystemState::ExecutingGeneralInitialization ||
+                state == SystemState::ExecutingSecurityInitialization ||
+                state == SystemState::Running)
+        {
+            //Serialize request
+            UpdateSoftware requestCommand(5, filename, filenameSha1);
+            msgpack::sbuffer requestBuffer;
+            MsgpackSerializer::Serialize<UpdateSoftware>(requestCommand, requestBuffer);
+            // Send request
+            const Command request(CommandId::UpdateSoftware, MessageDirection::Request, requestBuffer);
+            Command reply(  CommandId::UpdateSoftware, MessageDirection::Reply);
+            LOGINFO("ManagementChannel: sending '" + request.ToString() + "' " + requestCommand.ToString() + ".");
+            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+            // Deserialize reply
+            LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        }
+        else
+        {
+            LOGERROR("Cannot perform UpdateSoftware in state " + SystemState_ToString(state));
+        }
     }
 
     void cqp::Clavis3Session::Impl::PowerOff()
     {
-        const Command request(CommandId::PowerOff, MessageDirection::Request);
-        Command reply(  CommandId::PowerOff, MessageDirection::Reply);
-        LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
-        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        if(state != SystemState::PowerOff &&
+                state != SystemState::UpdatingSoftware &&
+                state != SystemState::Zeroizing &&
+                state != SystemState::PoweringOff)
+        {
+            const Command request(CommandId::PowerOff, MessageDirection::Request);
+            Command reply(  CommandId::PowerOff, MessageDirection::Reply);
+            LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
+            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+            LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        }
+        else
+        {
+            LOGERROR("Cannot perform PowerOff in state " + SystemState_ToString(state));
+        }
     }
 
     void cqp::Clavis3Session::Impl::Reboot()
@@ -487,12 +533,21 @@ namespace cqp
         return result;
     }
 
-    void Clavis3Session::Impl::ReadSignalSocket()
+    void Clavis3Session::Impl::ReadSignalSocket(const std::string& address)
     {
         using namespace idq4p::classes;
         using namespace idq4p::domainModel;
 
-        while(!shutdown)
+        zmq::socket_t signalSocket{context, ZMQ_SUB};
+        LOGTRACE("Connecting to signal socket");
+        signalSocket.connect(address);
+        signalSocket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+        signalSocket.setsockopt(ZMQ_RCVTIMEO, sockTimeoutMs); // in milliseconds
+        signalSocket.setsockopt(ZMQ_SNDTIMEO, sockTimeoutMs); // in milliseconds
+        signalSocket.setsockopt(ZMQ_LINGER, sockTimeoutMs); // Discard pending buffered socket messages on close().
+        signalSocket.setsockopt(ZMQ_CONNECT_TIMEOUT, sockTimeoutMs);
+
+        while(!shutdown && signalSocket.connected())
         {
             Signal signalWrapper;
             try
@@ -920,7 +975,9 @@ namespace cqp
             {
                 LOGERROR(e.what());
             }
-        }
+        } // while
+
+        signalSocket.close();
     } // ReadSignalSocket
 
 } // namespace cqp

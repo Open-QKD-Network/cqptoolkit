@@ -41,6 +41,7 @@ namespace cqp
 
     grpc::Status Clavis3Session::SessionStarting(grpc::ServerContext* context, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)
     {
+        LOGTRACE("");
         auto result = SessionController::SessionStarting(context, request, response);
         if(result.ok())
         {
@@ -54,6 +55,7 @@ namespace cqp
 
     grpc::Status Clavis3Session::SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty* request, google::protobuf::Empty* response)
     {
+        LOGTRACE("");
         auto result = SessionController::SessionEnding(context, request, response);
 
         //pImpl->PowerOff();
@@ -64,6 +66,7 @@ namespace cqp
 
     grpc::Status Clavis3Session::StartSession(const remote::SessionDetailsFrom& sessionDetails)
     {
+        LOGTRACE("");
         auto result = SessionController::StartSession(sessionDetails);
         if(result.ok())
         {
@@ -77,8 +80,12 @@ namespace cqp
 
     void Clavis3Session::EndSession()
     {
+        LOGTRACE("");
         //pImpl->PowerOff();
-        pImpl->Reboot();
+        if(pImpl->GetState() != idq4p::domainModel::SystemState::NOT_DEFINED)
+        {
+            pImpl->Reboot();
+        }
         SessionController::EndSession();
     }
 
