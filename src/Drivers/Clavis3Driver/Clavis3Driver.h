@@ -39,10 +39,6 @@ class Clavis3Driver : public cqp::DriverApplication
         static CONSTSTRING writeConfig = "write-config";
         /// Address of the device
         static CONSTSTRING device = "device";
-        /// set alice mode
-        static CONSTSTRING alice = "alice";
-        /// set bob mode
-        static CONSTSTRING bob = "bob";
     };
 
 public:

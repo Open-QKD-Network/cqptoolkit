@@ -21,14 +21,12 @@ namespace cqp
                                  std::shared_ptr<stats::ReportServer> theReportServer) :
         sessionController(hostname, newCreds, theReportServer)
     {
-        URI devUri;
-
-        devUri.SetScheme("clavis3");
-        devUri.SetHost(hostname);
         deviceConfig.set_side(sessionController.GetSide());
-        deviceConfig.set_kind(devUri.GetScheme());
-        deviceConfig.set_id(DeviceUtils::GetDeviceIdentifier(devUri));
+        deviceConfig.set_kind(GetDriverName());
         deviceConfig.set_bytesperkey(32);
+        URI devUri = DeviceUtils::ConfigToUri(deviceConfig);
+        devUri.SetHost(hostname);
+        deviceConfig.set_id(DeviceUtils::GetDeviceIdentifier(devUri));
     }
 
     Clavis3Device::~Clavis3Device()
@@ -43,8 +41,7 @@ namespace cqp
 
     URI Clavis3Device::GetAddress() const
     {
-        // TODO
-        return URI();
+        return DeviceUtils::ConfigToUri(deviceConfig);
     }
 
     bool Clavis3Device::Initialise(const remote::SessionDetails& sessionDetails)

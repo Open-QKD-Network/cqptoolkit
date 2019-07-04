@@ -27,9 +27,6 @@ Clavis3Driver::Clavis3Driver() :
     ConsoleLogger::Enable();
     DefaultLogger().SetOutputLevel(LogLevel::Info);
 
-    definedArguments.AddOption(Names::alice, "a", "Set side to Alice.");
-    definedArguments.AddOption(Names::bob, "b", "Set side to Bob.");
-
     definedArguments.AddOption(Names::device, "d", "Device address")
     .Bind();
     definedArguments.AddOption(Names::manual, "m", "Manual mode, specify Bobs address to directly connect and start generating key")
@@ -65,16 +62,7 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
             exitCode = ExitCodes::InvalidConfig;
         }
 
-        if(definedArguments.IsSet(Names::alice))
-        {
-            config.mutable_controlparams()->mutable_config()->set_side(remote::Side_Type::Side_Type_Alice);
-        }
-
-        if(definedArguments.IsSet(Names::bob))
-        {
-            config.mutable_controlparams()->mutable_config()->set_side(remote::Side_Type::Side_Type_Bob);
-        }
-
+        definedArguments.GetProp(Names::manual, *config.mutable_bobaddress());
     }
 
     if(!stopExecution)
@@ -123,6 +111,7 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
 
         if(config.controlparams().config().side() == remote::Side_Type::Side_Type_Alice && !config.bobaddress().empty())
         {
+            LOGTRACE("Starting manual mode...");
             // TODO: get the key and do something with it
             grpc::ServerContext ctx;
             remote::SessionDetailsTo request;
