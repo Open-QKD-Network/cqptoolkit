@@ -47,7 +47,6 @@ if(TARGET ${PROJECT_NAME}_Shared)
 
     target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
         PkgConfig::libUSB_1
-        PkgConfig::CRYPTOPP
     )
 
     if(TARGET OpenCL::OpenCL)
