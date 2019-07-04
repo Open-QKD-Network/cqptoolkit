@@ -25,7 +25,7 @@ struct Clavis2Driver::Clavis2Names
 {
     static CONSTSTRING manual = "manual";
     static CONSTSTRING writeConfig = "write-config";
-    static CONSTSTRING attenuation = "atteniation";
+    static CONSTSTRING attenuation = "attenuation";
 };
 
 Clavis2Driver::Clavis2Driver()
@@ -42,7 +42,7 @@ Clavis2Driver::Clavis2Driver()
     .Bind();
     definedArguments.AddOption(Clavis2Names::writeConfig, "", "Output the resulting config to a file")
     .Bind();
-    definedArguments.AddOption(Clavis2Names::attenuation, "-a", "Line attenuation for manual mode")
+    definedArguments.AddOption(Clavis2Names::attenuation, "a", "Line attenuation for manual mode")
     .Bind();
 
 }
