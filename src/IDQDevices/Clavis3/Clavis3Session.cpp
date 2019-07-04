@@ -45,10 +45,7 @@ namespace cqp
         auto result = SessionController::SessionStarting(context, request, response);
         if(result.ok())
         {
-            if(pImpl->GetSide() == remote::Side_Type::Side_Type_Alice)
-            {
-                pImpl->PowerOn();
-            }
+            pImpl->PowerOn();
         }
         return result;
     }
@@ -70,10 +67,7 @@ namespace cqp
         auto result = SessionController::StartSession(sessionDetails);
         if(result.ok())
         {
-            if(pImpl->GetSide() == remote::Side_Type::Side_Type_Alice)
-            {
-                pImpl->PowerOn();
-            }
+            pImpl->PowerOn();
         }
         return result;
     }
