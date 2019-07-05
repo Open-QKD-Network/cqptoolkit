@@ -21,7 +21,6 @@ namespace grpc
     class Status;
     template<typename>
     class ServerWriter;
-    class ServerContext;
 }
 
 namespace cqp
