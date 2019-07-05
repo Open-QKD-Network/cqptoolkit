@@ -18,6 +18,7 @@
 #include <grpc++/server_builder.h>
 #include <grpc++/client_context.h>
 #include <google/protobuf/util/json_util.h>
+#include <cryptopp/base64.h>
 
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include "KeyManagement/KeyStores/KeyStore.h"
@@ -45,6 +46,7 @@ struct Names
     static CONSTSTRING rootCaFile = "rootca";
     static CONSTSTRING tls = "tls";
     static CONSTSTRING bsurl = "bsurl";
+    static CONSTSTRING fallbackKey = "fallbackkey";
     static CONSTSTRING writeConfig = "write-config";
     struct BackingStores
     {
@@ -85,6 +87,8 @@ SiteAgentRunner::SiteAgentRunner()
     definedArguments.AddOption(Names::bsurl, "u", "Backing Store URL")
     .Bind();
 
+    definedArguments.AddOption(Names::fallbackKey, "", "Fallback key (0x... hex or Base64)")
+    .Bind();
 
     definedArguments.AddOption(Names::discovery, "z", "Enable ZeroConf discovery");
 
@@ -156,6 +160,40 @@ int SiteAgentRunner::Main(const std::vector<std::string>& args)
 
         definedArguments.GetProp(Names::netman, *siteSettings.mutable_netmanuri());
         definedArguments.GetProp(Names::bsurl, *siteSettings.mutable_backingstoreurl());
+
+        if(definedArguments.GetProp(Names::fallbackKey, *siteSettings.mutable_fallbackkey()))
+        {
+            // convert the key depending on how it was provided
+            if(siteSettings.fallbackkey().find("0x") == 0 && // starts with 0x
+                    ((siteSettings.fallbackkey().size() - 2) / 2) % 2 == 0) // contains right number of characters for a byte array
+            {
+                LOGTRACE("Decoding fallback key as hex");
+                auto bytes = HexToBytes(siteSettings.fallbackkey());
+                siteSettings.mutable_fallbackkey()->resize(bytes.size());
+                siteSettings.mutable_fallbackkey()->assign(bytes.begin(), bytes.end());
+            }
+            else
+            {
+                LOGTRACE("Decoding fallback key as Base64");
+                using namespace CryptoPP;
+                try
+                {
+
+                    std::string decoded;
+                    StringSource ss(siteSettings.fallbackkey(), // in
+                                    true, new Base64Decoder(
+                                        new StringSink(decoded) // out
+                                    ));
+                    // magic
+                    siteSettings.mutable_fallbackkey()->resize(decoded.size());
+                    siteSettings.mutable_fallbackkey()->assign(decoded);
+                }
+                catch (const Exception& e)
+                {
+                    LOGERROR("Failed to decode fallback key: " + e.what());
+                }
+            }
+        }
 
         if(!definedArguments.GetProp(Names::id, *siteSettings.mutable_id()) && siteSettings.id().empty())
         {

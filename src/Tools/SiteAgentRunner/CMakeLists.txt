@@ -19,6 +19,7 @@ CQP_EXE_PROJECT()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     KeyManagement_Shared
+    PkgConfig::CRYPTOPP
     )
 
 # Add service file to installation
