@@ -95,9 +95,9 @@ namespace cqp
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
             keySocket.setsockopt(ZMQ_RCVTIMEO, sockTimeoutMs); // in milliseconds
 
-            //state = GetCurrentState();
+            state = GetCurrentState();
             //LOGINFO("*********** Initial state: " + idq4p::domainModel::SystemState_ToString(state));
-            //GetProtocolVersion();
+            GetProtocolVersion();
             GetSoftwareVersion(SoftwareId::CommunicatorService);
             GetSoftwareVersion(SoftwareId::BoardSupervisorService);
             // clunky way to decide which box it is
@@ -116,8 +116,6 @@ namespace cqp
             GetSoftwareVersion(SoftwareId::FpgaConfiguration);
 
             LOGTRACE("Device created");
-            // This is assumed as GetCurrentState doesn't work
-            state = SystemState::PowerOff;
         }
         catch(const std::exception& e)
         {
@@ -147,7 +145,10 @@ namespace cqp
 
         if(state == SystemState::PowerOff)
         {
-            const Command request(CommandId::PowerOn, MessageDirection::Request);
+            idq4p::classes::PowerOn requestCommnad;
+            msgpack::sbuffer requestBuffer;
+            MsgpackSerializer::Serialize<idq4p::classes::PowerOn>(requestCommnad, requestBuffer);
+            Command request(CommandId::PowerOn, MessageDirection::Request, requestBuffer);
             Command reply(  CommandId::PowerOn, MessageDirection::Reply);
             LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
             CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
@@ -167,7 +168,7 @@ namespace cqp
         msgpack::sbuffer requestBuffer;
         MsgpackSerializer::Serialize<GetBoardInformation>(requestCommand, requestBuffer);
         // Send request
-        const Command request(CommandId::GetBoardInformation, MessageDirection::Request);
+        const Command request(CommandId::GetBoardInformation, MessageDirection::Request, requestBuffer);
         Command reply(  CommandId::GetBoardInformation, MessageDirection::Reply);
         LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
         CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
@@ -203,17 +204,19 @@ namespace cqp
 
     idq4p::classes::GetProtocolVersion cqp::Clavis3Session::Impl::GetProtocolVersion()
     {
-        using idq4p::classes::GetProtocolVersion;
+        const idq4p::classes::GetProtocolVersion requestCommand;
+        msgpack::sbuffer requestBuffer;
+        MsgpackSerializer::Serialize<idq4p::classes::GetProtocolVersion>(requestCommand, requestBuffer);
         // Send request
-        const Command request(CommandId::GetProtocolVersion, MessageDirection::Request);
+        const Command request(CommandId::GetProtocolVersion, MessageDirection::Request, requestBuffer);
         Command reply(  CommandId::GetProtocolVersion, MessageDirection::Reply);
         LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
         CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
         //Deserialize reply
         msgpack::sbuffer replyBuffer;
         reply.GetBuffer(replyBuffer);
-        GetProtocolVersion replyCommand;
-        MsgpackSerializer::Deserialize<GetProtocolVersion>(replyBuffer, replyCommand);
+        idq4p::classes::GetProtocolVersion replyCommand;
+        MsgpackSerializer::Deserialize<idq4p::classes::GetProtocolVersion>(replyBuffer, replyCommand);
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
         return replyCommand;
     }
@@ -324,12 +327,16 @@ namespace cqp
 
     void cqp::Clavis3Session::Impl::PowerOff()
     {
-        if(state != SystemState::PowerOff &&
+        if(!shutdown &&
+                state != SystemState::PowerOff &&
                 state != SystemState::UpdatingSoftware &&
                 state != SystemState::Zeroizing &&
                 state != SystemState::PoweringOff)
         {
-            const Command request(CommandId::PowerOff, MessageDirection::Request);
+            idq4p::classes::PowerOff requestCommand;
+            msgpack::sbuffer requestBuffer;
+            MsgpackSerializer::Serialize(requestCommand, requestBuffer);
+            const Command request(CommandId::PowerOff, MessageDirection::Request, requestBuffer);
             Command reply(  CommandId::PowerOff, MessageDirection::Reply);
             LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
             CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
@@ -343,11 +350,25 @@ namespace cqp
 
     void cqp::Clavis3Session::Impl::Reboot()
     {
-        const Command request(CommandId::Restart, MessageDirection::Request);
-        Command reply(  CommandId::Restart, MessageDirection::Reply);
-        LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
-        CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
-        LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        if(!shutdown  &&
+                state != SystemState::PowerOff &&
+                state != SystemState::UpdatingSoftware &&
+                state != SystemState::Zeroizing &&
+                state != SystemState::PoweringOff)
+        {
+            idq4p::classes::PowerOff requestCommand;
+            msgpack::sbuffer requestBuffer;
+            MsgpackSerializer::Serialize(requestCommand, requestBuffer);
+            const Command request(CommandId::Restart, MessageDirection::Request, requestBuffer);
+            Command reply(  CommandId::Restart, MessageDirection::Reply);
+            LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
+            CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
+            LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
+        }
+        else
+        {
+            LOGERROR("Cannot perform Reboot in state " + SystemState_ToString(state));
+        }
     }
 
     void Clavis3Session::Impl::SubscribeToSignals()
@@ -357,10 +378,13 @@ namespace cqp
         std::vector<SignalId> subscribeTo
         {
             SignalId::OnSystemState_Changed,
+            SignalId::OnPowerupComponentsState_Changed,
+            SignalId::OnAlignmentState_Changed,
+            SignalId::OnOptimizingOpticsState_Changed,
+            SignalId::OnShutdownState_Changed,
             SignalId::OnQber_NewValue,
             SignalId::OnVisibility_NewValue,
-            SignalId::OnPowerupComponentsState_Changed,
-            SignalId::OnShutdownState_Changed
+            SignalId::OnOpticsOptimization_InProgress
         };
         /*
                 if(side == remote::Side_Type::Side_Type_Alice)
@@ -424,15 +448,17 @@ namespace cqp
 
     idq4p::domainModel::SystemState Clavis3Session::Impl::GetCurrentState()
     {
-        using idq4p::classes::OnSystemState_Changed;
-        const Command request(CommandId::GetSystemState, MessageDirection::Request);
+        idq4p::classes::OnSystemState_Changed requestCommand;
+        msgpack::sbuffer requestBuffer;
+        MsgpackSerializer::Serialize(requestCommand, requestBuffer);
+        const Command request(CommandId::GetSystemState, MessageDirection::Request, requestBuffer);
         Command reply(  CommandId::GetSystemState, MessageDirection::Reply);
         LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
         CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
         msgpack::sbuffer replyBuffer;
         reply.GetBuffer(replyBuffer);
-        OnSystemState_Changed replyCommand;
-        MsgpackSerializer::Deserialize<OnSystemState_Changed>(replyBuffer, replyCommand);
+        idq4p::classes::OnSystemState_Changed replyCommand;
+        MsgpackSerializer::Deserialize<idq4p::classes::OnSystemState_Changed>(replyBuffer, replyCommand);
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "' " + replyCommand.ToString() + ".");
         return replyCommand.GetState();
     }
@@ -966,6 +992,13 @@ namespace cqp
                 }
                 break;
 
+                // others:
+                case SignalId::OnOpticsOptimization_InProgress:
+                {
+                    const auto signal = Clavis3SignalHandler::Decode_OnOptimizingOpticsState_Changed(buffer);
+                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                }
+                break;
                 default:
                     LOGERROR("Unknown signal: " + signalWrapper.ToString());
                     break;
