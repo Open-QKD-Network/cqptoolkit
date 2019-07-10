@@ -181,12 +181,12 @@ namespace cqp
         idq4p::domainModel::SystemState GetCurrentState();
 
         /**
-         * @brief ReadKey
-         * Request a key from the device
-         * @param[out] keyValue
+         * @brief ReadKeys
+         * Read keys from the device until the recieve buffer is empty
+         * @param[out] keys
          * @return true on success
          */
-        bool ReadKey(PSK& keyValue);
+        bool ReadKeys(KeyList& keys);
 
         /**
          * @brief GetSide
@@ -225,6 +225,8 @@ namespace cqp
         static constexpr const uint16_t keyChannelPort = 5560;
         static constexpr const uint16_t signalsPort = 5562;
 
+        std::string deviceAddress;
+
         zmq::context_t context {3};
         zmq::socket_t mgmtSocket{context, ZMQ_REQ};
         zmq::socket_t keySocket{context, ZMQ_SUB};
@@ -235,6 +237,9 @@ namespace cqp
         std::thread signalReader;
         remote::Side::Type side = remote::Side::Any;
         const int32_t sockTimeoutMs = 60000;
+
+        const size_t maxKeysPerBurst = 256;
+        size_t averageKeysPerBurst = 1;
     };
 
 }

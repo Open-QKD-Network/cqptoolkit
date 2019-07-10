@@ -18,8 +18,9 @@ namespace cqp
 {
     Clavis3Device::Clavis3Device(const std::string& hostname,
                                  std::shared_ptr<grpc::ChannelCredentials> newCreds,
-                                 std::shared_ptr<stats::ReportServer> theReportServer) :
-        sessionController(hostname, newCreds, theReportServer)
+                                 std::shared_ptr<stats::ReportServer> theReportServer,
+                                 bool disableControl) :
+        sessionController(hostname, newCreds, theReportServer, disableControl)
     {
         deviceConfig.set_side(sessionController.GetSide());
         deviceConfig.set_kind(GetDriverName());

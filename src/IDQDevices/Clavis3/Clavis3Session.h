@@ -13,6 +13,7 @@
 #if defined(HAVE_IDQ4P)
 #include "CQPToolkit/Session/SessionController.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
+#include <thread>
 
 namespace cqp
 {
@@ -22,7 +23,8 @@ namespace cqp
     public:
         Clavis3Session(const std::string& hostname,
                        std::shared_ptr<grpc::ChannelCredentials> newCreds,
-                       std::shared_ptr<stats::ReportServer> theReportServer);
+                       std::shared_ptr<stats::ReportServer> theReportServer,
+                       bool disableControl = false);
 
         ~Clavis3Session() override;
 
@@ -58,6 +60,9 @@ namespace cqp
         class Impl;
         std::unique_ptr<Impl> pImpl;
         std::unique_ptr<KeyPublisher> keyPub;
+        std::thread keyReader;
+        std::atomic_bool keepReadingKeys{true};
+        bool controlsEnabled = true;
     };
 
 } // namespace cqp

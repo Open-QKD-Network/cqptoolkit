@@ -47,7 +47,7 @@
 #if defined(_DEBUG)
     #include "msgpack.hpp"
 #endif
-//#include "Algorithms/Util/Hash.h"
+#include "Algorithms/Util/Hash.h"
 #include "Clavis3/Clavis3SignalHandler.h"
 
 namespace cqp
@@ -61,6 +61,7 @@ namespace cqp
     using idq4p::domainModel::SystemState;
 
     Clavis3Session::Impl::Impl(const std::string& hostname):
+        deviceAddress(hostname),
         state(SystemState::NOT_DEFINED)
     {
         try
@@ -88,15 +89,13 @@ namespace cqp
             mgmtSocket.setsockopt(ZMQ_LINGER, sockTimeoutMs); // Discard pending buffered socket messages on close().
             mgmtSocket.setsockopt(ZMQ_CONNECT_TIMEOUT, sockTimeoutMs);
 
-            SubscribeToSignals();
-
             LOGTRACE("Connecting to key socket");
             keySocket.connect(prefix + hostname + ":" + std::to_string(keyChannelPort));
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
             keySocket.setsockopt(ZMQ_RCVTIMEO, sockTimeoutMs); // in milliseconds
 
             state = GetCurrentState();
-            //LOGINFO("*********** Initial state: " + idq4p::domainModel::SystemState_ToString(state));
+            LOGINFO("*********** Initial state: " + idq4p::domainModel::SystemState_ToString(state));
             GetProtocolVersion();
             GetSoftwareVersion(SoftwareId::CommunicatorService);
             GetSoftwareVersion(SoftwareId::BoardSupervisorService);
@@ -495,7 +494,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    bool Clavis3Session::Impl::ReadKey(PSK& keyValue)
+    bool Clavis3Session::Impl::ReadKeys(KeyList& keys)
     {
         using namespace idq4p::classes;
         using namespace idq4p::domainModel;
@@ -506,13 +505,24 @@ namespace cqp
         QuantumKey key;
         try
         {
-            ZmqClassExchange::Receive<QuantumKey>(keySocket, key);
+            if(ZmqClassExchange::Receive<QuantumKey>(keySocket, key))
+            {
+                // try to prepare the buffer for the number of keys that will arrive
+                keys.reserve(averageKeysPerBurst);
 
-            LOGINFO("KeyChannel: received '" + key.ToString() + "'");
+                // if we had a message theres probably more, keep getting until there are none left
+                do
+                {
+                    LOGINFO("KeyChannel: received '" + key.ToString() + "'");
 
-            //id = FNV1aHash(key.GetId());
-            keyValue = key.GetKeyValue();
-            result = true;
+                    //id = FNV1aHash(key.GetId());
+                    keys.emplace_back(key.GetKeyValue());
+                    result = true;
+                }
+                while(ZmqClassExchange::ReceiveNoBlock(keySocket, key));
+                // update the average keys, limiting it to something sensible
+                averageKeysPerBurst = std::min(maxKeysPerBurst, 1 + (averageKeysPerBurst + keys.size()) / 2);
+            }
         }
         catch(const std::runtime_error&)
         {
@@ -1011,7 +1021,9 @@ namespace cqp
         } // while
 
         signalSocket.close();
-    } // ReadSignalSocket
+    }
+
+    // ReadSignalSocket
 
 } // namespace cqp
 #endif //HAVE_IDQ4P

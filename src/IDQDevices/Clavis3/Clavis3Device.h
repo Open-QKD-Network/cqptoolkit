@@ -26,7 +26,8 @@ namespace cqp
     public:
         Clavis3Device(const std::string& hostname,
                       std::shared_ptr<grpc::ChannelCredentials> creds,
-                      std::shared_ptr<stats::ReportServer> theReportServer);
+                      std::shared_ptr<stats::ReportServer> theReportServer,
+                      bool disableControl);
         ~Clavis3Device() override;
 
         ///@{

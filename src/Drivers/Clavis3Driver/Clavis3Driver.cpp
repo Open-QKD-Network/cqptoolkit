@@ -31,6 +31,7 @@ Clavis3Driver::Clavis3Driver() :
     .Bind();
     definedArguments.AddOption(Names::manual, "m", "Manual mode, specify Bobs address to directly connect and start generating key")
     .Bind();
+    definedArguments.AddOption(Names::noControl, "n", "Only read keys, dont perform any device control");
 
     definedArguments.AddOption(Names::writeConfig, "", "Output the resulting config to a file")
     .Bind();
@@ -63,6 +64,11 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
         }
 
         definedArguments.GetProp(Names::manual, *config.mutable_bobaddress());
+
+        if(definedArguments.IsSet(Names::noControl))
+        {
+            config.set_disablecontrol(true);
+        }
     }
 
     if(!stopExecution)
@@ -70,7 +76,8 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
         using namespace std;
 
         device = make_shared<Clavis3Device>(config.deviceaddress(),
-                                            channelCreds, reportServer);
+                                            channelCreds, reportServer,
+                                            config.disablecontrol());
         adaptor = make_unique<RemoteQKDDevice>(device, serverCreds);
 
         // get the real settings which have been corrected by the device driuver

@@ -22,4 +22,6 @@ message Clavis3Config {
     string deviceAddress = 2;
     /// for manually connecting to bob if we're alice
     string bobAddress = 3;
+    /// only read in the key, no initailisation
+    bool disableControl = 4;
 }

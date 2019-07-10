@@ -18,15 +18,21 @@ namespace cqp
 
     Clavis3Session::Clavis3Session(const std::string& hostname,
                                    std::shared_ptr<grpc::ChannelCredentials> newCreds,
-                                   std::shared_ptr<stats::ReportServer> theReportServer) :
+                                   std::shared_ptr<stats::ReportServer> theReportServer,
+                                   bool disableControl) :
         session::SessionController {newCreds, {}, theReportServer},
             pImpl{std::make_unique<Clavis3Session::Impl>(hostname)},
-            keyPub{std::make_unique<KeyPublisher>()}
+            keyPub{std::make_unique<KeyPublisher>()},
+            controlsEnabled(!disableControl)
     {
         if(reportServer)
         {
             pImpl->alignementStats.Add(reportServer.get());
             pImpl->errorStats.Add(reportServer.get());
+        }
+        if(!disableControl)
+        {
+            pImpl->SubscribeToSignals();
         }
     }
 
@@ -43,10 +49,13 @@ namespace cqp
     {
         LOGTRACE("");
         auto result = SessionController::SessionStarting(context, request, response);
-        if(result.ok())
+        if(result.ok() && controlsEnabled)
         {
             pImpl->PowerOn();
         }
+        keepReadingKeys = true;
+        keyReader = std::thread(&Clavis3Session::PassOnKeys, this);
+
         return result;
     }
 
@@ -55,8 +64,15 @@ namespace cqp
         LOGTRACE("");
         auto result = SessionController::SessionEnding(context, request, response);
 
-        //pImpl->PowerOff();
-        pImpl->Reboot();
+        if(controlsEnabled)
+        {
+            pImpl->Reboot();
+        }
+        keepReadingKeys = false;
+        if(keyReader.joinable())
+        {
+            keyReader.join();
+        }
 
         return result;
     }
@@ -65,20 +81,29 @@ namespace cqp
     {
         LOGTRACE("");
         auto result = SessionController::StartSession(sessionDetails);
-        if(result.ok())
+        if(result.ok() && controlsEnabled)
         {
             pImpl->PowerOn();
         }
+        keepReadingKeys = true;
+        keyReader = std::thread(&Clavis3Session::PassOnKeys, this);
+
         return result;
     }
 
     void Clavis3Session::EndSession()
     {
         LOGTRACE("");
-        //pImpl->PowerOff();
-        if(pImpl->GetState() != idq4p::domainModel::SystemState::NOT_DEFINED)
+
+        if(controlsEnabled && pImpl->GetState() != idq4p::domainModel::SystemState::NOT_DEFINED)
         {
             pImpl->Reboot();
+        }
+
+        keepReadingKeys = false;
+        if(keyReader.joinable())
+        {
+            keyReader.join();
         }
         SessionController::EndSession();
     }
@@ -99,16 +124,21 @@ namespace cqp
 
     void Clavis3Session::SetInitialKey(std::unique_ptr<PSK> initailKey)
     {
-        pImpl->SetInitialKey(*initailKey);
+        if(controlsEnabled)
+        {
+            pImpl->SetInitialKey(*initailKey);
+        }
     }
 
     void Clavis3Session::PassOnKeys()
     {
-        auto keys = std::make_unique<KeyList>();
-        keys->resize(1);
-        if(pImpl->ReadKey((*keys)[0]))
+        while(keepReadingKeys)
         {
-            keyPub->Emit(&IKeyCallback::OnKeyGeneration, move(keys));
+            auto keys = std::make_unique<KeyList>();
+            if(pImpl->ReadKeys(*keys))
+            {
+                keyPub->Emit(&IKeyCallback::OnKeyGeneration, move(keys));
+            }
         }
     }
 
