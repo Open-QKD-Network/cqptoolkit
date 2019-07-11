@@ -15,7 +15,7 @@ include(CommonSetup)
 
 # add the proto files from the QKDInterfaces project
 get_target_property(QKDInterfaces_SOURCE_DIR QKDInterfaces SOURCE_DIR)
-LIST(APPEND PROTOBUF_IMPORT_DIRS ${QKDInterfaces_SOURCE_DIR})
+LIST(APPEND PROTOBUF_IMPORT_DIRS ${QKDInterfaces_SOURCE_DIR}/proto)
 ADD_GRPC_FILES()
 
 # Make standard program which uses the CQP Toolkit
