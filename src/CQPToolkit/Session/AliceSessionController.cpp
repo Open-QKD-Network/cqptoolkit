@@ -22,12 +22,10 @@ namespace cqp
         using grpc::Status;
         using grpc::ClientContext;
 
-        const int AliceSessionController::threadPriority;
-
-        AliceSessionController::AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> creds,
+        AliceSessionController::AliceSessionController(std::shared_ptr<grpc::ChannelCredentials> newCreds,
                 const RemoteCommsList& remotes, std::shared_ptr<IPhotonGenerator> source,
                 std::shared_ptr<stats::ReportServer> theReportServer) :
-            SessionController (creds, remotes, theReportServer),
+            SessionController (newCreds, remotes, theReportServer),
             photonSource{source}
         {
 
@@ -39,7 +37,7 @@ namespace cqp
             auto result = SessionController::StartSession(sessionDetails);
             if(result.ok() && photonSource)
             {
-                Start(threadPriority);
+                Start();
             }
             return result;
         }
@@ -62,7 +60,7 @@ namespace cqp
             auto result = SessionController::SessionStarting(ctx, request, response);
             if(result.ok() && photonSource)
             {
-                Start(threadPriority);
+                Start();
             }
             return result;
         }

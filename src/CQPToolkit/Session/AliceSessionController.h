@@ -89,9 +89,6 @@ namespace cqp
         protected: // methods
             void DoWork() override;
 
-            /// The priority to assign to the thread controlling the session
-            /// negative numbers = higher priority
-            static const int threadPriority = -5;
         protected: // members
             /// where photons are made
             std::shared_ptr<IPhotonGenerator> photonSource;
