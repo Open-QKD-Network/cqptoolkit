@@ -135,7 +135,8 @@ deploy:toolkit-run-image:
   stage: deploy
   image: "docker:stable"
   services:
-    - docker:dind
+  # WARNING: workaround for breaking docker change, see https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+    - docker:18.09-dind
   script:
     - apk add --no-cache bash
     - cp build/gcc/*.deb setup/
