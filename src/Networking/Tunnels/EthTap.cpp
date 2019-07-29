@@ -142,7 +142,8 @@ namespace cqp
             return result;
         }
 
-        EthTap::EthTap(const std::string& deviceName, Mode mode, const std::string& address, const std::string& netMask)
+        EthTap::EthTap(const std::string& deviceName, Mode mode,
+                       const std::string& address, const std::string& netMask, bool persist)
         {
             LOGDEBUG("Creating device with name:" + deviceName + " setting ip to:" + address + "/" + netMask);
 
@@ -192,6 +193,8 @@ namespace cqp
 
                     net::Device::SetAddress(name, address, netMask);
                     net::Device::Up(name);
+                    SetPersist(persist);
+
                     ready = true;
                     readyCv.notify_all();
                 }
@@ -205,7 +208,10 @@ namespace cqp
             {
                 mode = Mode::Tun;
             }
-            return new EthTap(uri[Params::name], mode, uri.GetHost(), uri[Params::netmask]);
+            bool persist = false;
+            uri.GetFirstParameter(Params::persist, persist);
+
+            return new EthTap(uri[Params::name], mode, uri.GetHost(), uri[Params::netmask], persist);
         }
 
     } // namespace tunnels

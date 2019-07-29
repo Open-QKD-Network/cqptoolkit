@@ -3,7 +3,7 @@
 * @brief EthTun
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 12/9/2017
@@ -47,6 +47,8 @@ namespace cqp
                 static CONSTSTRING mode_tun = "tun";
                 /// mode valuefor tun devices
                 static CONSTSTRING mode_tap = "tap";
+                /// keep the device after shutdown
+                static CONSTSTRING persist = "persist";
             };
 
             /**
@@ -57,7 +59,7 @@ namespace cqp
              * @param address An ip address to assign to the device
              * @param netMask the mask to apply if an ip address is specified
              */
-            EthTap(const std::string& deviceName, Mode mode, const std::string& address, const std::string& netMask);
+            EthTap(const std::string& deviceName, Mode mode, const std::string& address, const std::string& netMask, bool persist = false);
 
             /**
              * @brief Create
