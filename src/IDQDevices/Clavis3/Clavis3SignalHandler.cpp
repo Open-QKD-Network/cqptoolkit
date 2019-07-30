@@ -9,6 +9,8 @@
 * @date 1/7/2019
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
+#if defined(HAVE_IDQ4P)
+
 #include "Clavis3SignalHandler.h"
 
 using namespace idq4p::classes;
@@ -478,3 +480,5 @@ namespace cqp
     }
 
 } // namespace cqp
+
+#endif // HAVE_IDQ4P

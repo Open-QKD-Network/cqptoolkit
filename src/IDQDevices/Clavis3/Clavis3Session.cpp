@@ -9,6 +9,8 @@
 * @date 28/6/2019
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
+#if defined(HAVE_IDQ4P)
+
 #include "Clavis3Session.h"
 #include "Clavis3/Clavis3SessionImpl.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
@@ -153,3 +155,4 @@ namespace cqp
     }
 
 } // namespace cqp
+#endif // HAVE_IDQ4P

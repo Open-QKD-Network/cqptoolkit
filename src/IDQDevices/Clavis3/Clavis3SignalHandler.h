@@ -10,6 +10,8 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
+#if defined(HAVE_IDQ4P)
+
 //Software Signals
 #include "Signals/OnSystemState_Changed.hpp"
 #include "Signals/OnUpdateSoftware_Progress.hpp"
@@ -169,4 +171,4 @@ namespace cqp
 
 } // namespace cqp
 
-
+#endif // HAVE_IDQ4P
