@@ -41,6 +41,7 @@ namespace cqp
 
                 keyData[0].first++;
             }
+            state.SetLabel("Storing key to a backing store on disk");
         }
         BENCHMARK(BM_StoreKeyInFileStore);
 
@@ -68,6 +69,7 @@ namespace cqp
             {
                 fileStore.RemoveKey(dest, id++, aKey);
             }
+            state.SetLabel("Getting key from a backing store on disk");
         }
         BENCHMARK(BM_RetrieveKeyFromFileStore);
     } // namespace tests

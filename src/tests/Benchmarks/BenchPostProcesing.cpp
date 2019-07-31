@@ -80,6 +80,7 @@ namespace cqp
             }
 
             state.SetItemsProcessed(photonsPerBurst);
+            state.SetLabel("Alignment processing inc storing emittions, GetAlignmentMarkers and DiscardTransmissions");
         }
         BENCHMARK(BM_TranssmitterProcessing);
     }

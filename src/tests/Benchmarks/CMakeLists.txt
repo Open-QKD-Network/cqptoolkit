@@ -22,9 +22,6 @@ CQP_EXE_PROJECT()
 
 include_directories("${GBENCH_INCLUDE_DIRS}")
 
-if(TARGET GBench_External)
-    add_dependencies(${PROJECT_NAME} GBench_External)
-endif()
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Tests")
 
 if(MSVC)
