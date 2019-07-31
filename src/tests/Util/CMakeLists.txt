@@ -17,6 +17,8 @@ Project (CQPUtilTests C CXX)
 include(CommonSetup)
 include(CppSetup)
 
+EmbedResources("testResource.rc")
+
 # Generate a standard setup for a test
 CQP_TEST_PROJECT()
 

@@ -3,7 +3,7 @@
 * @brief %{Cpp:License:ClassName}
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 18/4/2018
@@ -23,6 +23,7 @@
 #include "Algorithms/Util/FileIO.h"
 #include "Algorithms/Util/Hash.h"
 #include "Algorithms/Util/Env.h"
+#include "testResource.rc.h"
 
 namespace cqp
 {
@@ -305,6 +306,16 @@ namespace cqp
             ASSERT_TRUE(fs::Delete(tempDir));
             ASSERT_FALSE(fs::Exists(tempDir));
 
+        }
+
+        TEST(UtilsTest, EmbededResource)
+        {
+            const std::string realString = "This is a test\n";
+
+            ASSERT_EQ(_binary_testResource_rc_realsize, realString.length());
+            const auto testString = std::string(_binary_testResource_rc_start, _binary_testResource_rc_realsize);
+
+            ASSERT_EQ(testString, realString);
         }
     } // namespace tests
 } // namespace cqp

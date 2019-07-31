@@ -182,31 +182,41 @@ endmacro(SET_COMPONENT_NAME)
 ###    Modifies: ${PROJECT_NAME}_OBJS
 ### @param filenames a list of files to wrap in the executable format
 MACRO (EmbedResources filenames)
-    if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-        set(outFormat "elf64-x86-64")
-    else()
-        set(outFormat "elf-i386")
-    endif()
 
     foreach(filename ${filenames})
         get_filename_component(fileprefix ${filename} NAME)
         get_filename_component(filepath ${filename} PATH)
         set(fileOut "${CMAKE_CURRENT_BINARY_DIR}/${fileprefix}.o")
 
+        message("Adding resource ${fileprefix}")
+        # convert the file to elf, then change the section to readonly
         ADD_CUSTOM_COMMAND(
             OUTPUT ${fileOut}
             MAIN_DEPENDENCY ${filename}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${filepath}
+            COMMAND ld
+            ARGS -r -b binary -o ${fileOut} ${fileprefix}
             COMMAND ${CMAKE_OBJCOPY}
-            ARGS -I binary -O ${outFormat} -B i386 --rename-section ".data=.rodata,CONTENTS,ALLOC,LOAD,READONLY,DATA"
-                ${fileprefix} ${fileOut}
+            ARGS --rename-section ".data=.rodata,CONTENTS,ALLOC,LOAD,READONLY,DATA" ${fileOut} ${fileOut}
             )
+
+        string(REPLACE "." "_" symbolName "${fileprefix}")
+
+        file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${fileprefix}.h"
+            "// symbols generated from resouce file ${fileprefix}\n"
+            "extern \"C\" {\n"
+            "   extern const char _binary_${symbolName}_start[];\n"
+            "   extern const char _binary_${symbolName}_end;\n"
+            "   extern const size_t _binary_${symbolName}_size;\n"
+            "   const size_t _binary_${symbolName}_realsize = &_binary_${symbolName}_end - &_binary_${symbolName}_start[0];\n"
+            "}\n")
         LIST(APPEND ${PROJECT_NAME}_OBJS ${fileOut})
         SET_SOURCE_FILES_PROPERTIES(
           ${fileOut}
           PROPERTIES
           EXTERNAL_OBJECT true
           GENERATED true
+          LINKER_LANGUAGE C
         )
     endforeach(filename)
 ENDMACRO (EmbedResources filename)
@@ -257,7 +267,7 @@ macro(CQP_LIBRARY_PROJECT)
     # Create an object library which can later be turned into a static and/or dynamic library
     # see: https://cmake.org/Wiki/CMake/Tutorials/Object_Library
     # This removes the need to compile the code twice to produce both libraries
-    add_library (${PROJECT_NAME} OBJECT ${${PROJECT_NAME}_SOURCES})
+    add_library (${PROJECT_NAME} OBJECT ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_OBJS})
 
     # specify the include folders - this will help with dependecies later on.
     target_include_directories(${PROJECT_NAME}
