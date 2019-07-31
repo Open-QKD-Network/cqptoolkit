@@ -267,7 +267,7 @@ macro(CQP_LIBRARY_PROJECT)
     # Create an object library which can later be turned into a static and/or dynamic library
     # see: https://cmake.org/Wiki/CMake/Tutorials/Object_Library
     # This removes the need to compile the code twice to produce both libraries
-    add_library (${PROJECT_NAME} OBJECT ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_OBJS})
+    add_library (${PROJECT_NAME} OBJECT ${${PROJECT_NAME}_SOURCES})
 
     # specify the include folders - this will help with dependecies later on.
     target_include_directories(${PROJECT_NAME}
