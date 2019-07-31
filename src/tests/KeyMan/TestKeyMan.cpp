@@ -103,9 +103,10 @@ namespace cqp
             ASSERT_EQ(response.keyid(), 1ul);
             ASSERT_EQ(response.keyvalue().length(), 4ul);
 
+            const auto numKeys = 10000u;
             KeyList keyData;
             PSK aKey;
-            for(uint i = 0; i < 1000000; i++)
+            for(uint i = 0; i < numKeys; i++)
             {
                 aKey.assign(32ul, rand());
                 keyData.push_back(aKey);
@@ -116,19 +117,19 @@ namespace cqp
             keyStore1->OnKeyGeneration(std::unique_ptr<KeyList>(new KeyList(keyData)));
 
             auto timeTaken = std::chrono::high_resolution_clock::now() - start;
-            uint timeTakenms = std::chrono::duration_cast<std::chrono::milliseconds>(timeTaken).count();
-            LOGINFO("1000000 Key Storage took:" + std::to_string(timeTakenms) + "ms, " + std::to_string(timeTakenms / (1000)) + "ns per key.");
+            uint64_t timeTakenns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeTaken).count();
+            LOGINFO(std::to_string(numKeys) + " Key Storage took:" + std::to_string(timeTakenns) + "ns, " + std::to_string(timeTakenns / numKeys) + "ns per key.");
 
             keyStore2->OnKeyGeneration(std::unique_ptr<KeyList>(new KeyList(keyData)));
 
             auto start2 = std::chrono::high_resolution_clock::now();
-            for(uint i = 0; i < 1000; i++)
+            for(uint i = 0; i < numKeys; i++)
             {
                 auto result = factory1.GetSharedKey(&ctx, &request, &response);
             }
             auto timeTaken2 = std::chrono::high_resolution_clock::now() - start2;
-            uint timeTakenms2 = std::chrono::duration_cast<std::chrono::milliseconds>(timeTaken2).count();
-            LOGINFO("Retrieving 1000 Keys took:" + std::to_string(timeTakenms2) + "ms, " + std::to_string(timeTakenms2 / (1000)) + "ns per key.");
+            uint64_t timeTakenns2 = std::chrono::duration_cast<std::chrono::nanoseconds>(timeTaken2).count();
+            LOGINFO("Retrieving " + std::to_string(numKeys) + " Keys took:" + std::to_string(timeTakenns2) + "ns, " + std::to_string(timeTakenns2 / (numKeys)) + "ns per key.");
             server2->Shutdown();
         }
     }
