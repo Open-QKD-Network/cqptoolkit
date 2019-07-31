@@ -128,8 +128,9 @@ namespace cqp
             double confidence = 0.5;
             size_t basesMatched = 0;
             size_t validCount = 0;
+            const size_t minSamples = 1u;
             // the number of elements to skip each time
-            const auto step = irregular.size() / std::max(1ul, samples);
+            const auto step = irregular.size() / std::max(minSamples, samples);
             const auto numToCheck = irregular.size();
 
             // step through a sample of values.

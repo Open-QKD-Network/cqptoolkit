@@ -25,7 +25,7 @@ namespace cqp
     {
     public:
         /// how to split up raw data into keys
-        static const size_t DefaultBytesPerKey = 16;
+        static const uint8_t DefaultBytesPerKey = 16;
 
         /**
          * @brief GetSide

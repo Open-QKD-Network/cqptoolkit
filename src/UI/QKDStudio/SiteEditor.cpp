@@ -113,7 +113,7 @@ namespace cqp
             if(!result.ok())
             {
                 QMessageBox::critical(this, "Failed to generate json",
-                                      QString::fromStdString(result.message()));
+                                      QString::fromStdString(result.error_message()));
             }
             else
             {

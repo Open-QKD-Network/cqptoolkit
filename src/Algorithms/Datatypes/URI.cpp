@@ -261,7 +261,7 @@ namespace cqp
         return result;
     }
 
-    bool URI::GetFirstParameter(const std::string& key, size_t& value, bool caseSensitive) const
+    bool URI::GetFirstParameter(const std::string& key, uint64_t& value, bool caseSensitive) const
     {
         bool result = false;
         std::string strVal;

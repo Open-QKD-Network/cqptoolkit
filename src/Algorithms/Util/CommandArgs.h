@@ -195,7 +195,7 @@ namespace cqp
          */
         bool GetProp(const std::string& key, bool& out) const;
         /// @copydoc GetProp
-        bool GetProp(const std::string& key, size_t& out) const;
+        bool GetProp(const std::string& key, uint64_t& out) const;
         /// @copydoc GetProp
         bool GetProp(const std::string& key, int& out) const;
         /// @copydoc GetProp

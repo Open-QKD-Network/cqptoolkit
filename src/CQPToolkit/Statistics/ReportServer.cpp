@@ -86,7 +86,8 @@ namespace cqp
             // add our aditional properties
             for(const auto& prop : additional)
             {
-                if(!localReport.mutable_parameters()->contains(prop.first))
+                if(localReport.mutable_parameters()->find(prop.first) ==
+                        localReport.mutable_parameters()->end())
                 {
                     (*localReport.mutable_parameters())[prop.first] = prop.second;
                 }

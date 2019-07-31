@@ -18,6 +18,7 @@
 #include "CQPToolkit/QKDDevices/RemoteQKDDevice.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "Algorithms/Util/FileIO.h"
+#include "google/protobuf/util/json_util.h"
 
 namespace cqp
 {

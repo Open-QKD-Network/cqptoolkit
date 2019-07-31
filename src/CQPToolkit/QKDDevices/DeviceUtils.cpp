@@ -42,7 +42,7 @@ namespace cqp
         using namespace std;
         string switchPort;
         string side;
-        size_t bytesPerKey = DefaultBytesPerKey;
+        uint8_t bytesPerKey = DefaultBytesPerKey;
 
         url.GetFirstParameter(IQKDDevice::Parameters::switchPort, switchPort);
         url.GetFirstParameter(IQKDDevice::Parameters::side, side);

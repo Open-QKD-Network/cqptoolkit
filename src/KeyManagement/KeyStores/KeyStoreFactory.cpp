@@ -17,6 +17,7 @@
 #include "Algorithms/Net/DNS.h"
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Datatypes/URI.h"
+#include "google/protobuf/util/json_util.h"
 
 namespace cqp
 {

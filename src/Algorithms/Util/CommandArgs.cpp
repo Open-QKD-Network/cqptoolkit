@@ -348,7 +348,7 @@ namespace cqp
         return result;
     }
 
-    bool CommandArgs::GetProp(const std::string& key, size_t& out) const
+    bool CommandArgs::GetProp(const std::string& key, uint64_t& out) const
     {
         bool result = false;
         auto it = properties.find(key);

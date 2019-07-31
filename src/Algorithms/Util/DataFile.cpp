@@ -18,7 +18,7 @@ namespace cqp
             {
                 // qubits packed 4/byte
                 inFile.seekg(0, std::ios::end);
-                auto qubitsToGet = static_cast<size_t>(inFile.tellg() * 4);
+                auto qubitsToGet = static_cast<uint64_t>(inFile.tellg() * 4);
                 if(maxValues != 0)
                 {
                     qubitsToGet = std::min(maxValues, qubitsToGet);

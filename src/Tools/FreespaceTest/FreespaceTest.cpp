@@ -3,7 +3,7 @@
 * @brief StatsDump
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -18,6 +18,7 @@
 #include "QKDInterfaces/Device.pb.h"
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "CQPToolkit/Drivers/Usb.h"
+#include "google/protobuf/util/json_util.h"
 
 using namespace cqp;
 
@@ -55,11 +56,11 @@ FreespaceTest::FreespaceTest()
     definedArguments.AddOption(Names::alice, "a", "Alice mode, generate random qubits and transmit them");
     definedArguments.AddOption(Names::bob, "b", "Bob mode, detect qubits and store them");
     definedArguments.AddOption(Names::output, "o", "Output file for the results")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::numPhotons, "n", "Alice: Number of photons to transmit")
-            .Bind();
+    .Bind();
     definedArguments.AddOption(Names::timeout, "t", "Timeout for detections in miliseconds")
-            .Bind();
+    .Bind();
 }
 
 void FreespaceTest::DisplayHelp(const CommandArgs::Option&)
@@ -87,11 +88,15 @@ void FreespaceTest::HandleConfigFile(const CommandArgs::Option& option)
                 // dont need this option if the config file specifies it
                 definedArguments[Names::connect]->set = true;
             }*/
-        } else {
+        }
+        else
+        {
             LOGERROR("Failed to read "  + option.value);
             exitCode = InvalidConfig;
         }
-    } else {
+    }
+    else
+    {
         LOGERROR("File not found: " + option.value);
         exitCode = ConfigNotFound;
     }
@@ -117,10 +122,12 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
         definedArguments.GetProp(Names::device, serialDevice);
         definedArguments.GetProp(Names::usbDevice, usbSerialNum);
 
-        AddSignalHandler(SIGTERM, [this](int signum) {
+        AddSignalHandler(SIGTERM, [this](int signum)
+        {
             StopProcessing(signum);
         });
-        AddSignalHandler(SIGINT, [this](int signum) {
+        AddSignalHandler(SIGINT, [this](int signum)
+        {
             StopProcessing(signum);
         });
 
@@ -130,9 +137,12 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
 
             string outputFilename = "alice.csv";
             definedArguments.GetProp(Names::output, outputFilename);
-            try {
+            try
+            {
                 outputFile.open(outputFilename, std::ofstream::out);
-            } catch (const exception& e) {
+            }
+            catch (const exception& e)
+            {
                 LOGERROR(e.what());
                 exitCode = ExitCodes::InvalidConfig;
                 stopExecution = true;
@@ -153,25 +163,33 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
                     leds->StartFrame();
                     leds->Fire();
                     leds->EndFrame();
-                } else
+                }
+                else
                 {
                     LOGERROR("Failed to initialise device");
                     exitCode = ExitCodes::InvalidConfig;
                 }
-            } else {
+            }
+            else
+            {
                 LOGERROR("Failed to create device");
                 exitCode = ExitCodes::NoDevice;
                 stopExecution = true;
             }
 
-        } else {
+        }
+        else
+        {
             LOGINFO("Running in Bob mode. Output will be: picoseconds,channel");
             string outputFilename = "bob.csv";
             definedArguments.GetProp(Names::output, outputFilename);
-            try {
+            try
+            {
                 outputFile.open(outputFilename, std::ofstream::out);
 
-            } catch (const exception& e) {
+            }
+            catch (const exception& e)
+            {
                 LOGERROR(e.what());
                 exitCode = ExitCodes::InvalidConfig;
                 stopExecution = true;
@@ -194,23 +212,33 @@ int FreespaceTest::Main(const std::vector<std::string>& args)
                         {
                             this_thread::sleep_for(std::chrono::milliseconds(timeout));
                             tagger->StopDetecting(nullptr, nullptr, nullptr);
-                            waitCv.wait(lock, [&]{
-                                return stopExecution;
-                            });
-                        } else {
-                            waitCv.wait(lock, [&]{
+                            waitCv.wait(lock, [&]
+                            {
                                 return stopExecution;
                             });
                         }
-                    } else {
+                        else
+                        {
+                            waitCv.wait(lock, [&]
+                            {
+                                return stopExecution;
+                            });
+                        }
+                    }
+                    else
+                    {
                         LOGERROR("Failed to start detecting");
                         exitCode = ExitCodes::UnknownError;
                     }
-                } else {
+                }
+                else
+                {
                     LOGERROR("Failed to intialise device");
                     exitCode = ExitCodes::InvalidConfig;
                 }
-            } else {
+            }
+            else
+            {
                 LOGERROR("Failed to create tagger");
                 exitCode = ExitCodes::NoDevice;
             }
@@ -238,7 +266,8 @@ void FreespaceTest::StopProcessing(int)
         if(LogStatus(tagger->StopDetecting(nullptr, &request, &response)).ok())
         {
             unique_lock<mutex> lock(waitMutex);
-            waitCv.wait(lock, [&]{
+            waitCv.wait(lock, [&]
+            {
                 return stopExecution;
             });
         }
@@ -257,7 +286,9 @@ void FreespaceTest::OnPhotonReport(std::unique_ptr<ProtocolDetectionReport> repo
             outputFile << detection.time.count() << ", " << std::to_string(detection.value) << endl;
         }
         outputFile.close();
-    } else {
+    }
+    else
+    {
         LOGWARN("Output file not writabe");
     }
     stopExecution = true;
@@ -274,7 +305,9 @@ void FreespaceTest::OnEmitterReport(std::unique_ptr<EmitterReport> report)
             outputFile << emision << endl;
         }
         outputFile.close();
-    } else {
+    }
+    else
+    {
         LOGWARN("Output file not writabe");
     }
     stopExecution = true;

@@ -3,7 +3,7 @@
 * @brief URI
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 7/3/2018
@@ -131,7 +131,7 @@ namespace cqp
         /// @copydoc GetFirstParameter
         bool GetFirstParameter(const std::string& key, uint8_t& value, bool caseSensitive = false) const;
         /// @copydoc GetFirstParameter
-        bool GetFirstParameter(const std::string& key, size_t& value, bool caseSensitive = false) const;
+        bool GetFirstParameter(const std::string& key, uint64_t& value, bool caseSensitive = false) const;
         /// @copydoc GetFirstParameter
         bool GetFirstParameter(const std::string& key, long& value, bool caseSensitive = false) const;
         /// @copydoc GetFirstParameter
