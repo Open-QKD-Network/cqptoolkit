@@ -34,6 +34,6 @@ if(MSVC)
 endif()
 
 # Standard linking to gtest stuff.
-target_link_libraries(${PROJECT_NAME}  PRIVATE Algorithms_Static gbench)
+target_link_libraries(${PROJECT_NAME}  PRIVATE CQPToolkit_Shared KeyManagement_Shared gbench)
 
 SET(CPACK_DEBIAN_${CQP_INSTALL_COMPONENT}_PACKAGE_SECTION "test")

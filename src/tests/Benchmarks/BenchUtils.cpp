@@ -19,11 +19,12 @@ namespace cqp
     {
         static void BM_FNV1aHash(benchmark::State& state)
         {
-
+            const std::string data = "Some amount of data which isn't very small";
             for(auto _ : state)
             {
-                FNV1aHash("Some amount of data which isn't very small");
+                FNV1aHash(data);
             }
+            state.SetBytesProcessed(data.size());
         }
 
         BENCHMARK(BM_FNV1aHash);
