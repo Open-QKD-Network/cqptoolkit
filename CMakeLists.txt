@@ -193,68 +193,91 @@ endif()
 find_package(Qt5 COMPONENTS Core Widgets QUIET)
 
 if(BUILD_TESTING)
-        find_package(GTest QUIET)
-        find_package(GMock QUIET)
+    find_package(GTest QUIET)
+    find_package(GMock QUIET)
 
-        if(GTEST_FOUND AND GMOCK_FOUND)
-            message(STATUS "GTest : ${GTEST_VERSION}")
-            message(STATUS "GMock : ${GMOCK_VERSION}")
+    if(GTEST_FOUND AND GMOCK_FOUND)
+        message(STATUS "GTest : ${GTEST_VERSION}")
+        message(STATUS "GMock : ${GMOCK_VERSION}")
 
-        else(GTEST_FOUND AND GMOCK_FOUND)
-            message(STATUS "Google Test was not found, it will be built from source")
-            # Download the libusb release
-            # A special cmake project is used (BuildibUsb.cmake) to find the right library for the platform and install it in a usful place
-            ExternalProject_add(GTest_External
-                # SVN used so that git does not need to be installed
-                # TODO: switch to release tag when its updated.
-                SVN_REPOSITORY "https://github.com/google/googletest.git/tags/release-1.8.1"
-                    UPDATE_COMMAND ""
-                DOWNLOAD_NO_PROGRESS 1
-                # Pass arguments to the build process to disable/enable modules
-                CMAKE_ARGS
-                    -DCMAKE_BUILD_TYPE=Release
-                    -Dgtest_force_shared_crt=ON
-                    -DBUILD_SHARED_LIBS=OFF
-                    -Dgtest_disable_pthreads=${GTEST_DISABLE_PTHREADS}
-                    # Install the files in the same location as everything else so that it runs with dlls etc.
-                    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
-                    # We dont want to hear about warnings in other peoples builds
-                    -Wno-dev
-                    ${ExtraGTestArgs}
-            )
-            # Setup variables as though we'd found gtest
+    else(GTEST_FOUND AND GMOCK_FOUND)
+        message(STATUS "Google Test was not found, it will be built from source")
+        # Download the libusb release
+        # A special cmake project is used (BuildibUsb.cmake) to find the right library for the platform and install it in a usful place
+        ExternalProject_add(GTest_External
+            # SVN used so that git does not need to be installed
+            # TODO: switch to release tag when its updated.
+            SVN_REPOSITORY "https://github.com/google/googletest.git/tags/release-1.8.1"
+                UPDATE_COMMAND ""
+            DOWNLOAD_NO_PROGRESS 1
+            # Pass arguments to the build process to disable/enable modules
+            CMAKE_ARGS
+                -DCMAKE_BUILD_TYPE=Release
+                -Dgtest_force_shared_crt=ON
+                -DBUILD_SHARED_LIBS=OFF
+                -Dgtest_disable_pthreads=${GTEST_DISABLE_PTHREADS}
+                # Install the files in the same location as everything else so that it runs with dlls etc.
+                -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
+                # We dont want to hear about warnings in other peoples builds
+                -Wno-dev
+                ${ExtraGTestArgs}
+        )
+        # Setup variables as though we'd found gtest
 
-            set(GTEST_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/include" CACHE STRING "" FORCE)
-            set(GMOCK_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/include" CACHE STRING "" FORCE)
+        set(GTEST_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/include" CACHE STRING "" FORCE)
+        set(GMOCK_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/include" CACHE STRING "" FORCE)
 
-            set(GMOCK_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE STRING "" FORCE)
-            SET(GTEST_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE STRING "" FORCE)
-            SET(GTEST_MAIN_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE STRING "" FORCE)
-            SET(GTEST_FOUND TRUE)
-            SET(GMOCK_FOUND TRUE)
+        set(GMOCK_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE STRING "" FORCE)
+        SET(GTEST_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE STRING "" FORCE)
+        SET(GTEST_MAIN_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE STRING "" FORCE)
+        SET(GTEST_FOUND TRUE)
+        SET(GMOCK_FOUND TRUE)
 
-            file(MAKE_DIRECTORY "${GMOCK_INCLUDE_DIRS}")
-            file(MAKE_DIRECTORY "${GTEST_INCLUDE_DIRS}")
-            add_library(gmock STATIC IMPORTED) # or STATIC instead of SHARED
-            set_target_properties(gmock PROPERTIES
-              IMPORTED_LOCATION "${GMOCK_LIBRARIES}"
-              INTERFACE_INCLUDE_DIRECTORIES "${GMOCK_INCLUDE_DIRS}"
-            )
+        file(MAKE_DIRECTORY "${GMOCK_INCLUDE_DIRS}")
+        file(MAKE_DIRECTORY "${GTEST_INCLUDE_DIRS}")
+        add_library(gmock STATIC IMPORTED) # or STATIC instead of SHARED
+        set_target_properties(gmock PROPERTIES
+          IMPORTED_LOCATION "${GMOCK_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GMOCK_INCLUDE_DIRS}"
+        )
 
-            add_library(gtest STATIC IMPORTED) # or STATIC instead of SHARED
-            set_target_properties(gtest PROPERTIES
-              IMPORTED_LOCATION "${GTEST_LIBRARIES}"
-              INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
-            )
+        add_library(gtest STATIC IMPORTED) # or STATIC instead of SHARED
+        set_target_properties(gtest PROPERTIES
+          IMPORTED_LOCATION "${GTEST_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
+        )
 
-            add_library(gtest_main STATIC IMPORTED) # or STATIC instead of SHARED
-            set_target_properties(gtest_main PROPERTIES
-              IMPORTED_LOCATION "${GTEST_MAIN_LIBRARIES}"
-              INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
-            )
+        add_library(gtest_main STATIC IMPORTED) # or STATIC instead of SHARED
+        set_target_properties(gtest_main PROPERTIES
+          IMPORTED_LOCATION "${GTEST_MAIN_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
+        )
 
-        endif(GTEST_FOUND AND GMOCK_FOUND)
-	
+    endif(GTEST_FOUND AND GMOCK_FOUND)
+
+    message ("Building google benchmark")
+    ExternalProject_add(GBench_External
+        GIT_REPOSITORY "https://github.com/google/benchmark.git"
+        UPDATE_COMMAND ""
+        DOWNLOAD_NO_PROGRESS 1
+        # Pass arguments to the build process to disable/enable modules
+        CMAKE_ARGS
+            -DCMAKE_BUILD_TYPE=Release
+            -DBENCHMARK_ENABLE_GTEST_TESTS=OFF
+            #-DBENCHMARK_ENABLE_LTO=true
+            # Install the files in the same location as everything else so that it runs with dlls etc.
+            -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
+            # We dont want to hear about warnings in other peoples builds
+            -Wno-dev
+    )
+    add_library(gbench STATIC IMPORTED)
+    SET(GBENCH_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/include")
+    SET(GBENCH_LIBRARIES "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    set_target_properties(gbench PROPERTIES
+        IMPORTED_LOCATION ${GBENCH_LIBRARIES}
+        INTERFACE_INCLUDE_DIRECTORIES ${GBENCH_INCLUDE_DIRS}
+    )
+    SET(GBENCH_FOUND TRUE)
 endif(BUILD_TESTING)
 
 find_package(Doxygen)
