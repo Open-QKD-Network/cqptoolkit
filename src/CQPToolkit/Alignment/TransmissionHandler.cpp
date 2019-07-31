@@ -35,6 +35,7 @@ namespace cqp
             using namespace std;
             LOGTRACE("Markers requested");
             grpc::Status result;
+            const auto start = std::chrono::high_resolution_clock::now();
 
             bool dataReady = false;
             do
@@ -100,6 +101,10 @@ namespace cqp
             }
             while(!dataReady);
 
+            const auto timeTaken = std::chrono::duration_cast<std::chrono::microseconds>(
+                                       std::chrono::high_resolution_clock::now() - start).count();
+            LOGDEBUG("GetAlignmentMarkers took:" + std::to_string(timeTaken) + "uS");
+
             return result;
         }
 
@@ -108,6 +113,7 @@ namespace cqp
             using namespace std;
             LOGDEBUG("Told to keep " + std::to_string(request->slotids().size()) + " slots");
             grpc::Status result;
+            const auto start = std::chrono::high_resolution_clock::now();
 
             bool dataReady = false;
 
@@ -151,6 +157,10 @@ namespace cqp
                 }
             }
             while(!dataReady);
+
+            const auto timeTaken = std::chrono::duration_cast<std::chrono::microseconds>(
+                                       std::chrono::high_resolution_clock::now() - start).count();
+            LOGDEBUG("DiscardTransmissions took:" + std::to_string(timeTaken) + "uS");
 
             return result;
         }
