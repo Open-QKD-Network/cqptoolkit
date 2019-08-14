@@ -3,7 +3,7 @@
 * @brief TCPTunnel
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 18/10/2017
@@ -35,6 +35,8 @@ namespace cqp
                     SetKeepAlive(true);
                     SetReceiveTimeout(milliseconds(3000));
                     connected = true;
+                    ready = true;
+                    readyCv.notify_all();
                 }
                 catch (const std::exception& e)
                 {

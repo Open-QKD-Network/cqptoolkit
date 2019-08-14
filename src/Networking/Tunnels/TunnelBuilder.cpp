@@ -18,7 +18,6 @@
 #include "Algorithms/Logging/Logger.h"
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include "KeyManagement/KeyStores/KeyStore.h"
-#include "QKDInterfaces/IKey.grpc.pb.h"
 #include "QKDInterfaces/Tunnels.pb.h"
 
 #include <cryptopp/osrng.h>
@@ -193,16 +192,29 @@ namespace cqp
 
                 if(client && encryptor && decryptor)
                 {
-                    decryptor->Attach(new CryptoPP::Redirector(*client));
                     keepGoing = true;
-                    encodeThread = std::thread(&TunnelBuilder::EncodingWorker, this);
-
                     result = Status();
+                }
+                else
+                {
+                    LOGERROR("Setup failed");
+                    result = Status(StatusCode::INTERNAL, "Setup failed");
                 } // if(client && encryptor && decryptor)
             } // else
 
             return result;
         } // ConfigureEndpoint
+
+        void TunnelBuilder::StartTransfer()
+        {
+            LOGTRACE("");
+            if(client && encryptor && decryptor)
+            {
+                decryptor->Attach(new CryptoPP::Redirector(*client));
+                keepGoing = true;
+                encodeThread = std::thread(&TunnelBuilder::EncodingWorker, this);
+            }
+        }
 
         void TunnelBuilder::Shutdown()
         {
@@ -213,24 +225,17 @@ namespace cqp
             }
         } // Shutdown
 
-        Status TunnelBuilder::Transfer(ServerContext*, ::grpc::ServerReader<remote::EncryptedDataValues>* reader, Empty*)
+        Status TunnelBuilder::ReadEncrypted(::grpc::internal::ReaderInterface<remote::EncryptedDataValues>* stream,
+                                            remote::IKey::Stub* keyFactory)
         {
-            Status result;
+            LOGTRACE("Starting");
             using namespace CryptoPP;
+            Status result;
             KeyID lastKeyId = 0;
             remote::SharedKey sharedKey;
-            // stub for getting existing keys
-            auto keyFactory = remote::IKey::NewStub(myKeyFactoryChannel);
-
-            while(!client || !client->WaitUntilReady(std::chrono::milliseconds(1000)))
-            {
-                LOGINFO("Waiting for output data channel");
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-            }
-
             remote::EncryptedDataValues incomming;
             // read encrypted data from the stream
-            while(result.ok() && reader->Read(&incomming) && client)
+            while(result.ok() && stream->Read(&incomming) && client && keepGoing)
             {
                 if(incomming.keyid() != lastKeyId)
                 {
@@ -279,9 +284,39 @@ namespace cqp
                 }
 
             }
+            LOGTRACE("Ending");
+            return result;
+        }
 
-            LogStatus(result);
+        Status TunnelBuilder::TransferBi(ServerContext*, ::grpc::ServerReaderWriter<remote::EncryptedDataValues, remote::EncryptedDataValues>* stream)
+        {
+            Status result;
+            using namespace CryptoPP;
+            // stub for getting existing keys
+            auto keyFactory = remote::IKey::NewStub(myKeyFactoryChannel);
+
+            while(!client || !client->WaitUntilReady(std::chrono::milliseconds(1000)))
+            {
+                LOGINFO("Waiting for client data channel");
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+
+            decryptor->Attach(new CryptoPP::Redirector(*client));
+            keepGoing = true;
+
+            // start reading encrypted data
+            auto reader = std::async(std::launch::async, [&]()
+            {
+                return LogStatus(ReadEncrypted(stream, keyFactory.get()));
+            });
+
+            // encrypt data and send it
+            result = LogStatus(WriteEncrypted(stream, keyFactory.get()));
             keepGoing = false;
+            LOGTRACE("Waiting for reader to finish");
+            // wait for reader to stop
+            reader.wait();
+
             LOGDEBUG("Decryptor finished");
 
             return Status();
@@ -348,36 +383,24 @@ namespace cqp
             return result;
         }
 
-        void TunnelBuilder::EncodingWorker()
+        Status TunnelBuilder::WriteEncrypted(::grpc::internal::WriterInterface<remote::EncryptedDataValues>* stream,
+                                             remote::IKey::Stub* keyFactory)
         {
+            LOGTRACE("Starting");
             using namespace std;
             using namespace std::chrono;
             using namespace CryptoPP;
             using chrono::high_resolution_clock;
 
+            Status result;
             remote::SharedKey sharedKey;
-
-            auto keyFactory = remote::IKey::NewStub(myKeyFactoryChannel);
-            auto farSide = remote::ITransfer::NewStub(farSideEP);
-
-            SecByteBlock buffer(rawInputBufferSize);
-            // create a pipeline which will react to data from the client and pass it to the encryptor
-
-            while(!client->WaitUntilReady())
-            {
-                LOGINFO("Waiting for client");
-            }
-
-            grpc::ClientContext transferContext;
-            google::protobuf::Empty response;
             uint64_t bytesUsedOnKey = 0;
             high_resolution_clock::time_point timeKeyGenerated;
+            SecByteBlock buffer(rawInputBufferSize);
             std::string payload;
             encryptor->Attach(new StringSink(payload));
 
-            auto farSideWriter = farSide->Transfer(&transferContext, &response);
-
-            while(keyFactory && keepGoing && farSideWriter)
+            while(keyFactory && keepGoing && stream)
             {
 
                 try
@@ -447,7 +470,7 @@ namespace cqp
                             messageData.set_payload(payload);
 
                             // send for decryption at the other side
-                            if(!farSideWriter->Write(messageData))
+                            if(!stream->Write(messageData))
                             {
                                 LOGERROR("Failed to send encrypted message");
                                 keepGoing = false;
@@ -477,9 +500,45 @@ namespace cqp
 
             } // while(keepGoing)
 
-            if(farSideWriter)
+            LOGTRACE("Ending");
+            return result;
+        }
+
+        void TunnelBuilder::EncodingWorker()
+        {
+            Status result;
+            auto keyFactory = remote::IKey::NewStub(myKeyFactoryChannel);
+            auto farSide = remote::ITransfer::NewStub(farSideEP);
+
+            // create a pipeline which will react to data from the client and pass it to the encryptor
+
+            while(!client->WaitUntilReady())
             {
-                LogStatus(farSideWriter->Finish());
+                LOGINFO("Waiting for client");
+            }
+
+            grpc::ClientContext transferContext;
+
+            auto farSideStream = farSide->TransferBi(&transferContext);
+
+            // launch a thread to decrypt the data
+            auto reader = std::async(std::launch::async, [&]()
+            {
+                return LogStatus(ReadEncrypted(farSideStream.get(), keyFactory.get()));
+            });
+
+            // read data an encrypt it
+            result = LogStatus(WriteEncrypted(farSideStream.get(), keyFactory.get()));
+            // encryptor has finished, wait for reader to finish
+            if(farSideStream)
+            {
+                farSideStream->WritesDone();
+            }
+            reader.wait();
+
+            if(farSideStream)
+            {
+                LogStatus(farSideStream->Finish());
             }
 
             delete client;

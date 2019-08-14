@@ -24,6 +24,7 @@
 #include "Algorithms/Util/Strings.h"
 #include <grpcpp/security/credentials.h>
 #include <grpcpp/server.h>
+#include "QKDInterfaces/IKey.grpc.pb.h"
 
 namespace cqp
 {
@@ -129,6 +130,13 @@ namespace cqp
                                            const remote::tunnels::KeyLifespan& keyLifespan);
 
             /**
+             * @brief StartTransfer
+             * Start the two way encrypted communication. Should only be called from one side of the tunnel,
+             * it will in-tern call remote::Transfer::TransferBi()
+             */
+            void StartTransfer();
+
+            /**
              * @brief Shutdown
              * Stop the tunnel
              */
@@ -177,7 +185,7 @@ namespace cqp
 
                 @enduml
              */
-            grpc::Status Transfer(grpc::ServerContext* context, ::grpc::ServerReader<remote::EncryptedDataValues>* reader, google::protobuf::Empty* response) override;
+            grpc::Status TransferBi(grpc::ServerContext* context, ::grpc::ServerReaderWriter<remote::EncryptedDataValues, remote::EncryptedDataValues>* reader) override;
 
             ///@}
 
@@ -275,6 +283,11 @@ namespace cqp
             std::shared_ptr<grpc::Server> server;
             /// how to connect to our peer
             std::shared_ptr<grpc::ChannelCredentials> clientCreds;
+        private:
+            grpc::Status ReadEncrypted(::grpc::internal::ReaderInterface<remote::EncryptedDataValues>* stream,
+                                       remote::IKey::Stub* keyFactory);
+            grpc::Status WriteEncrypted(::grpc::internal::WriterInterface<remote::EncryptedDataValues>* stream,
+                                        remote::IKey::Stub* keyFactory);
         };
 
     }
