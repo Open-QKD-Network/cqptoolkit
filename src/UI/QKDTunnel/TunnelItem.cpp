@@ -3,7 +3,7 @@
 * @brief TunnelItem
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 27/10/2017
@@ -80,13 +80,8 @@ namespace qkdtunnel
         setData(details.encryptionmethod().keysizebytes(), Index::encryptionMethod_keySizeBytes);
 
         setData(QString::fromStdString(details.startnode().clientdataporturi()), Index::startNode_clientDataPortUri);
-        setData(details.startnode().localchannelport(), Index::startNode_localChannelPort);
-        setData(QString::fromStdString(details.startnode().channeluri()), Index::startNode_channelUri);
 
         setData(QString::fromStdString(details.endnode().clientdataporturi()), Index::endNode_clientDataPortUri);
-
-        setData(details.endnode().localchannelport(), Index::endNode_localChannelPort);
-        setData(QString::fromStdString(details.endnode().channeluri()), Index::endNode_channelUri);
 
     } // SetDetails
 
@@ -141,14 +136,8 @@ namespace qkdtunnel
         result.mutable_encryptionmethod()->set_keysizebytes(data(Index::encryptionMethod_keySizeBytes).toUInt());
 
         result.mutable_startnode()->set_clientdataporturi(data(Index::startNode_clientDataPortUri).toString().toStdString());
-        result.mutable_startnode()->set_localchannelport(data(Index::startNode_localChannelPort).toUInt());
-        result.mutable_startnode()->set_channeluri(data(Index::startNode_channelUri).toString().toStdString());
-
 
         result.mutable_endnode()->set_clientdataporturi(data(Index::endNode_clientDataPortUri).toString().toStdString());
-
-        result.mutable_endnode()->set_localchannelport(data(Index::endNode_localChannelPort).toUInt());
-        result.mutable_endnode()->set_channeluri(data(Index::endNode_channelUri).toString().toStdString());
 
         return result;
     }

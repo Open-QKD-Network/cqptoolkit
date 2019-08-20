@@ -18,6 +18,7 @@
     "blockCypher": "AES",
     "keySizeBytes": 32
    },
+   "remoteEncryptedListenAddress": "0.0.0.0:8900",
    "startNode": {
     "clientDataPortUri": "tcpsrv://0.0.0.0:9000"
    },

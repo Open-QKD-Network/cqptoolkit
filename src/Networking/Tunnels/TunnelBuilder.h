@@ -106,13 +106,22 @@ namespace cqp
 
             /**
              * @brief TunnelBuilder
-             * Constructor
+             * Constructor master mode
+             * @param crypto The kind of encryption to use
+             */
+            TunnelBuilder(const remote::tunnels::CryptoScheme& crypto,
+                          std::shared_ptr<grpc::ChannelCredentials> clientCreds);
+
+            /**
+             * @brief TunnelBuilder
+             * Constructor slave mode (creates listening server)
              * @param crypto The kind of encryption to use
              * @param[in,out] transferListenPort The port number to use for encrypted data transfer
              * @param creds The server credentials to use
              * @param clientCreds The credentials to use when connecting to peer
              */
-            TunnelBuilder(const remote::tunnels::CryptoScheme& crypto, int& transferListenPort, std::shared_ptr<grpc::ServerCredentials> creds,
+            TunnelBuilder(const remote::tunnels::CryptoScheme& crypto, const std::string& transferListenAddress,
+                          std::shared_ptr<grpc::ServerCredentials> creds,
                           std::shared_ptr<grpc::ChannelCredentials> clientCreds);
 
             /**
@@ -134,7 +143,7 @@ namespace cqp
              * Start the two way encrypted communication. Should only be called from one side of the tunnel,
              * it will in-tern call remote::Transfer::TransferBi()
              */
-            void StartTransfer();
+            void StartTransfer(const std::string& farSide);
 
             /**
              * @brief Shutdown
@@ -185,9 +194,11 @@ namespace cqp
 
                 @enduml
              */
-            grpc::Status TransferBi(grpc::ServerContext* context, ::grpc::ServerReaderWriter<remote::EncryptedDataValues, remote::EncryptedDataValues>* reader) override;
+            grpc::Status Transfer(grpc::ServerContext* context, ::grpc::ServerReaderWriter<remote::EncryptedDataValues, remote::EncryptedDataValues>* reader) override;
 
             ///@}
+
+            std::string GetListenAddress() const;
 
             /// Destructor
             ~TunnelBuilder() override;
@@ -241,7 +252,7 @@ namespace cqp
 
             @enduml
              */
-            void EncodingWorker();
+            void EncodingWorker(std::string farSide);
 
             /**
              * @brief ChangeKey
@@ -265,8 +276,6 @@ namespace cqp
 
             /// endpoint to send/receive unencrypted data
             DeviceIO* client = nullptr;
-            /// communication with peer
-            std::shared_ptr<grpc::Channel> farSideEP;
             /// source of keys
             std::shared_ptr<grpc::Channel> myKeyFactoryChannel;
             /// when to change keys
@@ -276,13 +285,16 @@ namespace cqp
             /// thread to read from device
             std::thread encodeThread;
             /// should the encryptor stop
-            bool keepGoing = true;
+            std::atomic_bool keepGoing {true};
             /// random number generator
             CryptoPP::RandomNumberGenerator* rng = nullptr;
             /// our server for our peer to connect to
             std::shared_ptr<grpc::Server> server;
             /// how to connect to our peer
             std::shared_ptr<grpc::ChannelCredentials> clientCreds;
+            std::string transferListenHost;
+            /// The port the transfer service is listening on
+            int transferListenPort = 0;
         private:
             grpc::Status ReadEncrypted(::grpc::internal::ReaderInterface<remote::EncryptedDataValues>* stream,
                                        remote::IKey::Stub* keyFactory);

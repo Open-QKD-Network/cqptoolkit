@@ -73,11 +73,13 @@ namespace cqp
             }
         }
 
-        TunnelBuilder::TunnelBuilder(const remote::tunnels::CryptoScheme& crypto, int& transferListenPort, std::shared_ptr<grpc::ServerCredentials> creds,
+        TunnelBuilder::TunnelBuilder(const remote::tunnels::CryptoScheme& crypto,
                                      std::shared_ptr<grpc::ChannelCredentials> clientCreds) :
-            clientCreds(clientCreds)
+            clientCreds{clientCreds}
         {
             using namespace CryptoPP;
+            LOGDEBUG("Cipher Mode=" + crypto.mode() + ", SubMode=" + crypto.submode() + ", BlockCypher=" + crypto.blockcypher());
+
             // create the process which will encrypt/decrypt data
             if(crypto.mode() == Modes::GCM && crypto.blockcypher() == BlockCiphers::AES)
             {
@@ -134,6 +136,14 @@ namespace cqp
                 rng = new AutoSeededRandomPool();
             }
 
+        }
+
+        TunnelBuilder::TunnelBuilder(const remote::tunnels::CryptoScheme& crypto,
+                                     const std::string& transferListenAddress,
+                                     std::shared_ptr<grpc::ServerCredentials> creds,
+                                     std::shared_ptr<grpc::ChannelCredentials> clientCreds) :
+            TunnelBuilder(crypto, clientCreds)
+        {
             // create the server
             grpc::ServerBuilder builder;
             // grpc will create worker threads as it needs, idle work threads
@@ -141,15 +151,27 @@ namespace cqp
             // setting this too low causes large number of thread creation+deletions, default = 2
             builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, 50);
 
-            builder.AddListeningPort(std::string(net::AnyAddress) + ":" + std::to_string(transferListenPort), creds, &transferListenPort);
+            builder.AddListeningPort(transferListenAddress, creds, &transferListenPort);
 
             LOGTRACE("Registering services");
             // Register services
             builder.RegisterService(this);
             // ^^^ Add new services here ^^^ //
 
-            LOGTRACE("Starting server");
+            LOGTRACE("Starting server on " + transferListenAddress);
             server = builder.BuildAndStart();
+
+            URI address(transferListenAddress);
+            transferListenHost = address.GetHost();
+
+            if(!server)
+            {
+                LOGERROR("Failed to start encrypted channel server");
+            }
+            else
+            {
+                LOGDEBUG("Server ready on " + GetListenAddress());
+            }
         } // TunnelBuilder
 
         Status TunnelBuilder::ConfigureEndpoint(const remote::tunnels::TunnelEndDetails& details,
@@ -160,10 +182,8 @@ namespace cqp
             Status result;
 
             LOGDEBUG("Endpoint details:\n" +
-                     "   ClientURI: " + details.clientdataporturi() + "\n" +
-                     "   Local tunnel port: " + std::to_string(details.localchannelport()) + "\n" +
-                     "   Far KeyStore: " + keyStoreTo + "\n" +
-                     "   Far Tunnel:" + details.channeluri() + "\n"
+                     "   Unencrypted port: " + details.clientdataporturi() + "\n" +
+                     "   Far KeyStore: " + keyStoreTo + "\n"
                     );
 
             // wait for any existing setup to come down
@@ -173,7 +193,7 @@ namespace cqp
                 encodeThread.join();
             }
 
-            if(keyStoreTo.empty() || details.channeluri().empty())
+            if(keyStoreTo.empty())
             {
                 result = Status(StatusCode::INVALID_ARGUMENT, "Bad endpoint parameters specified");
             }
@@ -182,8 +202,6 @@ namespace cqp
                 // store the new values for creating the key
                 currentKeyStoreTo = keyStoreTo;
                 currentKeyLifespan = keyLifespan;
-                // channel for transferring the encrypted data
-                farSideEP = grpc::CreateChannel(details.channeluri(), clientCreds);
                 // channel for getting keys
                 myKeyFactoryChannel = keyFactoryChannel;
 
@@ -205,14 +223,14 @@ namespace cqp
             return result;
         } // ConfigureEndpoint
 
-        void TunnelBuilder::StartTransfer()
+        void TunnelBuilder::StartTransfer(const std::string& farSide)
         {
             LOGTRACE("");
             if(client && encryptor && decryptor)
             {
                 decryptor->Attach(new CryptoPP::Redirector(*client));
                 keepGoing = true;
-                encodeThread = std::thread(&TunnelBuilder::EncodingWorker, this);
+                encodeThread = std::thread(&TunnelBuilder::EncodingWorker, this, farSide);
             }
         }
 
@@ -288,7 +306,7 @@ namespace cqp
             return result;
         }
 
-        Status TunnelBuilder::TransferBi(ServerContext*, ::grpc::ServerReaderWriter<remote::EncryptedDataValues, remote::EncryptedDataValues>* stream)
+        Status TunnelBuilder::Transfer(ServerContext* ctx, ::grpc::ServerReaderWriter<remote::EncryptedDataValues, remote::EncryptedDataValues>* stream)
         {
             Status result;
             using namespace CryptoPP;
@@ -312,6 +330,7 @@ namespace cqp
 
             // encrypt data and send it
             result = LogStatus(WriteEncrypted(stream, keyFactory.get()));
+            ctx->TryCancel();
             keepGoing = false;
             LOGTRACE("Waiting for reader to finish");
             // wait for reader to stop
@@ -321,6 +340,12 @@ namespace cqp
 
             return Status();
         } // Transfer
+
+
+        std::string TunnelBuilder::GetListenAddress() const
+        {
+            return transferListenHost + ":" + std::to_string(transferListenPort);
+        }
 
         DeviceIO* TunnelBuilder::UriToTunnel(const URI& portUri)
         {
@@ -504,41 +529,54 @@ namespace cqp
             return result;
         }
 
-        void TunnelBuilder::EncodingWorker()
+        void TunnelBuilder::EncodingWorker(std::string farSide)
         {
             Status result;
             auto keyFactory = remote::IKey::NewStub(myKeyFactoryChannel);
-            auto farSide = remote::ITransfer::NewStub(farSideEP);
+            // channel for transferring the encrypted data
+            // communication with peer
+            LOGDEBUG("Connecting to encrypted channel " + farSide);
+            auto farSideEP = grpc::CreateChannel(farSide, clientCreds);
 
-            // create a pipeline which will react to data from the client and pass it to the encryptor
-
-            while(!client->WaitUntilReady())
+            if(farSideEP)
             {
-                LOGINFO("Waiting for client");
+                auto farSide = remote::ITransfer::NewStub(farSideEP);
+
+                // create a pipeline which will react to data from the client and pass it to the encryptor
+
+                while(!client->WaitUntilReady())
+                {
+                    LOGINFO("Waiting for client");
+                }
+
+                grpc::ClientContext transferContext;
+                auto farSideStream = farSide->Transfer(&transferContext);
+
+                // launch a thread to decrypt the data
+                auto reader = std::async(std::launch::async, [&]()
+                {
+                    return LogStatus(ReadEncrypted(farSideStream.get(), keyFactory.get()));
+                });
+
+                // read data an encrypt it
+                result = LogStatus(WriteEncrypted(farSideStream.get(), keyFactory.get()));
+
+                transferContext.TryCancel();
+                // encryptor has finished, wait for reader to finish
+                if(farSideStream)
+                {
+                    farSideStream->WritesDone();
+                }
+                reader.wait();
+
+                if(farSideStream)
+                {
+                    LogStatus(farSideStream->Finish());
+                }
             }
-
-            grpc::ClientContext transferContext;
-
-            auto farSideStream = farSide->TransferBi(&transferContext);
-
-            // launch a thread to decrypt the data
-            auto reader = std::async(std::launch::async, [&]()
+            else
             {
-                return LogStatus(ReadEncrypted(farSideStream.get(), keyFactory.get()));
-            });
-
-            // read data an encrypt it
-            result = LogStatus(WriteEncrypted(farSideStream.get(), keyFactory.get()));
-            // encryptor has finished, wait for reader to finish
-            if(farSideStream)
-            {
-                farSideStream->WritesDone();
-            }
-            reader.wait();
-
-            if(farSideStream)
-            {
-                LogStatus(farSideStream->Finish());
+                LOGERROR("Failed to connect to far side");
             }
 
             delete client;

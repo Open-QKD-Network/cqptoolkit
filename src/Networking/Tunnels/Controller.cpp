@@ -41,11 +41,21 @@ namespace cqp
 
             if(settings.localKeyFactory_case() == ControllerDetails::LocalKeyFactoryCase::kLocalKeyFactoryUri)
             {
+                LOGDEBUG("using keystore: " + settings.localkeyfactoryuri());
                 keyStoreFactoryUri = settings.localkeyfactoryuri();
                 keyFactoryChannel = grpc::CreateChannel(keyStoreFactoryUri, clientCreds);
             }
 
+            if(settings.id().empty())
+            {
+                settings.set_id(UUID());
+            }
             LOGINFO("Tunnelling controller started with ID: " + settings.id());
+            LOGDEBUG("I have " + std::to_string(settings.tunnels().size()) + " tunnels defined:");
+            for(const auto &tun: settings.tunnels())
+            {
+                LOGDEBUG(tun.first + ": " + tun.second.name());
+            }
         }
 
         Status Controller::GetSupportedSchemes(grpc::ServerContext*, const google::protobuf::Empty*, remote::tunnels::EncryptionSchemes* response)
@@ -122,6 +132,7 @@ namespace cqp
                 }
                 else if(!tun.remotecontrolleruri().empty())
                 {
+                    LOGDEBUG("Connecting to " + tun.remotecontrolleruri());
                     result = grpc::CreateChannel(tun.remotecontrolleruri(), clientCreds);
                     endpointsByName[tun.remotecontrolleruri()] = result;
                 }
@@ -147,6 +158,7 @@ namespace cqp
         Status Controller::StartTunnel(grpc::ServerContext*, const google::protobuf::StringValue* request, Empty*)
         {
             remote::tunnels::CompleteTunnelRequest tunSettings;
+
             Status result;
             LOGDEBUG("Waiting for keystore");
 
@@ -178,19 +190,55 @@ namespace cqp
                 auto builderIt = tunnelBuilders.find(request->value());
                 if(builderIt == tunnelBuilders.end())
                 {
-                    int tunnelListenPort = static_cast<int>(tunSettings.tunnel().startnode().localchannelport());
-                    auto newBuilder = new TunnelBuilder(tunSettings.tunnel().encryptionmethod(), tunnelListenPort,
-                                                        LoadServerCredentials(settings.credentials()),
-                                                        LoadChannelCredentials(settings.credentials()));
-                    tunnelBuilders[request->value()].reset(newBuilder);
-                    // tell the remote node how to connect to this node
-                    tunSettings.mutable_tunnel()->mutable_endnode()->set_channeluri(net::GetHostname() + ":" + std::to_string(tunnelListenPort));
+                    if(tunSettings.tunnel().encryptionmethod().mode().empty())
+                    {
+                        LOGDEBUG("Defaulting encryption mode to " + tunnels::Modes::GCM);
+                        tunSettings.mutable_tunnel()->mutable_encryptionmethod()->set_mode(tunnels::Modes::GCM);
+                    }
+
+                    if(tunSettings.tunnel().encryptionmethod().mode() == tunnels::Modes::GCM &&
+                            tunSettings.tunnel().encryptionmethod().submode().empty())
+                    {
+                        LOGDEBUG("Defaulting sub mode to " + tunnels::SubModes::Tables2K);
+                        tunSettings.mutable_tunnel()->mutable_encryptionmethod()->set_submode(tunnels::SubModes::Tables2K);
+                    }
+
+                    if(tunSettings.tunnel().encryptionmethod().blockcypher().empty())
+                    {
+                        LOGDEBUG("Defaulting block cypher to " + tunnels::BlockCiphers::AES);
+                        tunSettings.mutable_tunnel()->mutable_encryptionmethod()->set_blockcypher(tunnels::BlockCiphers::AES);
+                    }
+
+                    if(tunSettings.tunnel().encryptionmethod().keysizebytes() <= 0)
+                    {
+                        tunSettings.mutable_tunnel()->mutable_encryptionmethod()->set_keysizebytes(32);
+                    }
+
+                    auto newBuilder = std::make_shared<TunnelBuilder>(tunSettings.tunnel().encryptionmethod(),
+                                      LoadChannelCredentials(settings.credentials()));
+                    tunnelBuilders.emplace(request->value(), newBuilder);
+
                     // try and find the controller by ID first
                     std::shared_ptr<grpc::Channel> otherController = FindController(tunSettings.tunnel());
 
                     while(!otherController)
                     {
-                        LOGINFO("Waiting for controller...");
+                        switch(tunSettings.tunnel().remoteController_case())
+                        {
+                        case remote::tunnels::Tunnel::RemoteControllerCase::kRemoteControllerUri:
+                            LOGINFO("Waiting for controller for " + tunSettings.tunnel().name() + " at " +
+                                    tunSettings.tunnel().remotecontrolleruri() + "...");
+                            break;
+
+                        case remote::tunnels::Tunnel::RemoteControllerCase::kRemoteControllerUuid:
+                            LOGINFO("Waiting for controller for " + tunSettings.tunnel().name() + " at " +
+                                    tunSettings.tunnel().remotecontrolleruuid() + "...");
+                            break;
+                        case remote::tunnels::Tunnel::RemoteControllerCase::REMOTECONTROLLER_NOT_SET:
+                            LOGERROR("unknown remote address");
+                            break;
+                        }
+
                         std::unique_lock<std::mutex> lock(controllerDetectedMutex);
                         controllerDetectedCv.wait(lock, [&]()
                         {
@@ -208,7 +256,7 @@ namespace cqp
                         LOGTRACE("Calling CompleteTunnel on peer");
                         result = LogStatus(peer->CompleteTunnel(&ctx, tunSettings, &response));
                         // get the connection address from the other end
-                        tunSettings.mutable_tunnel()->mutable_startnode()->set_channeluri(response.encryptedconnectionuri());
+                        tunSettings.mutable_tunnel()->set_remoteencryptedlistenaddress(response.encryptedconnectionuri());
 
                         if(result.ok())
                         {
@@ -219,7 +267,11 @@ namespace cqp
                                                                    tunSettings.tunnel().keylifespan());
                             if(result.ok())
                             {
-                                newBuilder->StartTransfer();
+                                newBuilder->StartTransfer(tunSettings.tunnel().remoteencryptedlistenaddress());
+                            }
+                            else
+                            {
+                                LOGERROR("Failed to configure endpoint");
                             }
                         }
                     }
@@ -251,25 +303,27 @@ namespace cqp
             return result;
         } // StopTunnel
 
-        Status Controller::CompleteTunnel(grpc::ServerContext*, const remote::tunnels::CompleteTunnelRequest* request, remote::tunnels::CompleteTunnelResponse* response)
+        Status Controller::CompleteTunnel(grpc::ServerContext*, const remote::tunnels::CompleteTunnelRequest* request,
+                                          remote::tunnels::CompleteTunnelResponse* response)
         {
+            using namespace std;
             LOGTRACE("Called");
             Status result;
 
             LOGDEBUG("Waiting for keystore...");
             if(WaitForKeyStore())
             {
+
                 LOGDEBUG("Keystore ready");
                 auto builderIt = tunnelBuilders.find(request->tunnel().name());
                 if(builderIt == tunnelBuilders.end())
                 {
-                    int tunnelListenPort = static_cast<int>(request->tunnel().endnode().localchannelport());
                     LOGTRACE("Creating tunnel builder");
-                    auto newBuilder = new TunnelBuilder(request->tunnel().encryptionmethod(), tunnelListenPort,
-                                                        LoadServerCredentials(settings.credentials()),
-                                                        LoadChannelCredentials(settings.credentials()));
+                    auto newBuilder = make_shared<TunnelBuilder>(request->tunnel().encryptionmethod(), request->tunnel().remoteencryptedlistenaddress(),
+                                      LoadServerCredentials(settings.credentials()),
+                                      LoadChannelCredentials(settings.credentials()));
                     // tell the remote node how to connect to this node
-                    response->set_encryptedconnectionuri(net::GetHostname() + ":" + std::to_string(tunnelListenPort));
+                    response->set_encryptedconnectionuri(newBuilder->GetListenAddress());
 
                     // start this side
                     LOGTRACE("Configuring endpoint");
@@ -277,6 +331,7 @@ namespace cqp
                                                            request->startkeystore(),
                                                            request->tunnel().keylifespan());
 
+                    tunnelBuilders.emplace(request->tunnel().name(), move(newBuilder));
                     // Dont call StartTransfer because we are the slave node, the caller will use TransferBi
                     /*lock scope*/
                     {
