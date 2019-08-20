@@ -18,15 +18,15 @@ The TLS standard has the ability to use QKD, but it requires some tweaks to the 
 
     activate cl
 
-    cl -> srv : ClientHello(TLS_PSK_WITH_AES_256_CBC_SHA)
+    cl -> srv : ClientHello(TLS_PSK_WITH_AES_256_GCM_SHA_384)
     activate srv
     cl <-- srv : ServerHello(TLS_PSK, IdentityHint)
     deactivate srv
     cl -> srv : ClientKeyExchange(\nIdentity=pkcs:object=hsm.isp.net;id=5678)
-    note over ksb, srv
-        The object field shows the key exchange endpoint where
-        the client got it's key.
-        The servers key store will have a key between it and hsm.isp.net.
+    note over ksa, srv
+        The object field shows the key exchange endpoint 
+        where the client got it's key. The servers key 
+        store will have a key between it and hsm.isp.net.
     end note
 
     activate srv

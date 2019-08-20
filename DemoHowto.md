@@ -147,7 +147,7 @@ Create the config file for the controlling side
    "keyLifespan": {
     "maxBytes": "1024",
     "maxAge": {
-     "seconds": "30"
+     "seconds": 30
     }
    },
    "remoteControllerUri": "rack2.cqp:7010",
@@ -155,7 +155,7 @@ Create the config file for the controlling side
     "mode": "GCM",
     "subMode": "Tables2K",
     "blockCypher": "AES",
-    "keySizeBytes": 16
+    "keySizeBytes": 32
    },
    "startNode": {
     "clientDataPortUri": "tcpsrv://0.0.0.0:8000"
@@ -190,7 +190,7 @@ or **Raw ethernet port**
     "mode": "GCM",
     "subMode": "Tables2K",
     "blockCypher": "AES",
-    "keySizeBytes": 16
+    "keySizeBytes": 32
    },
    "startNode": {
     "clientDataPortUri": "eth://p3p1"
