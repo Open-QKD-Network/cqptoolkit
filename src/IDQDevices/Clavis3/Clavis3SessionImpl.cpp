@@ -226,7 +226,8 @@ namespace cqp
         using namespace idq4p::utilities;
         using namespace idq4p::domainModel;
 
-        if(state == SystemState::ExecutingSecurityInitialization)
+        if(state == SystemState::PowerOff ||
+                state == SystemState::ExecutingSecurityInitialization)
         {
             // Send request
             SetInitialKey requestCommand(key);
@@ -289,7 +290,10 @@ namespace cqp
         using idq4p::classes::Zeroize;
 
         // Send request
-        const Command request(CommandId::Zeroize, MessageDirection::Request);
+        idq4p::classes::Zeroize requestCommand;
+        msgpack::sbuffer requestBuffer;
+        MsgpackSerializer::Serialize<idq4p::classes::Zeroize>(requestCommand, requestBuffer);
+        const Command request(CommandId::Zeroize, MessageDirection::Request, requestBuffer);
         Command reply(  CommandId::Zeroize, MessageDirection::Reply);
         LOGINFO("ManagementChannel: sending '" + request.ToString() + "'.");
         CommandCommunicator::RequestAndReply(mgmtSocket, request, reply);
@@ -496,6 +500,7 @@ namespace cqp
 
     bool Clavis3Session::Impl::ReadKeys(KeyList& keys)
     {
+        LOGTRACE("");
         using namespace idq4p::classes;
         using namespace idq4p::domainModel;
         using namespace idq4p::utilities;
@@ -505,6 +510,10 @@ namespace cqp
         QuantumKey key;
         try
         {
+            //HACK
+            state = GetCurrentState();
+            LOGINFO("*********** Current state: " + idq4p::domainModel::SystemState_ToString(state));
+
             if(ZmqClassExchange::Receive<QuantumKey>(keySocket, key))
             {
                 // try to prepare the buffer for the number of keys that will arrive
@@ -527,10 +536,11 @@ namespace cqp
         catch(const std::runtime_error&)
         {
             // call was probably canceled due to closing socket
+            LOGDEBUG("Non fatal runtime error, socket closed");
         }
         catch(const std::exception& e)
         {
-            LOGERROR(e.what());
+            LOGERROR("Error reading keys: " + e.what());
         }
         return result;
     }
@@ -593,6 +603,9 @@ namespace cqp
                 // get the data from the message
                 msgpack::sbuffer buffer;
                 signalWrapper.GetBuffer(buffer);
+                LOGTRACE("Got message id: " +
+                         std::to_string(static_cast<int32_t>(signalWrapper.GetId())) + " = " +
+                         SignalId_ToString(signalWrapper.GetId()));
 
                 // handle signals we're interested in
                 switch (signalWrapper.GetId())
@@ -1016,7 +1029,7 @@ namespace cqp
             }
             catch (const std::exception& e)
             {
-                LOGERROR(e.what());
+                LOGERROR("Failed to decode message: " + e.what());
             }
         } // while
 

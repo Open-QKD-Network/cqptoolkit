@@ -117,8 +117,11 @@ namespace cqp
 
     bool Clavis3Session::Initialise(const remote::SessionDetails& sessionDetails)
     {
-        //pImpl->Request_UpdateSoftware();
-        //pImpl->Zeroize();
+        if(controlsEnabled)
+        {
+            //pImpl->Request_UpdateSoftware();
+            pImpl->Zeroize();
+        }
 
         //pImpl->GetRandomNumber();
         return true;
