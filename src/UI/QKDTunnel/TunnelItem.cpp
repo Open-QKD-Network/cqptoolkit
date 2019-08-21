@@ -14,6 +14,7 @@
 #include "Algorithms/Datatypes/UUID.h"
 #include "QKDInterfaces/Tunnels.pb.h"
 #include <QTime>
+#include "Algorithms/Logging/Logger.h"
 
 namespace qkdtunnel
 {
@@ -59,18 +60,19 @@ namespace qkdtunnel
         setData(static_cast<qulonglong>(details.keylifespan().maxbytes()), Index::keyLifespanBytes);
         setData(QString::fromStdString(""), Index::remoteControllerUri);
         setData(QString::fromStdString(""), Index::remoteControllerUuid);
-        switch (details.remoteController_case())
+        if(!details.remotecontrolleruri().empty())
         {
-        case remote::tunnels::Tunnel::RemoteControllerCase::kRemoteControllerUri:
             setData(QString::fromStdString(details.remotecontrolleruri()), Index::remoteControllerUri);
             setData(false, Index::remoteControllerReferenceById);
-            break;
-        case remote::tunnels::Tunnel::RemoteControllerCase::kRemoteControllerUuid:
+        }
+        else if(!details.remotecontrolleruuid().empty())
+        {
             setData(QString::fromStdString(details.remotecontrolleruuid()), Index::remoteControllerUuid);
             setData(true, Index::remoteControllerReferenceById);
-            break;
-        case remote::tunnels::Tunnel::RemoteControllerCase::REMOTECONTROLLER_NOT_SET:
-            break;
+        }
+        else
+        {
+            LOGERROR("No remote controller defined");
         }
         setData(QString::fromStdString(details.remotecontrolleruuid()), Index::remoteControllerUuid);
 
@@ -137,7 +139,7 @@ namespace qkdtunnel
 
         result.mutable_startnode()->set_clientdataporturi(data(Index::startNode_clientDataPortUri).toString().toStdString());
 
-        result.mutable_endnode()->set_clientdataporturi(data(Index::endNode_clientDataPortUri).toString().toStdString());
+        result.mutable_endnode()->set_clientdataporturi(data(Index::endNode_localChannelPort).toString().toStdString());
 
         return result;
     }

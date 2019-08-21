@@ -14,6 +14,7 @@
 #include "QKDInterfaces/Site.pb.h"
 #include <grpcpp/security/credentials.h>
 #include <grpcpp/channel.h>
+#include "data/LinkData.h"
 
 class QString;
 class QScrollArea;
@@ -67,6 +68,8 @@ namespace cqp
 
             void SetDetails(const remote::Site& details);
             void SetAddress(const std::string& address);
+
+            void Connect();
         protected:
             std::shared_ptr<SiteAgentData> siteData;
             QScrollArea* topWidget;
@@ -80,6 +83,9 @@ namespace cqp
 
             remote::Site details;
             remote::SiteAgentConfig config;
+
+            std::vector<remote::DeviceConfig> aliceDevices;
+            std::vector<remote::DeviceConfig> bobDevices;
 
         protected slots:
             void OnConnect();

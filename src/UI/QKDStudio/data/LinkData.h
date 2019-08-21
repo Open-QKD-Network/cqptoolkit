@@ -33,6 +33,8 @@ namespace cqp
              * @return Data type for noteeditor glue
              */
             QtNodes::NodeDataType type() const override;
+
+            std::string name;
         };
 
     } // namespace model

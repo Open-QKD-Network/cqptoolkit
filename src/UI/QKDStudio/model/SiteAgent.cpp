@@ -23,6 +23,7 @@
 #include "SiteEditor.h"
 #include "KeyViewer.h"
 #include <QLabel>
+#include "Algorithms/Datatypes/URI.h"
 
 namespace cqp
 {
@@ -101,11 +102,11 @@ namespace cqp
             switch (portType)
             {
             case QtNodes::PortType::In:
-                result = 1; // to netman
+                result = 1 + bobDevices.size(); // to netman
                 break;
 
             case QtNodes::PortType::Out:
-                result = 1; // from devices
+                result = aliceDevices.size(); // from devices
                 break;
 
             default:
@@ -126,14 +127,20 @@ namespace cqp
                 {
                 case 0:
                     result = ManagerData().type();
+                    break;
+                default:
+                    if(portIndex <= bobDevices.size())
+                    {
+                        result = LinkData().type();
+                    }
                 }
                 break;
 
             case QtNodes::PortType::Out:
-                switch (portIndex)
+
+                if(portIndex >= 0 && portIndex < aliceDevices.size())
                 {
-                case 0:
-                    result = SiteAgentData().type();
+                    result = LinkData().type();
                 }
                 break;
 
@@ -150,19 +157,24 @@ namespace cqp
             switch (portType)
             {
             case QtNodes::PortType::In:
-                switch (portIndex)
+                if(portIndex == 0)
                 {
-                case 0:
-                    result = QStringLiteral("");
+                    result = "Manager";
+                }
+                else if(portIndex > 0 && portIndex <= bobDevices.size())
+                {
+                    result = QString::fromStdString(
+                                 bobDevices[portIndex - 1].kind());
                 }
                 break;
 
             case QtNodes::PortType::Out:
-                switch (portIndex)
+                if(portIndex >= 0 && portIndex < aliceDevices.size())
                 {
-                case 0:
-                    result = QStringLiteral("Devices");
+                    result = QString::fromStdString(
+                                 aliceDevices[portIndex].kind());
                 }
+
                 break;
 
             case QtNodes::PortType::None:
@@ -238,17 +250,36 @@ namespace cqp
                                                   QString::fromStdString(details.url()), &ok).toStdString());
 
             siteData->address = details.url();
+
             if(ok)
             {
-                channel = grpc::CreateChannel(details.url(), creds);
+                Connect();
+            }
+        }
 
-                auto stub = remote::ISiteAgent::NewStub(channel);
-                using google::protobuf::Empty;
-                grpc::ClientContext ctx;
+        void SiteAgent::Connect()
+        {
+            channel = grpc::CreateChannel(details.url(), creds);
 
-                if(LogStatus(stub->GetSiteDetails(&ctx, Empty(), &details)).ok())
+            auto stub = remote::ISiteAgent::NewStub(channel);
+            using google::protobuf::Empty;
+            grpc::ClientContext ctx;
+
+            if(LogStatus(stub->GetSiteDetails(&ctx, Empty(), &details)).ok())
+            {
+                disconnect->setEnabled(true);
+
+                for(auto dev : details.devices())
                 {
-                    disconnect->setEnabled(true);
+                    LOGINFO("Adding device called: " + dev.config().kind());
+                    if(dev.config().side() == remote::Side::Alice)
+                    {
+                        aliceDevices.emplace_back(dev.config());
+                    }
+                    else
+                    {
+                        bobDevices.emplace_back(dev.config());
+                    }
                 }
             }
         }

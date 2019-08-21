@@ -40,7 +40,7 @@ namespace cqp
             QMainWindow(parent, flags)
         {
             ConsoleLogger::Enable();
-            DefaultLogger().SetOutputLevel(LogLevel::Debug);
+            DefaultLogger().SetOutputLevel(LogLevel::Trace);
 
             creds = grpc::InsecureChannelCredentials();
 
@@ -109,16 +109,18 @@ namespace cqp
                 auto siteModel = std::make_unique<model::SiteAgent>();
                 siteModel->SetDetails(siteDetails);
                 siteModel->SetAddress(address);
+                siteModel->Connect();
                 auto& siteNode = nodeData->createNode(std::move(siteModel));
 
-                for(const auto& device : siteDetails.devices())
+                ui->nodeWidget->setScene(nodeData.get());
+                /*for(const auto& device : siteDetails.devices())
                 {
                     auto newDevice = std::make_unique<model::Device>();
                     newDevice->SetDetails(device);
                     auto& devNode = nodeData->createNode(std::move(newDevice));
 
                     nodeData->createConnection(devNode, 0, siteNode, 0);
-                }
+                }*/
             }
             return result;
         }
