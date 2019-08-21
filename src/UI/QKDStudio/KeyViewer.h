@@ -110,7 +110,7 @@ namespace cqp
          * @param key the key data
          * @return a json string
          */
-        static std::string KeyToJSON(const std::string& source, const remote::SharedKey& key);
+        static std::string KeyToJSON(const std::string& source, const std::string& destination, const remote::SharedKey& key);
 
     private slots:
         void on_toSite_itemSelectionChanged();

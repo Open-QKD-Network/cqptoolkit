@@ -21,6 +21,7 @@
 #include <QPainter>
 #include <QFileDialog>
 #include "Algorithms/Util/FileIO.h"
+#include "Algorithms/Datatypes/URI.h"
 // qr stuff
 #include <qrencode.h>
 
@@ -119,19 +120,21 @@ namespace cqp
         }
 
         // generate the qr code
-        qrCodeImage = GenerateQrCode(KeyToJSON(ui->fromSite->text().toStdString(), key));
+        qrCodeImage = GenerateQrCode(KeyToJSON(ui->fromSite->text().toStdString(),
+                                               ui->toSite->currentItem()->text().toStdString(), key));
         // scale it for the window
         ui->qrCodeView->setPixmap(qrCodeImage.scaled(ui->qrCodeView->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         ui->saveQr->setEnabled(true);
     }
 
-    std::string KeyViewer::KeyToJSON(const std::string& source, const remote::SharedKey& key)
+    std::string KeyViewer::KeyToJSON(const std::string& source, const std::string& destination, const remote::SharedKey& key)
     {
         auto keyData = QByteArray(key.keyvalue().data(), static_cast<int>(key.keyvalue().size()));
 
         std::string jsonMessage = "{ \"keyid\": " + std::to_string(key.keyid()) + ", "
                                   "\"source\": \"" + source + "\", "
-                                  "\"dest\": \"" + key.url() + "\", "
+                                  "\"dest\": \"" + destination + "\", "
+                                  "\"url\": \"" + key.url() + "\", "
                                   "\"keyvalue\": \"" + keyData.toBase64().toStdString() + "\"}";
         return  jsonMessage;
     }
@@ -336,7 +339,8 @@ namespace cqp
                     if(keyData)
                     {
                         result = fs::WriteEntireFile(filename.toStdString(),
-                                                     KeyToJSON(ui->fromSite->text().toStdString(), *keyData));
+                                                     KeyToJSON(ui->fromSite->text().toStdString(),
+                                                               ui->toSite->currentItem()->text().toStdString(), *keyData));
                     }
                 }
                 QApplication::restoreOverrideCursor();
