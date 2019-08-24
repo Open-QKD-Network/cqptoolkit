@@ -53,6 +53,7 @@ namespace cqp
 
     grpc::Status RemoteQKDDevice::RunSession(grpc::ServerContext*, const remote::SessionDetailsTo* request, google::protobuf::Empty*)
     {
+        LOGTRACE("");
         Status result;
 
         auto session = device->GetSessionController();
@@ -78,12 +79,15 @@ namespace cqp
         {
             result = Status(StatusCode::FAILED_PRECONDITION, "Initialisation failed");
         }
+
+        LOGTRACE("Ending");
         return result;
     }
 
     grpc::Status RemoteQKDDevice::WaitForSession(grpc::ServerContext* ctx, const remote::LocalSettings* settings,
             ::grpc::ServerWriter<remote::RawKeys>* writer)
     {
+        LOGTRACE("");
         Status result;
         // reset the shutdown switch
         shutdown = false;
@@ -109,6 +113,7 @@ namespace cqp
             result = Status(StatusCode::INTERNAL, "Invalid device/session objects");
         }
 
+        LOGTRACE("Ending");
         return result;
     }
 
@@ -137,6 +142,7 @@ namespace cqp
 
     grpc::Status RemoteQKDDevice::EndSession(grpc::ServerContext*, const google::protobuf::Empty*, google::protobuf::Empty*)
     {
+        LOGTRACE("");
         shutdown = true;
         Status result;
         ISessionController* session = nullptr;
@@ -156,6 +162,8 @@ namespace cqp
         }
 
         recievedKeysCv.notify_all();
+
+        LOGTRACE("Ending");
         return Status();
     }
 
@@ -227,6 +235,7 @@ namespace cqp
 
     bool RemoteQKDDevice::StartControlServer(const std::string& controlAddress, const std::string& siteAgent)
     {
+        LOGTRACE("");
         // TODO reconsile the device config type with the need to provide this - the device doesn't inherently know it
         qkdDeviceAddress = controlAddress;
         siteAgentAddress = siteAgent;
@@ -270,6 +279,7 @@ namespace cqp
             while(!regResult.ok());
         }
 
+        LOGTRACE("Ending");
         return deviceServer != nullptr;
     }
 
@@ -294,6 +304,7 @@ namespace cqp
 
     grpc::Status RemoteQKDDevice::ProcessKeys(grpc::ServerContext* ctx, ::grpc::ServerWriter<remote::RawKeys>* writer)
     {
+        LOGTRACE("");
         using namespace std;
         grpc::Status result;
         auto keyPub = device->GetKeyPublisher();
@@ -360,6 +371,7 @@ namespace cqp
             result = Status(StatusCode::INTERNAL, "Invalid key publisher");
         }
 
+        LOGTRACE("Ending");
         return result;
     }
 

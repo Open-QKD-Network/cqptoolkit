@@ -43,6 +43,7 @@ namespace cqp
 
         grpc::Status SessionController::StartSession(const remote::SessionDetailsFrom& sessionDetails)
         {
+            LOGTRACE("");
             Status result;
             // the local system is starting the session
             // make sure the other side has connected to us
@@ -80,11 +81,14 @@ namespace cqp
                 result = Status(StatusCode::FAILED_PRECONDITION, "invalid remote session controller");
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
             } // else
+
+            LOGTRACE("Ending");
             return result;
         } // StartSession
 
         void SessionController::EndSession()
         {
+            LOGTRACE("");
             Empty request;
             Empty response;
             ClientContext ctx;
@@ -114,6 +118,8 @@ namespace cqp
                 reportServer->StatsReport(report);
             }
             UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening);
+
+            LOGTRACE("Ending");
         } // EndSession
 
         SessionController::~SessionController()
@@ -126,6 +132,7 @@ namespace cqp
 
         Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetailsFrom* sessionDetails, Empty*)
         {
+            LOGTRACE("");
             using namespace std::chrono;
             // The session has been started remotly
             Status result;
@@ -161,11 +168,13 @@ namespace cqp
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
             }
 
+            LOGTRACE("Ending");
             return result;
         } // SessionStarting
 
         Status SessionController::SessionEnding(grpc::ServerContext*, const Empty*, Empty*)
         {
+            LOGTRACE("");
             if(reportServer)
             {
                 reportServer->AddAdditionalProperties(PropertyNames::sessionActive, "false");
@@ -184,6 +193,7 @@ namespace cqp
                 dependant->Disconnect();
             }
 
+            LOGTRACE("Ending");
             return Status();
         }
 

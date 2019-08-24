@@ -33,17 +33,21 @@ namespace cqp
 
         grpc::Status AliceSessionController::StartSession(const remote::SessionDetailsFrom& sessionDetails)
         {
+            LOGTRACE("");
             // the local system is starting the session
             auto result = SessionController::StartSession(sessionDetails);
             if(result.ok() && photonSource)
             {
                 Start();
             }
+
+            LOGTRACE("Ending");
             return result;
         }
 
         void AliceSessionController::EndSession()
         {
+            LOGTRACE("");
             if(this->IsRunning())
             {
                 // the local system is stopping the session
@@ -52,30 +56,37 @@ namespace cqp
 
                 SessionController::EndSession();
             }
+            LOGTRACE("Ending");
         }
 
         grpc::Status AliceSessionController::SessionStarting(grpc::ServerContext* ctx, const remote::SessionDetailsFrom* request, google::protobuf::Empty* response)
         {
+            LOGTRACE("");
             // The session has been started remotly
             auto result = SessionController::SessionStarting(ctx, request, response);
             if(result.ok() && photonSource)
             {
                 Start();
             }
+
+            LOGTRACE("Ending");
             return result;
         }
 
         grpc::Status AliceSessionController::SessionEnding(grpc::ServerContext* ctx, const google::protobuf::Empty* request, google::protobuf::Empty* response)
         {
+            LOGTRACE("");
             // The session has been stopped remotly
             // wait for the transmitter to stop
             Stop(true);
 
+            LOGTRACE("Ending");
             return SessionController::SessionEnding(ctx, request, response);
         }
 
         void AliceSessionController::DoWork()
         {
+            LOGTRACE("");
             google::protobuf::Timestamp detectorRequest;
             Empty detectorResponse;
             auto detector = remote::IDetector::NewStub(otherControllerChannel);
@@ -117,6 +128,8 @@ namespace cqp
                     LOGERROR("Setup incomplete");
                 } // else
             } // while
+
+            LOGTRACE("Ending");
         }
     } // namespace session
 } // namespace cqp
