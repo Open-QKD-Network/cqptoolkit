@@ -381,11 +381,22 @@ namespace cqp
 
         std::vector<SignalId> subscribeTo
         {
+            // values taken from cockpit software initialisation
             SignalId::OnSystemState_Changed,
+            SignalId::OnUpdateSoftware_Progress,
             SignalId::OnPowerupComponentsState_Changed,
             SignalId::OnAlignmentState_Changed,
             SignalId::OnOptimizingOpticsState_Changed,
             SignalId::OnShutdownState_Changed,
+            SignalId::OnLaser_BiasCurrent_NewValue,
+            SignalId::OnIM_BiasVoltage_NewValue,
+            SignalId::OnLaser_Temperature_NewValue,
+            SignalId::OnLaser_Power_NewValue,
+            SignalId::OnLaser_TECCurrent_NewValue,
+            SignalId::OnIM_AmplifierCurrent_NewValue,
+            SignalId::OnIM_AmplifierVoltage_NewValue,
+            SignalId::OnIM_Temperature_NewValue,
+            SignalId::OnIM_TECCurrent_NewValue,
             SignalId::OnQber_NewValue,
             SignalId::OnVisibility_NewValue,
             SignalId::OnOpticsOptimization_InProgress
@@ -410,29 +421,29 @@ namespace cqp
             SubscribeToSignal(sig);
             SetNotificationFrequency(sig, signalRate);
         }
+        /*
+                // block some of the noise that keeps comming out
+                std::vector<SignalId> unsubscribe
+                {
+                    SignalId::OnIF_Temperature_NewValue,
+                    SignalId::OnDataDetector_BiasCurrent_NewValue,
+                    SignalId::OnMonitorDetector_BiasCurrent_NewValue,
+                    SignalId::OnIM_AmplifierCurrent_NewValue,
+                    SignalId::OnIM_AmplifierVoltage_NewValue,
+                    SignalId::OnIM_Temperature_NewValue,
+                    SignalId::OnIM_TECCurrent_NewValue,
+                    SignalId::OnVOA_Attenuation_NewValue,
+                    SignalId::OnIM_BiasVoltage_AbsoluteOutOfRange,
+                    SignalId::OnMonitoringPhotodiode_Power_OperationOutOfRange
+                };
 
-        // block some of the noise that keeps comming out
-        std::vector<SignalId> unsubscribe
-        {
-            SignalId::OnIF_Temperature_NewValue,
-            SignalId::OnDataDetector_BiasCurrent_NewValue,
-            SignalId::OnMonitorDetector_BiasCurrent_NewValue,
-            SignalId::OnIM_AmplifierCurrent_NewValue,
-            SignalId::OnIM_AmplifierVoltage_NewValue,
-            SignalId::OnIM_Temperature_NewValue,
-            SignalId::OnIM_TECCurrent_NewValue,
-            SignalId::OnVOA_Attenuation_NewValue,
-            SignalId::OnIM_BiasVoltage_AbsoluteOutOfRange,
-            SignalId::OnMonitoringPhotodiode_Power_OperationOutOfRange
-        };
-
-        for(const auto sig : subscribeTo)
-        {
-            // BUG: This doesn't work so slow them down
-            UnsubscribeSignal(sig);
-            SetNotificationFrequency(sig, signalRate);
-        }
-
+                for(const auto sig : subscribeTo)
+                {
+                    // BUG: This doesn't work so slow them down
+                    UnsubscribeSignal(sig);
+                    SetNotificationFrequency(sig, signalRate);
+                }
+        */
     }
 
     void Clavis3Session::Impl::SetNotificationFrequency(idq4p::domainModel::SignalId sigId, float rateHz)
@@ -619,6 +630,7 @@ namespace cqp
                     const auto signal = Clavis3SignalHandler::Decode_OnSystemState_Changed(buffer);
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), "==========" + signal.ToString() + "==========");
                     state = signal.GetState();
+                    clavis3Stats.SystemState_Changed.Update(static_cast<size_t>(signal.GetState()));
                 }
                 break;
                 case SignalId::OnUpdateSoftware_Progress:
@@ -636,24 +648,28 @@ namespace cqp
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnPowerupComponentsState_Changed(buffer);
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.PowerupComponentsState_Changed.Update(static_cast<size_t>(signal.GetState()));
                 }
                 break;
                 case SignalId::OnAlignmentState_Changed:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnAlignmentState_Changed(buffer);
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.AlignmentState_Changed.Update(static_cast<size_t>(signal.GetState()));
                 }
                 break;
                 case SignalId::OnOptimizingOpticsState_Changed:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnOptimizingOpticsState_Changed(buffer);
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.OptimizingOpticsState_Changed.Update(static_cast<size_t>(signal.GetState()));
                 }
                 break;
                 case SignalId::OnShutdownState_Changed:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnShutdownState_Changed(buffer);
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.ShutdownState_Changed.Update(static_cast<size_t>(signal.GetState()));
                 }
                 break;
                 case SignalId::OnKeySecurity_OutOfRange:
@@ -696,7 +712,8 @@ namespace cqp
                 case SignalId::OnLaser_BiasCurrent_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnLaser_BiasCurrent_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.Laser_BiasCurrent.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnLaser_BiasCurrent_AbsoluteOutOfRange:
@@ -714,7 +731,8 @@ namespace cqp
                 case SignalId::OnLaser_Temperature_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnLaser_Temperature_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.Laser_Temperature.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnLaser_Temperature_AbsoluteOutOfRange:
@@ -732,7 +750,8 @@ namespace cqp
                 case SignalId::OnLaser_Power_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnLaser_Power_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.Laser_Power.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnLaser_Power_AbsoluteOutOfRange:
@@ -750,7 +769,8 @@ namespace cqp
                 case SignalId::OnLaser_TECCurrent_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnLaser_TECCurrent_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.Laser_TECCurrent.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnLaser_TECCurrent_AbsoluteOutOfRange:
@@ -768,7 +788,8 @@ namespace cqp
                 case SignalId::OnIM_BiasVoltage_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnIM_BiasVoltage_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.IM_BiasVoltage.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnIM_BiasVoltage_AbsoluteOutOfRange:
@@ -786,7 +807,8 @@ namespace cqp
                 case SignalId::OnIM_AmplifierCurrent_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnIM_AmplifierCurrent_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.IM_AmplifierCurrent.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnIM_AmplifierCurrent_AbsoluteOutOfRange:
@@ -804,7 +826,8 @@ namespace cqp
                 case SignalId::OnIM_AmplifierVoltage_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnIM_AmplifierVoltage_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.IM_AmplifierVoltage.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnIM_AmplifierVoltage_AbsoluteOutOfRange:
@@ -822,7 +845,8 @@ namespace cqp
                 case SignalId::OnIM_Temperature_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnIM_Temperature_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.IM_Temperature.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnIM_Temperature_AbsoluteOutOfRange:
@@ -840,7 +864,8 @@ namespace cqp
                 case SignalId::OnIM_TECCurrent_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnIM_TECCurrent_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.IM_TECCurrent.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnIM_TECCurrent_AbsoluteOutOfRange:
@@ -858,7 +883,8 @@ namespace cqp
                 case SignalId::OnVOA_Attenuation_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnVOA_Attenuation_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.VOA_Attenuation.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnVOA_Attenuation_AbsoluteOutOfRange:
@@ -870,7 +896,8 @@ namespace cqp
                 case SignalId::OnMonitoringPhotodiode_Power_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnMonitoringPhotodiode_Power_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.MonitoringPhotodiode_Power.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnMonitoringPhotodiode_Power_AbsoluteOutOfRange:
@@ -889,7 +916,8 @@ namespace cqp
                 case SignalId::OnIF_Temperature_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnIF_Temperature_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.IF_Temperature.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnIF_Temperature_AbsoluteOutOfRange:
@@ -907,7 +935,8 @@ namespace cqp
                 case SignalId::OnFilter_Temperature_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnFilter_Temperature_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.Filter_Temperature.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnFilter_Temperature_AbsoluteOutOfRange:
@@ -925,7 +954,8 @@ namespace cqp
                 case SignalId::OnDataDetector_Temperature_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnDataDetector_Temperature_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.DataDetector_Temperature.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnDataDetector_Temperature_AbsoluteOutOfRange:
@@ -944,6 +974,7 @@ namespace cqp
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnDataDetector_BiasCurrent_NewValue(buffer);
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.DataDetector_BiasCurrent.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnDataDetector_BiasCurrent_AbsoluteOutOfRange:
@@ -961,7 +992,8 @@ namespace cqp
                 case SignalId::OnMonitorDetector_Temperature_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnMonitorDetector_Temperature_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.MonitorDetector_Temperature.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnMonitorDetector_Temperature_AbsoluteOutOfRange:
@@ -979,7 +1011,8 @@ namespace cqp
                 case SignalId::OnMonitorDetector_BiasCurrent_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnMonitorDetector_BiasCurrent_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.MonitorDetector_BiasCurrent.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnMonitorDetector_BiasCurrent_AbsoluteOutOfRange:
@@ -998,15 +1031,17 @@ namespace cqp
                 case SignalId::OnQber_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnQber_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
                     errorStats.QBER.Update(static_cast<double>(signal.GetValue()));
+                    clavis3Stats.Qber.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnVisibility_NewValue:
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnVisibility_NewValue(buffer);
-                    cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    //cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
                     alignementStats.visibility.Update(static_cast<double>(signal.GetValue()));
+                    clavis3Stats.Visibility.Update(signal.GetValue());
                 }
                 break;
                 case SignalId::OnFPGA_Failure:
@@ -1021,6 +1056,12 @@ namespace cqp
                 {
                     const auto signal = Clavis3SignalHandler::Decode_OnOptimizingOpticsState_Changed(buffer);
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), signal.ToString());
+                    clavis3Stats.OptimizingOpticsState_Changed.Update(static_cast<size_t>(signal.GetState()));
+                }
+                break;
+                case SignalId::OnTimebinAlignmentPattern_Changed:
+                {
+                    LOGWARN("Recieved OnTimebinAlignmentPattern_Changed but dont know how to decode it");
                 }
                 break;
                 default:

@@ -31,6 +31,7 @@ namespace cqp
         {
             pImpl->alignementStats.Add(reportServer.get());
             pImpl->errorStats.Add(reportServer.get());
+            pImpl->clavis3Stats.Add(reportServer.get());
         }
         if(!disableControl)
         {
@@ -44,6 +45,7 @@ namespace cqp
         {
             pImpl->alignementStats.Remove(reportServer.get());
             pImpl->errorStats.Remove(reportServer.get());
+            pImpl->clavis3Stats.Remove(reportServer.get());
         }
     }
 

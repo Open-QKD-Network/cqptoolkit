@@ -22,6 +22,7 @@
 
 #include "CQPToolkit/Alignment/Stats.h"
 #include "CQPToolkit/ErrorCorrection/Stats.h"
+#include "Clavis3/Clavis3Stats.h"
 
 namespace idq4p
 {
@@ -198,6 +199,7 @@ namespace cqp
 
         cqp::align::Statistics alignementStats;
         cqp::ec::Stats errorStats;
+        cqp::Clavis3Stats clavis3Stats;
 
     protected: // methods
 
