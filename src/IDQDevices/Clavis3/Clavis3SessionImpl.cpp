@@ -93,6 +93,7 @@ namespace cqp
             keySocket.connect(prefix + hostname + ":" + std::to_string(keyChannelPort));
             keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
             keySocket.setsockopt(ZMQ_RCVTIMEO, sockTimeoutMs); // in milliseconds
+            keySocket.setsockopt(ZMQ_LINGER, sockTimeoutMs); // Discard pending buffered socket messages on close().
 
             state = GetCurrentState();
             LOGINFO("*********** Initial state: " + idq4p::domainModel::SystemState_ToString(state));

@@ -120,7 +120,8 @@ namespace cqp
         if(controlsEnabled)
         {
             //pImpl->Request_UpdateSoftware();
-            pImpl->Zeroize();
+            // Dont know whether to call this - it looks like the cockpit software *doesn't* call it
+            //pImpl->Zeroize();
         }
 
         //pImpl->GetRandomNumber();
