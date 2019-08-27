@@ -41,6 +41,8 @@ class Clavis3Driver : public cqp::DriverApplication
         static CONSTSTRING device = "device";
         /// only read in the key, no initailisation
         static CONSTSTRING noControl = "no-control";
+        /// Read keys from a file
+        static CONSTSTRING fileReader = "file";
     };
 
 public:

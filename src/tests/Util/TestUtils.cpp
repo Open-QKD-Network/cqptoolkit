@@ -252,6 +252,8 @@ namespace cqp
         TEST(UtilsTest, FileIO)
         {
             ASSERT_EQ(fs::Parent("/somewhere/over/here"), "/somewhere/over");
+            ASSERT_EQ(fs::FullPath("/rooted"), "/rooted");
+            ASSERT_EQ(fs::FullPath("current"), fs::GetCurrentPath() + "/current");
 #if defined(__linux)
             const std::string folderThatExists = "/dev";
             const std::string globThatExists = "/dev/tty*";

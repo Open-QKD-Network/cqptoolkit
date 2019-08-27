@@ -14,6 +14,7 @@
 #include "Clavis3Session.h"
 #include "Clavis3/Clavis3SessionImpl.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
+#include "ClavisKeyFile.h"
 
 namespace cqp
 {
@@ -21,10 +22,9 @@ namespace cqp
     Clavis3Session::Clavis3Session(const std::string& hostname,
                                    std::shared_ptr<grpc::ChannelCredentials> newCreds,
                                    std::shared_ptr<stats::ReportServer> theReportServer,
-                                   bool disableControl) :
+                                   bool disableControl, const std::string& keyFile) :
         session::SessionController {newCreds, {}, theReportServer},
             pImpl{std::make_unique<Clavis3Session::Impl>(hostname)},
-            keyPub{std::make_unique<KeyPublisher>()},
             controlsEnabled(!disableControl)
     {
         if(reportServer)
@@ -36,6 +36,15 @@ namespace cqp
         if(!disableControl)
         {
             pImpl->SubscribeToSignals();
+        }
+
+        if(keyFile.empty())
+        {
+            keyPub = std::make_unique<KeyPublisher>();
+        }
+        else
+        {
+            keyPub = std::make_unique<ClavisKeyFile>(keyFile);
         }
     }
 

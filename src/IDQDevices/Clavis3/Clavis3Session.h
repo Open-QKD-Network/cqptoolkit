@@ -24,7 +24,7 @@ namespace cqp
         Clavis3Session(const std::string& hostname,
                        std::shared_ptr<grpc::ChannelCredentials> newCreds,
                        std::shared_ptr<stats::ReportServer> theReportServer,
-                       bool disableControl = false);
+                       bool disableControl = false, const std::string& keyFile = "");
 
         ~Clavis3Session() override;
 

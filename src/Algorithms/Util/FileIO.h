@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - File utility functions
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -139,5 +139,11 @@ namespace cqp
          */
         ALGORITHMS_EXPORT std::vector<std::string> FindGlob(const std::string& search);
 
+        /**
+         * @brief FullPath
+         * @param relPath partial path
+         * @return the full path for the supplied filename
+         */
+        ALGORITHMS_EXPORT std::string FullPath(const std::string& relPath);
     } // namespace fs
 } // namespace cqp

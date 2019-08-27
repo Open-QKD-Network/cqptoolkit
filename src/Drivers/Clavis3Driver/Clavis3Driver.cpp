@@ -33,6 +33,9 @@ Clavis3Driver::Clavis3Driver() :
     .Bind();
     definedArguments.AddOption(Names::noControl, "n", "Only read keys, dont perform any device control");
 
+    definedArguments.AddOption(Names::fileReader, "f", "Read keys from filename")
+    .Bind();
+
     definedArguments.AddOption(Names::writeConfig, "", "Output the resulting config to a file")
     .Bind();
 }
@@ -77,7 +80,8 @@ int Clavis3Driver::Main(const std::vector<std::string> &args)
 
         device = make_shared<Clavis3Device>(config.deviceaddress(),
                                             channelCreds, reportServer,
-                                            config.disablecontrol());
+                                            config.disablecontrol(),
+                                            definedArguments.GetStringProp(Names::fileReader));
         adaptor = make_unique<RemoteQKDDevice>(device, serverCreds);
 
         // get the real settings which have been corrected by the device driuver

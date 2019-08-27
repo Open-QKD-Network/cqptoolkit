@@ -330,6 +330,20 @@ namespace cqp
 #endif
         }
 
+        std::string FullPath(const std::string& relPath)
+        {
+            std::string result;
+#if defined(__unix__)
+            char buffer[PATH_MAX] {};
+            ::realpath(relPath.c_str(), buffer);
+            result = std::string(buffer);
+#else
+            TODO
+#endif
+
+            return result;
+        }
+
     } // namespace fs
 } // namespace cqp
 
