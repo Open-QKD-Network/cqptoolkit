@@ -16,6 +16,7 @@
 #include <QTimer>
 #include <memory>
 #include <grpcpp/security/credentials.h>
+#include <grpcpp/channel.h>
 
 namespace cqp
 {

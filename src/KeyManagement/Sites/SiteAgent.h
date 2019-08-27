@@ -19,6 +19,7 @@
 #include <thread>
 #include "QKDInterfaces/IDevice.grpc.pb.h"
 #include <grpcpp/security/credentials.h>
+#include <grpcpp/channel.h>
 
 namespace cqp
 {

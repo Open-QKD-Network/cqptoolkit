@@ -21,6 +21,7 @@
 #include "QKDInterfaces/IAlignment.grpc.pb.h"
 #include "Algorithms/Random/RandomNumber.h"
 #include <grpcpp/server.h>
+#include <grpcpp/channel.h>
 
 namespace cqp
 {

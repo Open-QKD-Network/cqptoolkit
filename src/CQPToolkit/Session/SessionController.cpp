@@ -140,6 +140,7 @@ namespace cqp
             // if we havn't got a connection to the caller yet, create one
             if(!otherControllerChannel)
             {
+                LOGDEBUG("Connecting to peer at " + sessionDetails->initiatoraddress());
                 grpc::ChannelArguments args;
                 args.SetMaxReceiveMessageSize(8_MiB);
                 otherControllerChannel = grpc::CreateCustomChannel(sessionDetails->initiatoraddress(), creds, args);

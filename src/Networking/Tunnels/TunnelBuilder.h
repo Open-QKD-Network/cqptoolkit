@@ -25,6 +25,7 @@
 #include <grpcpp/security/credentials.h>
 #include <grpcpp/server.h>
 #include "QKDInterfaces/IKey.grpc.pb.h"
+#include <grpcpp/channel.h>
 
 namespace cqp
 {

@@ -3,7 +3,7 @@
 * @brief KeyStoreFactory
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 12/12/2017
@@ -20,6 +20,7 @@
 #include "Algorithms/Net/Sockets/Socket.h"
 #include "KeyManagement/KeyStores/FileStore.h"
 #include "KeyManagement/KeyStores/IBackingStore.h"
+#include <grpcpp/channel.h>
 
 namespace cqp
 {

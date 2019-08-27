@@ -14,13 +14,13 @@
 #include "Algorithms/Datatypes/URI.h"
 #include <grpcpp/security/server_credentials.h>
 #include <grpcpp/server_builder.h>
+#include <grpcpp/server_context.h>
+#include <grpcpp/impl/codegen/sync_stream.h>
 #include "CQPToolkit/cqptoolkit_export.h"
 
 namespace grpc
 {
     class Status;
-    template<typename>
-    class ServerWriter;
 }
 
 namespace cqp
