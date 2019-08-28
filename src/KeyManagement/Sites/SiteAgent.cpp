@@ -133,8 +133,14 @@ namespace cqp
         // for debug
         //deviceFactory->AddReportingCallback(statsLogger.get());
 
+        if(config.limitCache_case() == remote::SiteAgentConfig::LimitCacheCase::kKeyStoreCache)
+        {
+            keystoreFactory->SetKeyStoreCacheLimit(config.keystorecache());
+        }
+
         // create the server
         grpc::ServerBuilder builder;
+
         // grpc will create worker threads as it needs, idle work threads
         // will be stopped if there are more than this number running
         // setting this too low causes large number of thread creation+deletions, default = 2

@@ -106,6 +106,11 @@ namespace cqp
              * @param callback
              */
             void RemoveReportingCallback(stats::IAllStatsCallback* callback);
+
+            void SetKeyStoreCacheLimit(uint64_t limit)
+            {
+                keyStoreCacheLimit = limit;
+            }
         protected:
 
             /**
@@ -158,6 +163,7 @@ namespace cqp
             std::shared_ptr<grpc::ChannelCredentials> clientCreds;
             /// The storage to pass to the key stores
             std::shared_ptr<IBackingStore> backingStore;
+            uint64_t keyStoreCacheLimit = 100000;
         };
     } // namespace keygen
 } // namespace cqp

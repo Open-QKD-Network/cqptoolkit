@@ -38,7 +38,8 @@ namespace cqp
             /// @param ksf The key store factory to get other key stores from
             /// @param bs how to archive keys, nullptr = disabled
             KeyStore(const std::string& thisSiteAddress, std::shared_ptr<grpc::ChannelCredentials> creds,
-                     const std::string& destination, KeyStoreFactory* ksf = nullptr, std::shared_ptr<IBackingStore> bs = nullptr);
+                     const std::string& destination, KeyStoreFactory* ksf = nullptr, std::shared_ptr<IBackingStore> bs = nullptr,
+                     uint64_t cacheLimit = 100000);
 
             /// Destructor
             ~KeyStore() override;
@@ -172,7 +173,7 @@ namespace cqp
             /// where the keys are archived to
             std::shared_ptr<IBackingStore> backingStore;
             /// How many keys to store locally before sending them to the backing store
-            uint64_t cacheThreashold = 10;
+            uint64_t cacheThreashold;
             /// a counter for assigning incoming keys an id
             std::atomic_uint64_t nextKeyId {1};
             /// for stopping internal threads

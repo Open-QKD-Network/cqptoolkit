@@ -24,10 +24,12 @@ namespace cqp
         using google::protobuf::Empty;
         using grpc::ClientContext;
 
-        KeyStore::KeyStore(const std::string& thisSiteAddress, std::shared_ptr<grpc::ChannelCredentials> creds, const std::string& destination, KeyStoreFactory* ksf, std::shared_ptr<IBackingStore> bs) :
+        KeyStore::KeyStore(const std::string& thisSiteAddress, std::shared_ptr<grpc::ChannelCredentials> creds, const std::string& destination,
+                           KeyStoreFactory* ksf, std::shared_ptr<IBackingStore> bs, uint64_t cacheLimit) :
             mySiteFrom(thisSiteAddress),
             keystoreFactory(ksf),
-            backingStore(bs)
+            backingStore(bs),
+            cacheThreashold(cacheLimit)
         {
             LOGDEBUG("New key store from " + thisSiteAddress + " to " + destination);
             mySiteTo = destination;

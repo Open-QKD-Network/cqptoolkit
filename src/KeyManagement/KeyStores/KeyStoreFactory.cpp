@@ -76,7 +76,7 @@ namespace cqp
                 {
                     LOGDEBUG("Creating keystore from " + siteAddress.ToString() + " to " + destination);
                     // No keystore exists, create one and return it
-                    result.reset(new KeyStore(siteAddress, clientCreds, destination, this, backingStore));
+                    result.reset(new KeyStore(siteAddress, clientCreds, destination, this, backingStore, keyStoreCacheLimit));
                     for(auto reportCb : reportingCallbacks)
                     {
                         result->stats.Add(reportCb);
