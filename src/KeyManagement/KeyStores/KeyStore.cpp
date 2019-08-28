@@ -235,6 +235,7 @@ namespace cqp
                             if(!shutdown)
                             {
                                 KeyMap::iterator keyFound = unusedKeys.find(response.keyid());
+                                KeyMap::iterator keyFoundReserved = reservedKeys.find(response.keyid());
                                 if(keyFound != unusedKeys.end())
                                 {
                                     // The key has arrived on our side so use it.
@@ -242,6 +243,15 @@ namespace cqp
                                     output = keyFound->second;
                                     // remove the key from the list
                                     unusedKeys.erase(keyFound);
+                                    result = true;
+                                }
+                                else if(keyFoundReserved != reservedKeys.end())
+                                {
+                                    // The key has arrived on our side so use it.
+                                    identity = keyFoundReserved->first;
+                                    output = keyFoundReserved->second;
+                                    // remove the key from the list
+                                    reservedKeys.erase(keyFoundReserved);
                                     result = true;
                                 }
                                 else if(backingStore != nullptr)
