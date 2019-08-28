@@ -130,21 +130,19 @@ namespace cqp
     {
         if(controlsEnabled)
         {
-            //pImpl->Request_UpdateSoftware();
             // Dont know whether to call this - it looks like the cockpit software *doesn't* call it
             //pImpl->Zeroize();
             pImpl->Reboot();
         }
 
-        //pImpl->GetRandomNumber();
         return true;
     }
 
     void Clavis3Session::SetInitialKey(std::unique_ptr<PSK> initailKey)
     {
-        if(controlsEnabled && !initailKey->empty())
+        if(controlsEnabled)
         {
-            pImpl->SetInitialKey(*initailKey);
+            pImpl->SetInitialKey(move(initailKey));
         }
     }
 

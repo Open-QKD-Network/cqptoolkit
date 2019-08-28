@@ -197,6 +197,8 @@ namespace cqp
 
         idq4p::domainModel::SystemState GetState();
 
+        void SetInitialKey(std::unique_ptr<PSK> initialKey);
+
         cqp::align::Statistics alignementStats;
         cqp::ec::Stats errorStats;
         cqp::Clavis3Stats clavis3Stats;
@@ -221,6 +223,9 @@ namespace cqp
          * @param sig signal to stop recieving
          */
         void UnsubscribeSignal(idq4p::domainModel::SignalId sig);
+
+
+        void OnSystemStateChanged(idq4p::domainModel::SystemState state);
     protected: // members
 
         static constexpr const uint16_t managementPort = 5561;
@@ -228,6 +233,9 @@ namespace cqp
         static constexpr const uint16_t signalsPort = 5562;
 
         std::string deviceAddress;
+        /// Taken from the documentation on SetInitialKey
+        const size_t requiredInitialKeySize = 3125;
+        std::unique_ptr<PSK> initialKey;
 
         zmq::context_t context {3};
         zmq::socket_t mgmtSocket{context, ZMQ_REQ};

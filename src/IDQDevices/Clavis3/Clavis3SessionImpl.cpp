@@ -567,6 +567,11 @@ namespace cqp
         return state;
     }
 
+    void Clavis3Session::Impl::SetInitialKey(std::unique_ptr<PSK> initailKey)
+    {
+        this->initialKey = move(initailKey);
+    }
+
     LogLevel SignalToErrorLevel(domo::SeverityId severity)
     {
         LogLevel result = LogLevel::Silent;
@@ -589,6 +594,18 @@ namespace cqp
             result = LogLevel::Silent;
         }
         return result;
+    }
+
+    void Clavis3Session::Impl::OnSystemStateChanged(domo::SystemState state)
+    {
+        if(state == domo::SystemState::ExecutingSecurityInitialization &&
+                initialKey && !initialKey->empty())
+        {
+            // resize the key to some value out of the documentation
+            initialKey->resize(requiredInitialKeySize, 42);
+            // send the initial key
+            SetInitialKey(*initialKey);
+        }
     }
 
     void Clavis3Session::Impl::ReadSignalSocket(const std::string& address)
@@ -631,6 +648,7 @@ namespace cqp
                     cqp::DefaultLogger().Log(SignalToErrorLevel(signal.GetSeverity()), "==========" + signal.ToString() + "==========");
                     state = signal.GetState();
                     clavis3Stats.SystemState_Changed.Update(static_cast<size_t>(signal.GetState()));
+                    OnSystemStateChanged(signal.GetState());
                 }
                 break;
                 case SignalId::OnUpdateSoftware_Progress:
