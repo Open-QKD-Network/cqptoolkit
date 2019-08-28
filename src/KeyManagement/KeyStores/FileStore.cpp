@@ -3,7 +3,7 @@
 * @brief FileStore
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 19/6/2018
@@ -164,7 +164,7 @@ namespace cqp
                 CheckSQLite(sqlite3_bind_int64(insertStmt, 2, key.first));
                 CheckSQLite(sqlite3_bind_blob(insertStmt, 3, key.second.data(), key.second.size(), nullptr));
                 // store the key
-                result = SQLiteOk(sqlite3_step(insertStmt));
+                result &= SQLiteOk(sqlite3_step(insertStmt));
                 CheckSQLite(sqlite3_reset(insertStmt));
             } // for keys
 
@@ -278,7 +278,7 @@ namespace cqp
                 CheckSQLite(sqlite3_reset(markInUseStmt));
 
                 CheckSQLite(sqlite3_reset(getAvailableKeyStmt));
-                CheckSQLite(sqlite3_exec(db, "COMMIT;", nullptr, nullptr, nullptr));
+                result = SQLiteOk(sqlite3_exec(db, "COMMIT;", nullptr, nullptr, nullptr));
 
             }
             else
