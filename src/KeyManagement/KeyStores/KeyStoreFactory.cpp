@@ -269,9 +269,16 @@ namespace cqp
                     } // for middle addresses
 
                     shared_ptr<keygen::KeyStore> finalKeystore = GetKeyStore(*siteList.begin());
-                    if(!finalKeystore->StoreReservedKey(request->originatingkeyid(), finalKey))
+                    if(finalKeystore)
                     {
-                        result = Status(StatusCode::ALREADY_EXISTS, "Originating key ID already exists in key store");
+                        if(!finalKeystore->StoreReservedKey(request->originatingkeyid(), finalKey))
+                        {
+                            result = Status(StatusCode::ALREADY_EXISTS, "Originating key ID already exists in key store");
+                        }
+                    }
+                    else
+                    {
+                        result = Status(StatusCode::NOT_FOUND, "No keystore available");
                     }
 
                 } // if got new key

@@ -349,59 +349,66 @@ namespace cqp
                     LOGTRACE("Connecting to device control at " + regDevice.controladdress());
                     localDev->channel = grpc::CreateChannel(regDevice.controladdress(), LoadChannelCredentials(myConfig.credentials()));
                     localDev->keySink = keystoreFactory->GetKeyStore(destination);
-                    if(localDev->channel->WaitForConnected(chrono::system_clock::now() + chrono::seconds(10)))
+                    if(localDev->keySink)
                     {
-                        result = Status(StatusCode::UNAVAILABLE, "Failed to connect to " + regDevice.controladdress());
-                    }
-
-                    auto initialPsk = std::make_unique<PSK>();
-
-                    // find a key to use for bootstrapping
-                    // First try our own key store.
-                    if(params.initialkeyid() == 0)
-                    {
-                        KeyID newId;
-                        if(localDev->keySink->GetNewKey(newId, *initialPsk))
+                        if(localDev->channel->WaitForConnected(chrono::system_clock::now() + chrono::seconds(10)))
                         {
-                            // set the key ID so that it is passed to the other site
-                            params.set_initialkeyid(newId);
+                            result = Status(StatusCode::UNAVAILABLE, "Failed to connect to " + regDevice.controladdress());
                         }
-                        else
+
+                        auto initialPsk = std::make_unique<PSK>();
+
+                        // find a key to use for bootstrapping
+                        // First try our own key store.
+                        if(params.initialkeyid() == 0)
                         {
-                            // If theres no key to hand, try the fallback
-                            if(!myConfig.fallbackkey().empty())
+                            KeyID newId;
+                            if(localDev->keySink->GetNewKey(newId, *initialPsk))
                             {
-                                LOGWARN("Using fallback key to bootstrap device");
-                                initialPsk->resize(myConfig.fallbackkey().size());
-                                initialPsk->assign(myConfig.fallbackkey().begin(), myConfig.fallbackkey().end());
+                                // set the key ID so that it is passed to the other site
+                                params.set_initialkeyid(newId);
                             }
                             else
                             {
-                                LOGWARN("No key available for bootstrap. Ether populate the keystores or provide a fallback key in the configuration.");
+                                // If theres no key to hand, try the fallback
+                                if(!myConfig.fallbackkey().empty())
+                                {
+                                    LOGWARN("Using fallback key to bootstrap device");
+                                    initialPsk->resize(myConfig.fallbackkey().size());
+                                    initialPsk->assign(myConfig.fallbackkey().begin(), myConfig.fallbackkey().end());
+                                }
+                                else
+                                {
+                                    LOGWARN("No key available for bootstrap. Ether populate the keystores or provide a fallback key in the configuration.");
+                                }
                             }
                         }
-                    }
+                        else
+                        {
+// we should be able to get the key from our local key store
+                            if(!LogStatus(localDev->keySink->GetExistingKey(params.initialkeyid(), *initialPsk)).ok())
+                            {
+                                LOGERROR("Failded to get existing key " + std::to_string(params.initialkeyid()));
+                            }
+                        }
+
+                        localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
+                        // read stats and pass them on
+                        localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
+                        // make the stats thread lower priority than the key reader
+                        threads::SetPriority(localDev->statsThread, 1);
+
+                        devicesInUse.emplace(deviceId, move(localDev));
+                        // The session will be start by the right side as it has all the required details
+                        result = Status();
+                        break; // for
+                    } // if keystore valid
                     else
                     {
-// we should be able to get the key from our local key store
-                        if(!LogStatus(localDev->keySink->GetExistingKey(params.initialkeyid(), *initialPsk)).ok())
-                        {
-                            LOGERROR("Failded to get existing key " + std::to_string(params.initialkeyid()));
-                        }
+                        result = Status(StatusCode::NOT_FOUND, "Invalid local keystore");
                     }
-
-                    localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
-                    // read stats and pass them on
-                    localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
-                    // make the stats thread lower priority than the key reader
-                    threads::SetPriority(localDev->statsThread, 1);
-
-                    devicesInUse.emplace(deviceId, move(localDev));
-                    // The session will be start by the right side as it has all the required details
-                    result = Status();
-                    break; // for
-                }
-            }
+                } // if device id match
+            } // for each siteDetails.devices
         }
         else
         {
