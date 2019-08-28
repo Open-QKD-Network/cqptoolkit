@@ -104,10 +104,10 @@ namespace cqp
             }
         }
 
-        ProcessingWorker::ProcessingWorker() :
-            processingThread(std::thread(&ProcessingWorker::Worker, this))
+        ProcessingWorker::ProcessingWorker()
         {
-
+            // only start the thread now that the instance variables have been initialised
+            processingThread = std::thread(std::thread(&ProcessingWorker::Worker, this));
         }
 
         std::shared_ptr<ProcessingWorker> ProcessingWorker::Instance()
