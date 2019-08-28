@@ -3,7 +3,7 @@
 * @brief SiteAgentCtl
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -45,8 +45,6 @@ SiteAgentCtl::SiteAgentCtl()
 
     cqp::ConsoleLogger::Enable();
     DefaultLogger().SetOutputLevel(LogLevel::Debug);
-
-    GrpcAllowMACOnlyCiphers();
 
     definedArguments.AddOption(Names::start, "b", "Tell the node to start, using the JSON values provided")
     .HasArgument()
@@ -292,6 +290,9 @@ int SiteAgentCtl::Main(const std::vector<std::string>& args)
 
     if(!stopExecution)
     {
+
+        GrpcAllowMACOnlyCiphers();
+
         // setup the credentials
         creds.set_usetls(definedArguments.IsSet(Names::tls));
         definedArguments.GetProp(Names::certFile, *creds.mutable_certchainfile());
