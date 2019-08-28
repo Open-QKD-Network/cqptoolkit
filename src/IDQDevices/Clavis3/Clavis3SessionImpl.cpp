@@ -91,7 +91,7 @@ namespace cqp
 
             LOGTRACE("Connecting to key socket");
             keySocket.connect(prefix + hostname + ":" + std::to_string(keyChannelPort));
-            keySocket.setsockopt(ZMQ_SUBSCRIBE, "");
+            keySocket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
             keySocket.setsockopt(ZMQ_RCVTIMEO, sockTimeoutMs); // in milliseconds
             keySocket.setsockopt(ZMQ_LINGER, sockTimeoutMs); // Discard pending buffered socket messages on close().
 
@@ -525,8 +525,9 @@ namespace cqp
             //HACK
             state = GetCurrentState();
             LOGINFO("*********** Current state: " + idq4p::domainModel::SystemState_ToString(state));
+            zmq::message_t msgRequest;
 
-            if(ZmqClassExchange::Receive<QuantumKey>(keySocket, key))
+            if(keySocket.recv(&msgRequest))
             {
                 // try to prepare the buffer for the number of keys that will arrive
                 keys.reserve(averageKeysPerBurst);
@@ -534,13 +535,14 @@ namespace cqp
                 // if we had a message theres probably more, keep getting until there are none left
                 do
                 {
+                    MsgpackSerializer::Deserialize(msgRequest, key);
                     LOGINFO("KeyChannel: received '" + key.ToString() + "'");
 
                     //id = FNV1aHash(key.GetId());
                     keys.emplace_back(key.GetKeyValue());
                     result = true;
                 }
-                while(ZmqClassExchange::ReceiveNoBlock(keySocket, key));
+                while(keySocket.recv(&msgRequest, ZMQ_DONTWAIT));
                 // update the average keys, limiting it to something sensible
                 averageKeysPerBurst = std::min(maxKeysPerBurst, 1 + (averageKeysPerBurst + keys.size()) / 2);
             }
