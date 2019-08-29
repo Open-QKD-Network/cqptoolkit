@@ -6,11 +6,16 @@ if [ "$UID" == "0" ]; then
 fi
 
 if [ -f /.dockerenv ]; then
-	# inside docker
-	echo -n "Waiting for interface $IFACE..."
-	/pipework/pipework --wait -i "$IFACE" && \
-	/usr/sbin/dnsmasq && \
-	/bin/nginx
+    if [ "$IFACE" != "" ]; then
+	    # inside docker
+	    echo -n "Waiting for interface $IFACE..."
+	    /pipework/pipework --wait -i "$IFACE" && \
+	    /usr/sbin/dnsmasq && \
+    	/bin/nginx
+    else
+	    service php7.2-fpm start
+	    /bin/nginx
+	fi
 else 
 	if [ "$1" == "" ]; then
 		echo "Please specify host interface to link to the container"
