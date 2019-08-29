@@ -1,13 +1,13 @@
 FROM registry.gitlab.com/qcomms/cqptoolkit/runtime
 
-ENV IFACE=p1p1
+#ENV IFACE=p1p1
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/London
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt update -qy && apt upgrade -qy
-RUN apt install -qy geoip-bin git dnsmasq php-fpm
+RUN apt install -qy geoip-bin git dnsmasq php-fpm php7.2-mbstring
 ADD run_nginx.sh /bin/
 ADD *.deb /root/
 RUN dpkg -i /root/*.deb ; apt --fix-broken install -qy
@@ -25,6 +25,8 @@ RUN git clone https://github.com/jpetazzo/pipework.git && \
     chown -R nginx /logs
 # The softhsm token folder is owned by the user so running as nginx user means it cant read the tokens
 #USER nginx
+
+RUN echo "cgi.fix_pathinfo = 0;" >> /etc/php/7.2/fpm/php.ini
 
 ADD html /html/
 

@@ -4,8 +4,8 @@ ENV TZ=Europe/London
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-ENV IFACE=p1p1
-RUN pacman -Syu --noconfirm && pacman -S --noconfirm geoip git dnsmasq php-fpm
+#ENV IFACE=p1p1
+RUN pacman -Syu --noconfirm && pacman -S --noconfirm geoip git dnsmasq php-fpm php7.2-mbstring
 ADD run_nginx.sh nginx/objs/nginx /bin/
 RUN chmod +x /bin/run_nginx.sh
 ADD qkdsecure.* nginx/conf/* /conf/
@@ -19,6 +19,8 @@ RUN git clone https://github.com/jpetazzo/pipework.git && \
     chown -R nginx /logs
 # The softhsm token folder is owned by the user so running as nginx user means it cant read the tokens
 #USER nginx
+
+RUN echo "cgi.fix_pathinfo = 0;" >> /etc/php/7.2/fpm/php.ini
 
 ADD html /html/
 
