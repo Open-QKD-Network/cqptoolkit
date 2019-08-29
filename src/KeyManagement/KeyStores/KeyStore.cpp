@@ -14,6 +14,9 @@
 #include "CQPToolkit/KeyGen/Stats.h"
 #include "KeyManagement/KeyStores/KeyStoreFactory.h"
 #include <numeric>
+#include <thread>
+#include "Algorithms/Util/Hash.h"
+#include "Algorithms/Net/DNS.h"
 
 namespace cqp
 {
@@ -227,6 +230,7 @@ namespace cqp
                     } // if keyids match
                     else
                     {
+                        allKeys_cv.notify_all();
                         LOGDEBUG("Reserved alternate key " + std::to_string(response.keyid()));
                         // the key is already in use but an alternative has been supplied
 
@@ -340,8 +344,22 @@ namespace cqp
             if(reservedIt != reservedKeys.end())
             {
                 // The key has been reserved by our GetNewKey
-                // reserve an alternative
-                reserveAlternative = true;
+                // reserve an alternative if we are unlucky
+                // the other side gets to keep it
+                net::IPAddress from;
+                net::IPAddress to;
+                URI fromUri(mySiteFrom);
+                URI toUri(mySiteTo);
+
+                fromUri.ResolveAddress(from);
+                toUri.ResolveAddress(to);
+                reserveAlternative = FNV1aHash(from.ToString() + std::to_string(fromUri.GetPort())) >
+                                     FNV1aHash(to.ToString() + std::to_string(toUri.GetPort()));
+                if(!reserveAlternative)
+                {
+                    LOGTRACE("I lost the lottery");
+                    alternative = reservedIt->first;
+                }
             }
             else if(unusedIt != unusedKeys.end())
             {
