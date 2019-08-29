@@ -91,6 +91,10 @@ namespace cqp
             return (value == other.value);
         }
 
+        bool operator<(const UUID &other) const
+        {
+            return (value < other.value);
+        }
         /// the bytes for the uuid
         UUIDStorage value {};
     };
