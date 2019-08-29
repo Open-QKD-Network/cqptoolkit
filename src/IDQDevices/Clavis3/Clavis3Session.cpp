@@ -15,6 +15,7 @@
 #include "Clavis3/Clavis3SessionImpl.h"
 #include "CQPToolkit/Statistics/ReportServer.h"
 #include "ClavisKeyFile.h"
+#include "CQPToolkit/Util/GrpcLogger.h"
 
 namespace cqp
 {
@@ -90,6 +91,44 @@ namespace cqp
         return result;
     }
 
+    grpc::Status Clavis3Session::ReleaseKeys(grpc::ServerContext*, const remote::IdList* request, google::protobuf::Empty*)
+    {
+        grpc::Status result;
+        using namespace std;
+
+        auto keysEmitted = make_unique<KeyList>();
+        keysEmitted->reserve(request->id().size());
+
+        unique_lock<mutex> lock(bufferedKeysMutex);
+        std::map<UUID, PSK>::iterator keyValueIt;
+
+        for(const auto& id : request->id())
+        {
+            bool success = bufferedKeysCv.wait_for(lock, chrono::seconds(10), [&]()
+            {
+                keyValueIt = bufferedKeys.find(id);
+                return keyValueIt != bufferedKeys.end();
+            });
+
+            if(success)
+            {
+                keysEmitted->emplace_back(move(keyValueIt->second));
+                bufferedKeys.erase(keyValueIt);
+            }
+            else
+            {
+                result = grpc::Status(grpc::StatusCode::NOT_FOUND, "Failed to find matching key within timeout");
+                break; // for
+            }
+        }
+
+        if(result.ok())
+        {
+            keyPub->Emit(&IKeyCallback::OnKeyGeneration, move(keysEmitted));
+        }
+        return result;
+    }
+
     grpc::Status Clavis3Session::StartSession(const remote::SessionDetailsFrom& sessionDetails)
     {
         LOGTRACE("");
@@ -148,12 +187,57 @@ namespace cqp
 
     void Clavis3Session::PassOnKeys()
     {
-        while(keepReadingKeys)
+        using namespace std;
+
+        if(pImpl->GetSide() == remote::Side::Type::Side_Type_Alice)
         {
-            auto keys = std::make_unique<KeyList>();
-            if(pImpl->ReadKeys(*keys))
+            using namespace grpc;
+            auto bob = remote::ISync::NewStub(this->otherControllerChannel);
+            ClavisKeyList keys;
+
+            while(keepReadingKeys)
             {
-                keyPub->Emit(&IKeyCallback::OnKeyGeneration, move(keys));
+                if(pImpl->ReadKeys(keys))
+                {
+                    auto keysEmitted = std::make_unique<KeyList>();
+                    ClientContext ctx;
+                    remote::IdList request;
+                    google::protobuf::Empty response;
+
+                    for(const auto& key : keys)
+                    {
+                        request.add_id(key.first);
+                        keysEmitted->emplace_back(key.second);
+                    }
+
+                    if(LogStatus(bob->ReleaseKeys(&ctx, request, &response)).ok())
+                    {
+                        keyPub->Emit(&IKeyCallback::OnKeyGeneration, move(keysEmitted));
+                    }
+                }
+                keys.clear();
+            }
+        }
+        else
+        {
+            using namespace grpc;
+            ClavisKeyList keys;
+            while(keepReadingKeys)
+            {
+                if(pImpl->ReadKeys(keys))
+                {
+                    /*lock scope*/
+                    {
+                        lock_guard<mutex> lock(bufferedKeysMutex);
+                        for(auto& key : keys)
+                        {
+                            bufferedKeys.insert(key);
+                        }
+                    }/*lock scope*/
+
+                    bufferedKeysCv.notify_all();
+                }
+                keys.clear();
             }
         }
     }

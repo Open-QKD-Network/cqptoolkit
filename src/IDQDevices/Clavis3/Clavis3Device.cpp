@@ -70,9 +70,12 @@ namespace cqp
         sessionController.SetInitialKey(move(initailKey));
     }
 
-    void Clavis3Device::RegisterServices(grpc::ServerBuilder&)
+    void Clavis3Device::RegisterServices(grpc::ServerBuilder& builder)
     {
-        // nothing to do
+        if(sessionController.GetSide() == remote::Side_Type::Side_Type_Bob)
+        {
+            builder.RegisterService(static_cast<remote::ISync::Service*>(&sessionController));
+        }
     }
 
     bool Clavis3Device::SystemAvailable()

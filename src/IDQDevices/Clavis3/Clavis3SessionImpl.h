@@ -187,7 +187,7 @@ namespace cqp
          * @param[out] keys
          * @return true on success
          */
-        bool ReadKeys(KeyList& keys);
+        bool ReadKeys(ClavisKeyList& keys);
 
         /**
          * @brief GetSide

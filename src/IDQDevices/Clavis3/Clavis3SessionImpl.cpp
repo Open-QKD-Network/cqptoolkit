@@ -510,7 +510,7 @@ namespace cqp
         LOGINFO("ManagementChannel: received '" + reply.ToString() + "'.");
     }
 
-    bool Clavis3Session::Impl::ReadKeys(KeyList& keys)
+    bool Clavis3Session::Impl::ReadKeys(ClavisKeyList& keys)
     {
         LOGTRACE("");
         using namespace idq4p::classes;
@@ -539,7 +539,7 @@ namespace cqp
                     LOGINFO("KeyChannel: received '" + key.ToString() + "'");
 
                     //id = FNV1aHash(key.GetId());
-                    keys.emplace_back(key.GetKeyValue());
+                    keys.emplace_back(UUID(key.GetId()), key.GetKeyValue());
                     result = true;
                 }
                 while(keySocket.recv(&msgRequest, ZMQ_DONTWAIT));
