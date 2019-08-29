@@ -2,8 +2,12 @@ FROM registry.gitlab.com/qcomms/cqptoolkit/runtime
 
 ENV IFACE=p1p1
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
 
-RUN apt install -qy geoip-bin git dnsmasq
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt update -qy && apt upgrade -qy
+RUN apt install -qy geoip-bin git dnsmasq php-fpm
 ADD run_nginx.sh /bin/
 ADD *.deb /root/
 RUN dpkg -i /root/*.deb ; apt --fix-broken install -qy

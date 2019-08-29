@@ -1,7 +1,11 @@
-FROM base/archlinux
+FROM archlinux/base
+
+ENV TZ=Europe/London
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENV IFACE=p1p1
-RUN pacman -Syu --noconfirm && pacman -S --noconfirm geoip git dnsmasq
+RUN pacman -Syu --noconfirm && pacman -S --noconfirm geoip git dnsmasq php-fpm
 ADD run_nginx.sh nginx/objs/nginx /bin/
 RUN chmod +x /bin/run_nginx.sh
 ADD qkdsecure.* nginx/conf/* /conf/
