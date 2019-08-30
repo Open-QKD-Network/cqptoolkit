@@ -151,18 +151,24 @@ namespace cqp
             // setting this too low causes large number of thread creation+deletions, default = 2
             builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, 50);
 
-            builder.AddListeningPort(transferListenAddress, creds, &transferListenPort);
+            auto realListenAddress = transferListenAddress;
+            if(realListenAddress.empty())
+            {
+                realListenAddress = std::string(net::AnyAddress) + ":0";
+            }
+
+            builder.AddListeningPort(realListenAddress, creds, &transferListenPort);
 
             LOGTRACE("Registering services");
             // Register services
             builder.RegisterService(this);
             // ^^^ Add new services here ^^^ //
 
-            LOGTRACE("Starting server on " + transferListenAddress);
+            LOGTRACE("Starting server on " + realListenAddress);
             server = builder.BuildAndStart();
 
-            URI address(transferListenAddress);
-            transferListenHost = address.GetHost();
+            URI address(realListenAddress);
+            transferListenHost = net::GetHostname();
 
             if(!server)
             {
