@@ -239,7 +239,7 @@ namespace cqp
         const regex qberRx("ErrorCorrectionCascade: QBER: ([0-9.]+)");
         const regex keySize("PrivacyAmplification: Final key size: ([0-9]+)");
         const regex lineLength(R"raw(LineMeasurement: Line length:\s+([0-9.]+))raw"); // raw string starts after raw( and ends at )raw
-        const regex secretKeyRate("ThreadPrivacyAmplification: Secret Key Rate = ([0-9.]+)");
+        const regex secretKeyRate("PrivacyAmplification: Secret Key Rate = ([0-9.]+)");
 
         try
         {
