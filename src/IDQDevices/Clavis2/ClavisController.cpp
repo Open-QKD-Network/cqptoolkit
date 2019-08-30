@@ -117,6 +117,7 @@ namespace cqp
                         {
                             Emit(&IKeyCallback::OnKeyGeneration, std::make_unique<KeyList>(toEmit));
                             toEmit.clear();
+                            idList.Clear();
                         }
                         else
                         {
@@ -284,6 +285,7 @@ namespace cqp
 
                         Emit(&IKeyCallback::OnKeyGeneration, std::make_unique<KeyList>(toEmit));
                         toEmit.clear();
+                        keys.Clear();
                     }
                 }
                 else
