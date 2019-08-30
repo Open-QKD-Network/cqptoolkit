@@ -269,29 +269,30 @@ namespace cqp
                         try
                         {
                             smatch matchResult;
-                            if(std::regex_match(line, matchResult, visibilitySystem))
+                            if(std::regex_search(line, matchResult, visibilitySystem))
                             {
-                                const double vis = stod(matchResult[0].str());
+                                const double vis = stod(matchResult[1].str());
                                 stats.Visibility.Update(vis);
                             }
-                            else if(std::regex_match(line, matchResult, qberRx))
+                            else if(std::regex_search(line, matchResult, qberRx))
                             {
-                                const double qber = stod(matchResult[0].str());
+                                const double qber = stod(matchResult[1].str());
                                 stats.Qber.Update(qber);
                             }
-                            else if(std::regex_match(line, matchResult, keySize))
+                            else if(std::regex_search(line, matchResult, keySize))
                             {
-                                const ulong keySize = stoul(matchResult[0].str());
+                                const ulong keySize = stoul(matchResult[1].str());
                                 stats.keySize.Update(keySize);
                             }
-                            else if(std::regex_match(line, matchResult, lineLength))
+                            else if(std::regex_search(line, matchResult, lineLength))
                             {
-                                const ulong linelength = stoul(matchResult[0].str());
+
+                                const double linelength = stod(matchResult[1].str());
                                 stats.lineLength.Update(linelength);
                             }
-                            else if(std::regex_match(line, matchResult, secretKeyRate))
+                            else if(std::regex_search(line, matchResult, secretKeyRate))
                             {
-                                const double keyRate = stod(matchResult[0].str()); // bits per second
+                                const double keyRate = stod(matchResult[1].str()); // bits per second
                                 stats.keyRate.Update(keyRate);
 
                                 {

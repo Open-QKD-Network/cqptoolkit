@@ -103,7 +103,7 @@ namespace cqp
             stats::Stat<double> keyRate {{parent, "Key Rate"}, stats::Units::Percentage, "Bits/Second key generated"};
 
             /// key bits produced
-            stats::Stat<size_t> lineLength {{parent, "Line length"}, stats::Units::Hz, "Number of meters of fibre/space between alice and bob"};
+            stats::Stat<double> lineLength {{parent, "Line length"}, stats::Units::Hz, "Number of meters of fibre/space between alice and bob"};
 
             /// @copydoc stats::StatCollection::Add
             void Add(stats::IAllStatsCallback* statsCb) override

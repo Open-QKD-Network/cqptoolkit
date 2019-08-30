@@ -84,21 +84,27 @@ namespace cqp
                 google::protobuf::Empty response;
                 auto keyIdWriter = peer->UseKeyID(&ctx, &response);
 
-                auto readerSubTask = std::async([&]()
+                auto readerSubTask = std::async(launch::async, [&]()
                 {
-                    while(keepGoing && launcher->WaitForKey() && device->GetNewKey(keyValue, keyId))
+                    while(keepGoing)
                     {
-                        LOGTRACE("Got key from wrapper");
-
+                        if(launcher->WaitForKey())
                         {
-                            unique_lock<mutex> lock(emitMutex);
-                            toEmit.push_back(keyValue);
-                            idList.add_keyid(keyId);
-                        }
+                            while(device->GetNewKey(keyValue, keyId))
+                            {
+                                LOGTRACE("Got key from wrapper");
 
-                        keyValue.clear();
-                        keyId = 0;
-                    }
+                                {
+                                    unique_lock<mutex> lock(emitMutex);
+                                    toEmit.push_back(keyValue);
+                                    idList.add_keyid(keyId);
+                                }
+
+                                keyValue.clear();
+                                keyId = 0;
+                            }
+                        }
+                    } // while keep going
                 });
 
                 do
