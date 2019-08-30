@@ -254,7 +254,10 @@ namespace cqp
 
         bool ClavisController::Initialise( std::unique_ptr<PSK> initialKey)
         {
-            authKey = move(initialKey);
+            if(initialKey && !initialKey->empty())
+            {
+                authKey = move(initialKey);
+            }
             return true;
         } // RegisterServices
 
