@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - IDQ Clavis Driver
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 16 May 2016
@@ -202,12 +202,20 @@ namespace cqp
         do
         {
             // requesting 0 will generate a new key id
+            const auto requestedKeyId = keyId;
             if(BeginKeyTransfer(keyId))
             {
                 if(ReadKeyResponse(newKey, keyId, status))
                 {
-                    LOGDEBUG("Successful key generation.");
-                    result = true;
+                    if(requestedKeyId == 0 || requestedKeyId == keyId)
+                    {
+                        LOGDEBUG("Successful key generation.");
+                        result = true;
+                    }
+                    else
+                    {
+                        LOGERROR("Response key id missmatch");
+                    }
                 }
                 else
                 {
