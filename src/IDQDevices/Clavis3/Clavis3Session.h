@@ -51,6 +51,7 @@ namespace cqp
 
 
         grpc::Status ReleaseKeys(grpc::ServerContext* ctx, const remote::IdList* request, google::protobuf::Empty*) override;
+        grpc::Status SendInitialKey(grpc::ServerContext* ctx, const google::protobuf::Empty*, google::protobuf::Empty*) override;
 
         remote::Side::Type GetSide() const;
 

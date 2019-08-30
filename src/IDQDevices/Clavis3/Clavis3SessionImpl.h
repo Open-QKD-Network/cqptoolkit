@@ -73,7 +73,7 @@ namespace cqp
          * The size of the initial key shall be of 25 kbits (3125 Bytes).
          * @param key
          */
-        void SetInitialKey(const DataBlock& key);
+        void SendInitialKey(const DataBlock& key);
 
         /**
          * @brief GetRandomNumber
@@ -199,6 +199,10 @@ namespace cqp
 
         void SetInitialKey(std::unique_ptr<PSK> initialKey);
 
+        void SendInitialKey();
+
+        void SetBobChannel(std::shared_ptr<grpc::Channel> channel);
+
         cqp::align::Statistics alignementStats;
         cqp::ec::Stats errorStats;
         cqp::Clavis3Stats clavis3Stats;
@@ -250,6 +254,8 @@ namespace cqp
 
         const size_t maxKeysPerBurst = 256;
         size_t averageKeysPerBurst = 1;
+        static const PSK defaultInitialKey;
+        std::shared_ptr<grpc::Channel> bobChannel;
     };
 
 }

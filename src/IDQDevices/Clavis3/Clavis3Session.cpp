@@ -34,9 +34,13 @@ namespace cqp
             pImpl->errorStats.Add(reportServer.get());
             pImpl->clavis3Stats.Add(reportServer.get());
         }
-        if(!disableControl)
+        if(controlsEnabled)
         {
             pImpl->SubscribeToSignals();
+        }
+        else
+        {
+            LOGWARN("Control signals disabled");
         }
 
         if(keyFile.empty())
@@ -67,6 +71,8 @@ namespace cqp
         {
             pImpl->PowerOn();
         }
+        pImpl->SetBobChannel(otherControllerChannel);
+
         keepReadingKeys = true;
         keyReader = std::thread(&Clavis3Session::PassOnKeys, this);
 
@@ -93,6 +99,7 @@ namespace cqp
 
     grpc::Status Clavis3Session::ReleaseKeys(grpc::ServerContext*, const remote::IdList* request, google::protobuf::Empty*)
     {
+        LOGTRACE("");
         grpc::Status result;
         using namespace std;
 
@@ -129,6 +136,12 @@ namespace cqp
         return result;
     }
 
+    grpc::Status Clavis3Session::SendInitialKey(grpc::ServerContext*, const google::protobuf::Empty*, google::protobuf::Empty*)
+    {
+        pImpl->SendInitialKey();
+        return grpc::Status();
+    }
+
     grpc::Status Clavis3Session::StartSession(const remote::SessionDetailsFrom& sessionDetails)
     {
         LOGTRACE("");
@@ -137,6 +150,8 @@ namespace cqp
         {
             pImpl->PowerOn();
         }
+        pImpl->SetBobChannel(otherControllerChannel);
+
         keepReadingKeys = true;
         keyReader = std::thread(&Clavis3Session::PassOnKeys, this);
 
@@ -179,14 +194,20 @@ namespace cqp
 
     void Clavis3Session::SetInitialKey(std::unique_ptr<PSK> initailKey)
     {
+        LOGTRACE("");
         if(controlsEnabled)
         {
             pImpl->SetInitialKey(move(initailKey));
+        }
+        else
+        {
+            LOGWARN("Controls disabled");
         }
     }
 
     void Clavis3Session::PassOnKeys()
     {
+        LOGTRACE("");
         using namespace std;
 
         if(pImpl->GetSide() == remote::Side::Type::Side_Type_Alice)
