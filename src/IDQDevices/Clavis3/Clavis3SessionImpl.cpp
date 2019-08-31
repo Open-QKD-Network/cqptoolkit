@@ -100,6 +100,7 @@ namespace cqp
 
             state = GetCurrentState();
             LOGINFO("*********** Initial state: " + idq4p::domainModel::SystemState_ToString(state));
+
             GetProtocolVersion();
             GetSoftwareVersion(SoftwareId::CommunicatorService);
             GetSoftwareVersion(SoftwareId::BoardSupervisorService);
@@ -528,9 +529,10 @@ namespace cqp
             //HACK
             state = GetCurrentState();
             LOGINFO("*********** Current state: " + idq4p::domainModel::SystemState_ToString(state));
-            zmq::message_t msgRequest;
+            zmq::message_t keyZmqMsg;
+            keyZmqMsg.rebuild();
 
-            if(keySocket.recv(&msgRequest))
+            if(keySocket.recv(&keyZmqMsg))
             {
                 // try to prepare the buffer for the number of keys that will arrive
                 keys.reserve(averageKeysPerBurst);
@@ -538,14 +540,21 @@ namespace cqp
                 // if we had a message theres probably more, keep getting until there are none left
                 do
                 {
-                    MsgpackSerializer::Deserialize(msgRequest, key);
+                    LOGTRACE("Key data size = " + std::to_string(keyZmqMsg.size()));
+
+                    msgpack::unpacked msg; // includes memory pool and deserialized object
+                    msgpack::unpack(&msg, static_cast<const char*>(keyZmqMsg.data()), keyZmqMsg.size());
+                    msg.get().convert(&key); // Convert the deserialized object to statically typed object.
+
                     LOGINFO("KeyChannel: received '" + key.ToString() + "'");
 
                     //id = FNV1aHash(key.GetId());
-                    keys.emplace_back(UUID(key.GetId()), key.GetKeyValue());
+                    auto keyVal = key.GetKeyValue();
+                    keys.emplace_back(UUID(key.GetId()), keyVal);
                     result = true;
+                    keyZmqMsg = zmq::message_t();
                 }
-                while(keySocket.recv(&msgRequest, ZMQ_DONTWAIT));
+                while(keySocket.recv(&keyZmqMsg, ZMQ_DONTWAIT));
                 // update the average keys, limiting it to something sensible
                 averageKeysPerBurst = std::min(maxKeysPerBurst, 1 + (averageKeysPerBurst + keys.size()) / 2);
             }

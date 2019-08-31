@@ -37,6 +37,11 @@ namespace cqp
         if(controlsEnabled)
         {
             pImpl->SubscribeToSignals();
+            if(pImpl->GetState() != idq4p::domainModel::SystemState::PowerOff)
+            {
+                LOGINFO("Resetting system...");
+                pImpl->Reboot();
+            }
         }
         else
         {
@@ -225,7 +230,7 @@ namespace cqp
                     remote::IdList request;
                     google::protobuf::Empty response;
 
-                    for(const auto& key : keys)
+                    for(auto& key : keys)
                     {
                         request.add_id(key.first);
                         keysEmitted->emplace_back(key.second);
