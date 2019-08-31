@@ -255,13 +255,12 @@ namespace cqp
             LOGTRACE("Starting");
             using namespace CryptoPP;
             Status result;
-            KeyID lastKeyId = 0;
             remote::SharedKey sharedKey;
             remote::EncryptedDataValues incomming;
             // read encrypted data from the stream
             while(result.ok() && stream->Read(&incomming) && client && keepGoing)
             {
-                if(incomming.keyid() != lastKeyId)
+                if(incomming.keyid() != sharedKey.keyid())
                 {
                     LOGDEBUG("Getting key: " + std::to_string(incomming.keyid()));
                     sharedKey.Clear();
@@ -269,10 +268,11 @@ namespace cqp
                     remote::KeyRequest request;
                     request.set_siteto(currentKeyStoreTo);
                     request.set_keyid(incomming.keyid());
+                    sharedKey.Clear();
                     // get the for this data block
                     if(LogStatus(keyFactory->GetSharedKey(&keyGenContext, request, &sharedKey)).ok())
                     {
-                        lastKeyId = sharedKey.keyid();
+                        LOGERROR("Failed to get key " + std::to_string(incomming.keyid()));
                     }
                 }
 
@@ -386,7 +386,8 @@ namespace cqp
             return client;
         } // UriToTunnel
 
-        bool TunnelBuilder::ChangeKey(const remote::tunnels::KeyLifespan& keyLifeSpan, uint64_t bytesUsedOnKey, const std::chrono::high_resolution_clock::time_point& timeKeyGenerated)
+        bool TunnelBuilder::ChangeKey(const remote::tunnels::KeyLifespan& keyLifeSpan, uint64_t bytesUsedOnKey,
+                                      const std::chrono::high_resolution_clock::time_point& timeKeyGenerated)
         {
             using std::chrono::high_resolution_clock;
             using namespace std::chrono;
@@ -436,7 +437,7 @@ namespace cqp
 
                 try
                 {
-                    // se if we need to get a new key
+                    // see if we need to get a new key
                     if(sharedKey.keyvalue().empty() || ChangeKey(currentKeyLifespan, bytesUsedOnKey, timeKeyGenerated))
                     {
                         using std::chrono::high_resolution_clock;
@@ -458,6 +459,10 @@ namespace cqp
                                 bytesUsedOnKey = 0;
                                 timeKeyGenerated = high_resolution_clock::now();
                                 stats.keyChangeTime.Update(high_resolution_clock::now() - timerStart);
+                            }
+                            else
+                            {
+                                LOGWARN("Failed to get a key, retrying...");
                             }
                             // if it failed and we don't have a key at all: try again
                         }
