@@ -7,10 +7,14 @@ ENV TZ=Europe/London
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt update -qy && apt upgrade -qy
-RUN apt install -qy geoip-bin git dnsmasq php-fpm php7.2-mbstring
+RUN apt install -qy geoip-bin git dnsmasq php-fpm php7.2-mbstring php7.2-curl php7.2-xmlrpc \
+    php7.2-soap php7.2-gd php7.2-xml php7.2-cli php7.2-zip
 ADD run_nginx.sh /bin/
 ADD *.deb /root/
 RUN dpkg -i /root/*.deb ; apt --fix-broken install -qy
+#ADD build_nginx_ubuntu.sh /bin/
+#RUN build_nginx_ubuntu.sh
+#RUN dpkg -i nginx-full*.deb ; apt install -fqy
 
 RUN chmod +x /bin/run_nginx.sh
 RUN mkdir -p /var/log/nginx/logs
