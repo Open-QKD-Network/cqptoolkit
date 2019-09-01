@@ -11,10 +11,10 @@ if [ -f /.dockerenv ]; then
 	    echo -n "Waiting for interface $IFACE..."
 	    /pipework/pipework --wait -i "$IFACE" && \
 	    /usr/sbin/dnsmasq && \
-    	/bin/nginx
+    	nginx
     else
 	    service php7.2-fpm start
-	    /bin/nginx
+	    nginx
 	fi
 else 
 	if [ "$1" == "" ]; then
