@@ -270,7 +270,7 @@ namespace cqp
                     request.set_keyid(incomming.keyid());
                     sharedKey.Clear();
                     // get the for this data block
-                    if(LogStatus(keyFactory->GetSharedKey(&keyGenContext, request, &sharedKey)).ok())
+                    if(!LogStatus(keyFactory->GetSharedKey(&keyGenContext, request, &sharedKey)).ok())
                     {
                         LOGERROR("Failed to get key " + std::to_string(incomming.keyid()));
                     }
