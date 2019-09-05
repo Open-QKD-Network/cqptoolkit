@@ -11,6 +11,72 @@ This shows drivers + site agents + encryption tunnels.
 Anything typed into one of the blank windows will be encrypted using a key from one site and sent to the other for decryption and displayed in the other blank window. It uses tcp ports and netcat.
 Run `demo/run-chat.sh`
 
+## QR Code demo
+
+Install the latest release from [getlab](https://gitlab.com/QComms/cqptoolkit). This can be done on the command line with: `curl -JLO "https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb"`
+
+### Mobile Setup
+
+- Install the latest android apk on the mobile device from [here](https://qcomms.gitlab.io/qkdmobilebrowser/android/qkdmobilebrowser_release_signed_latest.apk), or the [gitlab project](https://gitlab.com/QComms/qkdmobilebrowser).
+- Configure the default website address by loading the app and going to the three line menu in the top left, then **Settings** -> **Homepage**
+- Clear any stale keys by going to **Stored Keys** and clicking the bin icon - this may need to be done again if the systems get out of sync.
+
+If screen mirroring is needed, use the [scrspy](https://github.com/Genymobile/scrcpy) program with the phone/tablet plugged in with a USB cable.
+
+### Sites
+
+- Run an instance of `SiteAgentRunner` at each location. Its best to use the `-p` option to set the port number.
+- Run a pair of `DummyQKDDriver -r localhost:<site agent port>` for each link, add `-b` to run as bob.
+- Start the links by ether `SiteAgentCtlGui`:
+  + Clicking **Add** in the top left for each site, entering the sites host and port
+  + Expand each site, select the device and click **From** for one side, select the entry in the table on the right then select the paired device in the next site and click **to**
+  + Click **Start link**
+- Or by tailoring the JSON string below for the setup: `SiteAgentCtl -c <start site address> -b '{"hops":[{"first":{"site":"192.168.100.3:9000","deviceId":"dummyqkd_0__32_alice"},"second":{"site":"192.168.100.2:9000","deviceId":"dummyqkd_0__32_bob"}}]}' `
+  + The device ids can be obtained by calling `SiteAgentCtl -c <site address> -d`
+
+### Web server
+
+- Update the webserver code with `docker pull registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd`
+- Checkout the website with `git clone https://gitlab.com/QComms/qkd-website.git www`
+- Tailor the config from cqptoolkit/demo/nginx-config to your needs. 
+  + Set the `psk_identity_hint` to the address the client will need to use to request a key.
+  + Set the `hsm` field to the host:port of the local site agent
+- Create a script to simplify the startup, eg run-website.sh:
+```
+#/bin/bash
+sudo chown -R 33:33 www
+docker run -it --rm --net host -v `pwd`/www:/www -v `pwd`/cqptoolkit/demo/nginx-conf:/etc/nginx registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd
+```
+- Run the webserver with the script.
+- The site can be tested without encryption by going to http://<servername>:8080/
+
+### QR Display
+
+- Run `QKDStudio` and click the keys icon for the **key view**. 
+- Resize the window so that the qr code area fill as much of the mobile camera view as possible
+- In the from box, enter the site agent address for the "local" keystore which will the start point for the communication. 
+- Click the green refresh icon and select the destination keystore address. 
+- Click **New Key** to display a qr code.
+  + The mobile should decode the code and display the source, destination and key id. The number of keys should increase.
+- To load several keys
+  + Set the time (3 seconds works consistently).
+  + Check **Refresh**
+  + Click **New Key**
+  + Click **New Key** again to stop the refresh
+- Once several (10+) keys are loaded
+  + Stop any key refresh
+  + Press **back** on the mobile
+  + Select **Browser**
+  + The website should be displayed - it takes several keys for each page to load. 
+
+### Stats Website
+
+- Checkout the code from [gitlab](https://gitlab.com/QComms/webgui) with `git clone https://gitlab.com/QComms/webgui.git`
+- inside the directory `webgui/client` install the dependencies with `npm i`
+- Set which site agents to read by editing the `src/configs/settings.js` file and modifying the `grpcstats` field
+- Run the server with `npm run start:dev` from the `client` directory
+- The website can be viewed by going to  `http://<host>:4000`
+
 ## HPN demo
 
 > Note this requires closed source code from [HPN labs](http://www.bristol.ac.uk/engineering/research/hpn/).
