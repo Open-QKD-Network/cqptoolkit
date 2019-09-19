@@ -504,8 +504,7 @@ foreach(_xFile ${ExtraFiles})
     configure_file(${_xFile} extra/ COPYONLY)
 endforeach()
 
-if(EXISTS ${CMAKE_SOURCE_DIR}/external/nodeeditor/CMakeLists.txt)
-
+if(Qt5_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/external/nodeeditor/CMakeLists.txt)
     SET_COMPONENT_NAME("exclude" CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
     SET(BUILD_SHARED_LIBS OFF)
     add_subdirectory(${CMAKE_SOURCE_DIR}/external/nodeeditor)
