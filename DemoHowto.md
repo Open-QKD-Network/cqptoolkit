@@ -13,7 +13,7 @@ Run `demo/run-chat.sh`
 
 ## QR Code demo
 
-Install the latest release from [getlab](https://gitlab.com/QComms/cqptoolkit). This can be done on the command line with: `curl -JLO "https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb"`
+Install the latest release from [gitlab](https://gitlab.com/QComms/cqptoolkit). This can be done on the command line with: `curl -JLO "https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb"`
 
 ### Mobile Setup
 
@@ -31,14 +31,18 @@ If screen mirroring is needed, use the [scrspy](https://github.com/Genymobile/sc
   + Clicking **Add** in the top left for each site, entering the sites host and port
   + Expand each site, select the device and click **From** for one side, select the entry in the table on the right then select the paired device in the next site and click **to**
   + Click **Start link**
-- Or by tailoring the JSON string below for the setup: `SiteAgentCtl -c <start site address> -b '{"hops":[{"first":{"site":"192.168.100.3:9000","deviceId":"dummyqkd_0__32_alice"},"second":{"site":"192.168.100.2:9000","deviceId":"dummyqkd_0__32_bob"}}]}' `
+- Or by tailoring the JSON string below for the setup:
+```
+   SiteAgentCtl -c <start site address> -b '{"hops":[{"first":{"site":"192.168.100.3:9000","deviceId":"dummyqkd_0__32_alice"},"second":{"site":"192.168.100.2:9000","deviceId":"dummyqkd_0__32_bob"}}]}'
+```
+
   + The device ids can be obtained by calling `SiteAgentCtl -c <site address> -d`
 
 ### Web server
 
 - Update the webserver code with `docker pull registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd`
 - Checkout the website with `git clone https://gitlab.com/QComms/qkd-website.git www`
-- Tailor the config from cqptoolkit/demo/nginx-config to your needs. 
+- Tailor the config from cqptoolkit/demo/nginx-config to your needs.
   + Set the `psk_identity_hint` to the address the client will need to use to request a key.
   + Set the `hsm` field to the host:port of the local site agent
 - Create a script to simplify the startup, eg run-website.sh:
@@ -52,10 +56,10 @@ docker run -it --rm --net host -v `pwd`/www:/www -v `pwd`/cqptoolkit/demo/nginx-
 
 ### QR Display
 
-- Run `QKDStudio` and click the keys icon for the **key view**. 
+- Run `QKDStudio` and click the keys icon for the **key view**.
 - Resize the window so that the qr code area fill as much of the mobile camera view as possible
-- In the from box, enter the site agent address for the "local" keystore which will the start point for the communication. 
-- Click the green refresh icon and select the destination keystore address. 
+- In the from box, enter the site agent address for the "local" keystore which will the start point for the communication.
+- Click the green refresh icon and select the destination keystore address.
 - Click **New Key** to display a qr code.
   + The mobile should decode the code and display the source, destination and key id. The number of keys should increase.
 - To load several keys
@@ -67,7 +71,7 @@ docker run -it --rm --net host -v `pwd`/www:/www -v `pwd`/cqptoolkit/demo/nginx-
   + Stop any key refresh
   + Press **back** on the mobile
   + Select **Browser**
-  + The website should be displayed - it takes several keys for each page to load. 
+  + The website should be displayed - it takes several keys for each page to load.
 
 ### Stats Website
 
