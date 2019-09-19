@@ -37,16 +37,16 @@ namespace cqp
 #define CQP_UNIMPLEMENTED cqp::DefaultLogger().Log(cqp::LogLevel::Debug, "Function unimplemented");
 #if defined(_DEBUG)
     /// Output a trace message
-    #define LOGTRACE(x) cqp::DefaultLogger().Log(cqp::LogLevel::Trace, std::string(__FUNCTION__) + " " + x)
+    #define LOGTRACE(x) cqp::DefaultLogger().Log(cqp::LogLevel::Trace, std::string(__FUNCTION__) + ": " + x)
     /// Output a debug message
-    #define LOGDEBUG(x) cqp::DefaultLogger().Log(cqp::LogLevel::Debug, std::string(__FUNCTION__) + " " + x)
+    #define LOGDEBUG(x) cqp::DefaultLogger().Log(cqp::LogLevel::Debug, std::string(__FUNCTION__) + ": " + x)
 
     /// Output an informational message
-    #define LOGINFO(x) cqp::DefaultLogger().Log(cqp::LogLevel::Info, std::string(__FUNCTION__) + " " + x)
+    #define LOGINFO(x) cqp::DefaultLogger().Log(cqp::LogLevel::Info, std::string(__FUNCTION__) + ": " + x)
     /// Output a warning message
-    #define LOGWARN(x) cqp::DefaultLogger().Log(cqp::LogLevel::Warning, std::string(__FUNCTION__) + " " + x)
+    #define LOGWARN(x) cqp::DefaultLogger().Log(cqp::LogLevel::Warning, std::string(__FUNCTION__) + ": " + x)
     /// Output a warning message
-    #define LOGERROR(x) cqp::DefaultLogger().Log(cqp::LogLevel::Error, std::string(__FUNCTION__) + " " + x)
+    #define LOGERROR(x) cqp::DefaultLogger().Log(cqp::LogLevel::Error, std::string(__FUNCTION__) + ": " + x)
 
 #else
     /// Trace messages are disabled in this build
