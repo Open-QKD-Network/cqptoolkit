@@ -3,7 +3,7 @@
 * @brief FileStore
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 19/6/2018
@@ -79,8 +79,6 @@ namespace cqp
             sqlite3_stmt* insertLinkStmt = nullptr;
             /// prepared statement to count keys in the database
             sqlite3_stmt* countKeysStmt = nullptr;
-            /// prepared statement to update the next key id
-            sqlite3_stmt* updateNextIdStmt = nullptr;
             /// prepared statement to update the next key id
             sqlite3_stmt* getNextIdStmt = nullptr;
 

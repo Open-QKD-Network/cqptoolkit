@@ -71,7 +71,6 @@ namespace cqp
                                          "CREATE TABLE IF NOT EXISTS `links` ("
                                          "        `LinkID`	INTEGER NOT NULL UNIQUE,"
                                          "        `SiteB`	TEXT NOT NULL UNIQUE,"
-                                         "        `NextKeyID`   INTEGER DEFAULT 1,"
                                          "        PRIMARY KEY(`LinkID`)"
                                          ");"
                                          "COMMIT;"
@@ -107,10 +106,7 @@ namespace cqp
                 command = "SELECT COUNT(*) FROM keys WHERE LinkID = ?";
                 result |= CheckSQLite(sqlite3_prepare_v2(db, command.c_str(), command.length(), &countKeysStmt, nullptr));
 
-                command = "UPDATE links SET NextKeyID = (SELECT max(ID)+1 AS NextID FROM keys) WHERE LinkID = ?";
-                result |= CheckSQLite(sqlite3_prepare_v2(db, command.c_str(), command.length(), &updateNextIdStmt, nullptr));
-
-                command = "SELECT NextKeyID FROM links WHERE LinkID = ?";
+                command = "SELECT MAX(ID) FROM keys GROUP BY LinkID HAVING LinkID = ?";
                 result |= CheckSQLite(sqlite3_prepare_v2(db, command.c_str(), command.length(), &getNextIdStmt, nullptr));
 
                 // if you add a statement, add a finalize call to the destructor
@@ -134,7 +130,6 @@ namespace cqp
             CheckSQLite(sqlite3_finalize(deleteKeyStmt));
             CheckSQLite(sqlite3_finalize(insertLinkStmt));
             CheckSQLite(sqlite3_finalize(countKeysStmt));
-            CheckSQLite(sqlite3_finalize(updateNextIdStmt));
             CheckSQLite(sqlite3_finalize(getNextIdStmt));
 
             CheckSQLite(sqlite3_close(db));
@@ -167,11 +162,6 @@ namespace cqp
                 result &= SQLiteOk(sqlite3_step(insertStmt));
                 CheckSQLite(sqlite3_reset(insertStmt));
             } // for keys
-
-            // update the next id field with the highest number in the table
-            CheckSQLite(sqlite3_bind_int64(updateNextIdStmt, 1, link));
-            CheckSQLite(sqlite3_step(updateNextIdStmt));
-            CheckSQLite(sqlite3_reset(updateNextIdStmt));
 
             // commit the transaction
             CheckSQLite(sqlite3_exec(db, "COMMIT", nullptr, nullptr, nullptr));
@@ -321,7 +311,7 @@ namespace cqp
             CheckSQLite(sqlite3_bind_int64(getNextIdStmt, 1, link));
             if(CheckSQLite(sqlite3_step(getNextIdStmt)) == SQLITE_ROW)
             {
-                result = sqlite3_column_int64(getNextIdStmt, 0);
+                result = sqlite3_column_int64(getNextIdStmt, 0) + 1;
             }
             CheckSQLite(sqlite3_reset(getNextIdStmt));
             return result;

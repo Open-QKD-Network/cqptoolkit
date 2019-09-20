@@ -3,7 +3,7 @@
 * @brief SiteAgentCtl
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 1/5/2018
@@ -80,6 +80,8 @@ public:
 
     void HandleGetKey(const cqp::CommandArgs::Option& option);
 
+    void HandleBackingStore(const cqp::CommandArgs::Option& option);
+    void HandleSiteId(const cqp::CommandArgs::Option& option);
     /**
      * @brief ListSites
      * Output a list of known sites for the connected site
@@ -148,6 +150,9 @@ protected:
         /// which command to run
         const Cmd cmd;
     };
+
+    std::vector<std::string> backingStores;
+    std::vector<std::string> siteIds;
 
     /// commands parsed from the command line
     std::vector<Command> commands;

@@ -20,6 +20,8 @@
 #include <thread>
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Datatypes/URI.h"
+#include "KeyManagement/KeyStores/BackingStoreFactory.h"
+#include "KeyManagement/KeyStores/Utils.h"
 
 using namespace cqp;
 
@@ -37,6 +39,9 @@ struct Names
     static CONSTSTRING keyFile = "key";
     static CONSTSTRING rootCaFile = "rootca";
     static CONSTSTRING tls = "tls";
+    static CONSTSTRING generate = "gen-keys";
+    static CONSTSTRING backingStore = "backing-store";
+    static CONSTSTRING siteId = "site-id";
 };
 
 SiteAgentCtl::SiteAgentCtl()
@@ -65,7 +70,6 @@ SiteAgentCtl::SiteAgentCtl()
     .Callback(std::bind(&SiteAgentCtl::HandleGetKey, this, _1));
 
     definedArguments.AddOption(Names::connect, "c", "Site to connect to")
-    .Required()
     .Bind();
 
     definedArguments.AddOption(Names::certFile, "", "Certificate file")
@@ -85,6 +89,15 @@ SiteAgentCtl::SiteAgentCtl()
 
     definedArguments.AddOption("", "v", "Increase output")
     .Callback(std::bind(&SiteAgentCtl::HandleVerbose, this, _1));
+
+    definedArguments.AddOption(Names::generate, "g", "Generate number of keys into keystores, specifiy by repeating -x & -i")
+    .Bind();
+    definedArguments.AddOption(Names::backingStore, "x", "Backing store to connect to.")
+    .HasArgument()
+    .Callback(std::bind(&SiteAgentCtl::HandleBackingStore, this, _1));
+    definedArguments.AddOption(Names::siteId, "i", "The site name for the backing store")
+    .HasArgument()
+    .Callback(std::bind(&SiteAgentCtl::HandleSiteId, this, _1));
 
 }
 
@@ -163,6 +176,16 @@ void SiteAgentCtl::HandleGetKey(const CommandArgs::Option& option)
     Command cmd(Command::Cmd::Key);
     cmd.destination = option.value;
     commands.push_back(cmd);
+}
+
+void SiteAgentCtl::HandleBackingStore(const CommandArgs::Option& option)
+{
+    backingStores.push_back(option.value);
+}
+
+void SiteAgentCtl::HandleSiteId(const CommandArgs::Option& option)
+{
+    siteIds.push_back(option.value);
 }
 
 void SiteAgentCtl::ListSites(remote::IKey::Stub* siteA)
@@ -288,7 +311,36 @@ int SiteAgentCtl::Main(const std::vector<std::string>& args)
     using namespace std;
     exitCode = Application::Main(args);
 
-    if(!stopExecution)
+    if(!stopExecution && definedArguments.IsSet(Names::generate))
+    {
+        size_t numberKeys = 0;
+        definedArguments.GetProp(Names::generate, numberKeys);
+
+        if(backingStores.size() == siteIds.size() && backingStores.size() >= 2)
+        {
+            keygen::Utils::KeyStores stores;
+            for(size_t index = 0; index < backingStores.size(); index++)
+            {
+                stores.emplace_back(siteIds[index], keygen::BackingStoreFactory::CreateBackingStore(backingStores[index]));
+            }
+
+            // build key between every combination of stores
+            if(!keygen::Utils::PopulateRandom(stores, numberKeys))
+            {
+                LOGERROR("Failed to populate keystores");
+                stopExecution = true;
+                exitCode = ExitCodes::UnknownError;
+            }
+        }
+        else
+        {
+            LOGERROR("must specify at least 2 equal number of backing stores and ids");
+            stopExecution = true;
+            exitCode = ExitCodes::InvalidConfig;
+        }
+    }
+
+    if(!stopExecution && definedArguments.IsSet(Names::connect))
     {
 
         GrpcAllowMACOnlyCiphers();
