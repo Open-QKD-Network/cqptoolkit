@@ -30,7 +30,7 @@ namespace cqp {
                 /// The percentage of match between 0-1
                 double value;
                 /// The offset at which the confidence value was measured
-                ssize_t offset;
+                int64_t offset;
             };
 
             /**
@@ -44,7 +44,7 @@ namespace cqp {
              * @return The highest scoring offset and its confidence value
              */
             Confidence HighestValue(const QubitList& truth,  const std::vector<SlotID>& validSlots,
-                              const QubitList& irregular, ssize_t from, ssize_t to);
+                              const QubitList& irregular, int64_t from, int64_t to);
 
             /**
              * @brief HighestValue
@@ -58,7 +58,7 @@ namespace cqp {
              */
             Confidence HighestValue(const QubitsBySlot markers,
                                     const std::vector<SlotID>& validSlots,
-                                    const QubitList& irregular, ssize_t from, ssize_t to);
+                                    const QubitList& irregular, int64_t from, int64_t to);
 
             /**
              * @brief CompareValues
@@ -70,7 +70,7 @@ namespace cqp {
              * @return The match confidence
              */
             double CompareValues(const QubitList& truth,  const std::vector<uint64_t>& validSlots,
-                                 const QubitList& irregular, ssize_t offset);
+                                 const QubitList& irregular, int64_t offset);
 
             /**
              * @brief CompareValues
@@ -82,12 +82,12 @@ namespace cqp {
              * @return The match confidence
              */
             double CompareValues(const QubitsBySlot markers,  const std::vector<uint64_t>& validSlots,
-                                 const QubitList& irregular, ssize_t offset);
+                                 const QubitList& irregular, int64_t offset);
         protected:
             /// The number of values to check in a data set
             size_t samples;
             /// process the different offsets
-            RangeProcessing<ssize_t> rangeWorker;
+            RangeProcessing<int64_t> rangeWorker;
         };
 
     } // namespace align

@@ -3,7 +3,7 @@
 * @brief Device
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 10/4/2018
@@ -18,6 +18,13 @@
     #include <linux/in.h>
     #include <sys/ioctl.h>
     #include <unistd.h>
+#elif defined(WIN32)
+    #include <WinSock2.h>
+    #include <WS2tcpip.h>
+
+    #pragma comment (lib, "Ws2_32.lib")
+    #pragma comment (lib, "Mswsock.lib")
+    #pragma comment (lib, "AdvApi32.lib")
 #endif
 namespace cqp
 {
@@ -31,6 +38,7 @@ namespace cqp
             {
                 LOGTRACE("Setting ip address of " + devName + " to " + address + "/" + netmask);
                 net::IPAddress ip(address);
+#if defined(__unix__)
                 struct ifreq ipStruct {};
 
                 int udpSock = 0;
@@ -80,6 +88,9 @@ namespace cqp
                     LOGERROR("Failed to open udp socket on new device");
                     LOGERROR(::strerror(errno));
                 }
+#elif defined(WIN32)
+                LOGERROR("TODO");
+#endif
             } // if address
             return result;
         }
@@ -101,6 +112,7 @@ namespace cqp
 
             if(udpSock > 0)
             {
+#if defined(__unix__)
                 struct ifreq ipStruct {};
 
                 LOGTRACE("Getting device flags");
@@ -135,6 +147,9 @@ namespace cqp
                     }
                 }
                 ::close(udpSock);
+#elif defined(WIN32)
+                LOGERROR("TODO");
+#endif
             }
             else
             {

@@ -12,14 +12,34 @@
 #include "UUID.h"
 #if defined(__linux)
     #include "uuid/uuid.h"
-#else
-    #if defined(WIN32)
-        #include <rpc.h>
-    #endif
+#elif defined(WIN32)
+    #include <rpc.h>
+#pragma comment(lib, "Rpcrt4.lib")
 #endif
 
 namespace cqp
 {
+
+    cqp::UUID::operator std::string() const noexcept
+    {
+        return this->ToString();
+    }
+
+    UUID::UUID(const UUID::UUIDStorage& values)
+    {
+        value = values;
+    }
+
+    UUID UUID::Null()
+    {
+        UUIDStorage nullValues {};
+        return {nullValues};
+    }
+
+	UUID::UUID(const char* str) :
+		UUID(std::string(str))
+	{
+	}
 
 #if defined(__unix__)
     std::string UUID::ToString() const
@@ -28,11 +48,6 @@ namespace cqp
         // uuid null terminates the string
         uuid_unparse(value.data(), result);
         return result;
-    }
-
-    cqp::UUID::operator std::string() const noexcept
-    {
-        return this->ToString();
     }
 
     UUID::UUID()
@@ -48,11 +63,6 @@ namespace cqp
         }
     }
 
-    UUID::UUID(const UUID::UUIDStorage& values)
-    {
-        value = values;
-    }
-
     bool UUID::IsValid() const
     {
         return uuid_is_null(value.data()) == 0;
@@ -64,49 +74,44 @@ namespace cqp
         return uuid_parse(input.c_str(), temp.data()) == 0;
     }
 
-    UUID UUID::Null()
+#elif defined(WIN32)
+    std::string UUID::ToString() const
     {
-        UUIDStorage nullValues {};
-        return {nullValues};
-    }
+		RPC_CSTR resultChar = nullptr;
+		const ::UUID *temp = reinterpret_cast<const ::UUID*>(value.data());
+		// UuidToStringA null terminates the string
+        UuidToString(temp, &resultChar);
+		std::string result(reinterpret_cast<const char*>(resultChar));
+		RpcStringFree(&resultChar);
 
-    UUID::UUID(const char* str)
-    {
-        std::string other(str);
-        if(other.length() > 0)
-        {
-            uuid_parse(other.c_str(), value.data());
-        }
-    }
-
-#else
-#if defined(WIN32)
-    std::string ToString(const cqp::UUID& input)
-    {
-        char result[UUID_STR_LEN] {0}; /* FlawFinder: ignore */
-        // UuidToStringA null terminates the string
-        UuidToStringA(input.data(), result);
         return result;
     }
 
-    cqp::UUID NewUUID()
+    UUID::UUID()
     {
-        UUID result;
-        UuidCreate(result.data());
-        return result;
+        UuidCreate(reinterpret_cast<::UUID*>(value.data()));
     }
 
-    cqp::UUID ToUUID(const std::string& other)
+    UUID::UUID(const std::string& other)
     {
-        UUID result;
-        UuidFromString(other.c_str(), result.data());
-        return result;
+		RPC_CSTR* temp = new RPC_CSTR[other.size() + 1];
+		strcpy_s(reinterpret_cast<char*>(*temp), other.size(), other.c_str());
+
+        UuidFromString(*temp, reinterpret_cast<::UUID*>(value.data()));
+		delete[] temp;
     }
 
-    bool IsValid(const cqp::UUID& input)
+	bool UUID::IsValid() const
+	{
+		RPC_STATUS status;
+		auto temp = value;
+		return UuidIsNil(reinterpret_cast<::UUID*>(temp.data()), &status) == 0;
+	}
+
+    bool UUID::IsValid(const std::string& input)
     {
-        return UuidIsNil(input.data()) == 0;
+		UUID temp(input);
+		return temp.IsValid();
     }
-#endif
 #endif
 } // namespace cqp

@@ -33,8 +33,9 @@ namespace cqp
      * This function will return a specific number of random bit from a pre-generated
      * pool of numbers.
      */
-    ulong RandomNumber::RandULong()
+	uint64_t RandomNumber::RandULong()
     {
+
         return intDistribution(generator);
     }
 

@@ -90,7 +90,7 @@ namespace cqp
             const auto maxIt = std::max_element(histogram.cbegin(), histogram.cend());
 
             double average = 0.0;
-            const ssize_t peakOffset = distance(histogram.cbegin(), maxIt);
+            const int64_t peakOffset = distance(histogram.cbegin(), maxIt);
             size_t totalWeights = 0;
             // shift the index so the peak is in the middle
             const int_fast16_t indexShift = binsCentre - peakOffset;

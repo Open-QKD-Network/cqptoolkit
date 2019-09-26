@@ -21,11 +21,16 @@
 #include <algorithm>
 
 #if defined(_WIN32)
+    #define NOMINMAX
     #include <windows.h>
     #include <shellapi.h>
     #include <shlobj.h>
     #include <shlwapi.h>
     #include <io.h>
+    #include <comutil.h> //for _bstr_t (used in the string conversion)
+    #include <iostream>
+    #include <pathcch.h>
+    #pragma comment(lib, "comsuppw")
 
 #elif defined(__unix__)
     #include <cstdlib>
@@ -49,8 +54,10 @@ namespace cqp
             PWSTR folderStr = nullptr;
 
             // Get the folder for the current users my documents folder
-            SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, folderStr);
-            std::string result = std::string(folderStr);
+            SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, &folderStr);
+            _bstr_t bstrPath(folderStr);
+            std::string result = std::string(bstrPath);
+            delete folderStr;
 
 #elif defined(__unix__)
 
@@ -117,7 +124,7 @@ namespace cqp
             bool result = false;
 
 #if defined(_WIN32)
-            struct stat buffer;
+            struct _stat64i32 buffer;
             result = (_stat (filename.c_str(), &buffer) == 0);
 
 #elif defined(__unix__)
@@ -235,9 +242,16 @@ namespace cqp
         std::string GetCurrentPath()
         {
             std::string result;
+#if defined(__unix__)
             char* c_result = ::getcwd(nullptr, 0);
             result = c_result;
             free(c_result);
+#elif defined(WIN32)
+            char* temp = new char[FILENAME_MAX];
+            GetCurrentDirectory(sizeof(temp), temp);
+            result = std::string(temp);
+            delete temp;
+#endif
             return result;
         }
 
@@ -255,13 +269,20 @@ namespace cqp
 
             result = ::dirname(const_cast<char*>(temp.c_str()));
 #elif defined(WIN32)
-            PathRemoveFileSpec
+            LOGERROR("TODO");
+            //PathRemoveFileSpec(temp);
 #endif
             return result;
         }
 
         bool CanWrite(const std::string& path)
         {
+#if defined(WIN32)
+#define R_OK    4       /* Test for read permission.  */
+#define W_OK    2       /* Test for write permission.  */
+#define X_OK    1       /* Test for execute permission.  */
+#define F_OK    0       /* Test for existence.  */
+#endif
             return ::access(path.c_str(), W_OK) == 0;
         }
 
@@ -278,6 +299,7 @@ namespace cqp
 
         std::string MakeTemp(bool directory)
         {
+#if defined(__unix__)
             char name[] = "/tmp/temp.XXXXXX";
             if(directory)
             {
@@ -294,6 +316,30 @@ namespace cqp
                     ::close(fd);
                 }
             }
+#elif defined(WIN32)
+            std::string name;
+            if (directory)
+            {
+                LOGERROR("TODO");
+                // https://stackoverflow.com/questions/6287475/creating-a-unique-temporary-directory-from-pure-c-in-windows
+            }
+            else
+            {
+                char* tempDir = new char[FILENAME_MAX];
+                if (GetTempPath(sizeof(tempDir), tempDir) == 0)
+                {
+                    LOGERROR(Logger::GetLastErrorString());
+                }
+                char* temp = new char[FILENAME_MAX];
+                if (GetTempFileName(tempDir, "", 0, temp) == 0)
+                {
+                    LOGERROR(Logger::GetLastErrorString());
+                }
+                name = temp;
+                delete[] tempDir;
+                delete[] temp;
+            }
+#endif
             return name;
         }
 
@@ -315,7 +361,8 @@ namespace cqp
             auto temp = path;
             result = ::basename(const_cast<char*>(temp.c_str()));
 #elif defined(WIN32)
-            PathRemoveFileSpec
+            LOGERROR("TODO");
+            //PathRemoveFileSpec
 #endif
             return result;
         }
@@ -338,7 +385,7 @@ namespace cqp
             ::realpath(relPath.c_str(), buffer);
             result = std::string(buffer);
 #else
-            TODO
+            LOGERROR("TODO");
 #endif
 
             return result;

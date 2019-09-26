@@ -10,7 +10,7 @@ namespace cqp
      * @tparam RangeType The type passed to the iteration
      */
     template<typename RangeType>
-    class ALGORITHMS_EXPORT RangeProcessing : public threads::ThreadManager
+    class RangeProcessing : public threads::ThreadManager
     {
     public:
         /// The function to perform on each iteration
@@ -22,7 +22,7 @@ namespace cqp
          * @param numThreads The number of threads to process the queue with.
          * Default: The number of physical cores
          */
-        RangeProcessing(uint numThreads = std::thread::hardware_concurrency());
+        RangeProcessing(uint32_t numThreads = std::thread::hardware_concurrency());
 
         ~RangeProcessing() override = default;
 
@@ -108,7 +108,7 @@ namespace cqp
     // RangeProcessing Implementation
 
     template<typename RangeType>
-    RangeProcessing<RangeType>::RangeProcessing(uint numThreads)
+    RangeProcessing<RangeType>::RangeProcessing(uint32_t numThreads)
     {
         ConstructThreads(numThreads);
     }

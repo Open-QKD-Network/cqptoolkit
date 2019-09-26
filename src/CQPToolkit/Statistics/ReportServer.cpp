@@ -27,7 +27,7 @@ namespace cqp
             rpt->set_total(stat->GetTotal());
         }
 
-        bool ReportServer::ShouldSendStat(const remote::ReportingFilter* filter, const std::chrono::system_clock::time_point& lastUpdate, const remote::SiteAgentReport& report)
+        bool ReportServer::ShouldSendStat(const remote::ReportingFilter* filter, const std::chrono::high_resolution_clock::time_point& lastUpdate, const remote::SiteAgentReport& report)
         {
             using namespace std::chrono;
             bool result = false;

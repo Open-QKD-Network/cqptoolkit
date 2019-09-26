@@ -11,8 +11,8 @@
 #pragma once
 #include "CQPToolkit/cqptoolkit_export.h"
 #include <memory>
-#include <grpc++/channel.h>
-#include <grpc++/server_builder.h>
+#include <grpcpp/channel.h>
+#include <grpcpp/server_builder.h>
 
 namespace cqp {
     /**

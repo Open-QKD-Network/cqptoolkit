@@ -95,7 +95,7 @@ namespace cqp
                 for(size_t validSlotIndex = 0u; validSlotIndex < validSlots.size(); validSlotIndex++)
                 {
                     // find the qubit index which the current valid index relates to once offset is applied
-                    const auto adjustedSlot = offset + static_cast<ssize_t>(validSlots[validSlotIndex]);
+                    const auto adjustedSlot = offset + static_cast<int64_t>(validSlots[validSlotIndex]);
                     // is the index still valid
                     if(adjustedSlot >= 0 && static_cast<size_t>(adjustedSlot) < qubits.size())
                     {

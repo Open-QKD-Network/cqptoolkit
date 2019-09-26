@@ -13,7 +13,7 @@ namespace cqp
 
         }
 
-        Offsetting::Confidence Offsetting::HighestValue(const QubitsBySlot markers, const std::vector<SlotID>& validSlots, const QubitList& irregular, ssize_t from, ssize_t to)
+        Offsetting::Confidence Offsetting::HighestValue(const QubitsBySlot markers, const std::vector<SlotID>& validSlots, const QubitList& irregular, int64_t from, int64_t to)
         {
             std::mutex resultsMutex;
             std::condition_variable resultsCv;
@@ -28,7 +28,7 @@ namespace cqp
             size_t numProcessed = 0;
 
             // action to perform on every iteration, compare the values with an offset
-            auto processLambda = [&](ssize_t offset)
+            auto processLambda = [&](int64_t offset)
             {
                 double confidence = CompareValues(markers, validSlots, irregular, offset);
 
@@ -48,7 +48,7 @@ namespace cqp
             };
 
             // function to return the next number in the sequence
-            auto nextValLambda = [&](ssize_t& nextVal)
+            auto nextValLambda = [&](int64_t& nextVal)
             {
                 nextVal = counter.fetch_add(1);
                 return nextVal < to;
@@ -67,7 +67,7 @@ namespace cqp
             return highest;
         }
 
-        Offsetting::Confidence Offsetting::HighestValue(const QubitList& truth, const std::vector<SlotID>& validSlots, const QubitList& irregular, ssize_t from, ssize_t to)
+        Offsetting::Confidence Offsetting::HighestValue(const QubitList& truth, const std::vector<SlotID>& validSlots, const QubitList& irregular, int64_t from, int64_t to)
         {
             std::mutex resultsMutex;
             std::condition_variable resultsCv;
@@ -82,7 +82,7 @@ namespace cqp
             size_t numProcessed = 0;
 
             // action to perform on every iteration, compare the values with an offset
-            auto processLambda = [&](ssize_t offset)
+            auto processLambda = [&](int64_t offset)
             {
                 double confidence = CompareValues(truth, validSlots, irregular, offset);
 
@@ -102,7 +102,7 @@ namespace cqp
             };
 
             // function to return the next number in the sequence
-            auto nextValLambda = [&](ssize_t& nextVal)
+            auto nextValLambda = [&](int64_t& nextVal)
             {
                 nextVal = counter.fetch_add(1);
                 return nextVal < to;
@@ -123,7 +123,7 @@ namespace cqp
 
         double Offsetting::CompareValues(const QubitList& truth, const std::vector<uint64_t>& validSlots,
                                          const QubitList& irregular,
-                                         ssize_t offset)
+			int64_t offset)
         {
             double confidence = 0.5;
             size_t basesMatched = 0;
@@ -136,11 +136,11 @@ namespace cqp
             // step through a sample of values.
             for(uint64_t index = 0; index < numToCheck; index = index + step)
             {
-                const auto adjusted = offset + static_cast<ssize_t>(validSlots[index]);
+                const auto adjusted = offset + static_cast<int64_t>(validSlots[index]);
                 const auto& aliceQubit = truth[static_cast<size_t>(adjusted)];
                 const auto& bobQubit = irregular[index];
 
-                if(adjusted >= 0 && adjusted < static_cast<ssize_t>(truth.size()) &&
+                if(adjusted >= 0 && adjusted < static_cast<int64_t>(truth.size()) &&
                         QubitHelper::Base(aliceQubit) == QubitHelper::Base(bobQubit))
                 {
                     // its within the range and the basis sent matches the basis measured
@@ -160,7 +160,7 @@ namespace cqp
 
         double Offsetting::CompareValues(const QubitsBySlot markers, const std::vector<uint64_t>& validSlots,
                                          const QubitList& irregular,
-                                         ssize_t offset)
+			int64_t offset)
         {
             using namespace std;
             double confidence = 0.5;
@@ -169,7 +169,7 @@ namespace cqp
 
             for(const auto& marker : markers)
             {
-                const auto adjustedSlot = static_cast<ssize_t>(marker.first) - offset;
+                const auto adjustedSlot = static_cast<int64_t>(marker.first) - offset;
                 if(adjustedSlot >= 0)
                 {
                     // use a binary search to find the value

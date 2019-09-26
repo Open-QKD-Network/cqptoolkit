@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include <bits/stdint-uintn.h>         // for uint32_t
 #include <string>                      // for operator+, string, to_string
 #include <vector>                      // for allocator, vector
 // for FILE_HANDLE
@@ -23,7 +22,6 @@
     #pragma warning(disable:4251)
 #endif // defined
 #if defined(_WIN32)
-    #include <windows.h>
 #elif defined(__unix)
     #include <termios.h>
 #endif
@@ -34,7 +32,7 @@
 /// On Windows, B19200 will become CBR_19200 with a value of 19200
 /// @endinternal
 #if defined(_WIN32)
-    #define BAUD(x) B_ ## x = CBR_ ## x
+    #define BAUD(x) B_ ## x = ## x
 #elif defined(__unix)
     #define BAUD(x) B_ ## x = B ## x
 #else

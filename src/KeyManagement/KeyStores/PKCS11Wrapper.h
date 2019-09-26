@@ -3,7 +3,7 @@
 * @brief PKCS11Wrapper
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 13/7/2018
@@ -661,7 +661,7 @@ namespace cqp
         template<typename T, typename std::enable_if<std::is_integral<T> {}, int>::type>
         void AttributeList::Set(::CK_ATTRIBUTE_TYPE type, const T& value)
         {
-            __try
+            try
             {
                 // prepare the storage
                 Set(type);
@@ -676,14 +676,17 @@ namespace cqp
                 currentStorage.attribute->pValue = currentStorage.value.data();
                 currentStorage.attribute->ulValueLen = currentStorage.value.size();
             } // try
-            CATCHLOGERROR
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
         } // AttributeList::Set
 
         template<typename T, typename std::enable_if<std::is_integral<T> {}, int>::type>
         bool AttributeList::Get(::CK_ATTRIBUTE_TYPE type, T& output)
         {
             bool result = false;
-            __try
+            try
             {
                 auto it = valueStorage.find(type);
                 if(it != valueStorage.end() && it->second.attribute)
@@ -693,7 +696,10 @@ namespace cqp
                 }
                 return result;
             } // try
-            CATCHLOGERROR
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
             return result;
         } // AttributeList::Get
 

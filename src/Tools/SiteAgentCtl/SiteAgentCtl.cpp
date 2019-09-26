@@ -289,7 +289,10 @@ void SiteAgentCtl::GetKey(remote::IKey::Stub* siteA, const std::string& destinat
                 request.set_keyid(keyId);
                 LOGDEBUG("Found key id: " + to_string(keyId));
             }
-            CATCHLOGERROR
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
         }
     }
     else

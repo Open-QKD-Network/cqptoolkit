@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Algorithms/algorithms_export.h"
 
 namespace cqp {
 

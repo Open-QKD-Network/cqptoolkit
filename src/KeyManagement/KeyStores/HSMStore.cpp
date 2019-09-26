@@ -3,14 +3,13 @@
 * @brief HSMStore
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 25/7/2018
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "HSMStore.h"
-#include <bits/exception.h>            // for exception
 #include <chrono>                      // for high_resolution_clock
 #include <map>                         // for map, _Rb_tree_iterator, map<>:...
 #include <memory>                      // for allocator, __shared_ptr_access
@@ -21,6 +20,9 @@
 #include "KeyManagement/KeyStores/PKCS11Wrapper.h"      // for AttributeList, FromPKCSString
 #include "Algorithms/Logging/Logger.h"               // for LOGERROR, LOGINFO, LOGWARN
 #include "Algorithms/Datatypes/URI.h"                  // for URI
+#if defined(WIN32)
+    #include "Algorithms/Util/PortableEndian.h"
+#endif
 
 namespace cqp
 {
@@ -219,7 +221,9 @@ namespace cqp
                         if(obj.DestroyObject() == CKR_OK)
                         {
                             numDeleted++;
-                        } else {
+                        }
+                        else
+                        {
                             result = false;
                             break;
                         }
@@ -268,7 +272,7 @@ namespace cqp
             return result;
         }
 
-        std::set<std::string> HSMStore::GetDestinations(uint numToSearch)
+        std::set<std::string> HSMStore::GetDestinations(uint32_t numToSearch)
         {
             using namespace p11;
             using namespace std;

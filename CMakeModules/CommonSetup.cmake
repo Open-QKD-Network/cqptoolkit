@@ -548,29 +548,36 @@ macro(CQP_QT_LIB_PROJECT)
 endmacro(CQP_QT_LIB_PROJECT)
 
 macro(ADD_GRPC_FILES)
-    # search through specific folders for files to build
-    file(GLOB_RECURSE ${PROJECT_NAME}_INTERFACES LIST_DIRECTORIES false RELATIVE "${PROJECT_SOURCE_DIR}" "*.proto")
+    if(TARGET protobuf::libprotobuf)
+        # search through specific folders for files to build
+        file(GLOB_RECURSE ${PROJECT_NAME}_INTERFACES LIST_DIRECTORIES false RELATIVE "${PROJECT_SOURCE_DIR}" "*.proto")
 
-    protobuf_generate_cpp(
-        ${PROJECT_NAME}_PROTO_SRCS
-        ${PROJECT_NAME}_PROTO_HDRS
-        #EXPORT_MACRO $<UPPER_CASE:${PROJECT_NAME}>_EXPORT
-        ${${PROJECT_NAME}_INTERFACES})
+        get_target_property(Protobuf_IMPORT_DIRS protobuf::libprotobuf INTERFACE_INCLUDE_DIRECTORIES)
+            set(PROTOBUF_GENERATE_CPP_APPEND_PATH)
+            LIST(APPEND Protobuf_IMPORT_DIRS ${PROTOBUF_IMPORT_DIRS})
+        # correct for messed up out dir
+        LIST(GET ${PROJECT_NAME}_INTERFACES 0 _file)
+        get_filename_component(_rel_dir ${_file} DIRECTORY)
+        protobuf_generate(
+            APPEND_PATH
+            LANGUAGE cpp
+            IMPORT_DIRS ${Protobuf_IMPORT_DIRS}
+            OUT_VAR ${PROJECT_NAME}_PROTO_SRCS
+            PROTOS ${${PROJECT_NAME}_INTERFACES})
 
-    grpc_generate_cpp(
-        ${PROJECT_NAME}_GRPC_SRCS
-        ${PROJECT_NAME}_GRPC_HDRS
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${${PROJECT_NAME}_INTERFACES})
+        grpc_generate(
+            APPEND_PATH
+            LANGUAGE cpp
+            IMPORT_DIRS ${Protobuf_IMPORT_DIRS}
+            OUT_VAR ${PROJECT_NAME}_GRPC_SRCS
+            PROTOS ${${PROJECT_NAME}_INTERFACES})
 
-    include_directories(${Protobuf_INCLUDE_DIRS})
+        include_directories(${Protobuf_IMPORT_DIRS})
 
-    LIST(APPEND ${PROJECT_NAME}_SOURCES
-        ${${PROJECT_NAME}_PROTO_HDRS}
-        ${${PROJECT_NAME}_GRPC_HDRS}
-        ${${PROJECT_NAME}_PROTO_SRCS}
-        ${${PROJECT_NAME}_GRPC_SRCS})
-
+        LIST(APPEND ${PROJECT_NAME}_SOURCES
+            ${${PROJECT_NAME}_PROTO_SRCS}
+            ${${PROJECT_NAME}_GRPC_SRCS})
+    endif()
 endmacro(ADD_GRPC_FILES)
 
 ### @def GRPC_PROJECT special kind of CQP_LIBRARY_PROJECT for generating gRPC interfaces

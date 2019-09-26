@@ -174,7 +174,7 @@ namespace cqp {
 
                     for(size_t index = 0; index < convolved.size(); index++)
                     {
-                        for(ssize_t filterIndex = 0; filterIndex < filterSize; filterIndex++)
+                        for(int32_t filterIndex = 0; filterIndex < filterSize; filterIndex++)
                         {
                             // offset the start iterator and using it's value, multiply by the filter value
                             const auto& dataValue = *(inBegin + index + filterIndex);
@@ -218,8 +218,8 @@ namespace cqp {
                           Iter& edge,
                           std::function<bool (const T&, const T&)> comparator = std::less<T>())
             {
-                ssize_t lowerBound = 0;
-                ssize_t upperBound = std::distance(start, end);
+                int64_t lowerBound = 0;
+				int64_t upperBound = std::distance(start, end);
                 auto searchIndex = upperBound / 2;
                 bool result = false;
                 edge = end;

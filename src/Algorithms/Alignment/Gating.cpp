@@ -26,7 +26,7 @@ namespace cqp
                        double acceptanceRatio):
             rng(move(rng)),
             slotWidth{slotWidth}, txJitter{txJitter},
-            numBins{slotWidth / txJitter},
+            numBins{static_cast<BinID>(slotWidth / txJitter)},
             acceptanceRatio{acceptanceRatio}
         {
 

@@ -3,6 +3,10 @@
 #include "Algorithms/Logging/Logger.h"
 #include <chrono>
 #include <cmath>
+#if defined(WIN32)
+    #include "Algorithms/Util/PortableEndian.h"
+    #include <windows.h>
+#endif
 
 namespace cqp
 {
@@ -98,7 +102,7 @@ namespace cqp
             return result;
         }
 
-        const std::vector<Qubit> DataFile::DefautlCahnnelMappings = { 0, 1, 2, 3 };
+        const std::vector<Qubit> DataFile::DefaultCahnnelMappings = { 0, 1, 2, 3 };
 
         bool DataFile::ReadNOXDetections(const std::string& inFileName, DetectionReportList& output,
                                          const  std::vector<Qubit>& channelMappings, bool waitForConfig, uint64_t maxCourseTime)
@@ -207,10 +211,14 @@ namespace cqp
                     inFile.read(reinterpret_cast<char*>(&value), sizeof (value));
                     if(!inFile.eof())
                     {
+#if defined(__unix__)
                         output.push_back(
                         {
                             PicoSeconds(be64toh(time)), value
                         });
+#elif defined(WIN32)
+                        LOGERROR("TODO");
+#endif
                     }
                 }
                 while(!inFile.eof());

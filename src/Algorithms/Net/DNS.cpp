@@ -36,6 +36,9 @@ namespace cqp
             std::string result;
             try
             {
+#if defined(WIN32)
+#define HOST_NAME_MAX 64
+#endif
                 char hostname[HOST_NAME_MAX] = {0}; /* FlawFinder: ignore */
                 if(gethostname(hostname, sizeof(hostname)) < 0)
                 {
@@ -72,7 +75,7 @@ namespace cqp
             std::vector<IPAddress> result;
             try
             {
-
+#if defined(__unix__)
                 struct ifaddrs * ifAddrStruct = nullptr;
                 if(getifaddrs(&ifAddrStruct) < 0)
                 {
@@ -95,7 +98,9 @@ namespace cqp
                 {
                     freeifaddrs(ifAddrStruct);
                 }
-
+#elif defined(WIN32)
+                LOGERROR("TODO");
+#endif
             }
             catch (const std::exception& e)
             {

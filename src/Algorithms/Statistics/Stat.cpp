@@ -33,7 +33,7 @@ namespace cqp
             return units;
         }
 
-        std::chrono::system_clock::time_point StatBase::GetUpdated() const
+        std::chrono::high_resolution_clock::time_point StatBase::GetUpdated() const
         {
             return updated;
         }

@@ -17,6 +17,7 @@
 #include <sstream>
 #include <regex>
 #include <set>
+#include <map>
 
 namespace cqp
 {

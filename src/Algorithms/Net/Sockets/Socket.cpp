@@ -16,6 +16,7 @@
 #include <memory>
 #include <iomanip>
 #include <algorithm>
+#include <sstream>
 #if defined (__unix__)
     #include <unistd.h>
     #include <sys/types.h>
@@ -28,6 +29,7 @@
     #include <Winsock2.h>
     #include <ws2tcpip.h>
     #include <stdio.h>
+	#include <io.h>
 #endif
 
 namespace cqp
@@ -66,7 +68,11 @@ namespace cqp
                 tv.tv_usec = duration_cast<microseconds>(timeout).count() - (tv.tv_sec * 1000 * 1000);
                 if(handle != 0)
                 {
+#if defined(__unix__)
                     result = setsockopt(handle, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0;
+#elif defined(WIN32)
+					LOGERROR("TODO");
+#endif
                     if(!result)
                     {
                         LOGERROR(::strerror(errno));
@@ -86,7 +92,11 @@ namespace cqp
 
         void Socket::Close()
         {
+#if defined(__unix__)
             ::close(handle);
+#elif defined(WIN32)
+			LOGERROR("TODO");
+#endif
         }
 
         Socket::~Socket()
@@ -137,8 +147,13 @@ namespace cqp
 
         bool Socket::IsBlocking()
         {
+#if defined(__unix__)
             int flags = fcntl(handle, F_GETFL, 0);
             return (flags & O_NONBLOCK) == 0;
+#elif defined(WIN32)
+			LOGERROR("TODO");
+			return false;
+#endif
         }
 
         IPAddress::IPAddress() :
@@ -203,7 +218,11 @@ namespace cqp
             {
                 isIPv4 = false;
                 Addr6Ptr addr6 = reinterpret_cast<Addr6Ptr>(&addr);
+#if defined(__unix__)
                 const unsigned char* arraycast = reinterpret_cast<const unsigned char*>(&addr6->sin6_addr.__in6_u.__u6_addr8);
+#elif defined(WIN32)
+				const unsigned char* arraycast = reinterpret_cast<const unsigned char*>(&addr6->sin6_addr.u.Byte);
+#endif
                 for(size_t index = 0; index < 16; index++)
                 {
                     ip6[index] = arraycast[index];
@@ -243,7 +262,11 @@ namespace cqp
                 struct sockaddr_in6* addr6 = new sockaddr_in6();
                 *addr6 = {};
                 addr6->sin6_family = AF_INET6;
+#if defined(__unix__)
                 std::copy(ip6.begin(), ip6.end(), addr6->sin6_addr.__in6_u.__u6_addr8);
+#elif defined(WIN32)
+				std::copy(ip6.begin(), ip6.end(), addr6->sin6_addr.u.Byte);
+#endif
                 result = reinterpret_cast<struct sockaddr*>(addr6);
                 size = sizeof(*addr6);
             }
@@ -320,7 +343,11 @@ namespace cqp
                 *addr6 = {};
                 addr6->sin6_family = AF_INET6;
                 addr6->sin6_port = htons(port);
+#if defined(__unix__)
                 std::copy(ip.ip6.begin(), ip.ip6.end(), addr6->sin6_addr.__in6_u.__u6_addr8);
+#elif defined(WIN32)
+				std::copy(ip.ip6.begin(), ip.ip6.end(), addr6->sin6_addr.u.Byte);
+#endif
                 result = reinterpret_cast<struct sockaddr*>(addr6);
                 size = sizeof(*addr6);
             }
@@ -349,7 +376,7 @@ namespace cqp
         bool Socket::Read(void* data, size_t length, size_t& bytesReceived)
         {
             bool result = false;
-            ssize_t received = ::read(handle, data, length);
+            int64_t received = ::read(handle, data, length);
             if(received >= 0)
             {
                 bytesReceived = static_cast<size_t>(received);
@@ -372,7 +399,7 @@ namespace cqp
         {
             bool result = true;
             size_t sent = 0;
-            ssize_t sentThisTime = 0;
+            int64_t sentThisTime = 0;
 
             while(sentThisTime >= 0 && sent < length)
             {

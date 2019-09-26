@@ -15,8 +15,8 @@
 #include <string>                    // for operator+, allocator, char_traits
 #include "Algorithms/Logging/Logger.h"
 #include "CQPToolkit/cqptoolkit_export.h"
-#include <grpcpp/security/credentials.h>
-#include <grpcpp/security/server_credentials.h>
+#include <grpc++/security/credentials.h>
+#include <grpc++/security/server_credentials.h>
 
 namespace cqp
 {
@@ -50,17 +50,7 @@ namespace cqp
      * By allowing "null" encryption schemes, the messages will be sent unencrypted (improving performance)
      * but ensuring that messages are still authenticated.
      */
-    inline void GrpcAllowMACOnlyCiphers()
-    {
-        if(getenv(GRPC_SSL_CIPHER_SUITES) == nullptr) /* Flawfinder: ignore */
-        {
-            // the env var has not been set externally
-            LOGDEBUG("Setting GRPC_SSL_CIPHER_SUITES to " + SupportedCiphers);
-            // Before the gRPC native library (gRPC Core) is lazily loaded and
-            // initialized, an environment variable must be set
-            setenv(GRPC_SSL_CIPHER_SUITES, SupportedCiphers, 1);
-        }
-    }
+    CQPTOOLKIT_EXPORT void GrpcAllowMACOnlyCiphers();
 
     /**
      * @brief LoadChannelCredentials

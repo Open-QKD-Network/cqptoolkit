@@ -13,9 +13,10 @@
 #include "Version.h"
 #include "Algorithms/Logging/Logger.h"
 #include <iostream>
-#include <execinfo.h>
-#include <unistd.h>
-
+#if defined(__unix__)
+    #include <execinfo.h>
+    #include <unistd.h>
+#endif
 namespace cqp
 {
 
@@ -97,12 +98,16 @@ namespace cqp
 
         if(signum == SIGSEGV)
         {
+#if defined(__unix__)
             const int maxTraces = 20;
             void *trace[maxTraces];
             int traceSize;
             traceSize = backtrace(trace, maxTraces);
             LOGERROR("SIGV Back trace:");
             backtrace_symbols_fd(trace, traceSize, STDERR_FILENO);
+#elif defined(WIN32)
+            LOGERROR("TODO");
+#endif
             exit(-1);
         }
     }

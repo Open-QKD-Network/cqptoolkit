@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "CQPToolkit/Drivers/Usb.h"
-#include <libusb-1.0/libusb.h>       // for LIBUSB_SUCCESS, libusb_exit, lib...
 #include <cstddef>                   // for size_t
 #include <sys/types.h>               // for ssize_t
 #include <string>                    // for operator+, to_string, char_traits
@@ -20,12 +19,14 @@
 #include "Algorithms/Logging/ILogger.h"      // for LogLevel, ILogger, LogLevel::Debug
 // for EnumClassHash
 #include "Algorithms/Datatypes/URI.h"                // for URI
-#include "libusb-1.0/libusb.h"
+
+#if defined(LIBUSB_FOUND)
+#include <libusb-1.0/libusb.h>       // for LIBUSB_SUCCESS, libusb_exit, lib...
 
 namespace cqp
 {
     using namespace std;
-#if __GNUC__ < 7
+#if defined(GCC) && __GNUC__ < 7
     /// Used for mapping log levels to libusb
     using UsbLevelMap = std::unordered_map<LogLevel, libusb_log_level, EnumClassHash> ;
 #else
@@ -405,3 +406,4 @@ namespace cqp
         }
     }
 } // namespace cqp
+#endif

@@ -32,7 +32,7 @@ namespace cqp
             grpc::Status result(grpc::Status::OK);
             DetectionReportList detections;
             detections.reserve(request->values().qubits().size());
-            uint count = 0;
+            uint32_t count = 0;
 
             for(auto qubit : request->values().qubits())
             {

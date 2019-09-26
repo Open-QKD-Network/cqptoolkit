@@ -86,6 +86,7 @@ if(NOT LIBUSB_1_FOUND)
           PATHS ${CMAKE_LIBRARY_PATH} ${CMAKE_PROGRAM_PATH}
           PATH_SUFFIXES 
              "lib/native/${MSVC_C_ARCHITECTURE_ID}"
+             "bin"
       )
       if(LIBUSB_1_DLLS)
         file(COPY ${LIBUSB_1_DLLS} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE})

@@ -34,9 +34,9 @@ namespace cqp
                 vector<uint64_t> diffs;
                 diffs.reserve(numElements / stride);
                 // the first element of diffs will equal the first element of timetags
-                for(auto tagIt = begin + static_cast<ssize_t>(stride);
+                for(auto tagIt = begin + static_cast<uint32_t>(stride);
                         tagIt < end;
-                        tagIt += static_cast<ssize_t>(stride))
+                        tagIt += static_cast<uint32_t>(stride))
                 {
                     if(tagIt < end)
                     {

@@ -78,7 +78,7 @@ namespace cqp
                 result = grpc::Status::OK;
 
                 auto theirList = request->basis().find(stateList.first);
-                if(static_cast<uint>(theirList->second.basis_size()) == stateList.second->size())
+                if(static_cast<uint32_t>(theirList->second.basis_size()) == stateList.second->size())
                 {
                     // a lias for the reply list for this frame number
                     RepeatedField<bool>* myAnswers = (*response->mutable_answers())[theirList->first].mutable_answers();

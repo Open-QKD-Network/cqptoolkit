@@ -10,12 +10,40 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Logger.h"
+#if defined(__unix__)
+    #include <string.h>
+#elif defined(WIN32)
+    #include <Windows.h>
+#endif
 
 namespace cqp
 {
 
     /// The logger which will be used to propagate all log messages to other loggers and to users
-    Logger defaultLogger;
+    static Logger defaultLogger;
+
+    std::string Logger::GetLastErrorString()
+    {
+#if defined(__unix__)
+        return std::string(strerror(errno));
+#elif defined(WIN32)
+        //Get the error message, if any.
+        DWORD errorMessageID = ::GetLastError();
+        if (errorMessageID == 0)
+            return std::string(); //No error message has been recorded
+
+        LPSTR messageBuffer = nullptr;
+        size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                     NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+        std::string message(messageBuffer, size);
+
+        //Free the buffer.
+        LocalFree(messageBuffer);
+
+        return message;
+#endif
+    }
 
     /// Change the level out output from the logger
     /// @param[in] level Message which are as or more severe as this will be printed

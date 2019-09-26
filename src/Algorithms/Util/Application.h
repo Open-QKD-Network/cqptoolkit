@@ -114,7 +114,8 @@ namespace cqp
 
     /// Macro for creating a standard main entry into a program
     /// @param name The class name to instantiate.
-    /// This must have a function calledf `main` or be descended from Application
+    /// This must have a function called `main` or be descended from Application
+#if defined(__unix__)
 #define CQP_MAIN(name) \
     int main(int argc, const char* argv[]) \
     { \
@@ -127,6 +128,21 @@ namespace cqp
             return -1; \
         } \
     }
+#elif defined(WIN32)
+
+#define CQP_MAIN(name) \
+    int main(int argc, const char* argv[]) \
+    { \
+        __try{ \
+            name instance; \
+            return instance.main(argc, argv); \
+        } __finally() \
+        { \
+            LOGERROR(e.what()); \
+            return -1; \
+        } \
+    }
+#endif
 } // namespace cqp
 
 

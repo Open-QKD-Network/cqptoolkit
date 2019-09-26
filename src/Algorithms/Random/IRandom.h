@@ -23,7 +23,7 @@ namespace cqp
 
         /// Get a random unsigned integer
         /// @return Random bits
-        virtual unsigned long RandULong() =0;
+        virtual uint64_t RandULong() =0;
 
         /**
          * @brief RandomBytes

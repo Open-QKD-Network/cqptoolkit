@@ -34,10 +34,15 @@ namespace cqp
             bool result = false;
             if(addr)
             {
+#if defined (__linux)
                 const unsigned char *ip = reinterpret_cast<const unsigned char *>(&addr->sin_addr.s_addr);
                 result = ip[0] == 127 || ip[0] == 10 ||
                          (ip[0] == 172 && (ip[1] >= 16 && ip[1] <= 31)) ||
                          (ip[0] == 192 && ip[1] == 168);
+
+#else
+LOGERROR("Unimplemented");
+#endif
             }
 
             return result;

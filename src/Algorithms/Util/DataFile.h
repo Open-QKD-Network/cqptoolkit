@@ -20,7 +20,7 @@ namespace cqp {
             DataFile() = default;
 
             /// Specifies that channel 0 == BB84::Zero, channel 1 == BB84::One, etc
-            static const std::vector<Qubit> DefautlCahnnelMappings; // = { 0, 1, 2, 3 };
+            static const std::vector<Qubit> DefaultCahnnelMappings; // = { 0, 1, 2, 3 };
 
             /**
              * @brief ReadPackedQubits
@@ -35,7 +35,7 @@ namespace cqp {
              * @return True on success
              */
             static bool ReadPackedQubits(const std::string& inFileName, QubitList& output, uint64_t maxValues = 0,
-                                         const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings);
+                                         const std::vector<Qubit>& channelMappings = DefaultCahnnelMappings);
 
             /**
              * @brief WriteQubits
@@ -65,7 +65,7 @@ namespace cqp {
              * @return true on success
              */
             static bool ReadNOXDetections(const std::string& inFileName, DetectionReportList& output,
-                                          const std::vector<Qubit>& channelMappings = DefautlCahnnelMappings,
+                                          const std::vector<Qubit>& channelMappings = DefaultCahnnelMappings,
                                           bool waitForConfig = true, uint64_t maxCourseTime = 0);
 
             /**

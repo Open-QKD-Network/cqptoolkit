@@ -10,7 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include <bits/stdint-uintn.h>             // for uint16_t, uint8_t
 #include <cstddef>                         // for size_t
 #include <vector>                          // for vector
 #include "Algorithms/Datatypes/Base.h"     // for IntList, DataBlock

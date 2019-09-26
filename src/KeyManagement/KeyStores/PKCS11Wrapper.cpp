@@ -3,7 +3,7 @@
 * @brief PKCS11Wrapper
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 13/7/2018
@@ -141,34 +141,38 @@ namespace cqp
             if(!loadedModules[libName].expired())
             {
                 result = loadedModules[libName].lock();
-            } else {
+            }
+            else
+            {
                 result.reset(new Module());
 
                 result->initArgs.flags = CKF_OS_LOCKING_OK;
                 result->initArgs.pReserved = const_cast<void*>(reserved);
 
                 CK_C_GetFunctionList pC_GetFunctionList = nullptr;
-    #if defined(__unix__)
+#if defined(__unix__)
                 result->libHandle = ::dlopen(libName.c_str(), RTLD_LAZY);
-    #elif defined(WIN32)
+#elif defined(WIN32)
                 TODO
-    #endif
+#endif
 
                 if(result->libHandle)
                 {
 
-    #if defined(__unix__)
+#if defined(__unix__)
                     pC_GetFunctionList = reinterpret_cast<CK_C_GetFunctionList>(::dlsym(result->libHandle, "C_GetFunctionList"));
-    #elif defined(WIN32)
+#elif defined(WIN32)
                     TODO
-    #endif
+#endif
                     if(pC_GetFunctionList && pC_GetFunctionList(&result->functions) == CKR_OK)
                     {
                         if(CheckP11(result->functions->C_Initialize(&result->initArgs)) != CKR_OK)
                         {
                             LOGERROR("Failed to initialise module");
                             result.reset();
-                        } else {
+                        }
+                        else
+                        {
                             loadedModules[libName] = std::weak_ptr<Module>(result);
                         }
                     }
@@ -639,7 +643,7 @@ namespace cqp
 
         void cqp::p11::AttributeList::Set(CK_ATTRIBUTE_TYPE type, const PSK& value)
         {
-            __try
+            try
             {
                 // prepare the storage
                 Set(type);
@@ -652,13 +656,16 @@ namespace cqp
                 currentStorage.attribute->pValue = currentStorage.value.data();
                 currentStorage.attribute->ulValueLen = currentStorage.value.size();
             } // try
-            CATCHLOGERROR
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
         }
 
         bool cqp::p11::AttributeList::Get(CK_ATTRIBUTE_TYPE type, std::string& output)
         {
             bool result = false;
-            __try
+            try
             {
                 auto it = valueStorage.find(type);
                 if(it != valueStorage.end() && it->second.attribute)
@@ -668,7 +675,10 @@ namespace cqp
                 }
                 return result;
             } // try
-            CATCHLOGERROR
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
             return result;
 
         }  // AttributeList::Set

@@ -3,7 +3,7 @@
 * @brief Datagram
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 8/3/2018
@@ -68,7 +68,11 @@ namespace cqp
             size_t bytesSent = 0;
             while(bytesSent < length)
             {
-                ssize_t sentThisTime = sendto(handle, sendFrom, length - bytesSent, 0, addr.get(), addrSize);
+#if defined(__unix__)
+                int64_t sentThisTime = sendto(handle, sendFrom, length - bytesSent, 0, addr.get(), addrSize);
+#elif defined(WIN32)
+                int64_t sentThisTime = sendto(handle, reinterpret_cast<const char*>(sendFrom), length - bytesSent, 0, addr.get(), addrSize);
+#endif
                 if(sentThisTime > 0)
                 {
                     bytesSent += static_cast<size_t>(sentThisTime);
@@ -88,8 +92,13 @@ namespace cqp
         {
             bool result =false;
             struct sockaddr_storage addr {};
+#if defined(__unix__)
             unsigned int addrSize = sizeof(addr);
-            ssize_t received = recvfrom(handle, data, length, 0, reinterpret_cast<struct sockaddr*>(&addr), &addrSize);
+            int64_t received = recvfrom(handle, data, length, 0, reinterpret_cast<struct sockaddr*>(&addr), &addrSize);
+#elif defined(WIN32)
+            int addrSize = sizeof(addr);
+            int64_t received = recvfrom(handle, reinterpret_cast<char*>(data), length, 0, reinterpret_cast<struct sockaddr*>(&addr), &addrSize);
+#endif
             if(received > 0)
             {
                 bytesReceived = static_cast<size_t>(received);

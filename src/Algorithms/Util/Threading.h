@@ -65,7 +65,7 @@ namespace cqp
              * Create the threads, called by the calss which implements the Processor function on creation.
              * @param numThreads The numnber of threads to create
              */
-            void ConstructThreads(uint numThreads = std::thread::hardware_concurrency());
+            void ConstructThreads(uint32_t numThreads = std::thread::hardware_concurrency());
 
         protected: // members
             /// The processing threads

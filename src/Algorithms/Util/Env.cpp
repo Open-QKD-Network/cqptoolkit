@@ -1,8 +1,8 @@
 #include "Env.h"
 
 #if defined(_WIN32)
-    #include <shellapi.h>
-    #include <processthreadsapi.htobe16()>
+    #include <windows.h>
+	#include <Shlwapi.h>
 
 #elif defined(__unix__)
     #include <unistd.h>

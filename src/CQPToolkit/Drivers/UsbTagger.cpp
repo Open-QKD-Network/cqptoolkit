@@ -179,7 +179,7 @@ namespace cqp
         }
     }
 
-    void UsbTagger::DataPusher::Start(const chrono::system_clock::time_point& epoc, Provider<IDetectionEventCallback>* newProvider)
+    void UsbTagger::DataPusher::Start(const chrono::high_resolution_clock::time_point& epoc, Provider<IDetectionEventCallback>* newProvider)
     {
         LOGTRACE("");
         provider = newProvider;

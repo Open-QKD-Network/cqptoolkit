@@ -3,7 +3,7 @@
 * @brief Server
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 8/3/2018
@@ -12,7 +12,11 @@
 #include "Server.h"
 #include "Algorithms/Logging/Logger.h"
 #include <sys/types.h>
-#include <sys/socket.h>
+#if defined(__unix__)
+    #include <sys/socket.h>
+#elif defined(WIN32)
+    #include <WinSock2.h>
+#endif
 
 namespace cqp
 {
@@ -43,7 +47,11 @@ namespace cqp
         {
             std::shared_ptr<Stream> result;
             struct sockaddr_storage clientAddr {};
+#if defined(__unix__)
             socklen_t clientAddrLen = 0;
+#elif defined(WIN32)
+            int clientAddrLen = 0;
+#endif
             int clientHandle = ::accept(handle, reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrLen);
 
             if(clientHandle >= 0)

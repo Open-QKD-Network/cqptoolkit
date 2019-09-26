@@ -10,17 +10,14 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #if defined(_WIN32)
-#include "stdafx.h"
 #include "CQPToolkit/Drivers/Serial.h"
 #include "Algorithms/Logging/Logger.h"
 
 #include <iterator>
 #include <regex>
-#include <devpropdef.h>
-#include <setupapi.h>
-#include <devguid.h>
-#include <regstr.h>
+#include <windows.h>
 #include <comdef.h>
+#include <SetupAPI.h>
 
 DEFINE_GUID(GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR, 0x4D36E978L, 0xE325, 0x11CE, 0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18);
 
@@ -243,7 +240,7 @@ namespace cqp
                         realDesc = description;
                     }
 
-                    results.emplace_back(std::make_unique<Serial>(std::string(portName), realDesc));
+                    results.emplace_back(std::make_unique<Serial>(std::string(portName)));
                 }
 
                 index++;

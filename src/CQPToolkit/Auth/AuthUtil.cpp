@@ -17,8 +17,28 @@
 #include <vector>                                // for vector
 #include "QKDInterfaces/Site.pb.h"               // for Credentials
 
+#if defined(__unix__)
+#elif defined(WIN32)
+    #include <windows.h>
+#endif
+
 namespace cqp
 {
+    void GrpcAllowMACOnlyCiphers()
+    {
+        if (getenv(GRPC_SSL_CIPHER_SUITES) == nullptr) /* Flawfinder: ignore */
+        {
+            // the env var has not been set externally
+            LOGDEBUG("Setting GRPC_SSL_CIPHER_SUITES to " + SupportedCiphers);
+#if defined(__unix__)
+            // Before the gRPC native library (gRPC Core) is lazily loaded and
+            // initialized, an environment variable must be set
+            setenv(GRPC_SSL_CIPHER_SUITES, SupportedCiphers, 1);
+#elif defined(WIN32)
+            SetEnvironmentVariable(GRPC_SSL_CIPHER_SUITES, SupportedCiphers);
+#endif
+        }
+    }
 
     std::shared_ptr<grpc::ChannelCredentials> LoadChannelCredentials(const remote::Credentials& creds)
     {

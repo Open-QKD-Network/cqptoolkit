@@ -11,7 +11,7 @@ namespace cqp
      * @brief The ProcessingQueue class uses multiple threads to process a list of data
      */
     template<typename Return = void>
-    class ALGORITHMS_EXPORT ProcessingQueue : public threads::ThreadManager
+    class ProcessingQueue : public threads::ThreadManager
     {
     public:
         /// The function to perform on the data
@@ -22,7 +22,7 @@ namespace cqp
          * @param numThreads The number of threads to process the queue with.
          * Default: The number of physical cores
          */
-        ProcessingQueue(uint numThreads = std::thread::hardware_concurrency());
+        ProcessingQueue(uint32_t numThreads = std::thread::hardware_concurrency());
 
         /**
          * @brief Enqueue
@@ -66,7 +66,7 @@ namespace cqp
     };
 
     template<typename Return>
-    ProcessingQueue<Return>::ProcessingQueue(uint numThreads)
+    ProcessingQueue<Return>::ProcessingQueue(uint32_t numThreads)
     {
         ConstructThreads(numThreads);
     }

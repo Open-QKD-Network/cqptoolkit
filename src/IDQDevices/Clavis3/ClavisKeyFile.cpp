@@ -14,12 +14,16 @@
 #include "Algorithms/Logging/Logger.h"
 #include "Algorithms/Util/FileIO.h"
 #include <sys/stat.h>
-#include <sys/inotify.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <future>
 #include <assert.h>
+#if defined(__unix__)
+#include <sys/inotify.h>
+#include <unistd.h>
 #include <linux/limits.h>
+#elif defined(WIN32)
+#include <io.h>
+#endif
 
 namespace cqp
 {
@@ -64,6 +68,7 @@ namespace cqp
         using namespace std;
         size_t fileOffset = 0;
 
+#if defined(__unix__)
         watchFD = ::inotify_init();
         if(watchFD == -1)
         {
@@ -164,6 +169,9 @@ namespace cqp
             } // while file exists
 
         } // outer keep going loop
+#elif defined(WIN32)
+LOGERROR("TODO");
+#endif
 
         if(watchFD != -1)
         {
@@ -190,7 +198,7 @@ namespace cqp
             {
                 // check that the file hasn't been reset
                 // if we're trying to read past the end of the file something has gone wrong
-                if(fileStat.st_size >= static_cast<ssize_t>(fileOffset))
+                if(fileStat.st_size >= static_cast<int64_t>(fileOffset))
                 {
                     // calculate how many fill key records are yet to be read
                     keysToGet = (static_cast<size_t>(fileStat.st_size) - fileOffset) /

@@ -7,6 +7,7 @@
 #include <iomanip>
 #include "Algorithms/algorithms_export.h"
 #include "Algorithms/Datatypes/Keys.h"
+#include <cctype>
 
 /// Support for "wide strings" has been removed with great prejudice
 /// see http://utf8everywhere.org/ for rational
@@ -204,9 +205,10 @@ namespace cqp
             return tab[static_cast<size_t>(idx)];
         }
 
-    }
+	};
+
     /// Lookup table to go from a hex character to it's number
-    constexpr charToIntTable;
+    constexpr CharToIntTable charToIntTable;
 
 
     /**

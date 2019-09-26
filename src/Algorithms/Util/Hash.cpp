@@ -8,7 +8,7 @@ namespace cqp {
     /// populate the crc32_table
     void ComputeFddiTable()
     {
-        uint i, j;
+        uint32_t i, j;
         uint32_t c;
 
         for (i = 0; i < 256; ++i)

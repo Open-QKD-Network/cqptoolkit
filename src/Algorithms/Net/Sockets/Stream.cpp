@@ -39,7 +39,11 @@ namespace cqp
             else
             {
                 int reuseAddr = 1;
+#if defined(__unix__)
                 if(::setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr)) != 0)
+#elif defined(WIN32)
+LOGERROR("TODO");
+#endif
                 {
                     LOGERROR("Failed to set SO_REUSEADDR");
                 }
@@ -94,7 +98,12 @@ namespace cqp
         bool Stream::SetKeepAlive(bool active)
         {
             int keepAlive = active;
+#if defined(__unix__)
             return ::setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(keepAlive)) == 0;
+#elif defined(WIN32)
+LOGERROR("TODO");
+return false;
+#endif
         }
 
         Stream::Stream(int fd)

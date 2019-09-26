@@ -17,7 +17,7 @@
 
 #if defined(_WIN32)
     /// The definition of a file handle on the current platform
-    #define FILE_HANDLE HANDLE
+    #define FILE_HANDLE void*
 #else //defined(_WIN32)
     /// @def FILE_HANDLE
     /// The definition of a file handle on the current platform

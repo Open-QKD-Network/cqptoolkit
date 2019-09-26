@@ -30,7 +30,7 @@ namespace cqp
 #endif // defined(_MSC_VER)
 
 #if defined(_WIN32)
-    #define LOGLASTERROR cqp::DefaultLogger().Log(cqp::LogLevel::Error, __PRETTY_FUNCTION__ + std::string(_com_error(GetLastError()).ErrorMessage()));
+    #define LOGLASTERROR cqp::DefaultLogger().Log(cqp::LogLevel::Error, __FUNCTION__ + std::string(_com_error(GetLastError()).ErrorMessage()));
 #endif // defined(_WIN32)
 
     ///standard macro for reporting unimplemented functions
@@ -62,21 +62,12 @@ namespace cqp
     #define LOGERROR(x) cqp::DefaultLogger().Log(cqp::LogLevel::Error, std::string("") + x)
 
 #endif
-#if (__GNUC__ < 7) && (!defined(__clang__))
+#if (__GNUC__ < 7) && !defined(__clang__) && !defined(WIN32)
     /// Used for producing standard prefixs to levels
     using LevelMap = std::unordered_map<LogLevel, std::string, EnumClassHash>;
 #else
     /// Used for producing standard prefixes to levels
     using LevelMap = std::unordered_map<LogLevel, std::string>;
-#endif
-
-#if defined (__cpp_exceptions)
-#define CATCHLOGERROR catch(const std::exception& e) { \
-        LOGERROR(e.what()); \
-    }
-#else
-/// catch exception and log as an error
-#define CATCHLOGERROR
 #endif
 
     /// Used for producing standard prefixes to levels
@@ -93,6 +84,8 @@ namespace cqp
     class ALGORITHMS_EXPORT Logger : public virtual ILogger
     {
     public:
+
+		static std::string GetLastErrorString();
 
         /// Change the level out output from the logger
         /// @param[in] level Message which are as or more severe as this will be printed

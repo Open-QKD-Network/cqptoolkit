@@ -21,7 +21,7 @@ namespace cqp
 {
     using namespace std;
     /// Holds the single instance of the console logger
-    ConsoleLogger* ConsoleLogger::theConsoleLogger = nullptr;
+	ConsoleLogger* ConsoleLogger::theConsoleLogger = nullptr;
 
     ConsoleLogger::ConsoleLogger()
     {

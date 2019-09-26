@@ -19,7 +19,8 @@
     #include <sched.h>
     #include <unistd.h>
 #elif defined(WIN32)
-    #include <Processthreadsapi.h>
+#include <windows.h>
+#include <tchar.h>
 #endif
 
 namespace cqp {
@@ -116,7 +117,7 @@ namespace cqp {
             {
                 LOGERROR("Failed to set priority class");
             }
-            rsult &= SetThreadPriority(theThread.native_handle(), priority) != 0;
+            result &= SetThreadPriority(theThread.native_handle(), priority) != 0;
 
             if(!result)
             {
@@ -152,7 +153,7 @@ namespace cqp {
             return result;
         }
 
-        void ThreadManager::ConstructThreads(uint numThreads)
+        void ThreadManager::ConstructThreads(uint32_t numThreads)
         {
             threads.reserve(numThreads);
             for(auto index = 0u; index < numThreads; index++)

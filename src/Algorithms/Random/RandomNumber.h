@@ -35,7 +35,7 @@ namespace cqp
         /// Default destructor
         ~RandomNumber() override = default;
         /// @copydoc IRandom::RandULong
-        ulong RandULong() override;
+        uint64_t RandULong() override;
 
         /// @copydoc IRandom::RandomBytes
         void RandomBytes(size_t numOfBytes, DataBlock& dest) override;
@@ -52,9 +52,9 @@ namespace cqp
         QubitList RandQubitList(size_t numQubits) override;
     protected:
         /// Distribution algorithms to ensure good distribution of numbers
-        std::uniform_int_distribution<ulong> intDistribution;
+        std::uniform_int_distribution<unsigned long long> intDistribution;
         /// Distribution algorithms to ensure good distribution of numbers
-        std::uniform_int_distribution<uint8_t> qubitDistribution;
+        std::uniform_int_distribution<unsigned short> qubitDistribution;
         /// Random number generator
         std::default_random_engine generator;
 

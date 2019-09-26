@@ -339,8 +339,8 @@ configure_file (
 # See if lib usb is installed on the system
 find_package(LibUsb QUIET)
 if(TARGET PkgConfig::libUSB_1)
-        message(STATUS "LibUSB-1 : ${libUSB_1_VERSION}")
-
+    message(STATUS "LibUSB-1 : ${libUSB_1_VERSION}")
+    add_definitions(-DLIBUSB_FOUND=1)
 else(TARGET PkgConfig::libUSB_1)
     message(WARNING "Libusb was not found, projects will be disabled. see README.md")
 endif(TARGET PkgConfig::libUSB_1)

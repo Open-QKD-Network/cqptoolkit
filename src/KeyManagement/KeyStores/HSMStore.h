@@ -11,7 +11,6 @@
 */
 #pragma once
 #include <memory>                      // for shared_ptr
-#include <bits/stdint-uintn.h>                    // for uint64_t
 #include <stddef.h>                               // for size_t
 #include <limits>                                 // for numeric_limits
 #include <string>                                 // for string
@@ -204,7 +203,7 @@ namespace cqp
              * @param numToSearch The number of keys to search for different destinations.
              * @return a list of unique destinations
              */
-            std::set<std::string> GetDestinations(uint numToSearch = 100);
+            std::set<std::string> GetDestinations(uint32_t numToSearch = 100);
 
             /// @{
             /// @name IBackingStore interface

@@ -136,11 +136,14 @@ namespace cqp
                     // The data may have been created on the stack,
                     auto func = bind(Func, cb, args...);
                     // Call the bound function
-                    __try
+                    try
                     {
                         func();
                     }
-                    CATCHLOGERROR
+					catch (const std::exception& e) {
+						\
+							LOGERROR(e.what()); \
+					}
 
 #if defined(PARALLEL_EMIT)
                 }));
