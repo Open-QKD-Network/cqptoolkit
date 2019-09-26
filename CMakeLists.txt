@@ -100,18 +100,20 @@ SET(BUILD_VERSION_MAJOR "0")
 SET(BUILD_VERSION_MINOR "4")
 
 find_package(CURL QUIET)
-if(CURL_FOUND)
+if(CURL_FOUND AND NOT TARGET CURL::libcurl)
+    add_library(CURL::libcurl SHARED IMPORTED)
+    set_target_properties(CURL::libcurl PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${CURL_INCLUDE_DIRS}
+        IMPORTED_LOCATION ${CURL_LIBRARIES}
+    )
+endif()
+if(TARGET CURL::libcurl)
     message(STATUS "libCurl : ${CURL_VERSION_STRING}")
 
     # Tell our code we have Curl
     add_definitions(-DCURL_FOUND=1)
-    add_library(libCurl SHARED IMPORTED)
-    set_target_properties(libCurl PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES ${CURL_INCLUDE_DIRS}
-        IMPORTED_LOCATION ${CURL_LIBRARIES}
-    )
 else()
-    message(ERROR "libCurl not found")
+    message(WARNING "libCurl not found")
 endif()
 
 find_package(CryptoPP)

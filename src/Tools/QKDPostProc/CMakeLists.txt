@@ -25,7 +25,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     #QKDInterfaces_Static
     #PkgConfig::libUSB_1
     Algorithms_Static
-    #libCurl
+    #CURL::libcurl
     #gRPC::grpc++
     #protobuf::libprotobuf
     )

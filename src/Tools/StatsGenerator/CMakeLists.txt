@@ -23,7 +23,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     KeyManagement_Static
     Algorithms_Static
     PkgConfig::libUSB_1
-    libCurl
+    CURL::libcurl
     gRPC::grpc++
     protobuf::libprotobuf
     )
