@@ -1,4 +1,5 @@
 build/gcc/*
+build/vs2017_x64/*
 CMakeLists.txt.user
 external/nginx/nginx
 external/chromium/chromium-browser-*
@@ -26,3 +27,4 @@ external/stunnel/*.tar.gz
 external/stunnel/*.tar.xz
 external/stunnel/*.buildinfo
 external/stunnel/*.changes
+/.vs/

@@ -329,6 +329,7 @@ The following configurations are supported
 #### IDE
 
 - [Visual Studio 2016][]
+    + Run the [InstallVcPkg.bat](./build/vs2017_x64/InstallVcPkg.bat) script once to install vcpkg in C:\vcpkg
     + Run the [SetupMSBuild.bat](./build/vs2017_x64/SetupMSBuild.bat) script
     + Open the [cqp.sln](./build/vs2017_x64/cqp.sln) solution
     + Select Build->Solution

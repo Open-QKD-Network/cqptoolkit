@@ -67,26 +67,13 @@ include(CommonSetup)
 SET(CPACK_PACKAGE_NAME "CQPToolkit")
 SET_COMPONENT_NAME("Base" CQP_INSTALL_COMPONENT)
 
-# download dependencies
-if(MSVC)
-    find_program(NUGET nuget)
-    if(NOT NUGET)
-        message(STATUS "Downloading Nuget package manager")
-        DOWNLOAD("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" "${CMAKE_BINARY_DIR}/nuget.exe" "")
-        find_program(NUGET nuget HINTS ${CMAKE_BINARY_DIR})
-    endif(NOT NUGET)
-
-    if(NUGET)
-        message(STATUS "Downloading dependencies from Nuget")
-        execute_process(COMMAND ${NUGET} restore "${CMAKE_SOURCE_DIR}" -NonInteractive -PackagesDirectory "${CMAKE_BINARY_DIR}/Packages")
-
-		list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/Windows")
-		include(NugetPackages)
-    endif()
-
-    # add qt to the search PATH
-    list(APPEND CMAKE_PREFIX_PATH "C:/Qt/5.9.1/msvc2017_64/lib/cmake/Qt5")
-endif(MSVC)
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND WIN32)
+	if(DEFINED ENV{VCPKG_ROOT})
+  		set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+  	else()
+  		set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+  	endif()
+endif()
 
 if(BUILD_SHARED)
     SET(CQPToolkit_LIB CQPToolkit_Shared CACHE STRING "Name of default toolkit to link to.")
@@ -116,7 +103,7 @@ else()
     message(WARNING "libCurl not found")
 endif()
 
-find_package(CryptoPP)
+find_package(CryptoPP QUIET)
 if(CRYPTOPP_FOUND)
 	message(STATUS "Crypto++ : ${CrytpoPP_VERSION}")
 
@@ -126,14 +113,14 @@ else()
 	message(WARNING "Crypto++ not found, some projects will be disabled")
 endif()
 
-find_package(Subversion "1.8")
+find_package(Subversion "1.8" QUIET)
 if(Subversion_FOUND)
 	message(STATUS "Subversion : ${Subversion_VERSION_SVN}")
 else()
 	message(WARNING "Subversion missing, needed for version tags on release builds.")
 endif()
 
-find_package(Git QUIET)
+find_package(Git QUIET QUIET)
 if(Git_FOUND)
 	message(STATUS "Git : ${GIT_VERSION_STRING}")
 else()
@@ -149,7 +136,7 @@ else()
         message(WARNING "OpenCL missing, some projects will be disabled")
 endif()
 
-find_package(Protobuf 3.6.1 QUIET)
+find_package(Protobuf 3.6.1)
 
 pkg_check_modules(SQLITE3 QUIET sqlite3 IMPORTED_TARGET)
 if(TARGET PkgConfig::SQLITE3)
@@ -173,7 +160,7 @@ else(TARGET protobuf::libprotobuf)
     message(WARNING "libprotobuf missing.")
 endif(TARGET protobuf::libprotobuf)
 
-find_package(GRPC 1.13.1 QUIET)
+find_package(GRPC 1.13.1)
 if(TARGET gRPC::grpc)
     message(STATUS "gRPC++: ${GRPC_VERSION}")
 
