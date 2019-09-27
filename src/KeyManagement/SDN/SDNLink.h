@@ -3,7 +3,7 @@
 * @brief SDNLink
 *
 * @copyright Copyright (C) University of Bristol 2017
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 15/3/2017
@@ -14,6 +14,7 @@
 #include <memory>
 #include "KeyManagement/SDN/HTTPClientSession.h"
 #include "Algorithms/Datatypes/URI.h"
+#include "KeyManagement/keymanagement_export.h"
 
 namespace cqp
 {

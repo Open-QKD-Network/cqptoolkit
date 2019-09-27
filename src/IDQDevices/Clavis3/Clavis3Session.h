@@ -14,7 +14,7 @@
 #include "CQPToolkit/Session/SessionController.h"
 #include "CQPToolkit/Interfaces/IKeyPublisher.h"
 #include "QKDInterfaces/ISync.grpc.pb.h"
-
+#include "IDQDevices/idqdevices_export.h"
 #include <thread>
 
 namespace cqp

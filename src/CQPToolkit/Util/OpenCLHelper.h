@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - OpenCL helper class
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 16 Feb 2016
@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <memory>
+#include "CQPToolkit/cqptoolkit_export.h"
 
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 //#define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY

@@ -341,28 +341,6 @@ macro(CQP_LIBRARY_PROJECT)
         endif(MSVC)
     endforeach(_build_type ${BUILD_TYPES})
 
-    # This is needed for building with visual studio, it triggers the right __dllspec keywords at the right time
-    # This is specified here as well as in the ${PROJECT_NAME}_exports.h so taht the file does not need to be included
-    #   although it doesn't hert if it is. The file is for use with other build systems
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        "$<UPPER_CASE:${PROJECT_NAME}>_EXPORT=__attribute__((visibility(\"default\")))")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        "$<UPPER_CASE:${PROJECT_NAME}>_NO_EXPORT=__attribute__((visibility(\"hidden\")))")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        "$<UPPER_CASE:${PROJECT_NAME}>_DEPRECATED=__attribute__ ((__deprecated__)))")
-
-    target_compile_definitions(${PROJECT_NAME} INTERFACE
-        "$<UPPER_CASE:${PROJECT_NAME}>_EXPORT=__attribute__((visibility(\"default\")))")
-    target_compile_definitions(${PROJECT_NAME} INTERFACE
-        "$<UPPER_CASE:${PROJECT_NAME}>_NO_EXPORT=__attribute__((visibility(\"hidden\")))")
-    target_compile_definitions(${PROJECT_NAME} INTERFACE
-        "$<UPPER_CASE:${PROJECT_NAME}>_DEPRECATED=__attribute__ ((__deprecated__)))")
-
-    target_compile_definitions(${PROJECT_NAME} PUBLIC
-        "$<UPPER_CASE:${PROJECT_NAME}>_DEPRECATED_EXPORT=$<UPPER_CASE:${PROJECT_NAME}>_EXPORT\ $<UPPER_CASE:${PROJECT_NAME}>_DEPRECATED")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC
-        "$<UPPER_CASE:${PROJECT_NAME}>_DEPRECATED_NO_EXPORT=$<UPPER_CASE:${PROJECT_NAME}>_NO_EXPORT $<UPPER_CASE:${PROJECT_NAME}>_DEPRECATED")
-
     if(BUILD_SHARED)
         set_property(TARGET ${PROJECT_NAME}_Shared PROPERTY POSITION_INDEPENDENT_CODE ON)
         SET(CPACK_COMPONENT_${CQP_INSTALL_COMPONENT}_GROUP "Runtime")

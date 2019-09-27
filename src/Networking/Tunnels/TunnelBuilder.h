@@ -10,8 +10,6 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/cqptoolkit_export.h"
-
 #include "Algorithms/Datatypes/URI.h"
 #include "QKDInterfaces/ITransfer.grpc.pb.h"
 #include "QKDInterfaces/Tunnels.pb.h"
@@ -26,6 +24,7 @@
 #include <grpcpp/server.h>
 #include "QKDInterfaces/IKey.grpc.pb.h"
 #include <grpcpp/channel.h>
+#include "Networking/networking_export.h"
 
 namespace cqp
 {

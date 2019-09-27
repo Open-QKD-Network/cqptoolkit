@@ -17,6 +17,7 @@
 #include "Algorithms/Util/WorkerThread.h"  // for WorkerThread
 #include <functional>
 #include "Algorithms/Logging/Logger.h"
+#include "CQPToolkit/cqptoolkit_export.h"
 
 #if defined(_MSC_VER)
     #pragma warning(push)

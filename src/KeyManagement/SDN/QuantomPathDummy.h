@@ -13,6 +13,7 @@
 #include "QKDInterfaces/IQuantumPath.grpc.pb.h"
 #include <grpc++/security/server_credentials.h>
 #include <grpcpp/server.h>
+#include "KeyManagement/keymanagement_export.h"
 
 namespace cqp
 {
@@ -30,7 +31,7 @@ namespace cqp
          */
         QuantomPathDummy() = default;
 
-        ~QuantomPathDummy();
+        ~QuantomPathDummy() override;
 
         /**
          * @brief StartServer
