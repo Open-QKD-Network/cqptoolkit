@@ -11,7 +11,6 @@
 */
 #pragma once
 #if defined(SQLITE3_FOUND)
-#include <bits/stdint-uintn.h>                    // for uint64_t
 #include <mutex>                                  // for mutex
 #include <string>                                 // for string
 #include "Algorithms/Datatypes/Keys.h"            // for KeyID

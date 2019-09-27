@@ -128,7 +128,7 @@ else()
 endif()
 
 find_package(OpenCL QUIET)
-if(OpenCL_FOUND)
+if(TARGET OpenCL::OpenCL)
         message(STATUS "OpenCL : ${OpenCL_VERSION}${OpenCL_VERSION_STRING}")
         # Tell our code we have OpenCL
         add_definitions(-DOPENCL_FOUND=1)

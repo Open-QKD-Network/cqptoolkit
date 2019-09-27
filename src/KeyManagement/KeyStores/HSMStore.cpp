@@ -710,7 +710,7 @@ namespace cqp
                 {
                     // set the object to sensitive to denote that it's in use.
                     AttributeList updateModifiable;
-                    updateModifiable.Set(CKA_START_DATE, std::chrono::high_resolution_clock::now());
+                    updateModifiable.Set(CKA_START_DATE, std::chrono::system_clock::now());
                     result = CheckP11(found[0].SetAttributeValue(updateModifiable)) == CKR_OK;
                     if(result)
                     {

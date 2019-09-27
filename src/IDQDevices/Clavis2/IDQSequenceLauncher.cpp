@@ -21,6 +21,8 @@
 #include <iomanip>
 #if defined(__unix__)
     #include <unistd.h>
+#elif defined(WIN32)
+#include <io.h>
 #endif
 
 #if defined(_MSC_VER)
@@ -176,6 +178,9 @@ namespace cqp
 
         try
         {
+#if defined(WIN32) && defined(CreateDirectory)
+#undef CreateDirectory
+#endif
             // make sure it's log folder exists
             if(!fs::Exists(logFolder))
             {
@@ -281,7 +286,7 @@ namespace cqp
                             }
                             else if(std::regex_search(line, matchResult, keySize))
                             {
-                                const ulong keySize = stoul(matchResult[1].str());
+                                const uint64_t keySize = stoul(matchResult[1].str());
                                 stats.keySize.Update(keySize);
                             }
                             else if(std::regex_search(line, matchResult, lineLength))

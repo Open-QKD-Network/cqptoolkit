@@ -38,7 +38,7 @@ namespace cqp
             if(pinCallbackFunc)
             {
                 std::vector<char> tempPin(pinLengthLimit+1, 0);
-                ulong loginInt = 0;
+                unsigned long loginInt = 0;
                 size_t pinUsed = pinCallbackFunc(callbackUserData, tokenSerial.c_str(), tokenLabel.c_str(),
                                                  &loginInt, tempPin.data(), pinLengthLimit);
                 switch(loginInt)

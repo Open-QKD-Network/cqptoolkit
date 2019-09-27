@@ -11,6 +11,9 @@
 */
 #include "YubiHSM.h"
 #include <KeyManagement/KeyStores/PKCS11Wrapper.h>
+#if defined(WIN32)
+#include "Algorithms/Util/PortableEndian.h"
+#endif
 
 namespace cqp
 {

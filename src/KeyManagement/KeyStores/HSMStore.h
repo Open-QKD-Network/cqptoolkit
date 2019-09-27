@@ -237,7 +237,7 @@ namespace cqp
             std::shared_ptr<p11::Session> session;
 
             /// The slot number
-            ulong slotId = 0;
+			unsigned long slotId = 0;
             /// readable name of the token
             std::string tokenLabel;
             /// serial number of the token
@@ -265,9 +265,9 @@ namespace cqp
             /// The size of the keyID storage (device dependent)
             size_t bytesPerKeyID = sizeof(uint64_t);
             /// Defines a session
-            using SessionHandle = ulong;
+            using SessionHandle = unsigned long;
             /// Defines an event type
-            using Notification = ulong;
+            using Notification = unsigned long;
 
         protected: // methods
             /**
@@ -284,7 +284,7 @@ namespace cqp
              * @param pApplication
              * @return result code
              */
-            static ulong SessionEventCallback(
+            static unsigned long SessionEventCallback(
                 SessionHandle hSession,     /* the session's handle */
                 Notification   event,
                 void*       pApplication  /* passed to C_OpenSession */);

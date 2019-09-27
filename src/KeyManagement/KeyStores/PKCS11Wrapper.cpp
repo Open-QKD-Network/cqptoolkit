@@ -153,7 +153,7 @@ namespace cqp
 #if defined(__unix__)
                 result->libHandle = ::dlopen(libName.c_str(), RTLD_LAZY);
 #elif defined(WIN32)
-                TODO
+				LOGERROR("TODO");
 #endif
 
                 if(result->libHandle)
@@ -162,7 +162,7 @@ namespace cqp
 #if defined(__unix__)
                     pC_GetFunctionList = reinterpret_cast<CK_C_GetFunctionList>(::dlsym(result->libHandle, "C_GetFunctionList"));
 #elif defined(WIN32)
-                    TODO
+					LOGERROR("TODO");
 #endif
                     if(pC_GetFunctionList && pC_GetFunctionList(&result->functions) == CKR_OK)
                     {
@@ -184,7 +184,11 @@ namespace cqp
                 }
                 else
                 {
-                    LOGERROR("Failed to load library " + libName + ": " + dlerror());
+#if defined(__unix__)
+                    LOGERROR("Failed to load library " + libName + ": " + dlerror()); 
+#elif defined(WIN32)
+						LOGERROR("TODO");
+#endif
                     result.reset();
                 }
 
@@ -209,7 +213,7 @@ namespace cqp
                 ::dlclose(libHandle);
                 libHandle = nullptr;
 #elif defined(WIN32)
-                TODO
+				LOGERROR("TODO");
 #endif
             }
         }
@@ -426,7 +430,7 @@ namespace cqp
             CK_RV result = CKR_FUNCTION_NOT_SUPPORTED;
             if(functions && functions->C_WrapKey)
             {
-                ulong finalWrappedKeySize = 0;
+                CK_ULONG finalWrappedKeySize = 0;
                 result = functions->C_WrapKey(handle, mechanism, wrappingKey.Handle(), key.Handle(), nullptr, &finalWrappedKeySize);
 
                 if(result == CKR_OK)
@@ -489,7 +493,6 @@ namespace cqp
             using namespace std;
             using namespace std::chrono;
             ::CK_DATE date {};
-
             // jump through loads of hoops to get the date as seperate strings
             const auto in_time_t = std::chrono::system_clock::to_time_t(time);
             const auto whateverthefputwants = std::localtime(&in_time_t);

@@ -25,8 +25,6 @@ set(${PROJECT_NAME}_VERSION_MINOR 2)
 set(${PROJECT_NAME}_VERSION_PATCH 0)
 set(${PROJECT_NAME}_VERSION ${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH})
 
-EmbedResources("Alignment/Histogram.cl")
-
 # Generate a standard setup for a library
 CQP_LIBRARY_PROJECT()
 add_dependencies(${PROJECT_NAME} Algorithms)
@@ -37,6 +35,11 @@ add_dependencies(${PROJECT_NAME}_Static QKDInterfaces_Static)
 add_dependencies(${PROJECT_NAME}_Shared QKDInterfaces_Shared)
 
 # Now tell the compiler and linker where to find specific libs
+
+if(TARGET OpenCL::OpenCL)
+    target_include_directories(${PROJECT_NAME} PUBLIC OpenCL::OpenCL)
+endif()
+include_directories(${Protobuf_INCLUDE_DIRS})
 
 if(TARGET ${PROJECT_NAME}_Shared)
 

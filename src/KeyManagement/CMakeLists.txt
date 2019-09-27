@@ -32,6 +32,7 @@ CQP_LIBRARY_PROJECT()
 add_dependencies(${PROJECT_NAME} CQPToolkit)
 add_dependencies(${PROJECT_NAME}_Shared CQPToolkit_Shared)
 add_dependencies(${PROJECT_NAME}_Static CQPToolkit_Static)
+include_directories(${Protobuf_INCLUDE_DIRS})
 
 if(TARGET ${PROJECT_NAME}_Shared)
 

@@ -60,6 +60,15 @@ endif ()
 if((NOT CMAKE_BUILD_TYPE) OR ("${CMAKE_BUILD_TYPE}" STREQUAL ""))
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build: Debug Release RelWithDebInfo MinSizeRel.")
 endif()
+macro(get_WIN32_WINNT version)
+    if (WIN32 AND CMAKE_SYSTEM_VERSION)
+        set(ver ${CMAKE_SYSTEM_VERSION})
+        string(REPLACE "." "" ver ${ver})
+        string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
+
+        set(${version} "0x${ver}")
+    endif()
+endmacro()
 
 if(WIN32)
     if("$ENV{PROCESSOR_ARCHITECTURE}" MATCHES "64")
@@ -69,6 +78,10 @@ if(WIN32)
         set(ENV{VSCMD_ARG_TGT_ARCH} x64)
     endif()
     add_definitions(-DNOMINMAX=1 -D_USE_MATH_DEFINES=1)
+
+    get_WIN32_WINNT(ver)
+    add_definitions(-D_WIN32_WINNT=${ver})
+
 endif()
 
 # Turn on the C language to detect the target word length
@@ -580,7 +593,9 @@ macro(GRPC_PROJECT)
     set_target_properties(${PROJECT_NAME}_Shared PROPERTIES CXX_VISIBILITY_PRESET default)
 
     add_dependencies(${PROJECT_NAME} gRPC::grpc++ protobuf::libprotobuf)
-
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        gRPC::grpc++ protobuf::libprotobuf
+        ${CMAKE_CURRENT_BINARY_DIR})
     # add the interface files for installation
     INSTALL(FILES ${${PROJECT_NAME}_INTERFACES} ${${PROJECT_NAME}_PROTO_HDRS} ${${PROJECT_NAME}_GRPC_HDRS}
         DESTINATION "include/${PROJECT_NAME}/"
