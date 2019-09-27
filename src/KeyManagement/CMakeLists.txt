@@ -44,8 +44,8 @@ if(TARGET ${PROJECT_NAME}_Shared)
         target_link_libraries(${PROJECT_NAME}_Shared PRIVATE PkgConfig::avahi-client)
     endif()
 
-    if(TARGET PkgConfig::SQLITE3)
-        target_link_libraries(${PROJECT_NAME}_Shared PRIVATE PkgConfig::SQLITE3)
+    if(TARGET SQLite::SQLite3)
+        target_link_libraries(${PROJECT_NAME}_Shared PRIVATE SQLite::SQLite3)
     endif()
 
 endif(TARGET ${PROJECT_NAME}_Shared)

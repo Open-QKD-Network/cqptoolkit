@@ -21,6 +21,8 @@ include(CppSetup)
 CQP_TEST_PROJECT()
 
 # Standard linking to gtest stuff.
-target_link_libraries(${PROJECT_NAME}  PRIVATE KeyManagement_Shared CQPUI_Shared
-    PkgConfig::CRYPTOPP)
+target_link_libraries(${PROJECT_NAME}  PRIVATE
+    KeyManagement_Shared
+    CQPUI_Shared
+    cryptopp)
 

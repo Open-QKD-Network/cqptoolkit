@@ -22,5 +22,5 @@ CQP_TEST_PROJECT()
 
 # Standard linking to gtest stuff.
 target_link_libraries(${PROJECT_NAME}  PRIVATE KeyManagement_Shared IDQDevices_Shared
-    PkgConfig::CRYPTOPP)
+    cryptopp)
 

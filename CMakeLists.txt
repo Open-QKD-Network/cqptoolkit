@@ -138,10 +138,25 @@ endif()
 
 find_package(Protobuf 3.6.1)
 
-pkg_check_modules(SQLITE3 QUIET sqlite3 IMPORTED_TARGET)
-if(TARGET PkgConfig::SQLITE3)
-    message(STATUS "SQLite3: ${SQLITE3_VERSION}")
+find_package(SQLite3 QUIET)
+if(NOT SQLite3_FOUND)
+    find_package(PkgConfig QUIET)
+    if(${PKG_CONFIG_FOUND})
+        pkg_check_modules(SQLite3 QUIET sqlite3)
+    endif()
+endif()
+if(SQLite3_FOUND AND NOT TARGET SQLite::SQLite3)
+    add_library(SQLite::SQLite3 SHARED IMPORTED)
+    set_target_properties(SQLite::SQLite3 PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${SQLite3_INCLUDEDIR}
+        IMPORTED_LOCATION ${SQLite3_LIBDIR}/${SQLite3_LIBRARIES}
+    )
+endif()
+if(TARGET SQLite::SQLite3)
+    message(STATUS "SQLite3: ${SQLite3_VERSION}")
     add_definitions(-DSQLITE3_FOUND=1)
+else()
+    message(WARNING "Sqlite3 not found")
 endif()
 
 if(${CMAKE_VERSION} VERSION_LESS 3.6)

@@ -9,10 +9,6 @@
 ### @author Richard Collins <richard.collins@bristol.ac.uk>
 ### 
 # Use the package PkgConfig to detect headers/library files
-find_package(PkgConfig QUIET)
-if(${PKG_CONFIG_FOUND})
-        pkg_check_modules(CRYPTOPP QUIET libcrypto++ IMPORTED_TARGET)
-endif(${PKG_CONFIG_FOUND})
 
 if(NOT CRYPTOPP_FOUND)
 
@@ -22,33 +18,33 @@ if(NOT CRYPTOPP_FOUND)
     )
     set(CRYPTOPP_INCLUDEDIR ${ARGGG})
 
-	find_library(CRYPTOPP_LIBRARIES NAMES cryptopp cryptopp.dll cryptlib
-		PATH_SUFFIXES "lib/native/v140/windesktop/msvcstl/${MSVC_C_ARCHITECTURE_ID}/${CMAKE_BUILD_TYPE}/md")
+    find_library(CRYPTOPP_LIBRARIES NAMES cryptopp cryptopp.dll cryptlib
+        PATH_SUFFIXES "lib/native/v140/windesktop/msvcstl/${MSVC_C_ARCHITECTURE_ID}/${CMAKE_BUILD_TYPE}/md")
 
     if(WIN32)
 
-      find_file( CRYPTOPP_DLLS
-          NAMES libcryptopp.dll
-          PATHS ${CMAKE_LIBRARY_PATH} ${CMAKE_PROGRAM_PATH}
-          PATH_SUFFIXES 
-             "lib/native/${MSVC_C_ARCHITECTURE_ID}"
-      )
-      if(CRYPTOPP_DLLS)
-        file(COPY ${CRYPTOPP_DLLS} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE})
-        LIST(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "${CRYPTOPP_DLLS}")
-      endif()
+        find_file( CRYPTOPP_DLLS
+            NAMES libcryptopp.dll
+            PATHS ${CMAKE_LIBRARY_PATH} ${CMAKE_PROGRAM_PATH}
+            PATH_SUFFIXES
+            "lib/native/${MSVC_C_ARCHITECTURE_ID}"
+        )
+        if(CRYPTOPP_DLLS)
+            file(COPY ${CRYPTOPP_DLLS} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE})
+            LIST(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "${CRYPTOPP_DLLS}")
+        endif()
     endif(WIN32)
 
-	if(CRYPTOPP_INCLUDEDIR AND CRYPTOPP_LIBRARIES)
+    if(CRYPTOPP_INCLUDEDIR AND CRYPTOPP_LIBRARIES)
 
-	   set(CRYPTOPP_FOUND TRUE)
+        set(CRYPTOPP_FOUND TRUE)
 
-           add_library(libCryptoPP SHARED IMPORTED)
-           set_target_properties(libCryptoPP PROPERTIES
-               INTERFACE_INCLUDE_DIRECTORIES ${CRYPTOPP_INCLUDEDIR}
-               IMPORTED_LOCATION ${CRYPTOPP_LIBRARIES}
-           )
-	endif()
+        add_library(cryptopp SHARED IMPORTED)
+        set_target_properties(cryptopp PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${CRYPTOPP_INCLUDEDIR}
+            IMPORTED_LOCATION ${CRYPTOPP_LIBRARIES}
+        )
+    endif()
 endif(NOT CRYPTOPP_FOUND)
 
 if(CRYPTOPP_FOUND)

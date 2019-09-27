@@ -38,7 +38,7 @@ if(TARGET ${PROJECT_NAME}_Shared)
     target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
         KeyManagement_Shared
         CURL::libcurl
-        PkgConfig::CRYPTOPP
+        cryptopp
     )
 
 endif(TARGET ${PROJECT_NAME}_Shared)
