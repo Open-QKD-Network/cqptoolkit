@@ -22,7 +22,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     QKDInterfaces_Static
     KeyManagement_Static
     Algorithms_Static
-    PkgConfig::libUSB_1
+    libusb_1
     CURL::libcurl
     gRPC::grpc++
     protobuf::libprotobuf

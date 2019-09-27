@@ -46,7 +46,7 @@ if(TARGET ${PROJECT_NAME}_Shared)
     )
 
     target_link_libraries(${PROJECT_NAME}_Shared PRIVATE
-        PkgConfig::libUSB_1
+        libusb_1
     )
 
     if(TARGET OpenCL::OpenCL)

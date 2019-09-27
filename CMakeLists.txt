@@ -140,16 +140,46 @@ find_package(Protobuf 3.6.1)
 
 find_package(SQLite3 QUIET)
 if(NOT SQLite3_FOUND)
-    find_package(PkgConfig QUIET)
-    if(${PKG_CONFIG_FOUND})
-        pkg_check_modules(SQLite3 QUIET sqlite3)
+    # Look for the necessary header
+    find_path(SQLite3_INCLUDE_DIR NAMES sqlite3.h)
+    mark_as_advanced(SQLite3_INCLUDE_DIR)
+
+    # Look for the necessary library
+    find_library(SQLite3_LIBRARY NAMES sqlite3 sqlite)
+    mark_as_advanced(SQLite3_LIBRARY)
+
+    # Extract version information from the header file
+    if(SQLite3_INCLUDE_DIR)
+        file(STRINGS ${SQLite3_INCLUDE_DIR}/sqlite3.h _ver_line
+             REGEX "^#define SQLITE_VERSION  *\"[0-9]+\\.[0-9]+\\.[0-9]+\""
+             LIMIT_COUNT 1)
+        string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+"
+               SQLite3_VERSION "${_ver_line}")
+        unset(_ver_line)
     endif()
+
+    find_package_handle_standard_args(SQLite3
+        REQUIRED_VARS SQLite3_INCLUDE_DIR SQLite3_LIBRARY
+        VERSION_VAR SQLite3_VERSION)
+
+    # Create the imported target
+    if(SQLite3_FOUND)
+        set(SQLite3_INCLUDE_DIRS ${SQLite3_INCLUDE_DIR})
+        set(SQLite3_LIBRARIES ${SQLite3_LIBRARY})
+        if(NOT TARGET SQLite::SQLite3)
+            add_library(SQLite::SQLite3 UNKNOWN IMPORTED)
+            set_target_properties(SQLite::SQLite3 PROPERTIES
+                IMPORTED_LOCATION             "${SQLite3_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${SQLite3_INCLUDE_DIR}")
+        endif()
+    endif()
+
 endif()
 if(SQLite3_FOUND AND NOT TARGET SQLite::SQLite3)
     add_library(SQLite::SQLite3 SHARED IMPORTED)
     set_target_properties(SQLite::SQLite3 PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${SQLite3_INCLUDEDIR}
-        IMPORTED_LOCATION ${SQLite3_LIBDIR}/${SQLite3_LIBRARIES}
+        IMPORTED_LOCATION ${SQLite3_LIBRARIES}
     )
 endif()
 if(TARGET SQLite::SQLite3)
@@ -206,7 +236,7 @@ if(BUILD_TESTING)
 
     else(GTEST_FOUND AND GMOCK_FOUND)
         message(STATUS "Google Test was not found, it will be built from source")
-        # Download the libusb release
+        # Download the latest release
         # A special cmake project is used (BuildibUsb.cmake) to find the right library for the platform and install it in a usful place
         ExternalProject_add(GTest_External
             # SVN used so that git does not need to be installed
@@ -342,12 +372,12 @@ configure_file (
 
 # See if lib usb is installed on the system
 find_package(LibUsb QUIET)
-if(TARGET PkgConfig::libUSB_1)
+if(TARGET libusb_1)
     message(STATUS "LibUSB-1 : ${libUSB_1_VERSION}")
     add_definitions(-DLIBUSB_FOUND=1)
-else(TARGET PkgConfig::libUSB_1)
+else()
     message(WARNING "Libusb was not found, projects will be disabled. see README.md")
-endif(TARGET PkgConfig::libUSB_1)
+endif()
 
 find_package(QREncode QUIET)
 
@@ -447,7 +477,6 @@ if(Doxygen_FOUND)
     	# stop doxygen complaining about missing plantuml
     	set(PLANTUML_JARFILE "")
     endif()
-
     get_filename_component(DOT_PATH ${DOXYGEN_DOT_EXECUTABLE} DIRECTORY CACHE)
     configure_file(${PROJECT_SOURCE_DIR}/proto2cpp.py ${CMAKE_BINARY_DIR}/proto2cpp.py COPYONLY)
     configure_file(${PROJECT_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
@@ -510,14 +539,14 @@ endforeach()
 
 if(Qt5_FOUND AND EXISTS ${CMAKE_SOURCE_DIR}/external/nodeeditor/CMakeLists.txt)
     SET_COMPONENT_NAME("exclude" CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
-    SET(BUILD_SHARED_LIBS OFF)
+    SET(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+    SET(BUILD_TESTING OFF CACHE BOOL "")
     add_subdirectory(${CMAKE_SOURCE_DIR}/external/nodeeditor)
     SET_COMPONENT_NAME("" CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 
 endif()
 # Setup is done, now include the source code to build.
 add_subdirectory(src)
-
 
 if(BUILD_INSTALLER)
 

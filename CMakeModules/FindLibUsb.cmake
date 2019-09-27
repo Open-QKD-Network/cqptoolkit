@@ -43,29 +43,29 @@
 #
 
 # Use the package PkgConfig to detect headers/library files
-find_package(PkgConfig QUIET)
-if(${PKG_CONFIG_FOUND})
-        pkg_check_modules(libUSB_1 QUIET IMPORTED_TARGET libusb-1.0)
-endif(${PKG_CONFIG_FOUND})
 
 if(NOT LIBUSB_1_FOUND)
   find_path(LIBUSB_1_INCLUDE_DIRS
     NAMES
-      libusb-1.0/libusb.h
+      libusb.h
     PATHS
       /usr/include
       /usr/local/include
       /opt/local/include
+    PATH_SUFFIXES
+        libusb-1.0/
+
   )
 
   if(CYGWIN)
       SET(CMAKE_FIND_LIBRARY_SUFFIXES ".dll" ".dll.a" ".lib")
   endif(CYGWIN)
 
-  find_library(LIBUSB_1_LIBRARIES NAMES libusb libusb-1.0
+  find_library(LIBUSB_1_LIBRARIES NAMES usb-1.0
     PATH_SUFFIXES
       "lib/x86_64-linux-gnu/"
       "lib/native/${MSVC_C_ARCHITECTURE_ID}"
+      "bin"
   )
 
   if (LIBUSB_1_INCLUDE_DIRS AND LIBUSB_1_LIBRARIES)
@@ -73,8 +73,8 @@ if(NOT LIBUSB_1_FOUND)
   endif (LIBUSB_1_INCLUDE_DIRS AND LIBUSB_1_LIBRARIES)
 
   if (LIBUSB_1_FOUND)
-    add_library(libusb SHARED IMPORTED) # or STATIC instead of SHARED
-    set_target_properties(libusb PROPERTIES
+    add_library(libusb_1 SHARED IMPORTED) # or STATIC instead of SHARED
+    set_target_properties(libusb_1 PROPERTIES
       IMPORTED_LOCATION "${LIBUSB_1_LIBRARIES}"
       INTERFACE_INCLUDE_DIRECTORIES "${LIBUSB_1_INCLUDE_DIRS}"
     )

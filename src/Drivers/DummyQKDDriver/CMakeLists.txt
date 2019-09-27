@@ -27,7 +27,7 @@ CQP_EXE_PROJECT()
 #    CQPToolkit_Static
 #    QKDInterfaces_Static
 #    Algorithms_Static
-#    PkgConfig::libUSB_1
+#    libusb_1
 #    gRPC::grpc++
 #    protobuf::libprotobuf
 #    )
