@@ -61,7 +61,7 @@ if(NOT LIBUSB_1_FOUND)
       SET(CMAKE_FIND_LIBRARY_SUFFIXES ".dll" ".dll.a" ".lib")
   endif(CYGWIN)
 
-  find_library(LIBUSB_1_LIBRARIES NAMES usb-1.0
+  find_library(LIBUSB_1_LIBRARIES NAMES libusb-1.0 usb-1.0
     PATH_SUFFIXES
       "lib/x86_64-linux-gnu/"
       "lib/native/${MSVC_C_ARCHITECTURE_ID}"

@@ -61,11 +61,14 @@ if((NOT CMAKE_BUILD_TYPE) OR ("${CMAKE_BUILD_TYPE}" STREQUAL ""))
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build: Debug Release RelWithDebInfo MinSizeRel.")
 endif()
 
-if(WIN32 AND "$ENV{PROCESSOR_ARCHITECTURE}" MATCHES "64")
-    message(STATUS "Setting default target system to 64bit")
-    
-    set(ENV{VSCMD_ARG_HOST_ARCH} x64)
-    set(ENV{VSCMD_ARG_TGT_ARCH} x64)
+if(WIN32)
+    if("$ENV{PROCESSOR_ARCHITECTURE}" MATCHES "64")
+        message(STATUS "Setting default target system to 64bit")
+        
+        set(ENV{VSCMD_ARG_HOST_ARCH} x64)
+        set(ENV{VSCMD_ARG_TGT_ARCH} x64)
+    endif()
+    add_definitions(-DNOMINMAX=1 -D_USE_MATH_DEFINES=1)
 endif()
 
 # Turn on the C language to detect the target word length
@@ -247,7 +250,9 @@ macro(CQP_PROJECT)
 
   SET(CPACK_DEBIAN_${PROJECT_NAME}_PACKAGE_NAME "${PROJECT_NAME}")
 
-  SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wextra -pedantic -Wno-unused-parameter")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        SET(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wextra -pedantic -Wno-unused-parameter")
+    endif()
 endmacro(CQP_PROJECT)
 
 ### @def CQP_LIBRARY_PROJECT
@@ -268,11 +273,14 @@ macro(CQP_LIBRARY_PROJECT)
     # see: https://cmake.org/Wiki/CMake/Tutorials/Object_Library
     # This removes the need to compile the code twice to produce both libraries
     add_library (${PROJECT_NAME} OBJECT ${${PROJECT_NAME}_SOURCES})
+    if(MSVC)
+        set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Libraries")
+    endif(MSVC)
 
     # specify the include folders - this will help with dependecies later on.
     target_include_directories(${PROJECT_NAME}
-        #PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-        #PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
         PUBLIC $<INSTALL_INTERFACE:include>)
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -284,6 +292,8 @@ macro(CQP_LIBRARY_PROJECT)
     # Produce a header file which defines whether functions are imported/exported.
     # Rename the macros so they match the original project name
     GENERATE_EXPORT_HEADER(${PROJECT_NAME})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_EXPORTS)
+
     # Add the generated files and the header files to the output
     INSTALL(FILES
         # Including the following line will copy all the header files to the output
@@ -337,7 +347,7 @@ macro(CQP_LIBRARY_PROJECT)
         endif()
 
         if(MSVC)
-            set_property(TARGET ${PROJECT_NAME}_${_build_type} PROPERTY FOLDER "Libraries")
+            set_property(TARGET ${PROJECT_NAME}_${_build_type} PROPERTY FOLDER "Library Targets")
         endif(MSVC)
     endforeach(_build_type ${BUILD_TYPES})
 
