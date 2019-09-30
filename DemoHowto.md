@@ -50,7 +50,9 @@ The pysical setup of this demo consists of:
 @enduml
 ```
 
-Install the latest release from [gitlab](https://gitlab.com/QComms/cqptoolkit). This can be done on the command line with: `curl -JLO "https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb"`
+> The pin for the tablet/phones: `1234`
+
+Install the latest release from [gitlab](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package:deb). This can be done on the command line with: `curl -JLO "https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb"`
 
 ### Mobile Setup
 
@@ -86,16 +88,16 @@ If screen mirroring is needed, use the [scrspy](https://github.com/Genymobile/sc
 ```
 #/bin/bash
 sudo chown -R 33:33 www
-docker run -it --rm --net host -v `pwd`/www:/www -v `pwd`/cqptoolkit/demo/nginx-conf:/etc/nginx registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd
+docker run -it --rm --net host -v `pwd`/www:/www -v `pwd`/nginx-conf:/etc/nginx registry.gitlab.com/qcomms/cqptoolkit/nginx-qkd
 ```
 - Run the webserver with the script.
-- The site can be tested without encryption by going to http://<servername>:8080/
+- The site can be tested without encryption by going to [http://localhost/](http://localhost/) you should see a page with "Unsecured communication"
 
 ### QR Display
 
 - Run `QKDStudio` and click the keys icon for the **key view**.
 - Resize the window so that the qr code area fill as much of the mobile camera view as possible
-- In the from box, enter the site agent address for the "local" keystore which will the start point for the communication.
+- In the from box, enter the site agent address for the "local" keystore (eg: `localhost:8000` ) which will the start point for the communication.
 - Click the green refresh icon and select the destination keystore address.
 - Click **New Key** to display a qr code.
   + The mobile should decode the code and display the source, destination and key id. The number of keys should increase.
