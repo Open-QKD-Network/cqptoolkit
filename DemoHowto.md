@@ -13,6 +13,43 @@ Run `demo/run-chat.sh`
 
 ## QR Code demo
 
+The pysical setup of this demo consists of: 
+- 2x Laptops acting as nodes
+  + One Web server
+  + One QR client
+- WiFi access point
+- Network switch
+- Optional repeater screans
+
+```plantuml
+@startuml
+    
+    skinparam arrowThickness 4
+    
+    title QR Code Components
+    
+    component "Server Laptop" as srv
+    component "Client Laptop" as client
+    component "Wifi AP" as wifi
+    component "Switch" as sw
+    component "Montor" as mon
+    component "Tablet" as tab
+    
+    srv -u- sw #Blue
+    client - sw #Blue
+    wifi -d- sw #Blue
+    mon - client #Grey
+    tab .r. wifi #Red
+    tab -d- client #Green
+    
+    legend left
+        <font color="blue">Blue: Ethernet</font>
+        <font color=red>Red: Wifi</font>
+        <font color="green">Green: Usb</font>
+    end legend
+@enduml
+```
+
 Install the latest release from [gitlab](https://gitlab.com/QComms/cqptoolkit). This can be done on the command line with: `curl -JLO "https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb"`
 
 ### Mobile Setup
