@@ -156,7 +156,7 @@ namespace cqp
             std::unordered_map<std::string, std::shared_ptr<KeyStore>> keystores;
 
             /// The address which this site can be contacted on
-            net::SocketAddress siteAddress;
+            std::string siteAddress;
             /// callbacks to attach to owned keystores
             std::vector<stats::IAllStatsCallback*> reportingCallbacks;
             /// credentials to use to connect to peers

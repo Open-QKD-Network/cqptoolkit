@@ -35,6 +35,14 @@ namespace cqp
          */
         ALGORITHMS_EXPORT std::vector<IPAddress> GetHostIPs() noexcept;
 
+        /// A catch-all network address
+#if defined(USE_IPV6)
+    constexpr const char* AnyAddress = "[::]";
+    constexpr const bool PreferIpv6 = true;
+#else
+    constexpr const char* AnyAddress = "0.0.0.0";
+    constexpr const bool PreferIpv6 = false;
+#endif
         /**
          * @brief ResolveAddress
          * @param hostname The hostname to resolve
@@ -43,14 +51,9 @@ namespace cqp
          *  otherwise the v4 address will be returned, unless there is only a v6 address
          * @return true on success
          */
-        ALGORITHMS_EXPORT bool ResolveAddress(const std::string& hostname, IPAddress& ip, bool preferIPv6 = false) noexcept;
+        ALGORITHMS_EXPORT bool ResolveAddress(const std::string& hostname, IPAddress& ip, bool preferIPv6 = PreferIpv6) noexcept;
 
-        /// A catch-all network address
-#if defined(USE_IPV6)
-    constexpr const char* AnyAddress = "[::]";
-#else
-    constexpr const char* AnyAddress = "0.0.0.0";
-#endif
+        ALGORITHMS_EXPORT std::string FullyQualifyHost(const std::string& hostname);
     } // namespace net
 } // namespace cqp
 

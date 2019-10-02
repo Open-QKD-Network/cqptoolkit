@@ -18,11 +18,11 @@
 #include <future>
 #include <assert.h>
 #if defined(__unix__)
-#include <sys/inotify.h>
-#include <unistd.h>
-#include <linux/limits.h>
+    #include <sys/inotify.h>
+    #include <unistd.h>
+    #include <linux/limits.h>
 #elif defined(WIN32)
-#include <io.h>
+    #include <io.h>
 #endif
 
 namespace cqp
@@ -52,6 +52,7 @@ namespace cqp
     ClavisKeyFile::~ClavisKeyFile()
     {
         keepGoing = false;
+
         if(watchFD != -1)
         {
             ::close(watchFD);
@@ -82,7 +83,7 @@ namespace cqp
             // wait for the file
             if(!fs::Exists(filename))
             {
-                LOGTRACE("Waiting for file creation");
+                LOGTRACE("Waiting for file creation on " + filename);
                 auto dir = fs::Parent(filename);
                 if(dir.empty())
                 {
@@ -98,22 +99,35 @@ namespace cqp
 
                     do
                     {
-                        auto bytes = ::read(watchFD, buffer, sizeof (buffer));
-                        if(bytes >= static_cast<ssize_t>(sizeof (struct inotify_event)))
+                        ::fd_set selFds;
+                        FD_ZERO(&selFds);
+                        FD_SET(watchFD, &selFds);
+
+                        struct ::timeval timeout {};
+                        timeout.tv_sec = 1;
+
+                        auto selResult = ::select(FD_SETSIZE, &selFds, nullptr, nullptr, &timeout);
+                        if(selResult > 0 && FD_ISSET(watchFD, &selFds))
                         {
-                            auto offset = 0u;
-                            while(!ready && offset < bytes)
+                            auto bytes = ::read(watchFD, buffer, sizeof (buffer));
+
+                            if(bytes >= static_cast<ssize_t>(sizeof (struct inotify_event)))
                             {
-                                struct inotify_event* event = reinterpret_cast<struct inotify_event*>(&buffer[offset]);
-                                // we're done if a file has been created with the right name
-                                ready = event->mask & IN_CREATE && fs::Exists(filename);
-                                offset += sizeof (struct inotify_event) + event->len;
+
+                                auto offset = 0u;
+                                while(!ready && offset < bytes)
+                                {
+                                    struct inotify_event* event = reinterpret_cast<struct inotify_event*>(&buffer[offset]);
+                                    // we're done if a file has been created with the right name
+                                    ready = event->mask & IN_CREATE && fs::Exists(filename);
+                                    offset += sizeof (struct inotify_event) + event->len;
+                                }
                             }
-                        }
-                        else
-                        {
-                            LOGERROR("failed to read from directory watch");
-                            //break; // while
+                            else
+                            {
+                                LOGERROR("failed to read from directory watch");
+                                //break; // while
+                            }
                         }
                     }
                     while(keepGoing && !ready);
@@ -141,7 +155,7 @@ namespace cqp
 
                 char buffer[(sizeof (struct inotify_event) + PATH_MAX) * 1024];
                 // block until something happens
-                LOGTRACE("Waiting for file write");
+                LOGTRACE("Waiting for file write on: " + filename);
                 bool ready = false;
                 do
                 {
@@ -170,7 +184,7 @@ namespace cqp
 
         } // outer keep going loop
 #elif defined(WIN32)
-LOGERROR("TODO");
+        LOGERROR("TODO");
 #endif
 
         if(watchFD != -1)
@@ -184,7 +198,7 @@ LOGERROR("TODO");
     void ClavisKeyFile::ReadKeys(const std::string& filename, size_t& fileOffset)
     {
         using namespace std;
-        LOGTRACE("Opening key file");
+        LOGTRACE("Opening key file " + filename);
         auto sourceFile = ifstream(filename, ios::in | ios::binary);
 
         // if the file can be open, see how many keys we can get out of it

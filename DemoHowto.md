@@ -64,6 +64,8 @@ If screen mirroring is needed, use the [scrspy](https://github.com/Genymobile/sc
 
 ### Sites
 
+Make sure that each device can resolve the address of the other by host name (check with `ping <hostname>` ).
+
 - Run an instance of `SiteAgentRunner` at each location. Its best to use the `-p` option to set the port number.
 - Run a pair of `DummyQKDDriver -r localhost:<site agent port>` for each link, add `-b` to run as bob.
 - Start the links by ether `SiteAgentCtlGui`:
