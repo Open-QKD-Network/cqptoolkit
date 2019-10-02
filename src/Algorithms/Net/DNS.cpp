@@ -170,6 +170,40 @@ namespace cqp
             return result;
         }
 
+        std::string FullyQualifyHost(const std::string& hostname)
+        {
+            std::string result;
+            try
+            {
+                struct addrinfo hints {};
+                struct addrinfo* addr {};
+
+                hints.ai_family = AF_UNSPEC;
+                hints.ai_flags = AI_CANONNAME;
+
+                // request the hostname be resolved
+                int getResult = getaddrinfo(hostname.c_str(), nullptr, &hints, &addr);
+
+                if(getResult == 0)
+                {
+                    // the result constains a usable address
+                    result = addr->ai_canonname;
+                }
+                else
+                {
+                    LOGERROR(gai_strerror(getResult) + ": " + hostname);
+                }
+
+                // cleanup
+                freeaddrinfo(addr);
+            }
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+            }
+            return result;
+        }
+
 
     } // namespace net
 } // namespace cqp

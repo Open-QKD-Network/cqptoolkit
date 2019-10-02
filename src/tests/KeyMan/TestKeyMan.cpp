@@ -17,6 +17,7 @@
 #include "CQPToolkit/Util/GrpcLogger.h"
 #include "KeyManagement/KeyStores/FileStore.h"
 #include "Algorithms/Util/FileIO.h"
+#include "Algorithms/Net/DNS.h"
 
 namespace cqp
 {
@@ -88,8 +89,11 @@ namespace cqp
             KeyList dummyKey;
             dummyKey.push_back({42, 3, 2, 1});
 
-            keyStore1->OnKeyGeneration(std::unique_ptr<KeyList>(new KeyList(dummyKey)));
-            keyStore2->OnKeyGeneration(std::unique_ptr<KeyList>(new KeyList(dummyKey)));
+            for(auto count = 0u; count < 10; count++)
+            {
+                keyStore1->OnKeyGeneration(std::unique_ptr<KeyList>(new KeyList(dummyKey)));
+                keyStore2->OnKeyGeneration(std::unique_ptr<KeyList>(new KeyList(dummyKey)));
+            }
 
             // retrieve key
             grpc::ServerContext ctx;
@@ -102,6 +106,19 @@ namespace cqp
             ASSERT_TRUE(result.ok());
             ASSERT_EQ(response.keyid(), 1ul);
             ASSERT_EQ(response.keyvalue().length(), 4ul);
+
+            for(const auto& name :
+                    {
+                        net::GetHostname(false), net::GetHostname(true)
+                    })
+            {
+                grpc::ServerContext ctx2;
+                LOGTRACE("Testing for destination: " + name);
+                response.Clear();
+                request.set_siteto(name + ":" + std::to_string(server2ListenPort));
+
+                ASSERT_TRUE(LogStatus(factory1.GetSharedKey(&ctx2, &request, &response)).ok());
+            }
 
             const auto numKeys = 10000u;
             KeyList keyData;

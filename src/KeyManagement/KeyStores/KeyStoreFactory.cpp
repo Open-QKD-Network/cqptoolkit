@@ -36,28 +36,8 @@ namespace cqp
         {
             using namespace std;
             URI destUri(destination);
-            net::IPAddress destIp;
-            if(!destUri.ResolveAddress(destIp))
-            {
-                LOGERROR("Invalid destination address");
-            }
 
-            if(destUri.GetPort() == siteAddress.port && destIp != siteAddress.ip)
-            {
-                // this might be us with a different ip
-                std::vector<net::IPAddress> hostIPs = net::GetHostIPs();
-                if(std::any_of(hostIPs.begin(), hostIPs.end(), [&destIp](auto myIp)
-            {
-                return myIp == destIp;
-            }))
-                {
-                    // override the IP to the one we recognise
-                    destIp = siteAddress.ip;
-                }
-
-            } // if partial match
-
-            const string keystoreName = destIp.ToString() + ":" + to_string(destUri.GetPort());
+            const string keystoreName = net::FullyQualifyHost(destUri.GetHost()) + ":" + to_string(destUri.GetPort());
 
             return keystoreName;
         }
@@ -74,7 +54,7 @@ namespace cqp
                 const string thisSiteName = GetKeystoreName(siteAddress);
                 if(thisSiteName != keystoreName)
                 {
-                    LOGDEBUG("Creating keystore from " + siteAddress.ToString() + " to " + destination);
+                    LOGDEBUG("Creating keystore from " + siteAddress + " to " + destination);
                     // No keystore exists, create one and return it
                     result.reset(new KeyStore(siteAddress, clientCreds, destination, this, backingStore, keyStoreCacheLimit));
                     for(auto reportCb : reportingCallbacks)
@@ -85,7 +65,7 @@ namespace cqp
                 }
                 else
                 {
-                    LOGERROR("Refusing to create keystore, destination = this site: " + siteAddress.ToString());
+                    LOGERROR("Refusing to create keystore, destination = this site: " + siteAddress);
                 }
             }
             else
@@ -107,12 +87,15 @@ namespace cqp
             return result;
         }
 
-        Status KeyStoreFactory::GetSharedKey(grpc::ServerContext*, const cqp::remote::KeyRequest* request, cqp::remote::SharedKey* response)
+        Status KeyStoreFactory::GetSharedKey(grpc::ServerContext* ctx, const cqp::remote::KeyRequest* request, cqp::remote::SharedKey* response)
         {
             using namespace std;
             Status result;
+
             const string keystoreName = GetKeystoreName(request->siteto());
             auto keyStoreIt = keystores.find(keystoreName);
+
+            LOGTRACE("Got request for key to " + request->siteto() + "(" + keystoreName + ") from " + ctx->peer());
 
             if(keyStoreIt == keystores.end())
             {
@@ -196,7 +179,7 @@ namespace cqp
             }
             else
             {
-                result = Status(StatusCode::INVALID_ARGUMENT, "Unknown keystore path: " + siteAddress.ToString() + " -> " + request->siteto());
+                result = Status(StatusCode::INVALID_ARGUMENT, "Unknown keystore path: " + siteAddress + " -> " + request->siteto());
             }
 
             return result;

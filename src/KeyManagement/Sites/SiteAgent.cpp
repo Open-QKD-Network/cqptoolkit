@@ -183,7 +183,7 @@ namespace cqp
 
         if(myConfig.connectionaddress().empty())
         {
-            myConfig.set_connectionaddress(net::GetHostname() + ":" + std::to_string(myConfig.listenport()));
+            myConfig.set_connectionaddress(net::GetHostname(true) + ":" + std::to_string(myConfig.listenport()));
         }
 
         LOGINFO("My address is: " + myConfig.connectionaddress());
