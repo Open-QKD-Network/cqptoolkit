@@ -109,6 +109,7 @@ Once built the files, by default, are at the same level as the project folder ca
 
 ## Exploring the Library
 
+```plantuml
     @startuml
         title Applicaiton Overview
 
@@ -139,6 +140,7 @@ Once built the files, by default, are at the same level as the project folder ca
         sim -[hidden]down- stats
     }
     @enduml
+```
 
 Below is a flow chart to help find the area relevant to you as the project covers many different aspects of QKD and key management - contributors are welcome to drive this project to be more specialised.
 QKD requires some form of [non-cloning](https://en.wikipedia.org/wiki/No-cloning_theorem) communication, usually by using single photons over a fibre optic cable. They can operate point-to-point or as one-to-many but they inherently have a physical location (where the fibre terminates) - they cannot be virtualised! The point at which the photon is transmitted or detected is the boundary of the secure system - almost like the [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)) to a network. Once the in-divisible photons have been turned into a string of bits to form a [symmetric key](https://en.wikipedia.org/wiki/Key_(cryptography)) the standard rules of computer security like authentication, access control, etc, apply. The difference is that once those keys have been produced, each of the QKD devices have a number which [no one else knows](https://en.wikipedia.org/wiki/Shared_secret) [proven by science](https://arxiv.org/pdf/quant-ph/0003004.pdf).
@@ -147,6 +149,7 @@ The nature of this "firewall" effect is that the systems controlling the QKD dev
 
 If you can't see the diagram below, please go to the [online documentation](https://qcomms.gitlab.io/cqptoolkit/), it can also be built by the `doc` target.
 
+```plantuml
     @startuml
     title Where to start \n
 
@@ -213,6 +216,7 @@ If you can't see the diagram below, please go to the [online documentation](http
     stop
 
     @enduml
+```
 
 ### Running DummyQKDDriver <a name="RunningDummyQKDDriver" />
 

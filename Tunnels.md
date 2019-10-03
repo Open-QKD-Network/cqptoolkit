@@ -6,6 +6,7 @@ Cryptographic tunnels
 
 Once the controllers have been configured, they wait for `cqp::net::ServiceDiscovery` to detect the other controller, the event is handled by the `cqp::tunnels::Controller::OnServiceDetected` method which ultimately calls the `cqp::tunnels::TunnelBuilder` to establish the tunnel. `cqp::tunnels::Controller` is also responsible for registering it's controller for broadcast so that other controllers can find it.
 
+```plantuml
     @startuml CommunicateSecurely
 
         title Communicate securely
@@ -27,11 +28,13 @@ Once the controllers have been configured, they wait for `cqp::net::ServiceDisco
         erd .d.> ck : include
 
     @enduml
+```
 
 ## Site Agent
 
 The QKD devices, connections and keys are managed by a SiteAgent.
 
+```plantuml
     @startuml SystemOverview
         title System overview
 
@@ -71,6 +74,7 @@ The QKD devices, connections and keys are managed by a SiteAgent.
 
 
     @enduml
+```
 
 > Interfaces:
 > cqp::remote::INetworkManager,
@@ -78,6 +82,7 @@ The QKD devices, connections and keys are managed by a SiteAgent.
 > cqp::remote::ISiteAgent
 ___
 
+```plantuml
     @startuml KeyClassDefinitions
         title Class definitions
 
@@ -131,6 +136,7 @@ ___
 
         QKDDevice -[hidden]down- KeyPublisher
     @enduml
+```
 
 > Classes:
 > cqp::DeviceFactory,
@@ -142,7 +148,7 @@ ___
 
 ___
 
-
+```plantuml
     @startuml SiteAgentClasses
         title SiteAgent classes
 
@@ -213,6 +219,7 @@ ___
         QKDDevice *-up-> SessionController
 
     @enduml
+```
 
 > Classes:
 > cqp::DeviceFactory,
@@ -231,6 +238,7 @@ ___
 
 ## Key Manager Algorithm
 
+```plantuml
     @startuml NodeConnections
 
         title Node connections
@@ -251,9 +259,11 @@ ___
 
         SiteE -[hidden]r- SiteC
     @enduml
+```
 
 In order for the data transfer to begin, the symmetric key must first be exchanged, when more that two nodes are involved It was decided that key xor'ing would be used.  This allows multiple nodes in the chain without too much overhead.
 
+```plantuml
     @startuml KeyExchangeManagement
 
         hide footbox
@@ -321,6 +331,7 @@ In order for the data transfer to begin, the symmetric key must first be exchang
         deactivate nm
 
     @enduml
+```
 
 > Interfaces:
 > cqp::remote::INetworkManager,
@@ -329,6 +340,7 @@ In order for the data transfer to begin, the symmetric key must first be exchang
 
 ___
 
+```plantuml
     @startuml KeyExchangeAlgorithm
 
         hide footbox
@@ -385,6 +397,7 @@ ___
         deactivate sa1
 
     @enduml
+```
 
 > Classes:
 > cqp::DeviceFactory,
@@ -406,6 +419,7 @@ ___
 There are two possible ways of distributing the keys needed for multi hop. One is to pre-allocate a percentage of local keys to the
 multi-hop key store:
 
+```plantuml
     @startuml Multi-hopKeyDistrobution-PushModel
         title Multi-hop key distribution - Push model
 
@@ -433,9 +447,10 @@ multi-hop key store:
         [-> ksb : GetSharedKey()
 
     @enduml
-
+```
 The other is to pull keys as needed from the stores:
 
+```plantuml
     @startuml Multi-hopKeyDistrobution-PullModel
         title Multi-hop key distribution - Pull model
         hide footbox
@@ -530,6 +545,7 @@ The other is to pull keys as needed from the stores:
         deactivate ksac_a
 
     @enduml
+```
 
 ## Interfaces
 
@@ -559,6 +575,7 @@ There are some issues with interfacing with the USB Clavis 2 device:
 
 ### The IQSequence program
 
+```plantuml
     @startuml Interfaces-Clavis2ConectionDiagram
 
         title Interfaces - Clavis 2 Connection Diagram
@@ -600,13 +617,14 @@ There are some issues with interfacing with the USB Clavis 2 device:
             device with a matching id (for alice/bob)
         end note
     @enduml
-
+```
 ### Possible solution
 
 By wrapping the program in a container, the network interfaces can be controlled
 
 - Can a VLAN be used to isolate all the IDQSequence communications?
 
+```plantuml
     @startuml Interfaces-Clavis2ConectionDiagram
 
         title Interfaces - Clavis 2 Connection Diagram
@@ -658,6 +676,7 @@ By wrapping the program in a container, the network interfaces can be controlled
             "~--privileged ~--device /dev/usb/x/y/z -v /dev/bus/usb:/dev/bus/usb"
         end note
     @enduml
+```
 
 This solution has a number of issues:
 
@@ -708,6 +727,7 @@ Both the client entry/exit points and the channel for encrypted data can be any 
 * tcp port (as ether a server or client)
 * udp port
 
+```plantuml
     @startuml QTunnelServerExampleUse
 
         title Example use
@@ -763,11 +783,12 @@ Both the client entry/exit points and the channel for encrypted data can be any 
         TunnelBuilder -u-|> ITransfer
         TunnelBuilder --> ITransfer : peer
         TunnelBuilder --> DeviceIO : client
-
-
     @enduml
+```
+
 Most of these classes build the environment for cqp::tunnels::TunnelBuilder to work effectively. The interfaces isolate the two halves of the tunnel. The cqp::net::Remoting class allows the interfaces to be translated into JSON strings, currently these are used over a standard tcp connection but this could be translated to a more formal interface without affecting the worker classes.
 
+```plantuml
     @startuml TunnelBuilderAssociations
 
         set namespaceSeparator ::
@@ -796,6 +817,7 @@ Most of these classes build the environment for cqp::tunnels::TunnelBuilder to w
         TunnelBuilder *-- "1" PKIChannel : pkiChannel
 
     @enduml
+```
 
 > Classes:
 > cqp::tunnels::TunnelBuilder,

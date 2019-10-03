@@ -2,7 +2,7 @@
 
 ## QKD
 
-
+```plantuml
 @startuml
     title Class definitions
 
@@ -36,10 +36,11 @@
     ISiteAgent -[hidden]down- IKey
     IKey -[hidden]down- INetworkManager
 @enduml
-
+```
 
 ## Tunneling
 
+```plantuml
 @startuml
     title Class definitions
 
@@ -66,3 +67,4 @@
     ITunnelServer -[hidden]down- IEncryptedData
 
 @enduml
+```

@@ -54,14 +54,6 @@ The pysical setup of this demo consists of:
 
 Install the latest release from [gitlab](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package:deb). This can be done on the command line with: `curl -JLO "https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb"`
 
-### Mobile Setup
-
-- Install the latest android apk on the mobile device from [here](https://qcomms.gitlab.io/qkdmobilebrowser/android/qkdmobilebrowser_release_signed_latest.apk), or the [gitlab project](https://gitlab.com/QComms/qkdmobilebrowser).
-- Configure the default website address by loading the app and going to the three line menu in the top left, then **Settings** -> **Homepage**
-- Clear any stale keys by going to **Stored Keys** and clicking the bin icon - this may need to be done again if the systems get out of sync.
-
-If screen mirroring is needed, use the [scrspy](https://github.com/Genymobile/scrcpy) program with the phone/tablet plugged in with a USB cable.
-
 ### Sites
 
 Make sure that each device can resolve the address of the other by host name (check with `ping <hostname>` ).
@@ -95,12 +87,23 @@ docker run -it --rm --net host -v `pwd`/www:/www -v `pwd`/nginx-conf:/etc/nginx 
 - Run the webserver with the script.
 - The site can be tested without encryption by going to [http://localhost/](http://localhost/) you should see a page with "Unsecured communication"
 
+### Mobile Setup
+
+- Install the latest android apk on the mobile device from [here](https://qcomms.gitlab.io/qkdmobilebrowser/android/qkdmobilebrowser_release_signed_latest.apk), or the [gitlab project](https://gitlab.com/QComms/qkdmobilebrowser).
+- Open the `QKD Mobile` app
+- Configure the default website address by loading the app and going to the three line menu in the top left, then **Settings** -> **Homepage**
+- Clear any stale keys by going to **Stored Keys** and clicking the bin icon - this may need to be done again if the systems get out of sync.
+
+If screen mirroring is needed, use the [scrspy](https://github.com/Genymobile/scrcpy) program with the phone/tablet plugged in with a USB cable.
+
+**Switch the WiFi connection to the `BristolQKDDemo` access point**
+
 ### QR Display
 
 - Run `QKDStudio` and click the keys icon for the **key view**.
 - Resize the window so that the qr code area fill as much of the mobile camera view as possible
-- In the from box, enter the site agent address for the "local" keystore (eg: `localhost:8000` ) which will the start point for the communication.
-- Click the green refresh icon and select the destination keystore address.
+- In the from box, enter the site agent address for the site agent on the local machine (eg: `IT1234:8000` ) which will the start point for the communication.
+- Click the refresh icon nect to the "From" box and select the destination keystore address from the list.
 - Click **New Key** to display a qr code.
   + The mobile should decode the code and display the source, destination and key id. The number of keys should increase.
 - To load several keys
@@ -115,6 +118,8 @@ docker run -it --rm --net host -v `pwd`/www:/www -v `pwd`/nginx-conf:/etc/nginx 
   + The website should be displayed - it takes several keys for each page to load.
 
 ### Stats Website
+
+*** NOT WORKING ***
 
 - Checkout the code from [gitlab](https://gitlab.com/QComms/webgui) with `git clone https://gitlab.com/QComms/webgui.git`
 - inside the directory `webgui/client` install the dependencies with `npm i`
