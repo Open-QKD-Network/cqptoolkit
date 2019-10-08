@@ -421,6 +421,8 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/external/idq4p/CMakeLists.txt")
     endif()
 
     if(NOT TARGET Boost)
+        # enable c++ for compiler detection
+        enable_language(CXX)
         find_package(Boost COMPONENTS system)
     endif()
 

@@ -576,6 +576,7 @@ macro(ADD_GRPC_FILES)
         include_directories(${Protobuf_IMPORT_DIRS})
 
         LIST(APPEND ${PROJECT_NAME}_SOURCES
+            ${${PROJECT_NAME}_INTERFACES}
             ${${PROJECT_NAME}_PROTO_SRCS}
             ${${PROJECT_NAME}_GRPC_SRCS})
     endif()

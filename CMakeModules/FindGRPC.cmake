@@ -109,7 +109,8 @@ function(protobuf_generate)
       OUTPUT ${_generated_srcs}
       COMMAND  protobuf::protoc
       ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_protobuf_include_path} ${_abs_file}
-      DEPENDS ${_abs_file} protobuf::protoc
+      MAIN_DEPENDENCY ${_abs_file}
+      DEPENDS protobuf::protoc
       COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}"
       VERBATIM )
   endforeach()
@@ -228,7 +229,8 @@ function(GRPC_GENERATE)
       OUTPUT ${_generated_srcs}
       COMMAND  protobuf::protoc
       ARGS --grpc_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR}  --plugin=protoc-gen-grpc=${_driver} ${_protobuf_include_path} ${_abs_file}
-      DEPENDS ${_abs_file} protobuf::protoc
+      MAIN_DEPENDENCY ${_abs_file}
+      DEPENDS protobuf::protoc
       COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}"
       VERBATIM )
   endforeach()
