@@ -152,7 +152,7 @@ void SiteAgentCtlGui::AddSite(const std::string& address)
                         break;
                     }
                     deviceItem->setText(3, QString::fromStdString(device.config().switchname()));
-                    deviceItem->setText(4, QString::fromStdString(device.config().switchport()));
+                    deviceItem->setText(4, QString::fromStdString(Join(device.config().switchport(), ",")));
                 } // devices
             }
         }

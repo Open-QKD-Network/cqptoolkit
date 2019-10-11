@@ -809,7 +809,7 @@ namespace cqp
             break;
         }
         LOGINFO("New " + sideString + " device: " + request->config().id() + " at '" + request->controladdress() + "' on switch '" +
-                request->config().switchname() + "' port '" + request->config().switchport() + "'");
+                request->config().switchname() + "' port '" + Join(request->config().switchport(), ",") + "'");
 
         // register with the internal network manager
         if(internalNetMan)

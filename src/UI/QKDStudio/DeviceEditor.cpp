@@ -55,7 +55,7 @@ namespace cqp
         }
         ui->siteAgent->setText(QS(editing.siteagentaddress()));
         ui->switchName->setText(QS(editing.config().switchname()));
-        ui->switchPort->setText(QS(editing.config().switchport()));
+        ui->switchPort->setText(QS(Join(editing.config().switchport(), ",")));
         if(editing.config().bytesperkey() == 16)
         {
             ui->bytesPerKey->setCurrentIndex(0);
@@ -108,7 +108,7 @@ namespace cqp
 
     void DeviceEditor::on_switchPort_editingFinished()
     {
-        editing.mutable_config()->set_switchport(ui->switchPort->text().toStdString());
+        editing.mutable_config()->add_switchport(ui->switchPort->text().toStdString());
     }
 
     void DeviceEditor::on_kind_editingFinished()

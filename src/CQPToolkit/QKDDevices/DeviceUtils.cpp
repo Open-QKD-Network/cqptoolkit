@@ -80,7 +80,7 @@ namespace cqp
         }
         if(!config.switchport().empty())
         {
-            result.SetParameter(IQKDDevice::Parameters::switchPort, config.switchport());
+            result.SetParameter(IQKDDevice::Parameters::switchPort, Join(config.switchport(), ","));
         }
         if(config.bytesperkey() != 0)
         {

@@ -152,7 +152,12 @@ namespace cqp
         {
             if(param.first == Parameters::switchPort)
             {
-                config.set_switchport(param.second);
+                std::vector<std::string> ports;
+                SplitString(param.second, ports, ",");
+                for(const auto& port : ports)
+                {
+                    config.add_switchport(port);
+                }
             }
             else if(param.first == Parameters::side)
             {

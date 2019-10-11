@@ -149,7 +149,12 @@ namespace cqp
             definedArguments.GetProp(CommandlineNames::controlAddr, *controlDetails->mutable_controladdress());
 
             definedArguments.GetProp(CommandlineNames::switchName, *controlDetails->mutable_config()->mutable_switchname());
-            definedArguments.GetProp(CommandlineNames::switchPort, *controlDetails->mutable_config()->mutable_switchport());
+            vector<string> ports;
+            SplitString(definedArguments.GetStringProp(CommandlineNames::switchPort), ports, ",");
+            for(const auto& port : ports)
+            {
+                controlDetails->mutable_config()->add_switchport(port);
+            }
 
             channelCreds = LoadChannelCredentials(creds);
             serverCreds = LoadServerCredentials(creds);
