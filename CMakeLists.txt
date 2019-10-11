@@ -241,7 +241,8 @@ if(BUILD_TESTING)
         ExternalProject_add(GTest_External
             # SVN used so that git does not need to be installed
             # TODO: switch to release tag when its updated.
-            SVN_REPOSITORY "https://github.com/google/googletest.git/tags/release-1.8.1"
+            GIT_REPOSITORY "https://github.com/google/googletest.git"
+            GIT_TAG "v1.8.1"
                 UPDATE_COMMAND ""
             DOWNLOAD_NO_PROGRESS 1
             # Pass arguments to the build process to disable/enable modules

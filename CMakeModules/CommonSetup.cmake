@@ -78,7 +78,8 @@ if(WIN32)
         set(ENV{VSCMD_ARG_TGT_ARCH} x64)
     endif()
     add_definitions(-DNOMINMAX=1 -D_USE_MATH_DEFINES=1)
-
+    # Stop windows file import from poluting the globale namespace
+    add_definitions(-D_WINUSER_)
     get_WIN32_WINNT(ver)
     add_definitions(-D_WIN32_WINNT=${ver})
 
@@ -344,7 +345,7 @@ macro(CQP_LIBRARY_PROJECT)
         # This stops the object library being built with dllimport symbols
         # Add some platform specific libraries to both shared and static links
         if(WIN32)
-            target_link_libraries(${PROJECT_NAME}_${_build_type} PRIVATE "shlwapi" "setupapi" "Ws2_32.lib")
+            target_link_libraries(${PROJECT_NAME}_${_build_type} PUBLIC "shlwapi" "setupapi" "wsock32" "ws2_32")
         elseif(UNIX)
             target_link_libraries(${PROJECT_NAME}_${_build_type} PRIVATE "pthread" "uuid")
         endif(WIN32)

@@ -136,9 +136,6 @@ namespace cqp
 
         if(!stopExecution)
         {
-#if defined(WIN32) && defined(GetProp)
-#undef GetProp
-#endif
             definedArguments.GetProp(CommandlineNames::certFile, *creds.mutable_certchainfile());
             definedArguments.GetProp(CommandlineNames::certKeyFile, *creds.mutable_privatekeyfile());
             definedArguments.GetProp(CommandlineNames::rootCaFile, *creds.mutable_rootcertsfile());

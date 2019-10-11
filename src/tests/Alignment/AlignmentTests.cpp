@@ -323,7 +323,7 @@ namespace cqp
 
             std::condition_variable waitCv;
             std::mutex waitMutex;
-            std::atomic<uint> alignedCalled {0};
+            std::atomic<uint32_t> alignedCalled {0};
             QubitList txIncomming;
             SequenceNumber txSeq = 0;
             QubitList rxIncomming;
@@ -430,7 +430,7 @@ namespace cqp
 
             std::condition_variable waitCv;
             std::mutex waitMutex;
-            std::atomic<uint> alignedCalled {0};
+            std::atomic<uint32_t> alignedCalled {0};
             QubitList txIncomming;
             SequenceNumber txSeq = 0;
             QubitList rxIncomming;

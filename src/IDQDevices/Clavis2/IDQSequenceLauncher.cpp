@@ -178,9 +178,6 @@ namespace cqp
 
         try
         {
-#if defined(WIN32) && defined(CreateDirectory)
-#undef CreateDirectory
-#endif
             // make sure it's log folder exists
             if(!fs::Exists(logFolder))
             {
