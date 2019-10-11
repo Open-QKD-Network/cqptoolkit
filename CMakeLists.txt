@@ -242,7 +242,7 @@ if(BUILD_TESTING)
             # SVN used so that git does not need to be installed
             # TODO: switch to release tag when its updated.
             GIT_REPOSITORY "https://github.com/google/googletest.git"
-            GIT_TAG "v1.8.1"
+            GIT_TAG "release-1.8.1"
                 UPDATE_COMMAND ""
             DOWNLOAD_NO_PROGRESS 1
             # Pass arguments to the build process to disable/enable modules
