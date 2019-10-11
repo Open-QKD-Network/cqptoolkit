@@ -133,14 +133,8 @@ namespace cqp
 #define CQP_MAIN(name) \
     int main(int argc, const char* argv[]) \
     { \
-        __try{ \
-            name instance; \
-            return instance.main(argc, argv); \
-        } __finally() \
-        { \
-            LOGERROR(e.what()); \
-            return -1; \
-        } \
+        name instance; \
+        return instance.main(argc, argv); \
     }
 #endif
 } // namespace cqp
