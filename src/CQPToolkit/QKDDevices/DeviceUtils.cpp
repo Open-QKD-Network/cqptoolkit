@@ -80,7 +80,8 @@ namespace cqp
         }
         if(!config.switchport().empty())
         {
-            result.SetParameter(IQKDDevice::Parameters::switchPort, Join(config.switchport(), ","));
+            const std::vector<std::string> ports(config.switchport().begin(), config.switchport().end());
+            result.SetParameter(IQKDDevice::Parameters::switchPort, Join(ports, ","));
         }
         if(config.bytesperkey() != 0)
         {

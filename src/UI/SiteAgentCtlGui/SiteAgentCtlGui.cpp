@@ -21,6 +21,7 @@
 #include <QClipboard>
 #include <QMessageBox>
 #include "Algorithms/Logging/ConsoleLogger.h"
+#include "Algorithms/Util/Strings.h"
 
 SiteAgentCtlGui::SiteAgentCtlGui(QWidget *parent) :
     QMainWindow(parent),
@@ -152,7 +153,8 @@ void SiteAgentCtlGui::AddSite(const std::string& address)
                         break;
                     }
                     deviceItem->setText(3, QString::fromStdString(device.config().switchname()));
-                    deviceItem->setText(4, QString::fromStdString(Join(device.config().switchport(), ",")));
+                    const std::vector<std::string> ports(device.config().switchport().begin(), device.config().switchport().end());
+                    deviceItem->setText(4, QString::fromStdString(cqp::Join(ports, ",")));
                 } // devices
             }
         }
