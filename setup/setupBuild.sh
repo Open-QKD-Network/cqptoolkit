@@ -163,9 +163,12 @@ function setupUbuntu() {
             qtbase5-dev || exit 7
         # Testing
 
-        if [ ${RELEASE_MAJOR} -gt 16 ]; then
+        if [ ${RELEASE_MAJOR} -gt 18 ]; then
             ${PKGMAN_INSTALL}  \
-                googletest libgtest-dev google-mock || exit 9
+                libgtest-dev libgmock-dev || exit 9
+        elif [ ${RELEASE_MAJOR} -gt 16 ]; then
+            ${PKGMAN_INSTALL}  \
+                libgtest-dev google-mock || exit 9
         fi
     else
         echo Skipping extra tools

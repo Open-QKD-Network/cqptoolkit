@@ -16,6 +16,7 @@
 #include <QMessageBox>
 #include <google/protobuf/util/json_util.h>
 #include "Algorithms/Util/FileIO.h"
+#include "Algorithms/Util/Strings.h"
 
 #define QS(x) QString::fromStdString(x)
 
@@ -55,7 +56,8 @@ namespace cqp
         }
         ui->siteAgent->setText(QS(editing.siteagentaddress()));
         ui->switchName->setText(QS(editing.config().switchname()));
-        ui->switchPort->setText(QS(Join(editing.config().switchport(), ",")));
+        const std::vector<std::string> ports(editing.config().switchport().begin(), editing.config().switchport().end());
+        ui->switchPort->setText(QS(Join(ports, ",")));
         if(editing.config().bytesperkey() == 16)
         {
             ui->bytesPerKey->setCurrentIndex(0);

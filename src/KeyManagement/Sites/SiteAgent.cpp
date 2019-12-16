@@ -808,8 +808,9 @@ namespace cqp
             sideString = "Any";
             break;
         }
+        const std::vector<std::string> ports(request->config().switchport().begin(), request->config().switchport().end());
         LOGINFO("New " + sideString + " device: " + request->config().id() + " at '" + request->controladdress() + "' on switch '" +
-                request->config().switchname() + "' port '" + Join(request->config().switchport(), ",") + "'");
+                request->config().switchname() + "' port '" + Join(ports, ",") + "'");
 
         // register with the internal network manager
         if(internalNetMan)
