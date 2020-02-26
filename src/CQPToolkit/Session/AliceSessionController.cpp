@@ -90,8 +90,9 @@ namespace cqp
             google::protobuf::Timestamp detectorRequest;
             Empty detectorResponse;
             auto detector = remote::IDetector::NewStub(otherControllerChannel);
+            size_t frameCount = 0;
 
-            while(!ShouldStop())
+            while(!ShouldStop() && (frameLimit == 0 || frameCount++ < frameLimit))
             {
                 if(detector && photonSource)
                 {
@@ -128,6 +129,9 @@ namespace cqp
                     LOGERROR("Setup incomplete");
                 } // else
             } // while
+
+            // ensure we aren't restarted
+            Stop(false);
 
             LOGTRACE("Ending");
         }

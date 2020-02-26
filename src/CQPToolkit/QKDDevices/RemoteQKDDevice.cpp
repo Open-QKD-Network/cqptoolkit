@@ -73,7 +73,7 @@ namespace cqp
             from.set_initiatoraddress(qkdDeviceAddress);
             (*from.mutable_details()) = request->details();
 
-            session->StartSession(from);
+            result = session->StartSession(from);
         }
         else
         {

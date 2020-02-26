@@ -101,6 +101,12 @@ namespace cqp
          */
         ALGORITHMS_EXPORT bool IsDirectory(const std::string& path);
         /**
+         * @brief IsDevice
+         * @param path
+         * @return true if the path is a device (char/block/etc)
+         */
+        ALGORITHMS_EXPORT bool IsDevice(const std::string& path);
+        /**
          * @brief CanWrite
          * @param path
          * @return true if the path is accessible by the user
