@@ -17,8 +17,8 @@
 #include "Algorithms/Logging/Logger.h"                              // for LOGERROR
 #include "Alignment/NullAlignment.h"
 #include "ErrorCorrection/ErrorCorrection.h"
-#include "Sift/Transmitter.h"
 #include "Sift/Receiver.h"
+#include "Sift/Verifier.h"
 #include "PrivacyAmp/PrivacyAmplify.h"
 #include "KeyGen/KeyConverter.h"
 #include "CQPToolkit/Simulation/DummyTransmitter.h"
@@ -53,32 +53,37 @@ namespace cqp
             case remote::Side::Alice:
             {
                 photonSource = make_shared<sim::DummyTransmitter>(rng, chrono::microseconds(10));
-                photonSource->Attach(alignment.get());
-                remotes.push_back(photonSource);
+                siftVerifier = std::make_shared<sift::Verifier>();
+                // build the pipeline
+                photonSource->Attach(siftVerifier.get());
+                siftVerifier->Attach(ec.get());
+
+                // send stats to our report server
                 photonSource->stats.Add(reportServer.get());
+                siftVerifier->stats.Add(reportServer.get());
+                // let classes get notified when we are connected
+                remotes.push_back(photonSource);
+                remotes.push_back(siftVerifier);
 
-                sifter = std::make_shared<sift::Transmitter>();
-                remotes.push_back(sifter);
-
-                controller = make_shared<session::AliceSessionController>(creds, remotes, photonSource, reportServer);
             }
 
             break;
             case remote::Side::Bob:
             {
                 timeTagger = make_shared<sim::DummyTimeTagger>(rng);
-                timeTagger->Attach(alignment.get());
+                siftReceiver = std::make_shared<sift::Receiver>();
+                // build the pipeline
+                timeTagger->Attach(siftReceiver.get());
+                siftReceiver->Attach(ec.get());
 
+                // send stats to our report server
                 timeTagger->stats.Add(reportServer.get());
+                siftReceiver->stats.Add(reportServer.get());
 
+                // let classes get notified when we are connected
                 remotes.push_back(timeTagger);
+                remotes.push_back(siftVerifier);
 
-                receiver = std::make_shared<sift::Receiver>();
-                sifter = receiver;
-                remotes.push_back(sifter);
-
-
-                controller = make_shared<session::SessionController>(creds, remotes, reportServer);
             }
             break;
             default:
@@ -86,13 +91,12 @@ namespace cqp
                 break;
             }
 
-            alignment->Attach(sifter.get());
-            sifter->Attach(ec.get());
+            controller = make_shared<session::SessionController>(creds, remotes, reportServer);
+
             ec->Attach(privacy.get());
             privacy->Attach(keyConverter.get());
 
             // send stats to our report server
-            sifter->stats.Add(reportServer.get());
             ec->stats.Add(reportServer.get());
             privacy->stats.Add(reportServer.get());
         }
@@ -111,16 +115,16 @@ namespace cqp
                 builder.RegisterService(static_cast<remote::IDetector::Service*>(timeTagger.get()));
                 builder.RegisterService(static_cast<remote::IPhotonSim::Service*>(timeTagger.get()));
             }
-            if(receiver)
+            if(siftVerifier)
             {
-                builder.RegisterService(receiver.get());
+                builder.RegisterService(siftVerifier.get());
             }
         }
 
         /// aligns detections
         std::shared_ptr<align::NullAlignment> alignment;
         /// sifts alignments
-        std::shared_ptr<sift::SiftBase> sifter;
+        std::shared_ptr<sift::Receiver> siftReceiver;
         /// error corrects sifted data
         std::shared_ptr<ec::ErrorCorrection> ec;
         /// verify corrected data
@@ -128,7 +132,7 @@ namespace cqp
         /// prepare keys for the keystore
         std::shared_ptr<keygen::KeyConverter> keyConverter;
 
-        std::shared_ptr<sift::Receiver> receiver;
+        std::shared_ptr<sift::Verifier> siftVerifier;
         /// Produces photons when being alice
         std::shared_ptr<sim::DummyTransmitter> photonSource = nullptr;
 

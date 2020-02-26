@@ -33,7 +33,8 @@ namespace cqp
          */
         virtual void OnAligned(SequenceNumber seq,
                                double securityParameter,
-                               std::unique_ptr<QubitList> rawQubits) = 0;
+                               std::unique_ptr<QubitList> rawQubits,
+                               std::unique_ptr<IntensityList> intensities) = 0;
 
         /// Virtual destructor
         virtual ~IAlignmentCallback() = default;
