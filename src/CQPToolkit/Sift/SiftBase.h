@@ -10,9 +10,9 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #pragma once
-#include "CQPToolkit/Interfaces/IAlignmentPublisher.h"
 #include "CQPToolkit/Interfaces/ISiftedPublisher.h"
 #include "Algorithms/Util/Provider.h"
+#include "Algorithms/Datatypes/Qubits.h"
 #include "CQPToolkit/Sift/Stats.h"
 #include "QKDInterfaces/Qubits.pb.h"
 #include "CQPToolkit/cqptoolkit_export.h"
@@ -25,10 +25,11 @@ namespace cqp
 
         /**
          * @brief The SiftBase class
-         * Common codew for sifting
+         * Common code for sifting data which is inherently pre-aligned.
+         * The reciever data is indexed so discards for undetected qubits
+         * are performed during the sifting.
          */
-        class CQPTOOLKIT_EXPORT SiftBase : public virtual IAlignmentCallback,
-            public Provider<ISiftedCallback>,
+        class CQPTOOLKIT_EXPORT SiftBase : public Provider<ISiftedCallback>,
             public virtual IRemoteComms
         {
         public:
@@ -40,54 +41,28 @@ namespace cqp
              */
             SiftBase(std::mutex& mutex, std::condition_variable& conditional);
 
-            ///@{
-            /// @name IAlignmentCallback Interface
-
-            /// @copydoc IAlignmentCallback::OnAligned
-            void OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits) override;
-
-            ///@}
-
-            /// @{
-            /// @name IRemoteComms interface
-
             /**
-             * @brief Connect
-             * @param channel channel to the other sifter
+             * @brief SetDiscardedIntensities
+             * Set which intensities should be ignored
+             * @param intensities which values should be disgarded
              */
-            void Connect(std::shared_ptr<grpc::ChannelInterface> channel) override;
-
-            /**
-             * @brief Disconnect
-             */
-            void Disconnect() override;
-
-            ///@}
+            void SetDiscardedIntensities(std::set<Intensity> intensities);
 
             /// Statistics produced by this class
             Statistics stats;
         protected:
-            /**
-             * @brief ProcessStates
-             * @param start The first element to send, the range must be contiguous
-             * @param end The last element to send, the range must be contiguous
-             * @param answers The results of the comparison
-             * @details
-             * @startuml PublishStatesBehaviour
-             * [-> BB84Sifter : ProcessStates
-             * activate BB84Sifter
-             *      BB84Sifter -> BB84Sifter : Emit(validData)
-             * deactivate BB84Sifter
-             * @enduml
-             */
-            void PublishStates(QubitsByFrame::iterator start, QubitsByFrame::iterator end, const remote::AnswersByFrame& answers);
+            bool PackQubit(Qubit qubit, size_t index, const cqp::remote::BasisAnswers& answers,
+                           JaggedDataBlock& siftedData,
+                           uint_least8_t& offset, JaggedDataBlock::value_type& byteBuffer);
 
-            /// Data that has accumulated
-            QubitsByFrame collectedStates;
             /// identifier for this instance
             std::string instance;
             /// Counter for the sequence number used with each publication of a block of qubits
             SequenceNumber siftedSequence = 0;
+            /// which intensities should be ignored
+            std::set<Intensity> discardedIntensities;
+            // calculate the number of bits in the current system.
+            static constexpr uint8_t bitsPerValue = sizeof(DataBlock::value_type) * CHAR_BIT;
         private:
             /// a mutex for use with collectedStatesCv
             std::mutex& statesMutex;

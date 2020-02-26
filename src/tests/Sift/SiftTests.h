@@ -15,6 +15,7 @@
 #include <mutex>
 #include "CQPToolkit/Interfaces/ISiftedPublisher.h"
 #include <condition_variable>
+#include <gtest/gtest-param-test.h>
 
 namespace cqp
 {
@@ -49,7 +50,7 @@ namespace cqp
          * @details
          * Base class for testing sifting code
          */
-        class SiftTests : public testing::Test
+        class SiftTests : public testing::TestWithParam<bool>
         {
         public:
             /**
@@ -72,6 +73,8 @@ namespace cqp
             /// for access to test results
             std::condition_variable cv;
         };
+
+        INSTANTIATE_TEST_CASE_P(ParamedSifTest, SiftTests, testing::Bool());
 
     } // namespace tests
 } // namespace cqp

@@ -82,6 +82,7 @@ namespace cqp
 
             /// storage for incoming data
             std::queue<std::unique_ptr<QubitList>> receivedData;
+            std::queue<std::unique_ptr<IntensityList>> receivedIntensities;
             /// connection to the other side
             std::shared_ptr<grpc::ChannelInterface> transmitter;
 

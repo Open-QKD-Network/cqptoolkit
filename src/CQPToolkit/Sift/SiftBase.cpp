@@ -22,121 +22,44 @@ namespace cqp
 
         }
 
-        void SiftBase::OnAligned(SequenceNumber seq, double securityParameter, std::unique_ptr<QubitList> rawQubits)
+        void SiftBase::SetDiscardedIntensities(std::set<Intensity> intensities)
         {
-            using namespace std;
-            LOGTRACE("Received aligned qubits");
-
-            // Lock scope
-            {
-                std::lock_guard<std::mutex>  lock(statesMutex);
-
-                if(collectedStates.find(seq) == collectedStates.end())
-                {
-                    collectedStates[seq] = move(rawQubits);
-                } // if
-                else
-                {
-                    LOGERROR("Duplicate alignment sequence ID");
-                } // if else
-            } // Lock scope
-
-            statesCv.notify_all();
-        } //OnAligned
-
-        void SiftBase::Connect(std::shared_ptr<grpc::ChannelInterface>)
-        {
-            std::lock_guard<std::mutex>  lock(statesMutex);
-            collectedStates.clear();
-            siftedSequence = 0;
+            discardedIntensities = intensities;
         }
 
-        void SiftBase::Disconnect()
+        bool SiftBase::PackQubit(Qubit qubit, size_t index, const cqp::remote::BasisAnswers& answers,
+                                 JaggedDataBlock& siftedData,
+                                 uint_least8_t& offset, JaggedDataBlock::value_type& byteBuffer)
         {
-            std::lock_guard<std::mutex>  lock(statesMutex);
-            collectedStates.clear();
-            siftedSequence = 0;
-        }
-
-        void SiftBase::PublishStates(QubitsByFrame::iterator start, QubitsByFrame::iterator end, const remote::AnswersByFrame& answers)
-        {
-            using std::chrono::high_resolution_clock;
-            high_resolution_clock::time_point timerStart = high_resolution_clock::now();
-
-            // calculate the number of bits in the current system.
-            constexpr uint8_t bitsPerValue = sizeof(DataBlock::value_type) * CHAR_BIT;
-            std::unique_ptr<JaggedDataBlock> siftedData(new JaggedDataBlock());
-
-            JaggedDataBlock::value_type value = 0;
-            uint_least8_t offset = 0;
-            size_t bitsCollected = 0;
-
-            QubitsByFrame::iterator it = start;
-            auto answersIt = answers.answers().begin();
-
-            while(!answers.answers().empty() && it != end)
+            bool result = false;
+            // test if this qubit is valid, ie the basis matched when they were compared.
+            if(answers.answers(index) == true)
             {
-
-                LOGTRACE(std::to_string(answers.answers().size()) + " : " + std::to_string(it->first));
-
-                auto seqAnswersIt = answers.answers().at(it->first).answers().begin();
-                // grow the storage enough to fit the next set of data
-                siftedData->reserve(siftedData->size() + it->second->size() / bitsPerValue);
-                bitsCollected += it->second->size();
-                // For each qubit
-                for(const Qubit& qubit : *it->second)
+                // pack the qubit if we're not using intensities or the intensity value is one we keep
+                if(answers.intensity().empty() ||
+                        discardedIntensities.find(answers.intensity(index)) == discardedIntensities.end())
                 {
-                    // test if this qubit is valid, ie the basis matched when they were compared.
-                    if(*seqAnswersIt)
+                    // we're using the qubit
+                    result = true;
+                    // shift the bit up to the next available slot and or it with the current value
+                    byteBuffer |= static_cast<JaggedDataBlock::value_type>(QubitHelper::BitValue(qubit)) << offset;
+                    // move to the next bit
+                    ++offset;
+
+                    // overflowing the byte, move to next byte
+                    if(offset == bitsPerValue)
                     {
-                        // shift the bit up to the next available slot and or it with the current value
-                        value |= static_cast<JaggedDataBlock::value_type>(QubitHelper::BitValue(qubit)) << offset;
-                        // move to the next bit
-                        ++offset;
+                        // we have filled up a word, add it to the output and reset
+                        siftedData.push_back(byteBuffer);
+                        siftedData.bitsInLastByte = bitsPerValue;
+                        byteBuffer = 0;
+                        offset = 0;
+                    } // if overflow
+                } // if intensity is kept
+            } // if basis match
 
-                        if(offset == bitsPerValue)
-                        {
-                            // we have filled up a word, add it to the output and reset
-                            siftedData->push_back(value);
-                            siftedData->bitsInLastByte = bitsPerValue;
-                            value = 0;
-                            offset = 0;
-                        } // if
-                    } //if(*seqAnswersIt == true)
-
-                    ++seqAnswersIt;
-                } // For each qubit
-
-                ++it;
-                ++answersIt;
-            } // while(it != end)
-
-
-            if(offset != 0)
-            {
-                // There weren't enough bits to completely fill the last word,
-                // Add the remaining, the mask will show which bits are valid
-                siftedData->push_back(value);
-                siftedData->bitsInLastByte = offset;
-            } // if(offset != 0)
-
-            if(siftedData->empty())
-            {
-                LOGWARN("Empty sifted data.");
-            }
-
-            const auto bytesProduced = siftedData->size();
-            const auto qubitsDisgarded = bitsCollected - siftedData->NumBits();
-
-            double securityParameter = 0.0; // TODO
-            Emit(&ISiftedCallback::OnSifted, siftedSequence, securityParameter, move(siftedData));
-
-            siftedSequence++;
-
-            stats.publishTime.Update(high_resolution_clock::now() - timerStart);
-            stats.bytesProduced.Update(bytesProduced);
-            stats.qubitsDisgarded.Update(qubitsDisgarded);
-        } // PublishStates
+            return result;
+        }
 
     } // namespace sift
 } // namespace cqp

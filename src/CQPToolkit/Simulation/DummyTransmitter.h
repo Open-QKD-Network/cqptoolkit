@@ -47,7 +47,8 @@ namespace cqp
              */
             DummyTransmitter(IRandom* randomSource,
                              PicoSeconds transmissionDelay = std::chrono::nanoseconds(100),
-                             size_t photonsPerBurst = 100000);
+                             size_t photonsPerBurst = 100000,
+                             Intensity intensityLevels = {});
 
             ~DummyTransmitter() override;
 
@@ -95,6 +96,8 @@ namespace cqp
             IRandom* randomness = nullptr;
             /// how many photons to send in one go
             unsigned long photonsPerBurst;
+            /// which intensity levels to simulate
+            Intensity intensityLevels;
         }; // DummyTransmitter
 
     } // namespace sim

@@ -21,8 +21,10 @@ namespace cqp
     {
         DummyTransmitter::DummyTransmitter(IRandom* randomSource,
                                            PicoSeconds transmissionDelay,
-                                           size_t photonsPerBurst) :
-            txDelay(transmissionDelay), randomness(randomSource), photonsPerBurst(photonsPerBurst)
+                                           size_t photonsPerBurst,
+                                           Intensity intensityLevels) :
+            txDelay(transmissionDelay), randomness(randomSource), photonsPerBurst(photonsPerBurst),
+            intensityLevels(intensityLevels)
         {
         }
 
@@ -34,13 +36,13 @@ namespace cqp
         void DummyTransmitter::Connect(std::shared_ptr<grpc::ChannelInterface> channel)
         {
             detector = remote::IPhotonSim::NewStub(channel);
-            frame = 1;
+            frame = 0;
         }
 
         void DummyTransmitter::Disconnect()
         {
             detector = nullptr;
-            frame = 1;
+            frame = 0;
         }
 
         bool DummyTransmitter::Fire()
@@ -63,6 +65,15 @@ namespace cqp
             for(auto qubit : report->emissions)
             {
                 request.mutable_values()->add_qubits(static_cast<remote::BB84::Type>(qubit));
+            }
+            if(intensityLevels > 1)
+            {
+                // generate intensity valuse
+                report->intensities.resize(report->emissions.size());
+                for(size_t index = 0u; index < report->emissions.size(); index++)
+                {
+                    report->intensities[index] = randomness->RandULong() % intensityLevels;
+                }
             }
 
             grpc::Status status = LogStatus(

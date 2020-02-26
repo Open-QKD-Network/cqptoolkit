@@ -178,6 +178,21 @@ namespace cqp
             return result;
         }
 
+        bool IsDevice(const std::string& path)
+        {
+            bool result = false;
+#if defined (__unix__)
+            struct stat st {};
+            if(stat(path.c_str(), &st) == 0)
+            {
+                result = S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode);
+            }
+#elif defined(WIN32)
+            result = (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DEVICE) != 0;
+#endif
+            return result;
+        }
+
         std::vector<std::string> ListChildren(const std::string& path)
         {
             std::vector<std::string> result;

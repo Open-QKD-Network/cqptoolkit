@@ -90,13 +90,13 @@ namespace cqp
         void DummyTimeTagger::Connect(std::shared_ptr<grpc::ChannelInterface>)
         {
             collectedPhotons.clear();
-            frame = 1;
+            frame = 0;
         }
 
         void DummyTimeTagger::Disconnect()
         {
             collectedPhotons.clear();
-            frame = 1;
+            frame = 0;
         } // StopDetecting
 
     } // namespace sim

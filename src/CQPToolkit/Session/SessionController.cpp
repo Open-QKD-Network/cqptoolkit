@@ -160,6 +160,9 @@ namespace cqp
                     reportServer->AddAdditionalProperties(PropertyNames::to, sessionDetails->initiatoraddress());
                 }
 
+                // Tell our listeners the new settings for the session
+                EmitNewSession(*sessionDetails);
+
                 // we connect here because this is the first we know that the other side is talking to us.
                 for(auto& dependant : remoteComms)
                 {
@@ -193,6 +196,8 @@ namespace cqp
             {
                 dependant->Disconnect();
             }
+            // Tell our listeners that the session has ended
+            EmitSessionHasEnded();
 
             LOGTRACE("Ending");
             return Status();
@@ -209,6 +214,36 @@ namespace cqp
             }/*lock scope*/
             linkStatusCv.notify_all();
         } // SessionEnding
+
+        void SessionController::EmitNewSession(const remote::SessionDetailsFrom& sessionDetails)
+        {
+            for(auto listener : listeners)
+            {
+                try
+                {
+                    listener->NewSessionDetails(sessionDetails);
+                }
+                catch (const std::exception& e)
+                {
+                    LOGERROR(e.what());
+                }
+            }
+        } // EmitNewSession
+
+        void SessionController::EmitSessionHasEnded()
+        {
+            for(auto listener : listeners)
+            {
+                try
+                {
+                    listener->SessionHasEnded();
+                }
+                catch (const std::exception& e)
+                {
+                    LOGERROR(e.what());
+                }
+            }
+        } // EmitSessionHasEnded
 
         grpc::Status SessionController::Connect(URI otherController)
         {

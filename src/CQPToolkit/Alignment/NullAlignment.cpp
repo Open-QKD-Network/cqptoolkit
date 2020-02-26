@@ -45,6 +45,14 @@ namespace cqp
                 std::unique_ptr<QubitList> results{new QubitList()};
                 *results = report->emissions;
                 receivedData.push(move(results));
+
+                unique_ptr<IntensityList> intList;
+                if(!report->intensities.empty())
+                {
+                    intList = make_unique<IntensityList>(report->intensities.begin(), report->intensities.end());
+                }
+
+                receivedIntensities.push(move(intList));
             }
             threadConditional.notify_one();
         }
@@ -57,6 +65,11 @@ namespace cqp
             {
                 receivedData.pop();
             }
+            while(!receivedIntensities.empty())
+            {
+                receivedIntensities.pop();
+            }
+
             Start();
         }
 
@@ -69,6 +82,10 @@ namespace cqp
             {
                 receivedData.pop();
             }
+            while(!receivedIntensities.empty())
+            {
+                receivedIntensities.pop();
+            }
         }
 
         void NullAlignment::DoWork()
@@ -77,6 +94,7 @@ namespace cqp
             while(!ShouldStop())
             {
                 std::unique_ptr<QubitList> report;
+                std::unique_ptr<IntensityList> intList;
 
                 /*lock scope*/
                 {
@@ -91,14 +109,16 @@ namespace cqp
                     if(dataReady)
                     {
                         report = move(receivedData.front());
+                        intList = move(receivedIntensities.front());
                         receivedData.pop();
+                        receivedIntensities.pop();
                     }
                 } /*lock scope*/
 
                 if(report && !report->empty())
                 {
                     LOGTRACE("Sending report "+ std::to_string(seq));
-                    Emit(&IAlignmentCallback::OnAligned, seq++, 0.0, move(report));
+                    Emit(&IAlignmentCallback::OnAligned, seq++, 0.0, move(report), move(intList));
                 }
             } // while keepGoing
         }
