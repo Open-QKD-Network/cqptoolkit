@@ -1,6 +1,6 @@
 /*!
 * @file
-* @brief SiftReceiver
+* @brief BB84
 *
 * @copyright Copyright (C) University of Bristol 2017
 *    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -10,105 +10,283 @@
 * @author Richard Collins <richard.collins@bristol.ac.uk>
 */
 #include "Receiver.h"
-#include <climits>
-#include "Stats.h"
+#include "CQPToolkit/Util/GrpcLogger.h"
 
 namespace cqp
 {
     namespace sift
     {
 
-        Receiver::Receiver() :
-            SiftBase::SiftBase(statesMutex, statesCv)
+        Receiver::Receiver(unsigned int framesBeforeVerify) :
+            WorkerThread (),
+            SiftBase (statesMutex, statesCv),
+            minFramesBeforeVerify(framesBeforeVerify)
         {
-
         }
 
-        grpc::Status Receiver::VerifyBases(grpc::ServerContext*, const remote::BasisBySiftFrame* request, remote::AnswersByFrame* response)
+        void Receiver::Connect(std::shared_ptr<grpc::ChannelInterface> channel)
         {
-            LOGTRACE("");
-            using std::chrono::high_resolution_clock;
+            {
+                //lock scope
+                std::lock_guard<std::mutex>  lock(statesMutex);
+                collectedStates.clear();
+                siftedSequence = 0;
+            }// lock scope
+
+            verifier = remote::ISift::NewStub(channel);
+
+            if(verifier == nullptr)
+            {
+                LOGERROR("Failed to get stub");
+            }
+            else
+            {
+                Start();
+            }
+        }
+
+        void Receiver::Disconnect()
+        {
+            {
+                //lock scope
+                std::lock_guard<std::mutex>  lock(statesMutex);
+                collectedStates.clear();
+                siftedSequence = 0;
+            }// lock scope
+
+            Stop(true);
+            verifier = nullptr;
+        }
+
+        void Receiver::OnPhotonReport(std::unique_ptr<ProtocolDetectionReport> report)
+        {
             using namespace std;
-            using google::protobuf::RepeatedField;
-            using grpc::Status;
+            LOGTRACE("Received aligned qubits");
 
-            Status result = grpc::Status(grpc::StatusCode::ABORTED, "Sift: No data available");
-            QubitsByFrame statesToWorkOn;
-
-            if(!request->basis().empty())
+            // Lock scope
             {
-                bool dataReady = false;
-                // wait for incoming data
-                /*lock scope*/
+                std::lock_guard<std::mutex>  lock(statesMutex);
+
+                if(collectedStates.find(report->frame) == collectedStates.end())
                 {
-                    unique_lock<mutex> lock(statesMutex);
-                    dataReady = statesCv.wait_for(lock, receiveTimeout, [&]()
-                    {
-                        bool allFound = true;
-                        for(auto requested : request->basis())
-                        {
-                            if(collectedStates.find(requested.first) == collectedStates.end())
-                            {
-                                allFound = false;
-                                break; // for
-                            }
-                        }
-                        return allFound;
-                    });
-
-                    if(dataReady)
-                    {
-                        for(auto requested : request->basis())
-                        {
-                            statesToWorkOn.emplace(requested.first, move(collectedStates.find(requested.first)->second));
-                        }
-
-                        // erase the items we're working on
-                        for(auto requested : request->basis())
-                        {
-                            collectedStates.erase(requested.first);
-                        }
-                    } // if dataReady
-                }/*lock scope*/
-            } // if list !empty
-
-            for(auto& stateList : statesToWorkOn)
-            {
-                high_resolution_clock::time_point timerStart = high_resolution_clock::now();
-                result = grpc::Status::OK;
-
-                auto theirList = request->basis().find(stateList.first);
-                if(static_cast<uint32_t>(theirList->second.basis_size()) == stateList.second->size())
-                {
-                    // a lias for the reply list for this frame number
-                    RepeatedField<bool>* myAnswers = (*response->mutable_answers())[theirList->first].mutable_answers();
-                    myAnswers->Resize(theirList->second.basis().size(), false);
-
-                    // for each basis, compare to our basis, putting the answer in myAnswers
-                    std::transform(theirList->second.basis().begin(), theirList->second.basis().end(),
-                                   stateList.second->begin(),
-                                   myAnswers->begin(),
-                                   [](auto left, auto right)
-                    {
-                        return Basis(left) == QubitHelper::Base(right);
-                    });
-
-                } // if sizes match
+                    collectedStates[report->frame] = move(report);
+                } // if
                 else
                 {
-                    LOGERROR("Length mismatch in basis listSift Sequence ID=" + to_string(stateList.first));
-                    result = Status(grpc::StatusCode::OUT_OF_RANGE, "Sift: Length mismatch in basis list", "Sequence ID=" + to_string(stateList.first));
-                }
+                    LOGERROR("Duplicate alignment sequence ID");
+                } // if else
+            } // Lock scope
 
-                stats.comparisonTime.Update(high_resolution_clock::now() - timerStart);
+            statesCv.notify_all();
+        }
 
-            } // for statesToWorkOn
+        Receiver::~Receiver()
+        {
+            Disconnect();
+        }
 
-            // publish the results on our side
-            PublishStates(statesToWorkOn.begin(), statesToWorkOn.end(), *response);
+        void Receiver::DoWork()
+        {
+            using namespace std;
 
+            SequenceNumber firstSeq = 0;
+            bool result = true;
+
+            while(!ShouldStop())
+            {
+                StatesList statesToWorkOn;
+                IntensitiesByFrame intensitiesToWorkOn;
+                remote::BasisBySiftFrame basis;
+                remote::AnswersByFrame answers;
+
+                /*lock scope*/
+                {
+                    std::unique_lock<std::mutex>  lock(statesMutex);
+                    LOGTRACE("Waiting...");
+                    // Wait for data to be available
+                    result = statesCv.wait_for(lock, threadTimeout, bind(&Receiver::ValidateIncomming, this, firstSeq));
+
+                    LOGTRACE("Trigggered");
+                    if(result && !collectedStates.empty())
+                    {
+                        auto it = collectedStates.find(firstSeq);
+
+                        do
+                        {
+                            statesToWorkOn[it->first] = move(it->second);;
+                            // remove it from the list
+                            collectedStates.erase(it);
+                            // look for the next item in the list
+                            firstSeq++;
+                            it = collectedStates.find(firstSeq);
+                        }
+                        while(it != collectedStates.end()); // stop when we reach the end or there's a gap in the data
+
+                    } // if result
+
+                }/*lock scope*/
+                // unlock to allow more to be added
+
+                // result will be false if it timed out
+                if(result)
+                {
+                    auto it = statesToWorkOn.begin();
+                    while(it != statesToWorkOn.end())
+                    {
+                        // extract the basis from the qubits
+                        auto& currentList = (*basis.mutable_basis())[it->first];
+
+                        for(auto& detection : it->second->detections)
+                        {
+                            // convert to basis value and add to the list
+                            currentList.add_basis(remote::Basis::Type((QubitHelper::Base(detection.value))));
+                        } // for
+
+                        ++it;
+                    } // while(it != end)
+
+                    // send the bases to alice
+                    if(verifier)
+                    {
+                        grpc::ClientContext ctx;
+                        result = LogStatus(
+                                     verifier->VerifyBases(&ctx, basis, &answers)).ok();
+
+                        if(result)
+                        {
+                            // Process the results
+                            PublishStates(statesToWorkOn.begin(), statesToWorkOn.end(), answers);
+                        }
+
+                    } // if
+                    else
+                    {
+                        LOGERROR("Sift: No verifier");
+                    }
+                } // if(result)
+            } // while(!ShouldStop())
+
+            LOGTRACE("Transmitter DoWork Leaving");
+        } // DoWork
+
+        bool Receiver::ValidateIncomming(SequenceNumber firstSeq) const
+        {
+            bool result = false;
+            try
+            {
+                if(minFramesBeforeVerify > 1 && collectedStates.size() > 1)
+                {
+                    auto it = collectedStates.begin();
+
+                    if(it->first == firstSeq)
+                    {
+                        SequenceNumber prevSeq = it->first;
+                        // skip the first element
+                        ++it;
+                        SequenceNumber numCollected = 1;
+                        while(it != collectedStates.end())
+                        {
+                            // verify that the sequence is contiguous
+                            if(it->first == prevSeq + 1)
+                            {
+                                prevSeq = it->first;
+                                numCollected++;
+                                ++it;
+                                // check if we have enough
+                                if(numCollected >= minFramesBeforeVerify)
+                                {
+                                    result = true;
+                                    break;
+                                } // if
+                            } // if
+                            else
+                            {
+                                // stop walking through the data, there's a hole
+                                break;
+                            } // else
+                        } // while(it != collectedStates.end())
+                    } // if firstSeq ready
+                    else
+                    {
+                        LOGTRACE("Waiting for first seq num: " + std::to_string(firstSeq));
+                    }
+                } // if
+                else if(minFramesBeforeVerify == 1 && !collectedStates.empty())
+                {
+                    LOGTRACE("FirstSeq=" + std::to_string(firstSeq) + " collected first = " + std::to_string(collectedStates.begin()->first));
+                    auto it = collectedStates.begin();
+                    do
+                    {
+                        result = it->first == firstSeq;
+                        it++;
+                    }
+                    while(!result && it != collectedStates.end());
+                } // else if
+
+            }
+            catch(const std::exception& e)
+            {
+                LOGERROR(e.what());
+                result = false;
+            }
             return result;
-        } // VerifyBases
+        } // ValidateIncomming
+
+        void Receiver::PublishStates(StatesList::const_iterator start, StatesList::const_iterator end,
+                                     const remote::AnswersByFrame& answers)
+        {
+            using std::chrono::high_resolution_clock;
+            high_resolution_clock::time_point timerStart = high_resolution_clock::now();
+
+            std::unique_ptr<JaggedDataBlock> siftedData(new JaggedDataBlock());
+            JaggedDataBlock::value_type value = 0;
+            uint_least8_t offset = 0;
+
+            for(auto listIt = start; listIt != end; listIt++)
+            {
+                // grow the storage enough to fit the next set of data
+                siftedData->reserve(siftedData->size() + listIt->second->detections.size() / bitsPerValue);
+
+                auto answersIt = answers.answers().find(listIt->first);
+                if(answersIt != answers.answers().end())
+                {
+                    for(const auto& qubit : listIt->second->detections)
+                    {
+                        PackQubit(qubit.value, qubit.time.count(), answersIt->second,
+                                  *siftedData, offset, value);
+                    }// for qubits
+                }
+                else
+                {
+                    LOGERROR("No answers for states.");
+                }
+            }
+
+            if(offset != 0)
+            {
+                // There weren't enough bits to completely fill the last word,
+                // Add the remaining, the mask will show which bits are valid
+                siftedData->push_back(value);
+                siftedData->bitsInLastByte = offset;
+            } // if(offset != 0)
+
+            if(siftedData->empty())
+            {
+                LOGWARN("Empty sifted data.");
+            }
+
+            const auto bytesProduced = siftedData->size();
+
+            double securityParameter = 0.0; // TODO
+            // publish the results on our side
+            Emit(&ISiftedCallback::OnSifted, siftedSequence, securityParameter, move(siftedData));
+
+            siftedSequence++;
+
+            stats.publishTime.Update(high_resolution_clock::now() - timerStart);
+            stats.bytesProduced.Update(bytesProduced);
+        }
+
 
     } // namespace Sift
 } // namespace cqp

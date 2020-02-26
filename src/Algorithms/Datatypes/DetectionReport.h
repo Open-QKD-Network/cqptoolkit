@@ -76,8 +76,10 @@ namespace cqp
         std::chrono::high_resolution_clock::time_point epoc;
         /// the time between photon emissions
         PicoSeconds period {};
-        /// The detection report
+        /// The transmitter report
         QubitList emissions;
+        /// The intensity levels
+        IntensityList intensities;
     };
 
     /// A list of ProtocolDetectionReports

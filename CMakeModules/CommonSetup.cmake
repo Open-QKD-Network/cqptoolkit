@@ -293,8 +293,8 @@ macro(CQP_LIBRARY_PROJECT)
 
     # specify the include folders - this will help with dependecies later on.
     target_include_directories(${PROJECT_NAME}
-        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-        PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+        PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+        PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
         PUBLIC $<INSTALL_INTERFACE:include>)
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -325,18 +325,22 @@ macro(CQP_LIBRARY_PROJECT)
         LIST(APPEND BUILD_TYPES "Static")
     endif(BUILD_STATIC)
 
+    LIST(APPEND _exported_projects "${PROJECT_NAME}")
+    
     foreach(_build_type ${BUILD_TYPES})
         STRING(TOUPPER ${_build_type} _build_type_upper)
         # This tells the builder to create a library (.lib/.a/etc)
         SET(PROJECT_NAME_${_build_type_upper} ${PROJECT_NAME}_${_build_type})
 
+        LIST(APPEND _exported_projects ${PROJECT_NAME}_${_build_type})
         # We're making two, one dynamic (shared), one static
         # Use the previously compiled object library for the code
         add_library (${PROJECT_NAME}_${_build_type} ${_build_type_upper} $<TARGET_OBJECTS:${PROJECT_NAME}> ${${PROJECT_NAME}_OBJS})
         # specify the include folders - this will help with dependecies later on.
         target_include_directories(${PROJECT_NAME}_${_build_type}
-            #PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-            #PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
+            PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
             PUBLIC $<INSTALL_INTERFACE:include>)
 
         SET(_libFileName "${PREFIX}${PROJECT_NAME}${LIBSUFFIX}")
@@ -349,9 +353,6 @@ macro(CQP_LIBRARY_PROJECT)
         elseif(UNIX)
             target_link_libraries(${PROJECT_NAME}_${_build_type} PRIVATE "pthread" "uuid")
         endif(WIN32)
-
-        # This makes the project importable from the build directory
-        export(TARGETS ${PROJECT_NAME}_${_build_type} FILE ${PROJECT_NAME}_${_build_type}Config.cmake)
 
         # Add it to the list of components the user can select
         list(APPEND CPACK_COMPONENTS_ALL ${PROJECT_NAME}_${_build_type})
@@ -371,7 +372,8 @@ macro(CQP_LIBRARY_PROJECT)
 
         # Add this library to the list of things to install
         install(TARGETS ${PROJECT_NAME}_Shared COMPONENT ${CQP_INSTALL_COMPONENT}
-            EXPORT ${PROJECT_NAME}
+            EXPORT ${PROJECT_NAME}_Shared
+            DESTINATION include/${PROJECT_NAME}
             RUNTIME DESTINATION bin COMPONENT ${CQP_INSTALL_COMPONENT}
             ARCHIVE DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}-dev
             LIBRARY DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}
@@ -382,7 +384,7 @@ macro(CQP_LIBRARY_PROJECT)
         # This makes the project importable from the install directory
         # Put config file in per-project dir (name MUST match), can also
         # just go into 'cmake'.
-        #install(EXPORT ${PROJECT_NAME}_Shared DESTINATION lib/${PROJECT_NAME}_Shared  COMPONENT ${PROJECT_NAME})
+        install(EXPORT ${PROJECT_NAME}_Shared DESTINATION lib/${PROJECT_NAME}_Shared  COMPONENT ${PROJECT_NAME})
     endif(BUILD_SHARED)
 
     if(BUILD_STATIC)
@@ -390,7 +392,8 @@ macro(CQP_LIBRARY_PROJECT)
 
         # Add this library to the list of things to install
         install(TARGETS ${PROJECT_NAME}_Static COMPONENT ${CQP_INSTALL_COMPONENT}-dev
-            #EXPORT ${PROJECT_NAME}
+            EXPORT ${PROJECT_NAME}_Static
+            DESTINATION include/${PROJECT_NAME}
             RUNTIME DESTINATION bin COMPONENT ${CQP_INSTALL_COMPONENT}
             ARCHIVE DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}-dev
             LIBRARY DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}
@@ -401,17 +404,25 @@ macro(CQP_LIBRARY_PROJECT)
         # This makes the project importable from the install directory
         # Put config file in per-project dir (name MUST match), can also
         # just go into 'cmake'.
-        #install(EXPORT ${PROJECT_NAME}_Static DESTINATION lib/${PROJECT_NAME}_Static  COMPONENT ${PROJECT_NAME}-dev)
+        install(EXPORT ${PROJECT_NAME}_Static 
+            DESTINATION lib/${PROJECT_NAME}_Static 
+            COMPONENT ${PROJECT_NAME}-dev)
 
     endif(BUILD_STATIC)
 
-    # include the header files in the output structure
-    # TODO: this seems clunky
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMPONENT ${CQP_INSTALL_COMPONENT}-dev
-        DESTINATION include FILES_MATCHING
-        PATTERN "*.h"
-        PATTERN "*.hpp")
+    # Add this library to the list of things to install
+    install(TARGETS ${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+        EXPORT ${PROJECT_NAME}
+        DESTINATION include/${PROJECT_NAME}
+        RUNTIME DESTINATION bin COMPONENT ${CQP_INSTALL_COMPONENT}
+        ARCHIVE DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+        LIBRARY DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}
+        PUBLIC_HEADER DESTINATION include/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+        PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+    )
+
+    # This makes the project importable from the build directory
+    export(TARGETS ${_exported_projects} FILE ${PROJECT_NAME}Config.cmake)
 
     SET(CPACK_DEBIAN_PACKAGE_${CQP_INSTALL_COMPONENT}_SECTION "libs")
     SET(CPACK_DEBIAN_PACKAGE_${CQP_INSTALL_COMPONENT}-dev_SECTION "libs")
@@ -595,9 +606,6 @@ macro(GRPC_PROJECT)
     set_target_properties(${PROJECT_NAME}_Shared PROPERTIES CXX_VISIBILITY_PRESET default)
 
     add_dependencies(${PROJECT_NAME} gRPC::grpc++ protobuf::libprotobuf)
-    target_include_directories(${PROJECT_NAME} PUBLIC
-        gRPC::grpc++ protobuf::libprotobuf
-        ${CMAKE_CURRENT_BINARY_DIR})
     # add the interface files for installation
     INSTALL(FILES ${${PROJECT_NAME}_INTERFACES} ${${PROJECT_NAME}_PROTO_HDRS} ${${PROJECT_NAME}_GRPC_HDRS}
         DESTINATION "include/${PROJECT_NAME}/"

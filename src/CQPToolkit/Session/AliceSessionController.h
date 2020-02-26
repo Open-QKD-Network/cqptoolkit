@@ -86,12 +86,23 @@ namespace cqp
             grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
             ///@}
 
+            /**
+             * @brief SetFrameLimit
+             * Set the number of frames after which the session will automatically end.
+             * Setting it to 0 removes the limit and the session needs to be stopped by calling EndSession()
+             * @param limit number of frames to end the session after or 0
+             */
+            void SetFrameLimit(size_t limit) override
+            {
+                frameLimit = limit;
+            }
         protected: // methods
             void DoWork() override;
 
         protected: // members
             /// where photons are made
             std::shared_ptr<IPhotonGenerator> photonSource;
+            std::atomic_size_t frameLimit;
         }; // class AliceSessionController
     } // namespace session
 

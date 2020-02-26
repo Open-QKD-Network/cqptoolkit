@@ -3,7 +3,7 @@
 * @brief %{Cpp:License:ClassName}
 *
 * @copyright Copyright (C) University of Bristol 2018
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 18/4/2018
@@ -11,8 +11,8 @@
 */
 #include "SiftTests.h"
 #include "Algorithms/Logging/ConsoleLogger.h"
-#include "CQPToolkit/Sift/Transmitter.h"
 #include "CQPToolkit/Sift/Receiver.h"
+#include "CQPToolkit/Sift/Verifier.h"
 
 #include <grpc/grpc.h>
 #include <grpc++/server_builder.h>
@@ -32,15 +32,16 @@ namespace cqp
 
         SiftTests::SiftTests()
         {
-
+            ConsoleLogger::Enable();
+            DefaultLogger().SetOutputLevel(LogLevel::Debug);
         }
 
-        TEST_F(SiftTests, Sifting)
+        TEST_P(SiftTests, Sifting)
         {
             using namespace cqp::sift;
             using namespace std;
 
-            Receiver reciever;
+            Verifier reciever;
 
             // Setup server
             using namespace grpc;
@@ -61,6 +62,35 @@ namespace cqp
                 3, 3, 2, 5, 5, 5, 2, 5, 1, 3,
                 2, 2, 2, 3, 2, 2, 4, 1, 2, 3
             };
+
+            const std::set<Intensity> discardIntensities = {0};
+            std::unique_ptr<IntensityList> intensities;
+            const bool useIntensities = GetParam();
+            size_t numberDiscarded = 0;
+
+            if(useIntensities)
+            {
+                LOGINFO("Testing with multiple intensities");
+                intensities = make_unique<IntensityList>();
+                *intensities =
+                {
+                    0,  1,  2,  2,  3,  2,  2,  0,  0,  1,
+                    3,  1,  1,  2,  3,  3,  2,  0,  0,  0,
+                    0,  0,  2,  2,  2,  3,  1,  0,  1,  1,
+                    3,  0,  0,  3,  0,  1,  0,  1,  1,  1,
+                    1,  3,  1,  3,  1,  2,  2,  1,  1,  2,
+                    1,  3,  0,  2,  1,  2,  3,  2,  3,  2,
+                    1,  2,  0,  3,  3,  3,  3,  0,  0,  0,
+                    3,  1,  1,  1,  3,  2,  0,  1,  2,  0,
+                    2,  1,  2,  0,  2,  1,  1,  0,  0,  0,
+                    0,  3,  2,  0,  1,  2,  1,  2,  2,  2
+                };
+                numberDiscarded = std::count_if(intensities->begin(), intensities->end(), [&](auto val)
+                {
+                    return std::find(discardIntensities.begin(), discardIntensities.end(), val) != discardIntensities.end();
+                });
+            }
+
 
             // Results
             JaggedDataBlock aliceResults;
@@ -169,17 +199,37 @@ namespace cqp
             std::shared_ptr<Channel> clientChannel = grpc::CreateChannel("localhost:" + std::to_string(listenPort), grpc::InsecureChannelCredentials());
             ASSERT_NE(clientChannel, nullptr);
 
-            Transmitter transitter;
+            Receiver transitter;
             transitter.Connect(clientChannel);
 
+            // craete copies of the data to move on
+            auto emitterReport = make_unique<EmitterReport>();
+            emitterReport->emissions = data;
+
+            if(useIntensities)
+            {
+                // discard all qubits with intensity of 0
+                reciever.SetDiscardedIntensities(discardIntensities);
+                transitter.SetDiscardedIntensities(discardIntensities);
+                emitterReport->intensities = *intensities;
+            }
             // add callbacks
             reciever.Attach(&aliceCallback);
             transitter.Attach(&bobCallback);
 
-            reciever.OnAligned(seq, 0.0, std::unique_ptr<QubitList>(new QubitList(touched)));
-            transitter.OnAligned(seq, 0.0, std::unique_ptr<QubitList>(new QubitList(data)));
-            seq++;
+            auto photonReport = make_unique<ProtocolDetectionReport>();
+            photonReport->detections.resize(touched.size());
+            for(size_t index = 0; index < data.size(); index++)
+            {
+                photonReport->detections[index] =
+                {
+                    PicoSeconds(index), touched[index]
+                };
+            }
 
+            reciever.OnEmitterReport(move(emitterReport));
+            transitter.OnPhotonReport(move(photonReport));
+            seq++;
 
             bool gotLock = false;
             {
@@ -205,7 +255,12 @@ namespace cqp
                     cout << setw(sizeof(byte) * 2) << setfill('0') << uppercase << hex << +byte;
                 }
                 cout << endl;
-                ASSERT_EQ(aliceResults.size(), numGoodBytes) << "Wrong number of bytes returned";
+                ASSERT_NE(aliceResults, data) << "Test invalid. No errors removed.";
+                if(!useIntensities)
+                {
+                    // using intensities discards more but those bits may have been discarded by the sifting process anyway.
+                    ASSERT_EQ(aliceResults.size(), numGoodBytes) << "Wrong number of bytes returned";
+                }
                 ASSERT_EQ(aliceResults, bobResults) << "Results do not match";
             }
             else
@@ -213,7 +268,6 @@ namespace cqp
                 FAIL() << "No data received before timeout";
             }
         }
-
 
     } // namespace tests
 } // namespace cqp

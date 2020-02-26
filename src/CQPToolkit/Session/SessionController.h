@@ -12,12 +12,14 @@
 #pragma once
 #include "QKDInterfaces/ISession.grpc.pb.h"
 #include "CQPToolkit/Interfaces/ISessionController.h"
+#include "CQPToolkit/Interfaces/ISessionCallback.h"
 #include "Algorithms/Util/Provider.h"
 #include "CQPToolkit/cqptoolkit_export.h"
 #include "CQPToolkit/Interfaces/IRemoteComms.h"
 #include <condition_variable>
 #include "Algorithms/Util/Strings.h"
 #include <grpcpp/security/credentials.h>
+#include "Algorithms/Util/Event.h"
 
 namespace cqp
 {
@@ -31,13 +33,15 @@ namespace cqp
 
     namespace session
     {
+        using SessionCallbackEvent = EventBase<ISessionCallback>;
 
         /**
          * @brief The SessionController class
          */
         class CQPTOOLKIT_EXPORT SessionController :
             public remote::ISession::Service,
-            public virtual ISessionController
+            public virtual ISessionController,
+            public virtual SessionCallbackEvent
         {
         public:
             /// A list of connectable objects
@@ -90,6 +94,17 @@ namespace cqp
             grpc::Status SessionEnding(grpc::ServerContext* context, const google::protobuf::Empty*, google::protobuf::Empty*) override;
             ///@}
 
+            /**
+             * @brief SetFrameLimit
+             * Set the number of frames after which the session will automatically end.
+             * Setting it to 0 removes the limit and the session needs to be stopped by calling EndSession()
+             * @param limit number of frames to end the session after or 0
+             */
+            virtual void SetFrameLimit(size_t limit)
+            {
+                // has no effect on this side
+            }
+
             /// names for key-pair properties
             struct PropertyNames
             {
@@ -109,6 +124,14 @@ namespace cqp
              * @param errorCode
              */
             void UpdateStatus(remote::LinkStatus::State newState, int errorCode = grpc::StatusCode::OK);
+
+            /// @{
+            /// @name ISessionCallbackEvent
+
+            void EmitNewSession(const remote::SessionDetailsFrom& sessionDetails);
+            void EmitSessionHasEnded();
+
+            /// @}
 
         protected: // members
 

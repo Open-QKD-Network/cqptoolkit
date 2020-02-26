@@ -96,4 +96,10 @@ namespace cqp
     /// A list of qubits indexed by slot
     using QubitsBySlot = std::unordered_map<SlotID, Qubit>;
 
+    using Intensity = uint8_t;
+    using IntensityList = std::vector<Intensity>;
+
+    /// A dictionary of QubitLists indexed by SequenceNumber
+    using IntensitiesByFrame = std::map<SequenceNumber, std::unique_ptr<IntensityList>>;
+
 }
