@@ -16,8 +16,8 @@ SUDO=sudo
 MAKETHREADS=`expr \`grep -c ^processor /proc/cpuinfo\` / 2 + 1`
 MAKE="make -s -j${MAKETHREADS}"
 
-PROTOBUF_VERSION=3.7.1
-GRPC_VERSION=1.20.1
+PROTOBUF_VERSION=3.11.4
+GRPC_VERSION=1.27.3
 
 pushd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SCRIPTDIR=`pwd`
@@ -75,7 +75,7 @@ function buildProtobuf() {
             buildtemp=`mktemp -d`
             pushd ${buildtemp}
 
-            git clone --depth 3 --branch v${PROTOBUF_VERSION} https://github.com/google/protobuf.git && \
+            git clone --depth 3 --branch v${PROTOBUF_VERSION} https://github.com/protocolbuffers/protobuf.git && \
             pushd protobuf && \
             ./autogen.sh && \
             ./configure && \
