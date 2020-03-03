@@ -297,8 +297,16 @@ macro(CQP_LIBRARY_PROJECT)
         PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
         PUBLIC $<INSTALL_INTERFACE:include>)
 
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        PUBLIC_HEADER "${${PROJECT_NAME}_HEADERS}")
+    # DANGER: This doesn't maintain heirarcy
+    #set_target_properties(${PROJECT_NAME} PROPERTIES
+    #    PUBLIC_HEADER "${${PROJECT_NAME}_HEADERS}")
+
+    foreach(HDR IN LISTS ${PROJECT_NAME}_HEADERS)
+        get_filename_component(BASE_DIR "${HDR}" DIRECTORY)
+        install(FILES "${HDR}"
+            DESTINATION "include/${PROJECT_NAME}/${BASE_DIR}"
+            COMPONENT ${CQP_INSTALL_COMPONENT}-dev)
+    endforeach()
 
     # for dependencies with other projects
     include_directories("${CMAKE_BINARY_DIR}/src")
@@ -372,7 +380,7 @@ macro(CQP_LIBRARY_PROJECT)
 
         # Add this library to the list of things to install
         install(TARGETS ${PROJECT_NAME}_Shared COMPONENT ${CQP_INSTALL_COMPONENT}
-            EXPORT ${PROJECT_NAME}_Shared
+            EXPORT ${PROJECT_NAME}
             DESTINATION include/${PROJECT_NAME}
             RUNTIME DESTINATION bin COMPONENT ${CQP_INSTALL_COMPONENT}
             ARCHIVE DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}-dev
@@ -381,10 +389,6 @@ macro(CQP_LIBRARY_PROJECT)
             PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}$-dev
         )
 
-        # This makes the project importable from the install directory
-        # Put config file in per-project dir (name MUST match), can also
-        # just go into 'cmake'.
-        install(EXPORT ${PROJECT_NAME}_Shared DESTINATION lib/${PROJECT_NAME}_Shared  COMPONENT ${PROJECT_NAME})
     endif(BUILD_SHARED)
 
     if(BUILD_STATIC)
@@ -392,7 +396,7 @@ macro(CQP_LIBRARY_PROJECT)
 
         # Add this library to the list of things to install
         install(TARGETS ${PROJECT_NAME}_Static COMPONENT ${CQP_INSTALL_COMPONENT}-dev
-            EXPORT ${PROJECT_NAME}_Static
+            EXPORT ${PROJECT_NAME}
             DESTINATION include/${PROJECT_NAME}
             RUNTIME DESTINATION bin COMPONENT ${CQP_INSTALL_COMPONENT}
             ARCHIVE DESTINATION lib COMPONENT ${CQP_INSTALL_COMPONENT}-dev
@@ -400,13 +404,6 @@ macro(CQP_LIBRARY_PROJECT)
             PUBLIC_HEADER DESTINATION include/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
             PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
         )
-
-        # This makes the project importable from the install directory
-        # Put config file in per-project dir (name MUST match), can also
-        # just go into 'cmake'.
-        install(EXPORT ${PROJECT_NAME}_Static 
-            DESTINATION lib/${PROJECT_NAME}_Static 
-            COMPONENT ${PROJECT_NAME}-dev)
 
     endif(BUILD_STATIC)
 
@@ -421,8 +418,17 @@ macro(CQP_LIBRARY_PROJECT)
         PRIVATE_HEADER DESTINATION include/private/${PROJECT_NAME} COMPONENT ${CQP_INSTALL_COMPONENT}-dev
     )
 
+    # This makes the project importable from the install directory
+    # Put config file in per-project dir (name MUST match), can also
+    # just go into 'cmake'.
+    install(EXPORT ${PROJECT_NAME}
+        FILE ${PROJECT_NAME}Config.cmake
+        DESTINATION lib/cmake/${CMAKE_PROJECT_NAME}
+        COMPONENT ${CQP_INSTALL_COMPONENT}-dev
+    )
+
     # This makes the project importable from the build directory
-    export(TARGETS ${_exported_projects} FILE ${PROJECT_NAME}Config.cmake)
+    export(TARGETS ${_exported_projects} FILE "${CMAKE_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
 
     SET(CPACK_DEBIAN_PACKAGE_${CQP_INSTALL_COMPONENT}_SECTION "libs")
     SET(CPACK_DEBIAN_PACKAGE_${CQP_INSTALL_COMPONENT}-dev_SECTION "libs")
@@ -591,6 +597,16 @@ macro(ADD_GRPC_FILES)
             ${${PROJECT_NAME}_INTERFACES}
             ${${PROJECT_NAME}_PROTO_SRCS}
             ${${PROJECT_NAME}_GRPC_SRCS})
+
+        SET(${PROJECT_NAME}_PROTO_HDRS "${${PROJECT_NAME}_PROTO_SRCS}")
+        # extract the header files for later install
+        LIST(FILTER ${PROJECT_NAME}_PROTO_SRCS EXCLUDE REGEX ".+\.(h|hpp)$")
+        LIST(FILTER ${PROJECT_NAME}_PROTO_HDRS INCLUDE REGEX ".+\.(h|hpp)$")
+
+        SET(${PROJECT_NAME}_GRPC_HDRS "${${PROJECT_NAME}_GRPC_SRCS}")
+        # extract the header files for later install
+        LIST(FILTER ${PROJECT_NAME}_GRPC_SRCS EXCLUDE REGEX ".+\.(h|hpp)$")
+        LIST(FILTER ${PROJECT_NAME}_GRPC_HDRS INCLUDE REGEX ".+\.(h|hpp)$")
     endif()
 endmacro(ADD_GRPC_FILES)
 
