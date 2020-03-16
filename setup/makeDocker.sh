@@ -6,7 +6,7 @@
 # Author Richard Collins <richard.collins@bristol.ac.uk>
 # 
 
-VERSION=3.7.9
+VERSION=3.7.10
 PUSH=false
 RUNTIME=false
 SERV=registry.gitlab.com
@@ -14,7 +14,7 @@ REPO=qcomms/cqptoolkit
 NAME=buildenv
 NAME_CUST=false
 OPTS=
-SUDO=sudo
+SUDO=
 GETFILES=false
 
 if [ "$UID" == "0" ]; then
