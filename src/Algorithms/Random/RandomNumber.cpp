@@ -3,7 +3,7 @@
 * @brief CQP Toolkit - Random Number Generator
 *
 * @copyright Copyright (C) University of Bristol 2016
-*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. 
+*    This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 *    If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 *    See LICENSE file for details.
 * @date 08 Feb 2016
@@ -33,7 +33,7 @@ namespace cqp
      * This function will return a specific number of random bit from a pre-generated
      * pool of numbers.
      */
-	uint64_t RandomNumber::RandULong()
+    uint64_t RandomNumber::RandULong()
     {
 
         return intDistribution(generator);
@@ -63,7 +63,7 @@ namespace cqp
         dest.reserve(numOfBytes);
         for(size_t i = 0; i < numOfBytes; i++)
         {
-            dest.push_back(qubitDistribution(generator));
+            dest.push_back(static_cast<DataBlock::value_type>(qubitDistribution(generator)));
         }
     }
 }
