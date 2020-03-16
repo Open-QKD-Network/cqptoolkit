@@ -23,7 +23,7 @@ namespace cqp
             // result
             Confidence highest {0.0, 0};
             // the number of times the process will run
-            const size_t totalIterations = to - from + 1;
+            const size_t totalIterations = static_cast<size_t>(to - from + 1);
             // the number of times the process has run
             size_t numProcessed = 0;
 
@@ -77,7 +77,7 @@ namespace cqp
             // result
             Confidence highest {0.0, 0};
             // the number of times the process will run
-            const size_t totalIterations = to - from + 1;
+            const size_t totalIterations = static_cast<size_t>(to - from + 1);
             // the number of times the process has run
             size_t numProcessed = 0;
 
@@ -123,7 +123,7 @@ namespace cqp
 
         double Offsetting::CompareValues(const QubitList& truth, const std::vector<uint64_t>& validSlots,
                                          const QubitList& irregular,
-			int64_t offset)
+                                         int64_t offset)
         {
             double confidence = 0.5;
             size_t basesMatched = 0;
@@ -160,7 +160,7 @@ namespace cqp
 
         double Offsetting::CompareValues(const QubitsBySlot markers, const std::vector<uint64_t>& validSlots,
                                          const QubitList& irregular,
-			int64_t offset)
+                                         int64_t offset)
         {
             using namespace std;
             double confidence = 0.5;

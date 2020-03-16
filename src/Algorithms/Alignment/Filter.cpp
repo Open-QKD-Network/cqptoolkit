@@ -80,11 +80,11 @@ namespace cqp
                         if(result)
                         {
                             // compensate for the shift caused by differencing and convolution
-                            const auto edgeOffset = (distance(convolved.cbegin(), edge) + (filter.size() / 2 - 1)) * stride;
+                            const auto edgeOffset = (static_cast<size_t>(distance(convolved.cbegin(), edge)) + (filter.size() / 2 - 1)) * stride;
                             // store the offsets we've calculated
                             // the convolution process reduces the width of the graph, losing the rightmost edge
-                            edgeRange.first = begin + (edgeOffset - stride + 1);
-                            edgeRange.second = begin + (edgeOffset + stride - 1);
+                            edgeRange.first = begin + static_cast<ssize_t>(edgeOffset - stride + 1);
+                            edgeRange.second = begin + static_cast<ssize_t>(edgeOffset + stride - 1);
                         }
                     }
                 }// else {
