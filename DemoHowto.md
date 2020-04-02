@@ -21,34 +21,32 @@ The pysical setup of this demo consists of:
 - Network switch
 - Optional repeater screans
 
-```plantuml
-@startuml
-    
-    skinparam arrowThickness 4
-    
-    title QR Code Components
-    
-    component "Server Laptop" as srv
-    component "Client Laptop" as client
-    component "Wifi AP" as wifi
-    component "Switch" as sw
-    component "Montor" as mon
-    component "Tablet" as tab
-    
-    srv -u- sw #Blue
-    client - sw #Blue
-    wifi -d- sw #Blue
-    mon - client #Grey
-    tab .r. wifi #Red
-    tab -d- client #Green
-    
-    legend left
-        <font color="blue">Blue: Ethernet</font>
-        <font color=red>Red: Wifi</font>
-        <font color="green">Green: Usb</font>
-    end legend
-@enduml
-```
+  @startuml
+      
+      skinparam arrowThickness 4
+      
+      title QR Code Components
+      
+      component "Server Laptop" as srv
+      component "Client Laptop" as client
+      component "Wifi AP" as wifi
+      component "Switch" as sw
+      component "Montor" as mon
+      component "Tablet" as tab
+      
+      srv -u- sw #Blue
+      client - sw #Blue
+      wifi -d- sw #Blue
+      mon - client #Grey
+      tab .r. wifi #Red
+      tab -d- client #Green
+      
+      legend left
+          <font color="blue">Blue: Ethernet</font>
+          <font color=red>Red: Wifi</font>
+          <font color="green">Green: Usb</font>
+      end legend
+  @enduml
 
 > The pin for the tablet/phones: `1234`
 

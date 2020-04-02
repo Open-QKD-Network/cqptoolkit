@@ -25,7 +25,6 @@ GRPC was chosen as the interface middleware due to it's many supported languages
 
 ### Overview
 
-```plantuml
     @startuml wtClassDefinitons
         title Class definitions
 
@@ -79,9 +78,7 @@ GRPC was chosen as the interface middleware due to it's many supported languages
 
         QKDDevice -[hidden]down- KeyPublisher
     @enduml
-```
 
-```plantuml
     @startuml wtSiteAgentClasses
         title SiteAgent classes
 
@@ -152,7 +149,6 @@ GRPC was chosen as the interface middleware due to it's many supported languages
         QKDDevice *-up-> SessionController
 
     @enduml
-```
 
 ### Devices
 
@@ -160,42 +156,40 @@ GRPC was chosen as the interface middleware due to it's many supported languages
 
 Scenario: There is a driver for your QKD device or you just want to use DummyQKDDriver to get some key. An application can be developed seperatly which uses the IDevice interface.
 
-```plantuml
-@startuml
+    @startuml
 
-    skinparam package {
-        backgroundColor<<CQPToolkit>> DarkKhaki
-    }
+        skinparam package {
+            backgroundColor<<CQPToolkit>> DarkKhaki
+        }
 
 
-    package "HandeldDriver (Alice)" <<CQPToolkit>> {
-        component RemoteQKDDriver as aliceDrv
-        component LEDDriver as aliceDev
-        aliceDrv .up.> aliceDev
-    }
-    interface "IDevice" as aliceDevice
-    aliceDrv -down- aliceDevice
+        package "HandeldDriver (Alice)" <<CQPToolkit>> {
+            component RemoteQKDDriver as aliceDrv
+            component LEDDriver as aliceDev
+            aliceDrv .up.> aliceDev
+        }
+        interface "IDevice" as aliceDevice
+        aliceDrv -down- aliceDevice
 
-    package "FreespaceBobDriver (Bob)" <<CQPToolkit>> {
-        component RemoteQKDDriver as bobDrv
-        component Mk1PhotonDetector as bobDev
-        bobDrv .up.> bobDev
-    }
-    interface "IDevice" as bobDevice
-    bobDrv -down- bobDevice
+        package "FreespaceBobDriver (Bob)" <<CQPToolkit>> {
+            component RemoteQKDDriver as bobDrv
+            component Mk1PhotonDetector as bobDev
+            bobDrv .up.> bobDev
+        }
+        interface "IDevice" as bobDevice
+        bobDrv -down- bobDevice
 
-    package ClientApp1 {
-        component KeyReader as kr1
-    }
-    kr1 .up.>aliceDevice
+        package ClientApp1 {
+            component KeyReader as kr1
+        }
+        kr1 .up.>aliceDevice
 
-    package ClientApp2 {
-        component KeyReader as kr2
-    }
-    kr2 .up.> bobDevice
+        package ClientApp2 {
+            component KeyReader as kr2
+        }
+        kr2 .up.> bobDevice
 
-@enduml
-```
+    @enduml
 
 The two client applications whould use the IDevice interface to connect to their local device driver. One of the applications would then start the session by calling "RunSession" on it's device, passing the address of the other device.
 
@@ -211,7 +205,6 @@ The configuration file also defines the location of the network manager which th
 
 During initialisation, the various classes are registered with the reporting server, this allows internal and external applications to collect data on the performance of the system (see cqp::remote::IReporting). A generic interface was designed which would allow arbitrary data to be published with minimal impact to the system performance. Statistics are reported as a hierarchy, allowing data to be grouped under categories.
 
-```plantuml
     @startuml wtStats
         skinparam linetype ortho
         class Stat<T> {
@@ -249,12 +242,10 @@ During initialisation, the various classes are registered with the reporting ser
         
         ReportingFilter --> "*" remote.StatFilter
     @enduml
-```
 
 The producer of the statistic creates an instance of the `cqp::stat::Stat` class, defining the data type of the values and it's units (a count, time ,percentage, etc) along with any arbitrary key+value pairs.  When a value is to be updated, the producer issues the call `Update()` on the `cqp::stats::Stat` with the relevant new values.
 This this then handed off to a low priority thread which calculates further values, such as minimum, maximum, averages and update times. The final collected data is then published to any listeners using the tool-kits standard `cqp::Event` class. One such listener is the `cqp::stats::ReportServer`.
 
-```plantuml
     @startuml wtReporting
         skinparam linetype ortho
         
@@ -277,7 +268,6 @@ This this then handed off to a low priority thread which calculates further valu
         ReportServer -up-|> IStatCallback
         ReportServer -up-|> remote.IReporting
     @enduml
-```
 
 This provides the external interface `cqp::remote::IReporting` which has client side filtering, allowing each statistics consumer to define which statistics are passed on and limit the update rate. An example of the usage of the statistics capability is provided in the `StatsDump` tool.
 The goal of this infrastructure was to allow the system to react to feedback from any part of the system without coupling classes unnecessarily - changes QBER can influence error correction parameters and/or passed to the network manager to influence topology decision.
@@ -286,7 +276,6 @@ The goal of this infrastructure was to allow the system to react to feedback fro
 
 The tool-kit follows an event-driven architecture to separate concerns and allow parallelisation of tasks. The flexibility has allowed the system to grow as new components have been added. To achieve this the `cqp::Event` class was designed to provide a comprehensive event system. 
 
-```plantuml
     @startuml wtEvent
         skinparam linetype ortho
         interface IEvent<Interface> {
@@ -305,7 +294,6 @@ The tool-kit follows an event-driven architecture to separate concerns and allow
         Event -right-> "*" Interface : listeners
         
     @enduml
-```
 
 Interfaces can inherit `cqp::IEvent` to declare that they provide data which consumers (un)register with by inheriting the callback interface and calling `Add` or `Remove` on the consumer.  Concrete classes then inherit the `cqp::Event` class to implement the registration and publishing methods. New data is published by calling `Emit()` which notifies the listeners. The template code has been designed to allow arbitrary callback signatures.
 
@@ -313,7 +301,6 @@ Interfaces can inherit `cqp::IEvent` to declare that they provide data which con
 
 The devices are managed by the `cqp::DeviceFactory` which uses the device URL to instantiate the correct driver and set-up the device. Device drivers are registered with the factory by supplying a prefix identifier which becomes the scheme portion of the URL and a static method for creating the driver. The factory maintains a list of which devices are in-use so that as devices are brought in and out of use there is no clash of usage.
 
-```plantuml
     @startuml wtDeviceFactory
         skinparam linetype ortho
         class DeviceFactory {
@@ -341,7 +328,6 @@ The devices are managed by the `cqp::DeviceFactory` which uses the device URL to
         DeviceFactory --> "*" IQKDDevice : allDevices
         DeviceFactory --> "*" IQKDDevice : unusedDevices
     @enduml
-```
 
 ### Device drivers
 
@@ -352,7 +338,6 @@ This allows black-box devices such as the IDQ Clavis 2 to be managed the same wa
 
 Session controllers perform the set-up and tear down of devices to establish a key exchange link between two points. They are instructed by the site agents to ether start or stop a session with another session controller. The controllers start their own service port and communicate directly to establish the session, this makes them independent of the site agents. A simplified, more static configuration of devices could be created by simply starting session controllers and calling `StartSession()`. This is what is done by the `QKDSim` tool to exercise the key generation classes without including the higher level site agent and network management classes.
 
-```plantuml
     @startuml wtSession
         skinparam linetype ortho
         namespace remote {
@@ -380,7 +365,6 @@ Session controllers perform the set-up and tear down of devices to establish a k
         SessionController -up-|> remote.ISession
         
     @enduml
-```
 
 The key job of the specialisations of `cqp::SessionController` is the `GetKeyPublisher` call which allows the keys to be passed from an arbitrary class to the `cqp::keygen::KeyStore`. Depending on the complexity level of the driver, this may be the output of the tool-kits own `cqp::privacy::PrivacyAmplify` class in the case of fully managed devices or the result of reading bytes from a socket.
 
@@ -388,7 +372,6 @@ The key job of the specialisations of `cqp::SessionController` is the `GetKeyPub
 
 When a site agent is started with the location of a network manager, it uses the `cqp::remote::INetworkManager` interface to register it's details. These details tell the network manager which devices are available and how they can be connected to the network. When a site is shut-down, it un-register's it's self, allowing the network manager to reconfigure the network.
 
-```plantuml
     @startuml wtNetworkManager
         skinparam linetype ortho
         namespace remote {
@@ -411,9 +394,7 @@ When a site agent is started with the location of a network manager, it uses the
         SiteAgent -up-|> remote.ISiteAgent
         SiteAgent .right.> remote.INetworkManager
     @enduml
-```
 
-```plantuml
     @startuml wtKeyExchange
 
         hide footbox
@@ -481,7 +462,6 @@ When a site agent is started with the location of a network manager, it uses the
         deactivate nm
 
     @enduml
-```
 
 ### Channel credentials
 
@@ -494,7 +474,6 @@ By extending the `cqp::session::SessionController` the `cqp::session::ClavisCont
 
 A `cqp::keygen::KeyStore` receives ready to use key from an `cqp::IKeyPublisher`. The key store is responsible for holding key between two points: A and B. A key store can have a path consisting of more intermediate sites, in which case it will obtain new key using the multi hop protocol. Only one key store ever exists for a given pair of sites at a given site. A key store can be disconnected from a key producing direct link between A and B, if it's path is then set to a complex chain via C, it will use the A to C  and C to B key stores to build new key for A to B.
 
-```plantuml
     @startuml wtKeyStore
         skinparam linetype ortho
         title KeyStore inheritance diagram
@@ -519,8 +498,7 @@ A `cqp::keygen::KeyStore` receives ready to use key from an `cqp::IKeyPublisher`
         KeyStore -up-|> IKeyCallback
         KeyStore -up-|> IKeyStore
     @enduml
-```
-```plantuml
+
     @startuml wtKeyFlow
         skinparam linetype ortho
         title Key flow through the system
@@ -537,7 +515,6 @@ A `cqp::keygen::KeyStore` receives ready to use key from an `cqp::IKeyPublisher`
         KeyStore --> mh : IKeyStore
         mh --> Consumer : remote::IKey
     @enduml
-```
 
 The key stores use a system of key id reservation to avoid issues with delays or race conditions. When a new key is requested, a key is allocated locally, the other site is then requested to `MarkKeyInUse` after which point, the key can only be retrieved by providing it's key id and the client authentication token. If a key is requested which doesn't yet exist, the key is marked a reserved so that when it does arrive it cannot be used by anther request.  f the key does not arrived within a time period, it is assumed to have already been used, in this case an alternative key id is reserved and sent back to the caller. This "no but try this one" approach reduces the likely hood of failure/retry during high load situations. 
 
@@ -550,7 +527,6 @@ The site agent then connects the key publisher, obtained from the session contro
 If the site agent has a device on the right side of a hop, it is also started and the session controller is instructed to connect back to the first, the session controllers can now begin to exchange key while the rest of the chain is established. Any existing links which match the hop specification simply become a no-op and they continue as normal.
 Once the chain is complete a key store for the entire chain is created, if it doesn't exist, by the `cqp::keygen::KeyStoreFactory`
 
-```plantuml
     @startuml wtKeyExchange
 
         hide footbox
@@ -605,7 +581,6 @@ Once the chain is complete a key store for the entire chain is created, if it do
         deactivate sa1
 
     @enduml
-```
 
 ### Multi hop key
 
@@ -615,7 +590,6 @@ There are two main approaches to creating key using intermediate sites. These we
 
 This model establishes a key store which is fed from dedicated links, the keys generated for A to B which would normally go to key store A:B are instead fed to A:C and combined with the keys from B:C.
 
-```plantuml
     @startuml wtMultiHopPush
         title Multi-hop key distribution - Push model
 
@@ -643,14 +617,13 @@ This model establishes a key store which is fed from dedicated links, the keys g
         [-> ksb : GetSharedKey()
 
     @enduml
-```
 
 This requires a lot of domain knowledge to be passed down from the network manager regarding how much key is required and what is the current topology of the network. It assumes that users of the key have some pre-knowledge of the key they're going to need in the future so that it can be built up in advance. Until predictive algorithms or highly integrated clients are developed there is no data available to configure this system in a meaningful way - network traffic doesn't follow such nicely predictive flows, in reality, a client connects and wants key *now*, and they may request it again and again or not request any at all. As such a more reactive approach was implemented to match the nature of current packet based networks.
 
 #### The pull model
 
 This model allows key stores to sit on top of other key stores. When a session is created with a path such as A, B, C
-```plantuml
+
     @startuml wtMultiHopPullKeyStores1
 
         skinparam linetype ortho
@@ -676,11 +649,9 @@ This model allows key stores to sit on top of other key stores. When a session i
         sb_d2 -right- sc_d1
 
     @enduml
-```
 
 key stores are created for each hop in the chain
 
-```plantuml
     @startuml wtMultiHopPullKeyStores2
 
         skinparam linetype ortho
@@ -714,11 +685,9 @@ key stores are created for each hop in the chain
         sb_d2 -right- sc_d1
 
     @enduml
-```
 
 Another key store is created in addition to these so that there is an end-to-end key store:
 
-```plantuml
     @startuml wtMultiHopPullKeyStores3
 
         skinparam linetype ortho
@@ -756,7 +725,6 @@ Another key store is created in addition to these so that there is an end-to-end
         sb_d2 -right- sc_d1
 
     @enduml
-```
 
 The new key store is linked to the existing key stores and the sites along the chain.
 
@@ -764,7 +732,6 @@ When a key is requested between A and C, the key store (assuming all the stored 
 By building links in this way, keys can be derived from multiple links while still maintaining the secrecy of the final key.
 The key can then be issued as normal.
 
-```plantuml
     @startuml wtMultiHopPull
         title Multi-hop key distribution - Pull model
         hide footbox
@@ -858,7 +825,6 @@ The key can then be issued as normal.
         deactivate ksac_a
 
     @enduml
-```
 
 ### QKD post processing interfaces
 
@@ -875,7 +841,6 @@ See [here](https://bitbucket.org/tiebingzhang/tls-psk-server-client-example/src/
 
 > Note: TLS1.3 has different callbacks and looses the identity hint - which is why it's not used in the following
 
-```plantuml
     @startuml
 
         box "Lan A" #LightBlue
@@ -924,7 +889,6 @@ See [here](https://bitbucket.org/tiebingzhang/tls-psk-server-client-example/src/
 
         == TLS Protocol continues ==
     @enduml
-```
 
 [PKCS#11 URIs](https://tools.ietf.org/html/rfc7512)
 Doesn't seem to be any standard way of getting the psk for a service. PSCK11 doesn't really cut it.
