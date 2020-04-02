@@ -21,7 +21,6 @@ The complete chain is controlled by a single session controller.
 
 The two sides need to pass information between each other, this information is specific to the process being performed.
 
-```plantuml
     @startuml PostProcessingPipelineClasses
         title Post Processing Pipeline Classes
         set namespaceSeparator ::
@@ -61,9 +60,7 @@ The two sides need to pass information between each other, this information is s
         PrivacyAmplificaiton -d-> remote::IPriv
         ErrorCorrection -[hidden]r-> PrivacyAmplificaiton
     @enduml
-```
 
-```plantuml
     @startuml PostProcessingPipeline
         title Post Processing Pipeline
         hide footbox
@@ -110,7 +107,6 @@ The two sides need to pass information between each other, this information is s
         deactivate ks
 
     @enduml
-```
 
 ## Communication between Alice and Bob
 
@@ -120,7 +116,6 @@ Each stage uses an interface to abstract the calls needed for communication, thi
 Alignment data is passed to the other side using the cqp::remote::IAlignement interface.
 Results are published using the IAlignCB interface
 
-```plantuml
     @startuml AlignmentProcessing
         hide footbox
         title Alignment Processing
@@ -149,13 +144,12 @@ Results are published using the IAlignCB interface
         end loop
         deactivate Bob
     @enduml
-```
+
 
 ### Sifting inter-communication
 Sifting data is passed to the other side using the ISift interface.
 Results are published using the ISiftCallback interface
 
-```plantuml
     @startuml Sifting
         hide footbox
         title Sifting
@@ -180,13 +174,12 @@ Results are published using the ISiftCallback interface
 
         deactivate Bob
     @enduml
-```
+
 
 ### Error correction inter-communication
 Error correction data is passed to the other side using the IErrorCorrect interface.
 Results are published using the IErrorCorrectCB interface.
 
-```plantuml
     @startuml ErrorCorrection
         hide footbox
         title Error Correction
@@ -227,13 +220,12 @@ Results are published using the IErrorCorrectCB interface.
         deactivate Bob
         deactivate Alice
     @enduml
-```
+
 
 ### Privacy Amplification inter-communication
 Privacy amplification data is passed to the other side using the IPrivacyAmplify interface.
 The results are published using the IKeyCallback interface.
 
-```plantuml
     @startuml PrivacyCorrection
         hide footbox
         title Privacy Correction
@@ -259,4 +251,3 @@ The results are published using the IKeyCallback interface.
 
         deactivate Bob
     @enduml
-```

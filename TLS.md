@@ -4,7 +4,6 @@
 
 The TLS standard has the ability to use QKD, but it requires some tweaks to the applications and how they negotiate the link.
 
-```plantuml
 @startuml
 
     box "Lan A" #LightBlue
@@ -46,7 +45,6 @@ The TLS standard has the ability to use QKD, but it requires some tweaks to the 
     == Application Data ==
 
 @enduml
-```
 
 The toolkit can store generated key into a HSM or similar device using the PKCS#11 standard. The `cqp::keygen::HSMStore` class uses the `cqp::p11` classes to access and compatible device such as smart cards, etc. It stores the keys with the label set to the address of the other keystore, this is passed to the other side when it is used. This means that when the key is requested it can be extracted at the other end from their local keystore.
 
