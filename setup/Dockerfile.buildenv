@@ -7,7 +7,7 @@
 FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update -qy && apt upgrade -qy
+RUN apt update -qy && apt upgrade -qy && apt update -q
 
 ARG opts=""
 ARG version="3.5"
