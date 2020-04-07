@@ -4,10 +4,10 @@
 #    See LICENSE file for details.
 # Author Richard Collins
 # 
-FROM ubuntu:bionic
+FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update -qy && apt upgrade -qy
+RUN apt update -qy && apt upgrade -qy && apt update -q
 
 ARG opts=""
 ARG version="3.5"

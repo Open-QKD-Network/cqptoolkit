@@ -99,7 +99,7 @@ namespace cqp
             {
                 // virtually roll the graph so that the peak is in the centre, add one so the first bin number is one,
                 // otherwise the fist bin wont count (*0)
-                const auto shiftedBin = ((static_cast<int_fast16_t>(driftBins + index) + indexShift) % driftBins) + 1;
+                const auto shiftedBin = (static_cast<uint_fast16_t>(static_cast<int_fast16_t>(driftBins + index) + indexShift) % driftBins) + 1;
                 // weighted agverage based on the counts by multiplying the bin count (height of the peak) by
                 // the bin number (~time) to find the mean of the peak - we want a fractional number not
                 // just a bin.
@@ -124,7 +124,7 @@ namespace cqp
             using namespace std;
             using namespace std::chrono;
 
-            const int_fast16_t binsCentre = driftBins / 2;
+            const uint_fast16_t binsCentre = driftBins / 2;
 
             ChannelHistograms channelHistograms;
             ChannelOffsets channelCentres;
@@ -140,7 +140,7 @@ namespace cqp
                 const auto maxIt = std::max_element(hist.cbegin(), hist.cend());
 
                 double average = 0.0;
-                const int_fast16_t peakOffset = distance(hist.cbegin(), maxIt);
+                const uint_fast16_t peakOffset = static_cast<uint_fast16_t>(distance(hist.cbegin(), maxIt));
                 uint64_t totalWeights = 0;
 
                 for(auto index = 0u; index < driftBins; index++)

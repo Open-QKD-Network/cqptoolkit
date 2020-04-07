@@ -109,7 +109,6 @@ Once built the files, by default, are at the same level as the project folder ca
 
 ## Exploring the Library
 
-```plantuml
     @startuml
         title Applicaiton Overview
 
@@ -140,7 +139,6 @@ Once built the files, by default, are at the same level as the project folder ca
         sim -[hidden]down- stats
     }
     @enduml
-```
 
 Below is a flow chart to help find the area relevant to you as the project covers many different aspects of QKD and key management - contributors are welcome to drive this project to be more specialised.
 QKD requires some form of [non-cloning](https://en.wikipedia.org/wiki/No-cloning_theorem) communication, usually by using single photons over a fibre optic cable. They can operate point-to-point or as one-to-many but they inherently have a physical location (where the fibre terminates) - they cannot be virtualised! The point at which the photon is transmitted or detected is the boundary of the secure system - almost like the [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)) to a network. Once the in-divisible photons have been turned into a string of bits to form a [symmetric key](https://en.wikipedia.org/wiki/Key_(cryptography)) the standard rules of computer security like authentication, access control, etc, apply. The difference is that once those keys have been produced, each of the QKD devices have a number which [no one else knows](https://en.wikipedia.org/wiki/Shared_secret) [proven by science](https://arxiv.org/pdf/quant-ph/0003004.pdf).
@@ -149,7 +147,6 @@ The nature of this "firewall" effect is that the systems controlling the QKD dev
 
 If you can't see the diagram below, please go to the [online documentation](https://qcomms.gitlab.io/cqptoolkit/), it can also be built by the `doc` target.
 
-```plantuml
     @startuml
     title Where to start \n
 
@@ -216,7 +213,7 @@ If you can't see the diagram below, please go to the [online documentation](http
     stop
 
     @enduml
-```
+    
 
 ### Running DummyQKDDriver <a name="RunningDummyQKDDriver" />
 
@@ -271,8 +268,60 @@ More complex setups can be achieved by implementing the cqp::remote::INetworkMan
 ### Creating Drivers <a name="CreatingDrivers" />
 
 The driver application is a bridge between the internal device interfaces (cqp::IQKDDevice) and the external cqp::remote::IDevice interface. The cqp::RemoteQKDDevice class handles most of the work for you, the application must handle the configuration and creation of the device.
+
 The real work is in creating a driver to setup the device and read the key. If your device just produces raw detections then you will need to configure a [processing pipeline](#ProcessingPipelines) like cqp::DummyQKD or cqp::PhotonDetectorMk1 and cqp::LEDAliceMk1. If your device generates ready to use key like the cqp::Clavis3Device you need to read it and publish it over the cqp::IKeyCallback interface (use cqp::KeyPublisher).
+
 Both these approaches require a form of session management, provided by cqp::session::SessionController and cqp::session::AliceSessionController, these implement the cqp::ISessionController and cqp::remote::ISession interface and are used by cqp::RemoteQKDDevice to start and stop the device and it's peer.  These are usually all that's needed but in some situations they need to be specialised to cope with device requirements
+
+    @startuml Readme_Drivers
+    title Anatomy of a driver
+        package Application {
+            namespace cqp #DDDDDD {
+                class RemoteQKD
+                interface IQKDDevice {
+                    GetSessionController()
+                }
+                class "SessionController" as session
+                interface "IDetector::Service" as detServ {
+                    StartDetecting()
+                    StopDetecting()
+                }
+                class "Provider<IDetectionEventCallback>" as provider {
+                    Attach()
+                    Dettach()
+                    Emit()
+                }
+
+                RemoteQKD .r.> IQKDDevice : uses
+                IQKDDevice -r[hidden]-> session
+            }
+            class Main {
+                main()
+            }
+            class MyDriver
+            class Detector
+
+            MyDriver .u.|> cqp.IQKDDevice
+            MyDriver o-u-> cqp.session
+            Detector .u.|> cqp.detServ
+            Detector -u-|> cqp.provider
+
+            Main o-> MyDriver
+            MyDriver o-> Detector
+            Main o-u-> cqp.RemoteQKD
+
+            note bottom of MyDriver
+                In this case the driver is a simple detector
+                which produces detection. Post processing detail not shown.
+                MyDriver pull together all the parts to run the driver.
+            end note
+
+            note bottom of Detector
+                The detector controls the device
+                and outputs the data using the Provider
+            end note
+        }
+    @enduml
 
 ### Registering a driver <a name="Registering" />
 
