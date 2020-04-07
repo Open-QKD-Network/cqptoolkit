@@ -54,6 +54,7 @@ package:doc:
   artifacts:
     paths:
       - build/gcc/doc/html
+      - build/gcc/doc/cqptoolkit.tag
   dependencies:
     - build:linux
   # Only run this stage on the master branch
@@ -65,6 +66,7 @@ pages:
   script:
     - cd build/gcc
     - mv doc/html ../../public/
+    - mv doc/cqptoolkit.tag ../../public
     - mkdir -p ../../public/ubuntu/dists/release/bionic/main/binary-amd64/
     - mv *.deb ../../public/ubuntu/dists/release/bionic/main/binary-amd64/
 # broken
