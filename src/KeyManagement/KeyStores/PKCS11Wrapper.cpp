@@ -332,6 +332,11 @@ namespace cqp
             }
         }
 
+        CK_RV Session::SeedRandom(const std::vector<uint8_t>& seed)
+        {
+            return CheckP11(functions->C_SeedRandom(handle, const_cast<unsigned char*>(seed.data()), seed.size()));
+        }
+
         Session::~Session()
         {
             CloseSession();
