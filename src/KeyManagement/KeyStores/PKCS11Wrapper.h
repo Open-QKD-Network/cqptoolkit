@@ -51,7 +51,7 @@
     #define NULL_PTR nullptr
 #endif
 
-#include <pkcs11/pkcs11t.h>
+#include <KeyManagement/pkcs11/pkcs11t.h>
 
 #if defined(_MSC_VER)
     #pragma pack(pop, cryptoki)
