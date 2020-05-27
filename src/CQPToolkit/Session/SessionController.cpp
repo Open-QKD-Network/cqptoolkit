@@ -52,6 +52,9 @@ namespace cqp
 
             if(otherControllerChannel)
             {
+                // Tell our listeners the new settings for the session
+                EmitNewSession(sessionDetails);
+
                 ClientContext ctx;
                 Empty response;
 
