@@ -354,6 +354,15 @@ namespace cqp
                             const std::vector<uint8_t>& wrappedkey, const AttributeList& keyTemplate, DataObject& key);
 
             /**
+             * @brief SeedRandom
+             * C_SeedRandom mixes additional seed material into the token's
+             * random number generator.
+             * @param seed
+             * @return
+             */
+            CK_RV SeedRandom(const std::vector<uint8_t>& seed);
+
+            /**
              * @brief GetSlot
              * @return The slot for this session
              */
