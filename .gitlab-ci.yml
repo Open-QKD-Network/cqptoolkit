@@ -37,6 +37,24 @@ build:linux:
     paths:
       - build/gcc
 
+# The acutal build step
+build:fedora:
+  stage: build
+  image: registry.gitlab.com/qcomms/cqptoolkit/buildenv-fedora:latest
+  script:
+# Fix for sub modules not being updated dispite the strategy above
+    - git submodule update --checkout
+    - mkdir -p build/gcc
+    - cd build/gcc
+    - cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} -DBUILD_TESTING=false -DCPACK_GENERATOR=RPM ../..
+    - make clean
+    - make -j 8 all
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    expire_in: 1 week
+    paths:
+      - build/gcc
+
 test:
   stage: package
   script:
@@ -103,6 +121,23 @@ package:deb:
     paths:
       - build/gcc/*.deb
       - setup/*.deb
+
+package:rpm:
+  stage: package
+  image: registry.gitlab.com/qcomms/cqptoolkit/buildenv-fedora:latest
+  script:
+# Fix for sub modules not being updated dispite the strategy above
+    - git submodule update --checkout
+    - cd build/gcc
+    - cmake -D CPACK_GENERATOR=RPM -DBUILD_TESTING=false -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
+    - make package
+  dependencies:
+    - build:fedora
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
+    expire_in: 1 month
+    paths:
+      - build/gcc/*.rpm
 
 package:tar:
   stage: package
