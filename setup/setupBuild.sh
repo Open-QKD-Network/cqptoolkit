@@ -9,6 +9,7 @@
 COMMON_PACKAGES="gcc cmake pkg-config subversion ghostscript"
 UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev texlive-font-utils libqt5opengl5-dev qtbase5-dev libzmqpp-dev libboost-system-dev libqrencode-dev"
 ARCH_PACKAGES="base-devel libusb crypto++ libcap protobuf git sqlite qrencode"
+CENTOS_PACKAGES="gcc gcc-c++ libcap-devel grpc-devel grpc-plugins protobuf-devel protobuf-compiler libusb-devel cryptopp-devel libcurl-devel libuuid-devel libsqlite3x-devel plantuml avahi-devel rpm-build"
 
 COMMON_TOOLS="git doxygen graphviz astyle "
 
@@ -51,8 +52,9 @@ function Prep()
         elif which pacman 2>/dev/null; then
             ${SUDO} pacman -Sy --needed --noconfirm lsb-release || exit 102
         elif which yum 2>/dev/null; then
-            ${SUDO} yum install lsb-release || exit 103
+            ${SUDO} yum install -yq redhat-lsb-core || exit 103
         else
+            echo "Can't work out your package manager - install 'lsb_release'"
             exit 100
         fi
     fi
@@ -204,7 +206,7 @@ function setupArch() {
     echo Setting up Arch linux
     PKGMAN="${SUDO} pacman"
     PKGMAN_UPDATE="${PKGMAN} -Su"
-    PKGMAN_UPDATE="${PKGMAN} -Sy"
+    PKGMAN_UPGRADE="${PKGMAN} -Sy"
     PKGMAN_INSTALL="${PKGMAN} -S --needed --noconfirm"
     export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig
     
@@ -232,6 +234,15 @@ function setupArch() {
     fi
 }
 
+function setupCentOS() {
+    echo Setting up CentOS linux
+    PKGMAN="${SUDO} yum"
+    PKGMAN_UPDATE="${PKGMAN} update -qy "
+    PKGMAN_INSTALL="${PKGMAN} install -qy "
+
+    ${PKGMAN_UPDATE} && ${PKGMAN_UPGRADE} || exit 2
+    ${PKGMAN_INSTALL} ${COMMON_TOOLS} ${COMMON_PACKAGES} ${CENTOS_PACKAGES} || exit 2
+}
 #####################################
 # Main
 #####################################
@@ -290,6 +301,9 @@ case ${DISTRO} in
     ;;
     Antergos)
         setupArch   
+    ;;
+    CentOS|Fedora)
+        setupCentOS
     ;;
     *)
         echo Unknown distrobution
