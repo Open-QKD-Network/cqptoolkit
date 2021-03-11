@@ -11,26 +11,26 @@
 # See: https://cognitivewaves.wordpress.com/cmake-and-visual-studio/
 cmake_minimum_required (VERSION 3.7.2)
 
-Project (CQPBenchmarks C CXX)
+if(TARGET gbench)
+    Project (CQPBenchmarks C CXX)
 
-# Perform some standard setup steps like detecting the platform.
-include(CommonSetup)
-include(CppSetup)
+    # Perform some standard setup steps like detecting the platform.
+    include(CommonSetup)
+    include(CppSetup)
 
-# Generate a standard setup for a test
-CQP_EXE_PROJECT()
+    # Generate a standard setup for a test
+    CQP_EXE_PROJECT()
 
-include_directories("${GBENCH_INCLUDE_DIRS}")
-
-set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Tests")
-
-if(MSVC)
-    #TODO Copy
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Tests")
-    set_property(TARGET ${PROJECT_NAME} PROPERTY EXCLUDE_FROM_DEFAULT_BUILD 1)   
+
+    if(MSVC)
+        #TODO Copy
+        set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Tests")
+        set_property(TARGET ${PROJECT_NAME} PROPERTY EXCLUDE_FROM_DEFAULT_BUILD 1)
+    endif()
+
+    # Standard linking to gtest stuff.
+    target_link_libraries(${PROJECT_NAME}  PRIVATE CQPToolkit_Shared KeyManagement_Shared gbench)
+
+    SET(CPACK_DEBIAN_${CQP_INSTALL_COMPONENT}_PACKAGE_SECTION "test")
 endif()
-
-# Standard linking to gtest stuff.
-target_link_libraries(${PROJECT_NAME}  PRIVATE CQPToolkit_Shared KeyManagement_Shared gbench)
-
-SET(CPACK_DEBIAN_${CQP_INSTALL_COMPONENT}_PACKAGE_SECTION "test")

@@ -290,32 +290,20 @@ if(BUILD_TESTING)
 
     endif(GTEST_FOUND AND GMOCK_FOUND)
 
-    message ("Building google benchmark")
-    ExternalProject_add(GBench_External
-        GIT_REPOSITORY "https://github.com/google/benchmark.git"
-        UPDATE_COMMAND ""
-        DOWNLOAD_NO_PROGRESS 1
-        # Pass arguments to the build process to disable/enable modules
-        CMAKE_ARGS
-            -DCMAKE_BUILD_TYPE=Release
-            -DBENCHMARK_ENABLE_GTEST_TESTS=OFF
-            -DCMAKE_INSTALL_LIBDIR=${CMAKE_BINARY_DIR}/lib
-            #-DBENCHMARK_ENABLE_LTO=true
-            # Install the files in the same location as everything else so that it runs with dlls etc.
-            -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
-            # We dont want to hear about warnings in other peoples builds
-            -Wno-dev
-    )
-    add_library(gbench STATIC IMPORTED)
-    SET(GBENCH_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/include")
-    make_directory(${GBENCH_INCLUDE_DIRS})
-    SET(GBENCH_LIBRARIES "${CMAKE_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}" CACHE STRING "" FORCE)
-    set_target_properties(gbench PROPERTIES
-        IMPORTED_LOCATION "${GBENCH_LIBRARIES}"
-        INTERFACE_INCLUDE_DIRECTORIES ${GBENCH_INCLUDE_DIRS}
-        DEPENDS GBench_External
-    )
-    SET(GBENCH_FOUND TRUE)
+    find_library(GBENCH_LIBRARIES NAMES benchmark)
+    find_path(GBENCH_INCLUDE_DIR NAMES "benchmark.h"
+        PATH_SUFFIXES "benchmark")
+
+    if(GBENCH_LIBRARIES AND GBENCH_INCLUDE_DIR)
+        message("Found GBench: ${GBENCH_LIB}")
+        add_library(gbench SHARED IMPORTED)
+
+        set_target_properties(gbench PROPERTIES
+            IMPORTED_LOCATION "${GBENCH_LIBRARIES}"
+            INTERFACE_INCLUDE_DIRECTORIES ${GBENCH_INCLUDE_DIR}
+        )
+        SET(GBENCH_FOUND TRUE)
+    endif()
 endif(BUILD_TESTING)
 
 find_package(Doxygen)
