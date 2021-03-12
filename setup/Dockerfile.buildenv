@@ -4,13 +4,13 @@
 #    See LICENSE file for details.
 # Author Richard Collins
 # 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -qy && apt upgrade -qy && apt update -q
 
 ARG opts=""
-ARG version="3.5"
+ARG version="3.6"
 LABEL version=$version
 LABEL description="Build environment for the CQPToolkit. \
 Build using:\
