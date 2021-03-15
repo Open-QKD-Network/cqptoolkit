@@ -370,7 +370,8 @@ endif()
 
 find_package(QREncode QUIET)
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/external/idq4p/CMakeLists.txt")
+# Disabling IDQ devices due to installer bug which breaks the build
+if(FALSE AND EXISTS "${CMAKE_SOURCE_DIR}/external/idq4p/CMakeLists.txt")
 
     if(NOT TARGET PkgConfig::MsgPack)
         message("Building MsgPack locally")
