@@ -281,7 +281,10 @@ namespace cqp
 
             for(auto& dependant : remoteComms)
             {
-                dependant->Disconnect();
+                if(dependant)
+                {
+                    dependant->Disconnect();
+                }
             }
 
             otherControllerChannel.reset();

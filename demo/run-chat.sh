@@ -3,8 +3,8 @@ if [ "$1" == "" ]; then
 	BUILDDIR=../../build-cqptoolkit-Desktop-Default/src
 
 	SITEAGENT=`which SiteAgentRunner 2>/dev/null`
-	DRIVER=${BUILDDIR}/Drivers/DummyQKDDriver/DummyQKDDriver
-	QTUN=${BUILDDIR}/Tools/QTunnelServer/QTunnelServer
+	DRIVER=`which DummyQKDDriver 2>/dev/null`
+	QTUN=`which QTunnel 2>/dev/null`
 
 	if [ "$SITEAGENT" == "" ]; then
 		SITEAGENT=${BUILDDIR}/Tools/SiteAgentRunner/SiteAgentRunner
