@@ -7,7 +7,7 @@
 # 
 
 COMMON_PACKAGES="gcc cmake pkg-config subversion ghostscript"
-UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev texlive-font-utils libqt5opengl5-dev qtbase5-dev libzmqpp-dev libboost-system-dev libqrencode-dev"
+UBUNTU_PACKGES="ca-certificates file build-essential libusb-1.0-0-dev libcurl4-openssl-dev libcrypto++-dev libcap-dev uuid-dev libavahi-client-dev libssl-dev libsqlite3-dev texlive-font-utils libqt5opengl5-dev qtbase5-dev libzmqpp-dev libboost-system-dev libqrencode-dev python2"
 ARCH_PACKAGES="base-devel libusb crypto++ libcap protobuf git sqlite qrencode"
 CENTOS_PACKAGES="gcc gcc-c++ libcap-devel grpc-devel grpc-plugins protobuf-devel protobuf-compiler libusb-devel cryptopp-devel libcurl-devel libuuid-devel libsqlite3x-devel plantuml avahi-devel rpm-build"
 
