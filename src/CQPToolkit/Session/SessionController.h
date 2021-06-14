@@ -74,7 +74,7 @@ namespace cqp
             void RegisterServices(grpc::ServerBuilder &builder) override;
 
             /// @copydoc ISessionController::Connect
-            grpc::Status Connect(URI otherController) override;
+            grpc::Status Connect(const URI &otherController) override;
 
             /// @copydoc ISessionController::Disconnect
             void Disconnect() override;

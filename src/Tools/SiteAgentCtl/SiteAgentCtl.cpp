@@ -22,6 +22,7 @@
 #include "Algorithms/Datatypes/URI.h"
 #include "KeyManagement/KeyStores/BackingStoreFactory.h"
 #include "KeyManagement/KeyStores/Utils.h"
+#include "QKDInterfaces/Device.pb.h"
 
 using namespace cqp;
 
@@ -35,6 +36,7 @@ struct Names
     static CONSTSTRING getkey = "getkey";
     static CONSTSTRING hopUrl = "hop_url";
     static CONSTSTRING hopDevice = "hop_device";
+    static CONSTSTRING joinSite = "join";
     static CONSTSTRING certFile = "cert";
     static CONSTSTRING keyFile = "key";
     static CONSTSTRING rootCaFile = "rootca";
@@ -64,6 +66,10 @@ SiteAgentCtl::SiteAgentCtl()
 
     definedArguments.AddOption(Names::listSites, "l", "List the connected sites")
     .Callback(std::bind(&SiteAgentCtl::HandleListSites, this, _1));
+
+    definedArguments.AddOption(Names::joinSite, "j", "Join sites together, using any available device")
+    .HasArgument()
+    .Callback(std::bind(&SiteAgentCtl::HandleJoinSites, this, _1));
 
     definedArguments.AddOption(Names::getkey, "k", "Get a Key from the site to the destination which can be ether a host:port or a pkcs11 string")
     .HasArgument()
@@ -174,6 +180,13 @@ void SiteAgentCtl::HandleListSites(const CommandArgs::Option&)
 void SiteAgentCtl::HandleGetKey(const CommandArgs::Option& option)
 {
     Command cmd(Command::Cmd::Key);
+    cmd.destination = option.value;
+    commands.push_back(cmd);
+}
+
+void SiteAgentCtl::HandleJoinSites(const CommandArgs::Option& option)
+{
+    Command cmd(Command::Cmd::Join);
     cmd.destination = option.value;
     commands.push_back(cmd);
 }
@@ -308,6 +321,81 @@ void SiteAgentCtl::GetKey(remote::IKey::Stub* siteA, const std::string& destinat
     }
 }
 
+void SiteAgentCtl::JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::string &siteBAddress)
+{
+    using namespace std;
+    using namespace grpc;
+    using google::protobuf::Empty;
+
+    ClientContext siteActx;
+    Empty request;
+    remote::Site siteADetails;
+
+    LOGDEBUG("Getting Site A details...");
+    if(LogStatus(siteA->GetSiteDetails(&siteActx, request, &siteADetails)).ok())
+    {
+        if(!siteADetails.devices().empty())
+        {
+
+            auto siteBChannel = grpc::CreateChannel(siteBAddress, LoadChannelCredentials(creds));
+            if(siteBChannel)
+            {
+                auto siteB = remote::ISiteAgent::NewStub(siteBChannel);
+
+                ClientContext siteBctx;
+                remote::Site siteBDetails;
+                if(LogStatus(siteB->GetSiteDetails(&siteBctx, request, &siteBDetails)).ok())
+                {
+                    bool matchFound = false;
+                    for(const auto& deviceA : siteADetails.devices())
+                    {
+                        for(const auto& deviceB : siteBDetails.devices())
+                        {
+                            // are the two devices compatible
+                            if(deviceA.config().kind() == deviceB.config().kind() &&
+                                    (deviceA.config().side() != deviceB.config().side() ||
+                                     deviceA.config().side() == remote::Side::Any || deviceB.config().side() == remote::Side::Any)
+                              )
+                            {
+                                // create the path and start it
+                                ClientContext startCtx;
+                                remote::PhysicalPath path;
+                                Empty startResponse;
+
+                                auto hop = path.add_hops();
+                                hop->mutable_first()->set_site(siteADetails.url());
+                                hop->mutable_first()->set_deviceid(deviceA.config().id());
+
+                                hop->mutable_second()->set_site(siteBDetails.url());
+                                hop->mutable_second()->set_deviceid(deviceB.config().id());
+
+                                LOGINFO("Joining Site A's " + deviceA.config().id() + " with Site B's " + deviceB.config().id());
+                                if(LogStatus(siteA->StartNode(&startCtx, path, &startResponse)).ok())
+                                {
+                                    matchFound = true;
+                                    break; // for device B
+                                }
+                            }
+                        } // for device B
+
+                        if(matchFound)
+                        {
+                            break; // for device A
+                        }
+                    } // for device A
+
+                    if(!matchFound)
+                    {
+                        LOGWARN("Couldn't find compatible, available devices for the sites specified.");
+                    }
+                } // if details ok
+            } // if channel ok
+        } else {
+            LOGERROR("Site A has no devices");
+        }
+    }
+}
+
 int SiteAgentCtl::Main(const std::vector<std::string>& args)
 {
     using namespace cqp;
@@ -380,6 +468,9 @@ int SiteAgentCtl::Main(const std::vector<std::string>& args)
                         break;
                     case Command::Cmd::Key:
                         GetKey(siteAKey.get(), command.destination);
+                        break;
+                    case Command::Cmd::Join:
+                        JoinSites(siteA.get(), command.destination);
                         break;
                     } // switch command
 

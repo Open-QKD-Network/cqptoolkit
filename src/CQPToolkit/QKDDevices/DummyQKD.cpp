@@ -82,7 +82,7 @@ namespace cqp
 
                 // let classes get notified when we are connected
                 remotes.push_back(timeTagger);
-                remotes.push_back(siftVerifier);
+                remotes.push_back(siftReceiver);
 
             }
             break;

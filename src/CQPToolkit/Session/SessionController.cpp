@@ -248,7 +248,7 @@ namespace cqp
             }
         } // EmitSessionHasEnded
 
-        grpc::Status SessionController::Connect(URI otherController)
+        grpc::Status SessionController::Connect(const URI& otherController)
         {
             using namespace std;
             using namespace std::chrono;

@@ -51,7 +51,7 @@ namespace cqp
          * @param otherController The other side to connect to
          * @return status of the connection
          */
-        virtual grpc::Status Connect(URI otherController) = 0;
+        virtual grpc::Status Connect(const URI& otherController) = 0;
 
         /**
          * @brief Disconnect

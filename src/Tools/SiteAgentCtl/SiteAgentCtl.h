@@ -79,6 +79,7 @@ public:
     }
 
     void HandleGetKey(const cqp::CommandArgs::Option& option);
+    void HandleJoinSites(const cqp::CommandArgs::Option& option);
 
     void HandleBackingStore(const cqp::CommandArgs::Option& option);
     void HandleSiteId(const cqp::CommandArgs::Option& option);
@@ -117,6 +118,9 @@ public:
      * @param destination
      */
     void GetKey(cqp::remote::IKey::Stub* siteA, const std::string& destination);
+
+    void JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::string& siteBAddress);
+
 protected:
     /**
      * @brief Main
@@ -132,7 +136,7 @@ protected:
     struct Command
     {
         /// command types
-        enum class Cmd { Start, Stop, List, Details, Key };
+        enum class Cmd { Start, Stop, List, Details, Key, Join };
 
         /**
          * @brief Command
