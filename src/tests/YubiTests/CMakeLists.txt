@@ -20,9 +20,13 @@ include(CppSetup)
 # Generate a standard setup for a test
 CQP_TEST_PROJECT()
 
+# Find the QtWidgets library
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+
 # Standard linking to gtest stuff.
 target_link_libraries(${PROJECT_NAME}  PRIVATE
     KeyManagement_Shared
     CQPUI_Shared
+    Qt5::Widgets
     cryptopp)
 

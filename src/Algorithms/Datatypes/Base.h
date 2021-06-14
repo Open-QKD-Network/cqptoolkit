@@ -14,6 +14,7 @@
 #include <vector>
 #include <limits>
 #include <cstdint>
+#include <cstddef>
 #include <array>
 
 namespace cqp

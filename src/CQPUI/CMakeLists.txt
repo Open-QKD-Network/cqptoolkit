@@ -40,6 +40,7 @@ if(TARGET Qt5::Widgets)
 
         target_link_libraries(${PROJECT_NAME}_Shared PUBLIC
             CQPToolkit_Shared
+            Qt5::Widgets
         )
 
     endif(TARGET ${PROJECT_NAME}_Shared)

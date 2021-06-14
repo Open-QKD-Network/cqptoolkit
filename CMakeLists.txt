@@ -22,7 +22,7 @@ cmake_minimum_required (VERSION 3.7.2)
 # ============= Options ==========
 
 # These can be run by calling make test or running the test build step
-set(BUILD_TESTING ON CACHE BOOL "Build tests")
+set(BUILD_TESTING OFF CACHE BOOL "Build tests")
 # Note Static linking may still have depedencies to external dynamic libs
 set(BUILD_SHARED ON CACHE BOOL "Build shared/dynamic runtime libraries (dll)")
 # Note Static linking may still have depedencies to external dynamic libs
@@ -111,13 +111,6 @@ if(CRYPTOPP_FOUND)
         add_definitions(-DCRYPTOPP_FOUND=1)
 else()
 	message(WARNING "Crypto++ not found, some projects will be disabled")
-endif()
-
-find_package(Subversion "1.8" QUIET)
-if(Subversion_FOUND)
-	message(STATUS "Subversion : ${Subversion_VERSION_SVN}")
-else()
-	message(WARNING "Subversion missing, needed for version tags on release builds.")
 endif()
 
 find_package(Git QUIET QUIET)
@@ -227,8 +220,8 @@ endif()
 find_package(Qt5 COMPONENTS Core Widgets QUIET)
 
 if(BUILD_TESTING)
-    find_package(GTest QUIET)
-    find_package(GMock QUIET)
+    find_package(GTest REQUIRED)
+    find_package(GMock REQUIRED)
 
     if(GTEST_FOUND AND GMOCK_FOUND)
         message(STATUS "GTest : ${GTEST_VERSION}")

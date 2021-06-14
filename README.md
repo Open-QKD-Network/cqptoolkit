@@ -1,9 +1,24 @@
-CQP Tool kit {#mainpage}
+CQP Tool kit
 ============
 
 [//]: # "This file is written in markdown and rendered with [Doxygen][], the rendered documentation can be found on the gitlab project cqptoolkit."
 
 The system provides various components for integrating [QKD](https://en.wikipedia.org/wiki/Quantum_key_distribution) into a security system. It's written in C++11 but uses [GRPC][] interfaces so can be integrated with lots of different languages.
+
+# Quick Start
+
+To run the software natively, ether download and install the [Ubuntu deb packages](?) or clone/download the source and build locally using:
+
+```
+apt install pkg-config ca-certificates file build-essential cmake ninja-build libusb-1.0-0-dev libcurl4-openssl-dev \
+	libcrypto++-dev libcap-dev uuid-dev libssl-dev libsqlite3-dev libprotobuf-dev libgrpc++-dev \
+	libssl-dev protobuf-compiler protobuf-compiler-grpc checkinstall 
+mkdir build-cqptoolkit
+cd build-cqptoolkit
+cmake -G Ninja ../cqptoolkit && ninja
+```
+
+# Progress
 
 Planed and completed features
 

@@ -14,6 +14,7 @@
 #include <chrono>
 #include <array>
 #include <memory>
+#include <string>
 
 struct sockaddr;
 struct sockaddr_storage;

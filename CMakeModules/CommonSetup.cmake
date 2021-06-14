@@ -467,7 +467,12 @@ endmacro(CQP_EXE_PROJECT)
 macro(CQP_TEST_PROJECT)
     CQP_EXE_PROJECT()
 
-    include_directories("${GTEST_INCLUDE_DIRS}" "${GMOCK_INCLUDE_DIRS}")
+	if(GTEST_INCLUDE_DIRS)
+		include_directories("${GTEST_INCLUDE_DIRS}")
+	endif() 
+	if(GMOCK_INCLUDE_DIRS)
+		include_directories("${GMOCK_INCLUDE_DIRS}")
+	endif()
 
     if(TARGET GTest_External)
         add_dependencies(${PROJECT_NAME} GTest_External)

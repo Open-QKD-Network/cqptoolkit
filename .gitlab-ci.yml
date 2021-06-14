@@ -9,9 +9,10 @@ image: registry.gitlab.com/qcomms/cqptoolkit/buildenv:latest
 #  untracked: true
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  CMAKE_OPTS: "-G Ninja -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID}"
   #DOCKER_HOST: tcp://docker:2375/
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
+  #DOCKER_DRIVER: overlay2
+  #DOCKER_TLS_CERTDIR: ""
 # group jobs into stages
 stages:
   - build
@@ -28,9 +29,8 @@ build:linux:
     - git submodule update --checkout  
     - mkdir -p build/gcc
     - cd build/gcc
-    - cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
-    - make clean
-    - make -j 8 all
+    - cmake $CMAKE_OPTS ../..
+    - ninja
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 week
@@ -46,9 +46,8 @@ build:fedora:
     - git submodule update --checkout
     - mkdir -p build/gcc
     - cd build/gcc
-    - cmake -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} -DBUILD_TESTING=false -DCPACK_GENERATOR=RPM ../..
-    - make clean
-    - make -j 8 all
+    - cmake $CMAKE_OPTS -DCPACK_GENERATOR=RPM ../..
+    - ninja
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}"
     expire_in: 1 week
@@ -59,7 +58,7 @@ test:
   stage: package
   script:
     - cd build/gcc
-    - make test
+    - ninja test
   dependencies:
     - build:linux
   when: manual
@@ -68,7 +67,7 @@ package:doc:
   stage: package
   script:
     - cd build/gcc
-    - make doc
+    - ninja doc
   artifacts:
     paths:
       - build/gcc/doc/html
@@ -108,8 +107,8 @@ package:deb:
 # Fix for sub modules not being updated dispite the strategy above
     - git submodule update --checkout  
     - cd build/gcc
-    - cmake -D CPACK_GENERATOR=DEB -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
-    - make package
+    - cmake $CMAKE_OPTS -D CPACK_GENERATOR=DEB ../..
+    - ninja package
     - dpkg -i CQPToolkit*.deb
     - ../../src/tests/TestExecution.sh
     - apt remove -qy "CQPToolkit*"
@@ -128,8 +127,8 @@ package:rpm:
 # Fix for sub modules not being updated dispite the strategy above
     - git submodule update --checkout
     - cd build/gcc
-    - cmake -D CPACK_GENERATOR=RPM -DBUILD_TESTING=false -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
-    - make package
+    - cmake $CMAKE_OPTS -D CPACK_GENERATOR=RPM ../..
+    - ninja package
   dependencies:
     - build:fedora
   artifacts:
@@ -144,8 +143,8 @@ package:tar:
 # Fix for sub modules not being updated dispite the strategy above
     - git submodule update --checkout  
     - cd build/gcc
-    - cmake -D CPACK_GENERATOR=TGZ -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DBUILD_VERSION_PATCH=${CI_PIPELINE_IID} ../..
-    - make package
+    - cmake $CMAKE_OPTS -D CPACK_GENERATOR=TGZ ../..
+    - ninja package
   dependencies:
     - build:linux
   artifacts:
