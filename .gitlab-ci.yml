@@ -40,7 +40,7 @@ build:linux:
 # The acutal build step
 build:fedora:
   stage: build
-  image: registry.gitlab.com/qcomms/cqptoolkit/buildenv-fedora:latest
+  image: registry.gitlab.com/qcomms/cqptoolkit/buildenv.fedora:latest
   script:
 # Fix for sub modules not being updated dispite the strategy above
     - git submodule update --checkout
@@ -122,7 +122,7 @@ package:deb:
 
 package:rpm:
   stage: package
-  image: registry.gitlab.com/qcomms/cqptoolkit/buildenv-fedora:latest
+  image: registry.gitlab.com/qcomms/cqptoolkit/buildenv.fedora:latest
   script:
 # Fix for sub modules not being updated dispite the strategy above
     - git submodule update --checkout
