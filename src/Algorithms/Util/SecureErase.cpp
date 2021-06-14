@@ -1,5 +1,6 @@
 #include "SecureErase.h"
 #include <cstdint>
+#include <cstddef>
 
 namespace cqp {
 #if !defined(memset_s)

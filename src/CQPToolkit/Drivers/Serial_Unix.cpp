@@ -189,7 +189,7 @@ namespace cqp
         {
             LOGTRACE("Using /dev path");
             // fall back to name matching under proc
-            for(const string& name : SerialUnixConsts::deviceNames)
+            for(const string name : SerialUnixConsts::deviceNames)
             {
 
                 LOGTRACE("Checking " + name);
