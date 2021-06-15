@@ -37,6 +37,7 @@ struct Names
     static CONSTSTRING hopUrl = "hop_url";
     static CONSTSTRING hopDevice = "hop_device";
     static CONSTSTRING joinSite = "join";
+    static CONSTSTRING unjoinSite = "unjoin";
     static CONSTSTRING certFile = "cert";
     static CONSTSTRING keyFile = "key";
     static CONSTSTRING rootCaFile = "rootca";
@@ -68,6 +69,10 @@ SiteAgentCtl::SiteAgentCtl()
     .Callback(std::bind(&SiteAgentCtl::HandleListSites, this, _1));
 
     definedArguments.AddOption(Names::joinSite, "j", "Join sites together, using any available device")
+    .HasArgument()
+    .Callback(std::bind(&SiteAgentCtl::HandleJoinSites, this, _1));
+
+    definedArguments.AddOption(Names::unjoinSite, "u", "Disconnect (Unjoin) connected sites, using the first device found")
     .HasArgument()
     .Callback(std::bind(&SiteAgentCtl::HandleJoinSites, this, _1));
 
@@ -186,9 +191,16 @@ void SiteAgentCtl::HandleGetKey(const CommandArgs::Option& option)
 
 void SiteAgentCtl::HandleJoinSites(const CommandArgs::Option& option)
 {
-    Command cmd(Command::Cmd::Join);
-    cmd.destination = option.value;
-    commands.push_back(cmd);
+    if(option.longName == Names::joinSite)
+    {
+        Command cmd(Command::Cmd::Join);
+        cmd.destination = option.value;
+        commands.push_back(cmd);
+    } else {
+        Command cmd(Command::Cmd::Unjoin);
+        cmd.destination = option.value;
+        commands.push_back(cmd);
+    }
 }
 
 void SiteAgentCtl::HandleBackingStore(const CommandArgs::Option& option)
@@ -321,7 +333,7 @@ void SiteAgentCtl::GetKey(remote::IKey::Stub* siteA, const std::string& destinat
     }
 }
 
-void SiteAgentCtl::JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::string &siteBAddress)
+void SiteAgentCtl::JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::string &siteBAddress, bool start)
 {
     using namespace std;
     using namespace grpc;
@@ -363,18 +375,54 @@ void SiteAgentCtl::JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::st
                                 Empty startResponse;
 
                                 auto hop = path.add_hops();
-                                hop->mutable_first()->set_site(siteADetails.url());
-                                hop->mutable_first()->set_deviceid(deviceA.config().id());
-
-                                hop->mutable_second()->set_site(siteBDetails.url());
-                                hop->mutable_second()->set_deviceid(deviceB.config().id());
-
-                                LOGINFO("Joining Site A's " + deviceA.config().id() + " with Site B's " + deviceB.config().id());
-                                if(LogStatus(siteA->StartNode(&startCtx, path, &startResponse)).ok())
+                                if(deviceA.config().side() == remote::Side::Alice)
                                 {
-                                    matchFound = true;
-                                    break; // for device B
+                                    hop->mutable_first()->set_site(siteADetails.url());
+                                    hop->mutable_first()->set_deviceid(deviceA.config().id());
+
+                                    hop->mutable_second()->set_site(siteBDetails.url());
+                                    hop->mutable_second()->set_deviceid(deviceB.config().id());
+                                    LOGINFO("Joining Site A's " + deviceA.config().id() + " with Site B's " + deviceB.config().id());
+
+                                    if(start)
+                                    {
+                                        if(LogStatus(siteA->StartNode(&startCtx, path, &startResponse)).ok())
+                                        {
+                                            matchFound = true;
+                                            break; // for device B
+                                        }
+                                    } else {
+                                        if(LogStatus(siteA->EndKeyExchange(&startCtx, path, &startResponse)).ok())
+                                        {
+                                            matchFound = true;
+                                            break; // for device B
+                                        }
+                                    }
+                                } else {
+
+                                    hop->mutable_first()->set_site(siteBDetails.url());
+                                    hop->mutable_first()->set_deviceid(deviceB.config().id());
+
+                                    hop->mutable_second()->set_site(siteADetails.url());
+                                    hop->mutable_second()->set_deviceid(deviceA.config().id());
+                                    LOGINFO("Joining Site B's " + deviceB.config().id() + " with Site A's " + deviceA.config().id());
+
+                                    if(start)
+                                    {
+                                        if(LogStatus(siteB->StartNode(&startCtx, path, &startResponse)).ok())
+                                        {
+                                            matchFound = true;
+                                            break; // for device B
+                                        }
+                                    } else {
+                                        if(LogStatus(siteB->EndKeyExchange(&startCtx, path, &startResponse)).ok())
+                                        {
+                                            matchFound = true;
+                                            break; // for device B
+                                        }
+                                    }
                                 }
+
                             }
                         } // for device B
 
@@ -470,7 +518,10 @@ int SiteAgentCtl::Main(const std::vector<std::string>& args)
                         GetKey(siteAKey.get(), command.destination);
                         break;
                     case Command::Cmd::Join:
-                        JoinSites(siteA.get(), command.destination);
+                        JoinSites(siteA.get(), command.destination, true);
+                        break;
+                    case Command::Cmd::Unjoin:
+                        JoinSites(siteA.get(), command.destination, false);
                         break;
                     } // switch command
 

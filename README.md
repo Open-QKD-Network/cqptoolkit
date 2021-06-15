@@ -7,9 +7,9 @@ The system provides various components for integrating [QKD](https://en.wikipedi
 
 # Quick Start
 
-To run the software natively, ether download and install the [Ubuntu deb packages](?) or clone/download the source and build locally using:
+To run the software natively, ether download and install the [Ubuntu deb packages](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb) or clone/download the source and build locally using:
 
-```
+```bash
 apt install pkg-config ca-certificates file build-essential cmake ninja-build libusb-1.0-0-dev libcurl4-openssl-dev \
 	libcrypto++-dev libcap-dev uuid-dev libssl-dev libsqlite3-dev libprotobuf-dev libgrpc++-dev \
 	libssl-dev protobuf-compiler protobuf-compiler-grpc checkinstall 
@@ -17,6 +17,85 @@ mkdir build-cqptoolkit
 cd build-cqptoolkit
 cmake -G Ninja ../cqptoolkit && ninja
 ```
+
+To run two sites each with a QKD device from the build folder, first start site "A" by starting a site agent and connecting an Alice "dummy driver" to it:
+
+```bash
+./src/Tools/SiteAgentRunner/SiteAgentRunner -p 9000 &
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -r localhost:9000 -a
+```
+
+```bash
+./src/Tools/SiteAgentRunner/SiteAgentRunner -p 9001 &
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -r localhost:9001 -b
+```
+
+This will not start producing key immediately as this system is designed to be controlled by a management system, the connection needs to be established.
+Verify the list of available devices with:
+
+```bash
+./src/Tools/SiteAgentCtl/SiteAgentCtl -d -c localhost:9000
+```
+
+should produce something similar to
+
+```json
+{
+ "url": "<hostname>:9000",
+ "devices": [
+  {
+   "config": {
+    "id": "dummyqkd__0__16_alice",
+    "kind": "dummyqkd"
+   },
+   "controlAddress": "<hostname>:34219"
+  }
+ ]
+}
+```
+
+and port `9001` should produce something similar to
+
+```json
+{
+ "url": "<hostname>:9001",
+ "devices": [
+  {
+   "config": {
+    "id": "dummyqkd__0__16_bob",
+    "side": "Bob",
+    "kind": "dummyqkd"
+   },
+   "controlAddress": "<hostname>:38367"
+  }
+ ]
+}
+```
+
+The connection can now be made by calling:
+
+```bash
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:9000 -j localhost:9001
+```
+
+This will create a single hop from one site to the next, more complex routes can be defined by using the `-a` option with a JSON string specifying the path.
+
+After a few seconds there should be key available which can be tested by requesting a key.
+> NOTE: The -k parameter must be the url shown in the details of the second site, not "localhost:9001"
+
+```bash
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:9000 -k <hostname>:9001
+```
+
+The link can be stopped with the unjoin command:
+
+
+```bash
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:9000 -u localhost:9001
+```
+
+> Not that key is still available even though generation has stopped, as long as the site agents are running.
+> It can be requested with the same key request command above.
 
 # Progress
 

@@ -119,7 +119,7 @@ public:
      */
     void GetKey(cqp::remote::IKey::Stub* siteA, const std::string& destination);
 
-    void JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::string& siteBAddress);
+    void JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::string& siteBAddress, bool start);
 
 protected:
     /**
@@ -136,7 +136,7 @@ protected:
     struct Command
     {
         /// command types
-        enum class Cmd { Start, Stop, List, Details, Key, Join };
+        enum class Cmd { Start, Stop, List, Details, Key, Join, Unjoin };
 
         /**
          * @brief Command

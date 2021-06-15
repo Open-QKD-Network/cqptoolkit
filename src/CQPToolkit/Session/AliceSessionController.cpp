@@ -75,7 +75,7 @@ namespace cqp
 
         grpc::Status AliceSessionController::SessionEnding(grpc::ServerContext* ctx, const google::protobuf::Empty* request, google::protobuf::Empty* response)
         {
-            LOGTRACE("");
+            LOGTRACE("Alice Stopping");
             // The session has been stopped remotly
             // wait for the transmitter to stop
             Stop(true);

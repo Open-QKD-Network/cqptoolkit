@@ -81,32 +81,27 @@ namespace cqp
                 result = grpc::Status::OK;
 
                 auto theirList = request->basis().find(stateList.first);
-                if(static_cast<uint32_t>(theirList->second.basis_size()) == stateList.second->emissions.size())
+                // alias for the reply list for this frame number
+                auto myBasesAnswers = (*response->mutable_answers())[theirList->first].mutable_answers();
+
+                // for each basis, compare to our basis, putting the answer in myAnswers
+                for(const auto& detected : theirList->second.indexedbasis())
                 {
-                    // a lias for the reply list for this frame number
-                    RepeatedField<bool>* myBasesAnswers = (*response->mutable_answers())[theirList->first].mutable_answers();
-                    myBasesAnswers->Resize(theirList->second.basis().size(), false);
-
-                    // for each basis, compare to our basis, putting the answer in myAnswers
-                    std::transform(theirList->second.basis().begin(), theirList->second.basis().end(),
-                                   stateList.second->emissions.begin(), myBasesAnswers->begin(),
-                                   [](auto left, auto right)
+                    if(detected.index() < stateList.second->emissions.size())
                     {
-                        return Basis(left) == QubitHelper::Base(right);
-                    });
-
-                    if(!discardedIntensities.empty() && !stateList.second->intensities.empty())
-                    {
-                        RepeatedField<uint32_t>* myIntensityAnswers = (*response->mutable_answers())[theirList->first].mutable_intensity();
-                        myIntensityAnswers->Resize(stateList.second->intensities.size(),  0);
-                        // copy the intensities into the answers
-                        copy(stateList.second->intensities.begin(), stateList.second->intensities.end(), myIntensityAnswers->begin());
+                        myBasesAnswers->Add(QubitHelper::Base(stateList.second->emissions[detected.index()]) ==
+                                Basis(detected.basis()));
+                    } else {
+                        LOGERROR("Invalid index: " + std::to_string(detected.index()));
                     }
-                } // if sizes match
-                else
+                }
+
+                if(!discardedIntensities.empty() && !stateList.second->intensities.empty())
                 {
-                    LOGERROR("Length mismatch in basis listSift Sequence ID=" + to_string(stateList.first));
-                    result = Status(grpc::StatusCode::OUT_OF_RANGE, "Sift: Length mismatch in basis list", "Sequence ID=" + to_string(stateList.first));
+                    RepeatedField<uint32_t>* myIntensityAnswers = (*response->mutable_answers())[theirList->first].mutable_intensity();
+                    myIntensityAnswers->Resize(stateList.second->intensities.size(),  0);
+                    // copy the intensities into the answers
+                    copy(stateList.second->intensities.begin(), stateList.second->intensities.end(), myIntensityAnswers->begin());
                 }
 
                 stats.comparisonTime.Update(high_resolution_clock::now() - timerStart);
@@ -163,6 +158,7 @@ namespace cqp
 
             const auto bytesProduced = siftedData->size();
 
+            LOGINFO("Sifted bytes: " + std::to_string(bytesProduced));
             double securityParameter = 0.0; // TODO
             // publish the results on our side
             Emit(&ISiftedCallback::OnSifted, siftedSequence, securityParameter, move(siftedData));

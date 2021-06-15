@@ -65,6 +65,8 @@ namespace cqp
                 remotes.push_back(photonSource);
                 remotes.push_back(siftVerifier);
 
+                controller = make_shared<session::AliceSessionController>(creds, remotes, photonSource, reportServer);
+
             }
 
             break;
@@ -84,14 +86,14 @@ namespace cqp
                 remotes.push_back(timeTagger);
                 remotes.push_back(siftReceiver);
 
+                controller = make_shared<session::SessionController>(creds, remotes, reportServer);
+
             }
             break;
             default:
                 LOGERROR("Invalid device side");
                 break;
             }
-
-            controller = make_shared<session::SessionController>(creds, remotes, reportServer);
 
             ec->Attach(privacy.get());
             privacy->Attach(keyConverter.get());

@@ -135,7 +135,7 @@ namespace cqp
 
         Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetailsFrom* sessionDetails, Empty*)
         {
-            LOGTRACE("");
+            LOGTRACE("Bob Starting");
             using namespace std::chrono;
             // The session has been started remotly
             Status result;

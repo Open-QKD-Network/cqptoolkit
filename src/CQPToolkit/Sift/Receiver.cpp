@@ -102,11 +102,9 @@ namespace cqp
                 /*lock scope*/
                 {
                     std::unique_lock<std::mutex>  lock(statesMutex);
-                    LOGTRACE("Waiting...");
                     // Wait for data to be available
                     result = statesCv.wait_for(lock, threadTimeout, bind(&Receiver::ValidateIncomming, this, firstSeq));
 
-                    LOGTRACE("Trigggered");
                     if(result && !collectedStates.empty())
                     {
                         auto it = collectedStates.find(firstSeq);
@@ -139,7 +137,9 @@ namespace cqp
                         for(auto& detection : it->second->detections)
                         {
                             // convert to basis value and add to the list
-                            currentList.add_basis(remote::Basis::Type((QubitHelper::Base(detection.value))));
+                            auto newItem = currentList.mutable_indexedbasis()->Add();
+                            newItem->set_index(detection.time.count());
+                            newItem->set_basis(remote::Basis::Type((QubitHelper::Base(detection.value))));
                         } // for
 
                         ++it;
@@ -238,6 +238,7 @@ namespace cqp
             using std::chrono::high_resolution_clock;
             high_resolution_clock::time_point timerStart = high_resolution_clock::now();
 
+
             std::unique_ptr<JaggedDataBlock> siftedData(new JaggedDataBlock());
             JaggedDataBlock::value_type value = 0;
             uint_least8_t offset = 0;
@@ -250,10 +251,12 @@ namespace cqp
                 auto answersIt = answers.answers().find(listIt->first);
                 if(answersIt != answers.answers().end())
                 {
+                    size_t index = 0;
                     for(const auto& qubit : listIt->second->detections)
                     {
-                        PackQubit(qubit.value, qubit.time.count(), answersIt->second,
+                        PackQubit(qubit.value, index, answersIt->second,
                                   *siftedData, offset, value);
+                        index++;
                     }// for qubits
                 }
                 else

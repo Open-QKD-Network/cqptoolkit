@@ -33,7 +33,7 @@ namespace cqp
         {
             bool result = false;
             // test if this qubit is valid, ie the basis matched when they were compared.
-            if(answers.answers(index) == true)
+            if(index < answers.answers().size() && answers.answers(index) == true)
             {
                 // pack the qubit if we're not using intensities or the intensity value is one we keep
                 if(answers.intensity().empty() ||

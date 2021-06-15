@@ -37,7 +37,7 @@ namespace cqp
             for(auto qubit : request->values().qubits())
             {
                 DetectionReport report;
-                report.time = PicoSeconds(request->periodpicoseconds()) * count;
+                report.time = PicoSeconds(count);
                 report.value = static_cast<uint8_t>(qubit);
                 detections.push_back(report);
                 count++;
