@@ -130,6 +130,11 @@ namespace cqp
              */
             void GetControllerSettings(remote::tunnels::ControllerDetails& response);
 
+            void ModifyTunnel(const remote::tunnels::Tunnel &tunnel);
+
+            grpc::Status StartTunnel(const std::string& name);
+            grpc::Status StopTunnel(const std::string& name);
+
             // IServiceCallback interface
             void OnServiceDetected(const RemoteHosts& newServices, const RemoteHosts& deletedServices) override;
         protected: // methods

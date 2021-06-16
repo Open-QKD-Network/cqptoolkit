@@ -18,30 +18,31 @@ cd build-cqptoolkit
 cmake -G Ninja ../cqptoolkit && ninja
 ```
 
+If the binaries have been installed, omit the paths to the commands from the instructions.
 To run two sites each with a QKD device from the build folder, first start site "A" by starting a site agent and connecting an Alice "dummy driver" to it:
 
 ```bash
-./src/Tools/SiteAgentRunner/SiteAgentRunner -p 9000 &
-./src/Drivers/DummyQKDDriver/DummyQKDDriver -r localhost:9000 -a
+./src/Tools/SiteAgentRunner/SiteAgentRunner -p 8000 &
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -r localhost:8000 -a
 ```
 
 ```bash
-./src/Tools/SiteAgentRunner/SiteAgentRunner -p 9001 &
-./src/Drivers/DummyQKDDriver/DummyQKDDriver -r localhost:9001 -b
+./src/Tools/SiteAgentRunner/SiteAgentRunner -p 8001 &
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -r localhost:8001 -b
 ```
 
 This will not start producing key immediately as this system is designed to be controlled by a management system, the connection needs to be established.
 Verify the list of available devices with:
 
 ```bash
-./src/Tools/SiteAgentCtl/SiteAgentCtl -d -c localhost:9000
+./src/Tools/SiteAgentCtl/SiteAgentCtl -d -c localhost:8000
 ```
 
 should produce something similar to
 
 ```json
 {
- "url": "<hostname>:9000",
+ "url": "<hostname>:8000",
  "devices": [
   {
    "config": {
@@ -58,7 +59,7 @@ and port `9001` should produce something similar to
 
 ```json
 {
- "url": "<hostname>:9001",
+ "url": "<hostname>:8001",
  "devices": [
   {
    "config": {
@@ -75,7 +76,7 @@ and port `9001` should produce something similar to
 The connection can now be made by calling:
 
 ```bash
-./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:9000 -j localhost:9001
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:8000 -j localhost:8001
 ```
 
 This will create a single hop from one site to the next, more complex routes can be defined by using the `-a` option with a JSON string specifying the path.
@@ -84,18 +85,58 @@ After a few seconds there should be key available which can be tested by request
 > NOTE: The -k parameter must be the url shown in the details of the second site, not "localhost:9001"
 
 ```bash
-./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:9000 -k <hostname>:9001
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:8000 -k `hostname`:8001
 ```
 
 The link can be stopped with the unjoin command:
 
 
 ```bash
-./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:9000 -u localhost:9001
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c localhost:8000 -u localhost:8001
 ```
 
 > Not that key is still available even though generation has stopped, as long as the site agents are running.
 > It can be requested with the same key request command above.
+
+## Encryption example
+
+Launch the site agents and drivers as above and start the key exchange.
+
+Start one side of the "VPN" on the bob/far side which will listen on port 9010 and connect to Bob's key store:
+```
+./src/Tools/QTunnelServer/QTunnelServer -p 9010 --keystore-url=`hostname`:8001
+```
+Now start the Alice side of the VPN, defining the tunnel to create. Two ports will be opened, one for each side on 9000 and 9001, anything entering
+these ports will be encrypted, transfered to the other side, decrypted and produced on the other port.
+```
+./src/Tools/QTunnelServer/QTunnelServer --keystore-url=`hostname`:8000 --remote=localhost:9010 --start-node=tcpsrv://0.0.0.0:9000 --end-node=tcpsrv://0.0.0.0:9001
+```
+
+Anything which uses tcp communications can then use this port, netcat is a simple program which will send data over the ports, start one on one side:
+
+```
+nc localhost 9000
+```
+
+and one on the other:
+
+```
+nc localhost 9001
+```
+
+Anything typed into one side will appear on the other when enter is pressed.  Inspecting the packets travelling through ports `9000` and `9001`
+with a tool such as wireshark will show the data being encrypted and the key ID used.
+
+Other forms of connection can be created, instead of `tcpserv`:
+
+| Example					    | Description 											|
+| ============================= | ===================================================== |
+| tcpserv://0.0.0.0:1234		| A listening port is created on port 1234 				|
+| tcp://127.0.01:1234			| A connection to tcp port 1234 on localhost is made 	|
+| udp://0.0.0.0:1234			| UDP packets are sent from this port					|
+| tun://192.168.101.1/?netmask=255.255.255.0	| An IP level tunnel device is created with an IP address |
+| tap://192.168.101.1/?netmask=255.255.255.0	| An ethernet level tap device is created |
+| eth://eth0/?level=tcp         | Create a raw socket, level can be tcp, ip or eth. 	|
 
 # Progress
 

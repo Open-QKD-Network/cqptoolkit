@@ -158,7 +158,6 @@ namespace cqp
 
             const auto bytesProduced = siftedData->size();
 
-            LOGINFO("Sifted bytes: " + std::to_string(bytesProduced));
             double securityParameter = 0.0; // TODO
             // publish the results on our side
             Emit(&ISiftedCallback::OnSifted, siftedSequence, securityParameter, move(siftedData));

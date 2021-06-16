@@ -19,6 +19,7 @@
 #include "CQPToolkit/Auth/AuthUtil.h"
 #include "Algorithms/Util/Strings.h"
 #include "Algorithms/Datatypes/UUID.h"
+#include "CQPToolkit/Util/GrpcLogger.h"
 
 using namespace cqp;
 
@@ -28,9 +29,12 @@ struct Names
     static CONSTSTRING discovery = "nodiscovery";
     static CONSTSTRING startall = "startall";
     static CONSTSTRING controllerId = "id";
-    static CONSTSTRING keystoreId = "keystore_id";
-    static CONSTSTRING keystoreUrl = "keystore_url";
+    static CONSTSTRING keystoreId = "keystore-id";
+    static CONSTSTRING keystoreUrl = "keystore-url";
     static CONSTSTRING port = "port";
+    static CONSTSTRING startNode = "start-node";
+    static CONSTSTRING endNode = "end-node";
+    static CONSTSTRING remote = "remote";
 };
 
 QTunnelServer::QTunnelServer()
@@ -54,6 +58,10 @@ QTunnelServer::QTunnelServer()
     definedArguments.AddOption(Names::keystoreId, "k", "ID for local keystore").Bind();
 
     definedArguments.AddOption(Names::port, "p", "Listen port").Bind();
+
+    definedArguments.AddOption(Names::startNode, "", "Create a simple tunnel from").Bind();
+    definedArguments.AddOption(Names::endNode, "", "Create a simple tunnel to").Bind();
+    definedArguments.AddOption(Names::remote, "", "Create a simple with controller").Bind();
 
     definedArguments.AddOption("quiet", "q", "Decrease output")
     .Callback(std::bind(&QTunnelServer::HandleQuiet, this, _1));
@@ -158,6 +166,26 @@ int QTunnelServer::Main(const std::vector<std::string>& args)
                     controller->StartAllTunnels();
                 }
 
+                if(definedArguments.IsSet(Names::startNode) && definedArguments.IsSet(Names::endNode) &&
+                        definedArguments.IsSet(Names::remote))
+                {
+                    remote::tunnels::Tunnel tun;
+
+                    tun.set_name("simple-tunnel");
+                    tun.mutable_startnode()->set_clientdataporturi(definedArguments.GetStringProp(Names::startNode));
+                    tun.mutable_endnode()->set_clientdataporturi(definedArguments.GetStringProp(Names::endNode));
+                    tun.set_remotecontrolleruri(definedArguments.GetStringProp(Names::remote));
+
+                    tun.mutable_keylifespan()->set_maxbytes(1024*64);
+                    tun.mutable_keylifespan()->mutable_maxage()->set_seconds(10);
+                    LOGINFO("Setting key lifespan to " + std::to_string(tun.keylifespan().maxbytes()) + " bytes"
+                            " or " + std::to_string(tun.keylifespan().maxage().seconds()) + " seconds");
+
+                    controller->ModifyTunnel(tun);
+                    LOGINFO("Starting tunnel " + tun.name());
+                    LogStatus(controller->StartTunnel(tun.name()));
+
+                }
                 //TODO shutdown gracefully
                 server->Wait();
             }

@@ -90,6 +90,13 @@ namespace cqp
             response = settings;
         }
 
+        void Controller::ModifyTunnel(const remote::tunnels::Tunnel& tunnel)
+        {
+            std::lock_guard<std::mutex> lock(settingsMutex);
+            (*settings.mutable_tunnels())[tunnel.name()] = tunnel;
+
+        }
+
         Status Controller::GetControllerSettings(grpc::ServerContext*, const Empty*, ControllerDetails* response)
         {
             GetControllerSettings(*response);
@@ -98,8 +105,7 @@ namespace cqp
 
         grpc::Status Controller::ModifyTunnel(grpc::ServerContext*, const remote::tunnels::Tunnel* request, Empty*)
         {
-            std::lock_guard<std::mutex> lock(settingsMutex);
-            (*settings.mutable_tunnels())[request->name()] = *request;
+            ModifyTunnel(*request);
             return Status();
         }
 
@@ -155,7 +161,7 @@ namespace cqp
             return result;
         }
 
-        Status Controller::StartTunnel(grpc::ServerContext*, const google::protobuf::StringValue* request, Empty*)
+        Status Controller::StartTunnel(const std::string &name)
         {
             remote::tunnels::CompleteTunnelRequest tunSettings;
 
@@ -172,7 +178,7 @@ namespace cqp
                 LOGDEBUG("Keystore ready");
 
                 std::lock_guard<std::mutex> lock(settingsMutex);
-                auto settingsIt = settings.tunnels().find(request->value());
+                auto settingsIt = settings.tunnels().find(name);
                 if(settingsIt != settings.tunnels().end())
                 {
                     (*tunSettings.mutable_tunnel()) = settingsIt->second;
@@ -181,13 +187,13 @@ namespace cqp
                 }
                 else
                 {
-                    result = Status(StatusCode::INVALID_ARGUMENT, "No settings found for tunnel " + request->value());
+                    result = Status(StatusCode::INVALID_ARGUMENT, "No settings found for tunnel " + name);
                 }
             }
 
             if(result.ok())
             {
-                auto builderIt = tunnelBuilders.find(request->value());
+                auto builderIt = tunnelBuilders.find(name);
                 if(builderIt == tunnelBuilders.end())
                 {
                     if(tunSettings.tunnel().encryptionmethod().mode().empty())
@@ -216,7 +222,7 @@ namespace cqp
 
                     auto newBuilder = std::make_shared<TunnelBuilder>(tunSettings.tunnel().encryptionmethod(),
                                       LoadChannelCredentials(settings.credentials()));
-                    tunnelBuilders.emplace(request->value(), newBuilder);
+                    tunnelBuilders.emplace(name, newBuilder);
 
                     // try and find the controller by ID first
                     std::shared_ptr<grpc::Channel> otherController = FindController(tunSettings.tunnel());
@@ -287,12 +293,17 @@ namespace cqp
             }
 
             return result;
+        }
+
+        Status Controller::StartTunnel(grpc::ServerContext*, const google::protobuf::StringValue* request, Empty*)
+        {
+            return StartTunnel(request->value());
         } // StartTunnel
 
-        Status Controller::StopTunnel(grpc::ServerContext*, const google::protobuf::StringValue* request, Empty*)
+        Status Controller::StopTunnel(const std::string &name)
         {
             Status result(StatusCode::NOT_FOUND, "Unknown tunnel");
-            auto builderIt  = tunnelBuilders.find(request->value());
+            auto builderIt  = tunnelBuilders.find(name);
             if(builderIt != tunnelBuilders.end())
             {
                 builderIt->second->Shutdown();
@@ -301,6 +312,11 @@ namespace cqp
                 LOGINFO("Tunnel stopped");
             }
             return result;
+        }
+
+        Status Controller::StopTunnel(grpc::ServerContext*, const google::protobuf::StringValue* request, Empty*)
+        {
+            return StopTunnel(request->value());
         } // StopTunnel
 
         Status Controller::CompleteTunnel(grpc::ServerContext*, const remote::tunnels::CompleteTunnelRequest* request,
