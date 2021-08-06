@@ -7,10 +7,20 @@ The system provides various components for integrating [QKD](https://en.wikipedi
 
 # Quick Start
 
-To run the software natively, ether download and install the [Ubuntu deb packages](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb) or clone/download the source and build locally using:
+To run the software natively, ether:
+
+- download and install the [Ubuntu deb packages](https://gitlab.com/QComms/cqptoolkit/-/jobs/artifacts/master/download?job=package%3Adeb) or 
+- clone the source, ensuring submodules are updated and build locally
+
+To clone the source including submodules:
+```bash
+git clone --recurse-submodules git@gitlab.com:QComms/cqptoolkit.git
+```
+
+> If you cloned without using `--recurse-submodules`, submodules can be updated by running `git submodule update --init` from within the source folder.
 
 ```bash
-apt install pkg-config ca-certificates file build-essential cmake ninja-build libusb-1.0-0-dev libcurl4-openssl-dev \
+sudo apt install pkg-config ca-certificates file build-essential cmake ninja-build libusb-1.0-0-dev libcurl4-openssl-dev \
 	libcrypto++-dev libcap-dev uuid-dev libssl-dev libsqlite3-dev libprotobuf-dev libgrpc++-dev \
 	libssl-dev protobuf-compiler protobuf-compiler-grpc checkinstall 
 mkdir build-cqptoolkit
