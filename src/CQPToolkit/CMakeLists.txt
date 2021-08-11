@@ -37,7 +37,7 @@ add_dependencies(${PROJECT_NAME}_Shared QKDInterfaces_Shared)
 # Now tell the compiler and linker where to find specific libs
 
 if(TARGET OpenCL::OpenCL)
-    target_include_directories(${PROJECT_NAME} PUBLIC OpenCL::OpenCL)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${OpenCL_INCLUDE_DIR})
 endif()
 include_directories(${Protobuf_INCLUDE_DIRS})
 
