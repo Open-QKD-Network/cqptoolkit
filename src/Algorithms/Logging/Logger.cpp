@@ -12,6 +12,9 @@
 #include "Logger.h"
 #if defined(__unix__)
     #include <string.h>
+    #include <sys/types.h>
+    #include <time.h>
+    #include <sys/time.h>
 #elif defined(WIN32)
     #include <Windows.h>
 #endif
@@ -43,6 +46,36 @@ namespace cqp
 
         return message;
 #endif
+    }
+
+    std::string Logger::GetTimeStamp()
+    {
+        char datebuf[256] = {0};
+        const unsigned int datebufSize = 256;
+        struct tm localTimeResult;
+        struct timeval tv;
+        int result = gettimeofday(&tv, NULL);
+
+        const time_t timeInSeconds = (time_t) tv.tv_sec;
+        strftime(datebuf,
+            datebufSize,
+            "%Y%m%d-%H%M%S",
+            localtime_r(&timeInSeconds, &localTimeResult));
+        char msbuf[5];
+        /* Dividing (without remainder) by 1000 rounds the microseconds
+           measure to the nearest millisecond. */
+        result = snprintf(msbuf, 5, ".%3.3ld", long(tv.tv_usec / 1000));
+        if(result < 0)
+        {
+           // snprint can error (negative return code) and the compiler now generates a warning
+           // if we don't act on the return code
+           memcpy(msbuf, "0000", 5);
+        }
+        int datebufCharsRemaining = datebufSize - (int)strlen(datebuf);
+        strncat(datebuf, msbuf, datebufCharsRemaining - 1);
+        datebuf[datebufSize - 1] = '\0';
+
+        return std::string(datebuf);
     }
 
     /// Change the level out output from the logger

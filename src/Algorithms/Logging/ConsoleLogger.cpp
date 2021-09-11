@@ -49,7 +49,7 @@ namespace cqp
                 std::cerr << levelToColour.at(level);
             }
 
-            std::cerr << LEVELPREFIX.at(level) << message;
+            std::cerr << LEVELPREFIX.at(level) << " " << Logger::GetTimeStamp() << " " << message;
 
             if(supportsColour)
             {
