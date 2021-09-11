@@ -53,7 +53,7 @@ namespace cqp
 
     grpc::Status RemoteQKDDevice::RunSession(grpc::ServerContext*, const remote::SessionDetailsTo* request, google::protobuf::Empty*)
     {
-        LOGTRACE("");
+        LOGDEBUG("GRPC/S/Device::RunSession starts");
         Status result;
 
         auto session = device->GetSessionController();
@@ -80,13 +80,14 @@ namespace cqp
             result = Status(StatusCode::FAILED_PRECONDITION, "Initialisation failed");
         }
 
-        LOGTRACE("Ending");
+        LOGDEBUG("GRPC/S/Device::RunSession ends");
         return result;
     }
 
     grpc::Status RemoteQKDDevice::WaitForSession(grpc::ServerContext* ctx, const remote::LocalSettings* settings,
             ::grpc::ServerWriter<remote::RawKeys>* writer)
     {
+        LOGDEBUG("GRPC/S/Device::WaitForSession starts");
         LOGTRACE("");
         Status result;
         // reset the shutdown switch
@@ -114,6 +115,7 @@ namespace cqp
         }
 
         LOGTRACE("Ending");
+        LOGDEBUG("GRPC/S/Device::WaitForSession ends");
         return result;
     }
 
@@ -206,7 +208,7 @@ namespace cqp
         remote::ControlDetails request;
         (*request.mutable_config()) = device->GetDeviceDetails();
         request.set_controladdress(qkdDeviceAddress);
-        LOGDEBUG("Registering device " + request.config().id() + " with " + address);
+        LOGDEBUG("GRPC/C/SiteAgent::RegisterDevice " + request.config().id() + " with " + address);
         auto result = siteAgent->RegisterDevice(&ctx, request, &response);
 
         if(result.ok())
@@ -312,6 +314,7 @@ namespace cqp
         {
             keyPub->Attach(this);
 
+            int keyIndex = 0;
             // send the key to the caller
             do
             {
@@ -359,6 +362,10 @@ namespace cqp
                     }
 
                     // send the data
+                    if (keyIndex == 0) {
+                        LOGDEBUG("Device pushed first key!");
+                    }
+                    keyIndex++;
                     writer->Write(message);
                 } // if !shutdown
             } // do

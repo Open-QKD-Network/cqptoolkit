@@ -283,6 +283,7 @@ namespace cqp
             remote::RawKeys incommingKeys;
             request.set_initialkey(initialKey->data(), initialKey->size());
 
+            LOGDEBUG("GRPC/C/Device::WaitForSession");
             auto reader = deviceStub->WaitForSession(&connection->keyReaderContext, request);
 
             // TODO this isn't enough to ensure the memory is clean.
@@ -398,6 +399,7 @@ namespace cqp
                             }
                         }
 
+                        LOGDEBUG("Starts key reader thread...");
                         localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
                         // read stats and pass them on
                         localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
@@ -437,7 +439,7 @@ namespace cqp
         {
             ClientContext ctx;
             google::protobuf::Empty response;
-            LOGTRACE("Calling StartNode on peer " + secondSite);
+            LOGDEBUG("GRPC/C/SiteAgent::StartNode on peer " + secondSite);
             // start the next node, passing on the entire path
             result = LogStatus(
                          stub->StartNode(&ctx, *path, &response));
@@ -459,7 +461,7 @@ namespace cqp
         using namespace std;
         using namespace grpc;
 
-        LOGTRACE("Starting session");
+        LOGDEBUG("GRPC/C/Device::RunSession Starting session");
         // start exchanging keys
         grpc::ClientContext ctx;
         remote::SessionDetailsTo request;
@@ -474,7 +476,7 @@ namespace cqp
 
     grpc::Status SiteAgent::StartNode(grpc::ServerContext*, remote::HopPair& hop, remote::PhysicalPath& myPath)
     {
-        LOGTRACE("Looking at hop from " + hop.first().site() + " to " + hop.second().site());
+        LOGDEBUG("Looking at hop from " + hop.first().site() + " to " + hop.second().site());
 
         grpc::Status result;
         bool alreadyConnected = false;
@@ -535,7 +537,7 @@ namespace cqp
                 if(result.ok() && devicesInUse[hop.second().deviceid()])
                 {
                     // setup the second half of the chain
-                    LOGTRACE("Starting session with local device: " + hop.second().deviceaddress() + " and remote device: " +
+                    LOGDEBUG("Starting session with local device: " + hop.second().deviceaddress() + " and remote device: " +
                              hop.first().deviceaddress());
                     result = StartSession(devicesInUse[hop.second().deviceid()]->channel, hop.params(), hop.first().deviceaddress());
                 }
@@ -573,7 +575,7 @@ namespace cqp
             {
                 pathString += element.first().site() + "<->" + element.second().site() + " | ";
             }
-            LOGDEBUG(GetConnectionAddress() + " is starting node with: " + pathString);
+            LOGDEBUG("GRPC/S/SiteAgent::StartNode " + GetConnectionAddress() + " is starting node with: " + pathString);
         }
 
         auto pathCopy = *path;
@@ -637,7 +639,7 @@ namespace cqp
 
         if(result.ok())
         {
-            LOGINFO("Node setup complete");
+            LOGINFO("GRPC/S/SiteAgent::StartNode Node setup complete");
         }
         return result;
     } // StartNode
@@ -700,7 +702,7 @@ namespace cqp
             {
                 pathString += element.first().site() + "<->" + element.second().site() + " | ";
             }
-            LOGDEBUG(GetConnectionAddress() + " is stopping node with: " + pathString);
+            LOGDEBUG("GRPC/S/SiteAgent::EndKeyExchange " + GetConnectionAddress() + " is stopping node with: " + pathString);
         }
 
         // stop the session controllers
@@ -785,7 +787,7 @@ namespace cqp
 
     grpc::Status SiteAgent::RegisterDevice(grpc::ServerContext*, const remote::ControlDetails* request, google::protobuf::Empty*)
     {
-        LOGDEBUG("Device registering: " + request->config().id());
+        LOGDEBUG("GRPC/S/SiteAgent::RegisterDevice " + request->config().id());
         using namespace std;
 
         {
