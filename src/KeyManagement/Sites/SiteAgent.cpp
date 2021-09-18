@@ -766,6 +766,7 @@ namespace cqp
 
     grpc::Status SiteAgent::GetSiteDetails(grpc::ServerContext*, const google::protobuf::Empty*, remote::Site* response)
     {
+        LOGDEBUG("GRPC/S/SiteAgent::GetSiteDetails");
         *response = siteDetails;
         return grpc::Status();
     } // GetSiteDetails
