@@ -104,6 +104,7 @@ namespace cqp
         {
             // Wait for keys to arrive and pass them on
             // nothing will happen until RunSession is called on one side
+            LOGDEBUG("GRPC/S/Device::WaitForSession start ProcessKeys");
             ProcessKeys(ctx, writer);
             // keys are no longer being requested, stop the session
             session->EndSession();

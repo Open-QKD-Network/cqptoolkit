@@ -283,8 +283,9 @@ namespace cqp
             remote::RawKeys incommingKeys;
             request.set_initialkey(initialKey->data(), initialKey->size());
 
-            LOGDEBUG("GRPC/C/Device::WaitForSession");
+            LOGDEBUG("GRPC/C/Device::WaitForSession starts");
             auto reader = deviceStub->WaitForSession(&connection->keyReaderContext, request);
+            LOGDEBUG("GRPC/C/Device::WaitForSession ends");
 
             // TODO this isn't enough to ensure the memory is clean.
             request.clear_initialkey();
@@ -453,6 +454,7 @@ namespace cqp
             result = LogStatus(Status(StatusCode::UNAVAILABLE, "Cannot contact next hop"));
         } // else stub
 
+        LOGDEBUG("GRPC/C/SiteAgent::StartNode on peer " + secondSite + " returns!");
         return result;
     } // StartLeftSide
 
@@ -484,6 +486,7 @@ namespace cqp
         // if we are the left side of a hop, ie a in [a, b]
         if(AddressIsThisSite(hop.first().site()))
         {
+            LOGDEBUG("StartNode at left/Alice");
             bool alreadyConnected = false;
             /*lock scope*/
             {
@@ -522,6 +525,7 @@ namespace cqp
         } // if left
         else if(AddressIsThisSite(hop.second().site()))
         {
+            LOGDEBUG("StartNode at right/Bob");
             /*lock scope*/
             {
                 std::lock_guard<std::mutex> lock(statusCallbackMutex);
