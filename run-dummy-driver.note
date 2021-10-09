@@ -1,0 +1,69 @@
+1. Node 1 with 192.168.2.254/Alice, Node 2 with 192.168.2.67/Bob. SiteAgent listens on port 8000 and dummy driver listens on port 9000.
+
+2. Run siteagent on node 1
+
+kxie@kxie-Inspiron-3880:~/qkd-work$ more siteagent-a.json 
+{
+ "name": "SiteA",
+ "id": "9893e345-d3b0-4a98-a6d2-4663190e3db9",
+ "bindAddress":"192.168.2.254",
+ "connectionAddress":"192.168.2.254",
+ "listenPort": 8000,
+ "credentials": {}
+}
+
+./src/Tools/SiteAgentRunner/SiteAgentRunner -c ../cqptoolkit/siteagent-a.json
+
+3. Run dummy driver on node 1
+
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -k 192.168.2.254:9000 -r 192.168.2.254:8000 -a
+
+4. Run siteagent on node 2
+
+xie@kxie-ubuntu-20:~/qkd-work$ more siteagent-b.json 
+{
+ "name": "SiteB",
+ "id": "dff538fc-1c01-4653-b5fd-eb3e868379e7",
+ "bindAddress":"192.168.2.67",
+ "connectionAddress":"192.168.2.67",
+ "listenPort": 8000,
+ "credentials": {}
+}
+
+./src/Tools/SiteAgentRunner/SiteAgentRunner -c ../cqptoolkit/siteagent-b.json
+
+5. Run dummy driver on node 2
+
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -k 192.168.2.67:9000 -r 192.168.2.67:8000 -b
+
+6. Join node 1 and node 2 to start key on node 1
+
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c 192.168.2.254:8000 -j 192.168.2.67:8000
+
+7. Node 1/alice new key
+
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c 192.168.2.254:8000 -k 192.168.2.67:8000
+
+DEBUG:  20211009-115354.313 /home/kxie/qkd-work/cqptoolkit/src/Tools/SiteAgentCtl/SiteAgentCtl.cpp.328:GetKey: Getting key for 192.168.2.67:8000
+PKCS=pkcs11:type%3Dsecret-key;object%3D192.168.2.67%253A8000;id%3D0x01 Id=0x01 Value=9098E0C009295579D5AB7F6A538988EC
+
+8. Node 2/bob get key
+
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c 192.168.2.67:8000 -k "pkcs11:type%3Dsecret-key;object%3D192.168.2.254%253A8000;id%3D0x01"
+
+DEBUG:  20211009-115506.975 /home/kxie/qkd-work/cqptoolkit/src/Tools/SiteAgentCtl/SiteAgentCtl.cpp.328:GetKey: Getting key for pkcs11:type%3Dsecret-key;object%3D192.168.2.254%253A8000;id%3D0x01
+PKCS=pkcs11:type%3Dsecret-key;object%3D192.168.2.254%253A8000;id%3D0x01 Id=0x01 Value=9098E0C009295579D5AB7F6A538988EC
+
+9. Node 2/Bob new key
+
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c 192.168.2.67:8000 -k 192.168.2.254:8000
+
+DEBUG:  20211009-115539.608 /home/kxie/qkd-work/cqptoolkit/src/Tools/SiteAgentCtl/SiteAgentCtl.cpp.328:GetKey: Getting key for 192.168.2.254:8000
+PKCS=pkcs11:type%3Dsecret-key;object%3D192.168.2.254%253A8000;id%3D0x02 Id=0x02 Value=4B19B30C2E09E35098093C412E1BE488
+
+10. Node 1/Alice get key
+
+./src/Tools/SiteAgentCtl/SiteAgentCtl -c 192.168.2.254:8000 -k "pkcs11:type%3Dsecret-key;object%3D192.168.2.67%253A8000;id%3D0x02"
+
+DEBUG:  20211009-115623.737 /home/kxie/qkd-work/cqptoolkit/src/Tools/SiteAgentCtl/SiteAgentCtl.cpp.328:GetKey: Getting key for pkcs11:type%3Dsecret-key;object%3D192.168.2.67%253A8000;id%3D0x02
+PKCS=pkcs11:type%3Dsecret-key;object%3D192.168.2.67%253A8000;id%3D0x02 Id=0x02 Value=4B19B30C2E09E35098093C412E1BE488

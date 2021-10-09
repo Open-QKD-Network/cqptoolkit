@@ -1,0 +1,8 @@
+{
+ "name": "SiteB",
+ "id": "dff538fc-1c01-4653-b5fd-eb3e868379e7",
+ "bindAddress":"192.168.2.67",
+ "connectionAddress":"192.168.2.67",
+ "listenPort": 8000,
+ "credentials": {}
+}
