@@ -1,0 +1,6 @@
+{
+ "controlParams": {
+   "controlAddress": "192.168.2.67:9000",
+   "siteAgentAddress": "192.168.2.67:8000"
+ }
+}
