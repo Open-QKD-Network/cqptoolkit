@@ -261,7 +261,7 @@ namespace cqp
 
             grpc::ChannelArguments args;
             args.SetMaxReceiveMessageSize(8_MiB);
-            LOGDEBUG("Connect to peer " + otherController);
+            LOGDEBUG("Connect to peer " + otherController.ToString());
             otherControllerChannel = grpc::CreateCustomChannel(otherController, creds, args);
 
             if(reportServer)
