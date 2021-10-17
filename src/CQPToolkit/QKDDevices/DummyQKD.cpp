@@ -40,7 +40,7 @@ namespace cqp
             alignment(std::make_shared<align::NullAlignment>()),
             ec(std::make_shared<ec::ErrorCorrection>()),
             privacy(std::make_shared<privacy::PrivacyAmplify>()),
-            keyConverter(std::make_shared<keygen::KeyConverter>()),
+            keyConverter(std::make_shared<keygen::KeyConverter>(32)),
             reportServer(std::make_shared<stats::ReportServer>())
         {
             using namespace std;
