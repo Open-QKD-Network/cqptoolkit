@@ -343,7 +343,7 @@ void SiteAgentCtl::JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::st
     Empty request;
     remote::Site siteADetails;
 
-    LOGDEBUG("Getting Site A details GRPC/C/SiteAgent::GetSiteDetails ...");
+    LOGDEBUG("Getting Site A details...");
     if(LogStatus(siteA->GetSiteDetails(&siteActx, request, &siteADetails)).ok())
     {
         if(!siteADetails.devices().empty())
@@ -356,7 +356,6 @@ void SiteAgentCtl::JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::st
 
                 ClientContext siteBctx;
                 remote::Site siteBDetails;
-                LOGDEBUG("Getting Site B details GRPC/C/SiteAgent::GetSiteDetails ...");
                 if(LogStatus(siteB->GetSiteDetails(&siteBctx, request, &siteBDetails)).ok())
                 {
                     bool matchFound = false;
@@ -383,8 +382,6 @@ void SiteAgentCtl::JoinSites(cqp::remote::ISiteAgent::Stub* siteA, const std::st
 
                                     hop->mutable_second()->set_site(siteBDetails.url());
                                     hop->mutable_second()->set_deviceid(deviceB.config().id());
-                                    LOGINFO("SiteA.url=" + siteADetails.url());
-                                    LOGINFO("SiteB.url=" + siteBDetails.url());
                                     LOGINFO("Joining Site A's " + deviceA.config().id() + " with Site B's " + deviceB.config().id());
 
                                     if(start)

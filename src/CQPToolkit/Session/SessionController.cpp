@@ -59,7 +59,6 @@ namespace cqp
                 Empty response;
 
                 // send the command to the other side
-                LOGDEBUG("GRPC/C/Session::SessionStarting " + sessionDetails.initiatoraddress());
                 result = LogStatus(otherController->SessionStarting(&ctx, sessionDetails, &response));
 
                 if(result.ok())
@@ -144,7 +143,7 @@ namespace cqp
             // if we havn't got a connection to the caller yet, create one
             if(!otherControllerChannel)
             {
-                LOGDEBUG("GRPC/S/Session::SessionStarting Connecting to peer at " + sessionDetails->initiatoraddress());
+                LOGDEBUG("Connecting to peer at " + sessionDetails->initiatoraddress());
                 grpc::ChannelArguments args;
                 args.SetMaxReceiveMessageSize(8_MiB);
                 otherControllerChannel = grpc::CreateCustomChannel(sessionDetails->initiatoraddress(), creds, args);
@@ -261,7 +260,6 @@ namespace cqp
 
             grpc::ChannelArguments args;
             args.SetMaxReceiveMessageSize(8_MiB);
-            LOGDEBUG("Connect to peer " + otherController.ToString());
             otherControllerChannel = grpc::CreateCustomChannel(otherController, creds, args);
 
             if(reportServer)
