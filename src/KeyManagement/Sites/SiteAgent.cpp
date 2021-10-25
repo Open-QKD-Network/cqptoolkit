@@ -33,6 +33,7 @@
 #include <grpc++/security/credentials.h>
 #include "QKDInterfaces/Device.pb.h"
 #include "CQPToolkit/Auth/AuthUtil.h"
+
 #include <google/protobuf/util/message_differencer.h>
 #include <unordered_map>
 
@@ -184,8 +185,6 @@ namespace cqp
         if(myConfig.connectionaddress().empty())
         {
             myConfig.set_connectionaddress(net::GetHostname(true) + ":" + std::to_string(myConfig.listenport()));
-        } else {
-            myConfig.set_connectionaddress(myConfig.connectionaddress() + ":" + std::to_string(myConfig.listenport()));
         }
 
         LOGINFO("My address is: " + myConfig.connectionaddress());
@@ -277,17 +276,26 @@ namespace cqp
     void SiteAgent::ProcessKeys(std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey)
     {
         using namespace std;
+        //Device Stub Setup
         auto deviceStub = remote::IDevice::NewStub(connection->channel);
 
+        //Key Transfer Stub Setup
+        //TODO get these automatically
+        string keyTransferHost = "localhost";
+        string keyTransferPort = "50051";
+        int keysSent = 1;
+
+        auto keyTransferChannel = grpc::CreateChannel(keyTransferHost + ":" + keyTransferPort, grpc::InsecureChannelCredentials());
+        auto keyTransferStub = cqp::remote::KeyTransfer::NewStub(keyTransferChannel);
+        
+        //Key Processing
         if(deviceStub && connection->keySink)
         {
             remote::LocalSettings request;
             remote::RawKeys incommingKeys;
             request.set_initialkey(initialKey->data(), initialKey->size());
 
-            LOGDEBUG("GRPC/C/Device::WaitForSession starts");
             auto reader = deviceStub->WaitForSession(&connection->keyReaderContext, request);
-            LOGDEBUG("GRPC/C/Device::WaitForSession ends");
 
             // TODO this isn't enough to ensure the memory is clean.
             request.clear_initialkey();
@@ -298,6 +306,7 @@ namespace cqp
             {
                 auto keys = make_unique<KeyList>();
                 keys->reserve(static_cast<size_t>(incommingKeys.keydata().size()));
+
                 // copy each key to the internal datatype
                 for(const auto& newKey : incommingKeys.keydata())
                 {
@@ -307,6 +316,22 @@ namespace cqp
                     dest->resize(newKey.size());
                     // copy the key bytes into the new storage
                     copy(newKey.begin(), newKey.end(), dest->begin());
+
+                    //Key Transfer to Open-QKD-Network
+                    cqp::remote::Key keyMessage;
+                    keyMessage.set_key(newKey);
+                    keyMessage.set_seqid(keysSent);
+                    keysSent +=1;
+
+                    grpc::ClientContext context;
+                    cqp::remote::Empty response;
+
+                    grpc::Status status = keyTransferStub->SendKey(&context, keyMessage, &response);
+
+                    if (!status.ok()) {
+                        LOGTRACE("STATUS ERROR: gRPC Open-QKD-Network Key Transfer");
+                    }
+
                 }
                 // send the keys on
                 connection->keySink->OnKeyGeneration(move(keys));
@@ -402,7 +427,6 @@ namespace cqp
                             }
                         }
 
-                        LOGDEBUG("Starts key reader thread...");
                         localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
                         // read stats and pass them on
                         localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
@@ -442,7 +466,7 @@ namespace cqp
         {
             ClientContext ctx;
             google::protobuf::Empty response;
-            LOGDEBUG("GRPC/C/SiteAgent::StartNode on peer " + secondSite);
+            LOGTRACE("Calling StartNode on peer " + secondSite);
             // start the next node, passing on the entire path
             result = LogStatus(
                          stub->StartNode(&ctx, *path, &response));
@@ -456,7 +480,6 @@ namespace cqp
             result = LogStatus(Status(StatusCode::UNAVAILABLE, "Cannot contact next hop"));
         } // else stub
 
-        LOGDEBUG("GRPC/C/SiteAgent::StartNode on peer " + secondSite + " returns!");
         return result;
     } // StartLeftSide
 
@@ -465,7 +488,7 @@ namespace cqp
         using namespace std;
         using namespace grpc;
 
-        LOGDEBUG("GRPC/C/Device::RunSession Starting session");
+        LOGTRACE("Starting session");
         // start exchanging keys
         grpc::ClientContext ctx;
         remote::SessionDetailsTo request;
@@ -480,7 +503,7 @@ namespace cqp
 
     grpc::Status SiteAgent::StartNode(grpc::ServerContext*, remote::HopPair& hop, remote::PhysicalPath& myPath)
     {
-        LOGDEBUG("Looking at hop from " + hop.first().site() + " to " + hop.second().site());
+        LOGTRACE("Looking at hop from " + hop.first().site() + " to " + hop.second().site());
 
         grpc::Status result;
         bool alreadyConnected = false;
@@ -488,7 +511,6 @@ namespace cqp
         // if we are the left side of a hop, ie a in [a, b]
         if(AddressIsThisSite(hop.first().site()))
         {
-            LOGDEBUG("StartNode at left/Alice");
             bool alreadyConnected = false;
             /*lock scope*/
             {
@@ -527,7 +549,6 @@ namespace cqp
         } // if left
         else if(AddressIsThisSite(hop.second().site()))
         {
-            LOGDEBUG("StartNode at right/Bob");
             /*lock scope*/
             {
                 std::lock_guard<std::mutex> lock(statusCallbackMutex);
@@ -543,7 +564,7 @@ namespace cqp
                 if(result.ok() && devicesInUse[hop.second().deviceid()])
                 {
                     // setup the second half of the chain
-                    LOGDEBUG("Starting session with local device: " + hop.second().deviceaddress() + " and remote device: " +
+                    LOGTRACE("Starting session with local device: " + hop.second().deviceaddress() + " and remote device: " +
                              hop.first().deviceaddress());
                     result = StartSession(devicesInUse[hop.second().deviceid()]->channel, hop.params(), hop.first().deviceaddress());
                 }
@@ -581,7 +602,7 @@ namespace cqp
             {
                 pathString += element.first().site() + "<->" + element.second().site() + " | ";
             }
-            LOGDEBUG("GRPC/S/SiteAgent::StartNode " + GetConnectionAddress() + " is starting node with: " + pathString);
+            LOGDEBUG(GetConnectionAddress() + " is starting node with: " + pathString);
         }
 
         auto pathCopy = *path;
@@ -645,7 +666,7 @@ namespace cqp
 
         if(result.ok())
         {
-            LOGINFO("GRPC/S/SiteAgent::StartNode Node setup complete");
+            LOGINFO("Node setup complete");
         }
         return result;
     } // StartNode
@@ -708,7 +729,7 @@ namespace cqp
             {
                 pathString += element.first().site() + "<->" + element.second().site() + " | ";
             }
-            LOGDEBUG("GRPC/S/SiteAgent::EndKeyExchange " + GetConnectionAddress() + " is stopping node with: " + pathString);
+            LOGDEBUG(GetConnectionAddress() + " is stopping node with: " + pathString);
         }
 
         // stop the session controllers
@@ -772,7 +793,6 @@ namespace cqp
 
     grpc::Status SiteAgent::GetSiteDetails(grpc::ServerContext*, const google::protobuf::Empty*, remote::Site* response)
     {
-        LOGDEBUG("GRPC/S/SiteAgent::GetSiteDetails");
         *response = siteDetails;
         return grpc::Status();
     } // GetSiteDetails
@@ -794,7 +814,7 @@ namespace cqp
 
     grpc::Status SiteAgent::RegisterDevice(grpc::ServerContext*, const remote::ControlDetails* request, google::protobuf::Empty*)
     {
-        LOGDEBUG("GRPC/S/SiteAgent::RegisterDevice " + request->config().id());
+        LOGDEBUG("Device registering: " + request->config().id());
         using namespace std;
 
         {

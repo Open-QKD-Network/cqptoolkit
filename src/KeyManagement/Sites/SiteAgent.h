@@ -13,6 +13,7 @@
 #include "KeyManagement/keymanagement_export.h"
 #include "QKDInterfaces/INetworkManager.grpc.pb.h"
 #include "QKDInterfaces/ISiteAgent.grpc.pb.h"
+#include "QKDInterfaces/KeyTransfer.grpc.pb.h"
 #include "Algorithms/Datatypes/Keys.h"
 #include <grpc++/server.h>
 #include <unordered_map>
