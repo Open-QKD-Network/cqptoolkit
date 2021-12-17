@@ -328,7 +328,7 @@ namespace cqp
                     grpc::ClientContext context;
                     cqp::remote::Empty response;
 
-                    grpc::Status status = keyTransferStub->SendKey(&context, keyMessage, &response);
+                    grpc::Status status = keyTransferStub->OnKeyFromCQP(&context, keyMessage, &response);
 
                     if (!status.ok()) {
                         LOGTRACE("STATUS ERROR: gRPC Open-QKD-Network Key Transfer");
