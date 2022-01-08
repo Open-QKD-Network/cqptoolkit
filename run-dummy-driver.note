@@ -18,6 +18,22 @@ kxie@kxie-Inspiron-3880:~/qkd-work$ more siteagent-a.json
 
 ./src/Drivers/DummyQKDDriver/DummyQKDDriver -k 192.168.2.254:9000 -r 192.168.2.254:8000 -a
 
+kxie@kxie-Inspiron-3880:~/qkd-work/cqptoolkit$ more dummy-a.json
+{
+ "controlParams": {
+   "config": {
+     "id": "dummyqkd_a_b_a",
+     "side": "Alice",
+     "kind": "dummyqkd"
+   },
+   "controlAddress": "192.168.2.254:9000",
+   "siteAgentAddress": "192.168.2.254:8000"
+ }
+}
+
+or run with configuration
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -c ../cqptoolkit/dummy-a.json
+
 4. Run siteagent on node 2
 
 xie@kxie-ubuntu-20:~/qkd-work$ more siteagent-b.json 
@@ -35,6 +51,22 @@ xie@kxie-ubuntu-20:~/qkd-work$ more siteagent-b.json
 5. Run dummy driver on node 2
 
 ./src/Drivers/DummyQKDDriver/DummyQKDDriver -k 192.168.2.67:9000 -r 192.168.2.67:8000 -b
+
+kxie@kxie-Inspiron-3880:~/qkd-work$ more dummy-b.json
+{
+ "controlParams": {
+   "config": {
+     "id": "dummyqkd_a_b_b",
+     "side": "Bob",
+     "kind": "dummyqkd"
+   },
+   "controlAddress": "192.168.2.67:9000",
+   "siteAgentAddress": "192.168.2.67:8000"
+ }
+}
+
+or run with configuration
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -c ../cqptoolkit/dummy-b.json
 
 6. Join node 1 and node 2 to start key on node 1
 

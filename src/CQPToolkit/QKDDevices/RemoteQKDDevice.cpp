@@ -30,6 +30,7 @@ namespace cqp
         device(device),
         creds(creds)
     {
+        LOGDEBUG("New RemoteQKDDevice with id:" + device->GetDeviceDetails().id());
     }
 
     RemoteQKDDevice::~RemoteQKDDevice()

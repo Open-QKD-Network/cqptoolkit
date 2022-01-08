@@ -341,7 +341,7 @@ namespace cqp
         using namespace std;
         using namespace grpc;
         Status result;
-        LOGTRACE("From " + GetConnectionAddress() + " to " + destination + " with device " + deviceId);
+        LOGDEBUG("From " + GetConnectionAddress() + " to " + destination + " with device " + deviceId);
 
         // get the device we've been told to use
         auto localDev = devicesInUse.find(deviceId);
@@ -356,7 +356,7 @@ namespace cqp
                 {
                     // store the new device and get the iterator to it for later
                     auto localDev = make_shared<DeviceConnection>();
-                    LOGTRACE("Connecting to device control at " + regDevice.controladdress());
+                    LOGDEBUG("Connecting to device control at " + regDevice.controladdress());
                     localDev->channel = grpc::CreateChannel(regDevice.controladdress(), LoadChannelCredentials(myConfig.credentials()));
                     localDev->keySink = keystoreFactory->GetKeyStore(destination);
                     if(localDev->keySink)
@@ -488,7 +488,9 @@ namespace cqp
         // if we are the left side of a hop, ie a in [a, b]
         if(AddressIsThisSite(hop.first().site()))
         {
-            LOGDEBUG("StartNode at left/Alice");
+            LOGDEBUG("StartNode at left/Alice, first site:" +
+            hop.first().site()+ ", device id:" + hop.first().deviceid() + ", second site:" +
+            hop.second().site() + ",device id:" + hop.second().deviceid());
             bool alreadyConnected = false;
             /*lock scope*/
             {
