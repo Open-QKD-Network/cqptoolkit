@@ -14,7 +14,7 @@ To run the software natively, ether:
 
 To clone the source including submodules:
 ```bash
-git clone --recurse-submodules git@gitlab.com:QComms/cqptoolkit.git
+git clone --recurse-submodules https://github.com/Open-QKD-Network/cqptoolkit.git
 ```
 
 > If you cloned without using `--recurse-submodules`, submodules can be updated by running `git submodule update --init` from within the source folder.
