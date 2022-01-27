@@ -275,7 +275,7 @@ namespace cqp
         return result;
     } // RegisterWithDiscovery
 
-    void SiteAgent::ProcessKeys(std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey)
+    void SiteAgent::ProcessKeys(const std::string& deviceId, std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey)
     {
         using namespace std;
         //Device Stub Setup
@@ -323,6 +323,7 @@ namespace cqp
                     cqp::remote::Key keyMessage;
                     keyMessage.set_key(newKey);
                     keyMessage.set_seqid(keysSent);
+                    keyMessage.set_localid(deviceId);
                     keysSent +=1;
 
                     grpc::ClientContext context;
@@ -429,7 +430,9 @@ namespace cqp
                             }
                         }
 
-                        localDev->readerThread = thread(&SiteAgent::ProcessKeys, localDev, move(initialPsk));
+                        LOGDEBUG("Starts key reader thread...");
+                        localDev->readerThread = thread(&SiteAgent::ProcessKeys, deviceId, localDev, move(initialPsk));
+
                         // read stats and pass them on
                         localDev->statsThread = thread(&SiteAgent::DeviceConnection::ReadStats, localDev.get(), reportServer.get(), destination);
                         // make the stats thread lower priority than the key reader

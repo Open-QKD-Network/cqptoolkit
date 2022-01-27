@@ -322,7 +322,7 @@ namespace cqp
          * @param connection
          * @param initialKey
          */
-        static void ProcessKeys(std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey);
+        static void ProcessKeys(const std::string& deviceId, std::shared_ptr<DeviceConnection> connection, std::unique_ptr<PSK> initialKey);
 
         /**
          * @brief StartNode
