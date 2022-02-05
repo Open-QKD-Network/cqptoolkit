@@ -91,7 +91,8 @@ int DummyQKDDriver::Main(const std::vector<std::string>& args)
             WriteConfigFile(config, definedArguments.GetStringProp(DummyNames::writeConfig));
         } // if write config file
 
-        stopExecution = ! adaptor->StartControlServer(config.controlparams().controladdress(), config.controlparams().siteagentaddress());
+        stopExecution = ! adaptor->StartControlServer(config.controlparams().bindaddress(),
+            config.controlparams().controladdress(), config.controlparams().siteagentaddress());
 
     } // if !Stop execution
 
