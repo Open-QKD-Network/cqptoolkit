@@ -287,6 +287,9 @@ namespace cqp
         string keyTransferPort = "50051";
         int keysSent = 1;
 
+        int qllBlockSz = 4096;
+        int maxKeyBlocks = 10;
+
         auto keyTransferChannel = grpc::CreateChannel(keyTransferHost + ":" + keyTransferPort, grpc::InsecureChannelCredentials());
         auto keyTransferStub = cqp::remote::KeyTransfer::NewStub(keyTransferChannel);
         
@@ -304,7 +307,7 @@ namespace cqp
             initialKey->clear();
             initialKey.reset();
 
-            while(reader && reader->Read(&incommingKeys))
+            while(reader && reader->Read(&incommingKeys) && keysSent < qllBlockSz * maxKeyBlocks)
             {
                 auto keys = make_unique<KeyList>();
                 keys->reserve(static_cast<size_t>(incommingKeys.keydata().size()));
