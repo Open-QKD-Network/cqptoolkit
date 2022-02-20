@@ -334,10 +334,12 @@ namespace cqp
 
                     grpc::Status status = keyTransferStub->OnKeyFromCQP(&context, keyMessage, &response);
 
-                    if (!status.ok()) {
-                        LOGTRACE("STATUS ERROR: gRPC Open-QKD-Network Key Transfer");
+                    while (!status.ok()) {
+                        LOGINFO("STATUS ERROR: error_code=" + to_string(status.error_code()) + ",msg=" + status.error_message());
+                        grpc::ClientContext context;
+                        cqp::remote::Empty response;
+                        status = keyTransferStub->OnKeyFromCQP(&context, keyMessage, &response);
                     }
-
                 }
                 // send the keys on
                 connection->keySink->OnKeyGeneration(move(keys));
