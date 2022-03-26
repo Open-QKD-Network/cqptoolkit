@@ -261,7 +261,7 @@ namespace cqp
         deviceServer = devServBuilder.BuildAndStart();
 
         URI controlURI{controlAddress};
-        controlURI.SetPort(listenPort);
+        // controlURI.SetPort(listenPort);
         if(controlURI.GetHost().empty() || controlURI.GetHost() == net::AnyAddress)
         {
             controlURI.SetHost(net::GetHostname());
