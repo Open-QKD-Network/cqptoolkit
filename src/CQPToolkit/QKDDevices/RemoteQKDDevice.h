@@ -123,7 +123,7 @@ namespace cqp
          * @param siteAgent
          * @return true on success
          */
-        bool StartControlServer(const std::string& controlAddress, const std::string& siteAgent = "");
+        bool StartControlServer(const std::string& bindAddress, const std::string& controlAddress, const std::string& siteAgent = "");
 
         /**
          * @brief WaitForServerShutdown
@@ -141,7 +141,7 @@ namespace cqp
          */
         std::string GetControlAddress()
         {
-            return qkdDeviceAddress;
+            return qkdDeviceControlAddress;
         }
     protected: // members
         /// the device to manage
@@ -159,7 +159,8 @@ namespace cqp
         /// should the system be shut down
         std::atomic_bool shutdown {false};
         /// The address of the connected device
-        std::string qkdDeviceAddress;
+        std::string qkdDeviceBindAddress;
+        std::string qkdDeviceControlAddress;
         /// the registered site agent
         std::string siteAgentAddress;
         /// The server providing the control services

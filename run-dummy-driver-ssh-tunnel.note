@@ -1,4 +1,8 @@
-1. Node 1 with 192.168.2.254/Alice, Node 2 with 192.168.2.67/Bob. SiteAgent listens on port 8000 and dummy driver listens on port 9000.
+1. Node 1 with 192.168.2.254/Alice, Node 2 with 192.168.2.67/Bob. SiteAgent listens on port 8000.
+Dummy driver A runs on node A port 9000, and drummy driver B runs on node A port 9001.
+SSH server runs on node 2, node 1 makes SSH tunnel to node 2 with following command.
+
+ssh -R 9001:192.168.2.254:9001 -N -f kxie@192.168.2.67 
 
 2. Run siteagent on node 1
 
@@ -12,11 +16,11 @@ kxie@kxie-Inspiron-3880:~/qkd-work$ more siteagent-a.json
  "credentials": {}
 }
 
-./src/Tools/SiteAgentRunner/SiteAgentRunner -c ../cqptoolkit/siteagent-a.json
+./src/Tools/SiteAgentRunner/SiteAgentRunner -c siteagent-a.json
 
 3. Run dummy driver on node 1
 
-./src/Drivers/DummyQKDDriver/DummyQKDDriver -k 192.168.2.254:9000 -r 192.168.2.254:8000 -a
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -c dummy-a.json
 
 kxie@kxie-Inspiron-3880:~/qkd-work/cqptoolkit$ more dummy-a.json
 {
@@ -26,13 +30,11 @@ kxie@kxie-Inspiron-3880:~/qkd-work/cqptoolkit$ more dummy-a.json
      "side": "Alice",
      "kind": "dummyqkd"
    },
+   "bindAddress": "192.168.2.254:9000",
    "controlAddress": "192.168.2.254:9000",
    "siteAgentAddress": "192.168.2.254:8000"
  }
 }
-
-or run with configuration
-./src/Drivers/DummyQKDDriver/DummyQKDDriver -c ../cqptoolkit/dummy-a.json
 
 4. Run siteagent on node 2
 
@@ -46,11 +48,11 @@ xie@kxie-ubuntu-20:~/qkd-work$ more siteagent-b.json
  "credentials": {}
 }
 
-./src/Tools/SiteAgentRunner/SiteAgentRunner -c ../cqptoolkit/siteagent-b.json
+./src/Tools/SiteAgentRunner/SiteAgentRunner -c siteagent-b.json
 
-5. Run dummy driver on node 2
+5. Run dummy driver 2 on node 1/192.168.2.254
 
-./src/Drivers/DummyQKDDriver/DummyQKDDriver -k 192.168.2.67:9000 -r 192.168.2.67:8000 -b
+./src/Drivers/DummyQKDDriver/DummyQKDDriver -c dummy-b.json
 
 kxie@kxie-Inspiron-3880:~/qkd-work$ more dummy-b.json
 {
@@ -60,13 +62,11 @@ kxie@kxie-Inspiron-3880:~/qkd-work$ more dummy-b.json
      "side": "Bob",
      "kind": "dummyqkd"
    },
-   "controlAddress": "192.168.2.67:9000",
+   "bindAddress": "192.168.2.254:9001",
+   "controlAddress": "192.168.2.67:9001",
    "siteAgentAddress": "192.168.2.67:8000"
  }
 }
-
-or run with configuration
-./src/Drivers/DummyQKDDriver/DummyQKDDriver -c ../cqptoolkit/dummy-b.json
 
 6. Join node 1 and node 2 to start key on node 1
 

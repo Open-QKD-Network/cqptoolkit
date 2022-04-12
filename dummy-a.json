@@ -1,5 +1,10 @@
 {
  "controlParams": {
+   "config": {
+     "id": "dummyqkd_a_b_a",
+     "side": "Alice",
+     "kind": "dummyqkd"
+   },
    "controlAddress": "192.168.2.254:9000",
    "siteAgentAddress": "192.168.2.254:8000"
  }

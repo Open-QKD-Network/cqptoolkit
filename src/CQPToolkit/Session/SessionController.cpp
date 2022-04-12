@@ -43,7 +43,7 @@ namespace cqp
 
         grpc::Status SessionController::StartSession(const remote::SessionDetailsFrom& sessionDetails)
         {
-            LOGTRACE("");
+            LOGDEBUG("StartSession begin");
             Status result;
             // the local system is starting the session
             // make sure the other side has connected to us
@@ -86,7 +86,7 @@ namespace cqp
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_Listening, result.error_code());
             } // else
 
-            LOGTRACE("Ending");
+            LOGDEBUG("StartSession Ending");
             return result;
         } // StartSession
 
@@ -136,7 +136,7 @@ namespace cqp
 
         Status SessionController::SessionStarting(grpc::ServerContext*, const remote::SessionDetailsFrom* sessionDetails, Empty*)
         {
-            LOGTRACE("Bob Starting");
+            LOGDEBUG("SessionStarting::Bob Starting");
             using namespace std::chrono;
             // The session has been started remotly
             Status result;
@@ -176,7 +176,7 @@ namespace cqp
                 UpdateStatus(remote::LinkStatus::State::LinkStatus_State_SessionStarted);
             }
 
-            LOGTRACE("Ending");
+            LOGDEBUG("SessionStarting Ending");
             return result;
         } // SessionStarting
 

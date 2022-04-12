@@ -30,6 +30,7 @@ namespace cqp
         device(device),
         creds(creds)
     {
+        LOGDEBUG("New RemoteQKDDevice with id:" + device->GetDeviceDetails().id());
     }
 
     RemoteQKDDevice::~RemoteQKDDevice()
@@ -70,7 +71,7 @@ namespace cqp
         if(result.ok() && device->Initialise(request->details()))
         {
             remote::SessionDetailsFrom from;
-            from.set_initiatoraddress(qkdDeviceAddress);
+            from.set_initiatoraddress(qkdDeviceControlAddress); // ffs
             (*from.mutable_details()) = request->details();
 
             result = session->StartSession(from);
@@ -178,7 +179,7 @@ namespace cqp
 
             (*response->mutable_config()) = device->GetDeviceDetails();
 
-            response->set_controladdress(qkdDeviceAddress);
+            response->set_controladdress(qkdDeviceControlAddress);
             response->set_siteagentaddress(siteAgentAddress);
             result = Status();
         }
@@ -208,7 +209,7 @@ namespace cqp
 
         remote::ControlDetails request;
         (*request.mutable_config()) = device->GetDeviceDetails();
-        request.set_controladdress(qkdDeviceAddress);
+        request.set_controladdress(qkdDeviceControlAddress);
         LOGDEBUG("GRPC/C/SiteAgent::RegisterDevice " + request.config().id() + " with " + address);
         auto result = siteAgent->RegisterDevice(&ctx, request, &response);
 
@@ -236,11 +237,12 @@ namespace cqp
         }
     }
 
-    bool RemoteQKDDevice::StartControlServer(const std::string& controlAddress, const std::string& siteAgent)
+    bool RemoteQKDDevice::StartControlServer(const std::string& bindAddress, const std::string& controlAddress, const std::string& siteAgent)
     {
         LOGTRACE("");
         // TODO reconsile the device config type with the need to provide this - the device doesn't inherently know it
-        qkdDeviceAddress = controlAddress;
+        qkdDeviceControlAddress = controlAddress;
+        qkdDeviceBindAddress = bindAddress;
         siteAgentAddress = siteAgent;
 
         auto config = device->GetDeviceDetails();
@@ -249,7 +251,7 @@ namespace cqp
         // now start the IDevice server
         grpc::ServerBuilder devServBuilder;
         int listenPort {0};
-        devServBuilder.AddListeningPort(controlAddress, creds, &listenPort);
+        devServBuilder.AddListeningPort(qkdDeviceBindAddress, creds, &listenPort);
         devServBuilder.RegisterService(this);
         // attach any other services which the device provides
         device->RegisterServices(devServBuilder);
@@ -259,13 +261,13 @@ namespace cqp
         deviceServer = devServBuilder.BuildAndStart();
 
         URI controlURI{controlAddress};
-        controlURI.SetPort(listenPort);
+        // controlURI.SetPort(listenPort);
         if(controlURI.GetHost().empty() || controlURI.GetHost() == net::AnyAddress)
         {
             controlURI.SetHost(net::GetHostname());
         }
-        qkdDeviceAddress = controlURI.ToString();
-        LOGINFO("Control interface available on " + qkdDeviceAddress);
+        qkdDeviceControlAddress = controlURI.ToString();
+        LOGINFO("Control interface available on " + qkdDeviceControlAddress);
 
         if(!siteAgentAddress.empty())
         {
